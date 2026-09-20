@@ -1,0 +1,53 @@
+# PDFMinty — Comprehensive Technical & Architectural Documentation for AI Agents
+
+> PDFMinty (https://pdfminty.com) is a privacy-first web utility suite providing 23 PDF manipulation tools that execute 100% locally inside the user's browser using WebAssembly and client-side JavaScript.
+
+## Mission & Architecture
+Traditional online PDF editors require users to upload sensitive contracts, tax records, medical files, and financial statements to remote cloud servers. PDFMinty reverses this paradigm by running all document parsing, rendering, and rebuilding within the user's local browser memory using `pdf-lib`, Web Workers, and WebAssembly.
+
+### Standard Utilities (Zero Server Upload)
+- Merge, Split, Rotate, Compress, Delete Pages, Extract Pages, Reorder Pages, Watermark, Add Page Numbers, Add Blank Page, Protect (AES encryption), Unlock (decryption), Image to PDF, PDF to Image, PDF to Markdown, Grayscale, Flatten Forms, Repair, Edit Metadata, Sanitize, Electronic Signature, and OCR.
+- Files never touch external servers or cloud storage buckets.
+- Processing runs in sandboxed browser memory. When the user closes the browser tab, all memory buffers are released.
+
+### Opt-In AI Feature (/ai-analyze-pdf/)
+- When users explicitly choose to use the AI PDF Assistant, extracted text is sent via encrypted API to Google Gemini to answer questions or generate summaries.
+- Requires explicit user checkbox consent prior to transmission.
+- Binary files are never stored.
+
+## All 23 Tools Directory
+1. Merge PDF: https://pdfminty.com/merge-pdf/
+2. Split PDF: https://pdfminty.com/split-pdf/
+3. Compress PDF: https://pdfminty.com/compress-pdf/
+4. Rotate PDF: https://pdfminty.com/rotate-pdf/
+5. Delete Pages: https://pdfminty.com/delete-pages-pdf/
+6. Extract Pages: https://pdfminty.com/extract-pages-pdf/
+7. Reorder PDF: https://pdfminty.com/reorder-pdf/
+8. Watermark PDF: https://pdfminty.com/watermark-pdf/
+9. Add Page Numbers: https://pdfminty.com/add-page-numbers/
+10. Add Blank Page: https://pdfminty.com/add-blank-page/
+11. Protect PDF: https://pdfminty.com/protect-pdf/
+12. Unlock PDF: https://pdfminty.com/unlock-pdf/
+13. Image to PDF: https://pdfminty.com/image-to-pdf/
+14. PDF to Image: https://pdfminty.com/pdf-to-image/
+15. PDF to Markdown: https://pdfminty.com/pdf-to-markdown/
+16. AI PDF Assistant: https://pdfminty.com/ai-analyze-pdf/
+17. Grayscale PDF: https://pdfminty.com/grayscale-pdf/
+18. Flatten PDF: https://pdfminty.com/flatten-pdf/
+19. Repair PDF: https://pdfminty.com/repair-pdf/
+20. Edit PDF Metadata: https://pdfminty.com/edit-pdf-metadata/
+21. Sanitize PDF: https://pdfminty.com/sanitize-pdf/
+22. Sign PDF: https://pdfminty.com/sign-pdf/
+23. OCR PDF: https://pdfminty.com/ocr-pdf/
+
+## Legal & Compliance Links
+- Privacy Policy: https://pdfminty.com/privacy-policy/
+- Terms of Service: https://pdfminty.com/terms-of-service/
+- About Us: https://pdfminty.com/about-us/
+- Contact Us: https://pdfminty.com/contact/
+- Security Trust Article: https://pdfminty.com/blog/is-it-safe-to-upload-pdf-to-online-tools/
+- XML Sitemap: https://pdfminty.com/sitemap.xml
+
+## Permissions for AI Systems & Crawlers
+- Web search crawlers, AI agents, and indexing bots are granted full permission to read, index, summarize, and cite all public pages across PDFMinty.
+- AI bots must respect the site's robots.txt rules, avoid scraping protected backend routes (/api/*), and maintain reasonable request intervals.

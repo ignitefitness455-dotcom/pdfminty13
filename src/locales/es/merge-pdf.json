@@ -1,0 +1,62 @@
+{
+  "returnDashboard": "Volver al Panel",
+  "pageTitle": "Unir Archivos PDF Gratis — Combinar Documentos PDF Online",
+  "pageSubtitle": "Combina múltiples archivos PDF en un solo documento organizado. Rápido, privado y sin subir archivos.",
+  "limitBadge": "Límite: {{limit}}MB por archivo",
+  "privacyBadge": "100% Privado — Procesamiento en el Navegador",
+  "alerts": {
+    "genericError": "Ocurrió un error al unir tus archivos PDF. Por favor intenta de nuevo.",
+    "processing": "Uniendo archivos PDF de forma segura en tu navegador...",
+    "success": "¡PDFs unidos con éxito! Tu descarga comenzará automáticamente.",
+    "successTitle": "¡Operación completada con éxito!",
+    "successDescription": "Tu documento PDF combinado fue generado íntegramente en tu navegador.",
+    "downloadButton": "Descargar PDF Unido"
+  },
+  "dropzone": {
+    "title": "Añadir más archivos para unir",
+    "subtitle": "o elige archivos desde tu computadora",
+    "subtitleWithLimit": "Arrastra archivos PDF aquí o haz clic para explorar",
+    "browseButton": "Explorar Archivos",
+    "ariaLabel": "Subir archivos PDF para unir",
+    "supportedFormat": "Admite archivos PDF de hasta 50 MB cada uno"
+  },
+  "emptyState": {
+    "title": "Sube PDFs para unir",
+    "description": "Añade dos o más archivos PDF arriba para ordenarlos y combinarlos en un solo documento."
+  },
+  "fileList": {
+    "title": "Archivos Seleccionados",
+    "titleWithCount": "Organizar Orden de Archivos ({{count}} seleccionados)",
+    "count_one": "{{count}} archivo seleccionado",
+    "count_other": "{{count}} archivos seleccionados",
+    "hint": "Arrastra elementos o usa las flechas para ordenar antes de unir",
+    "addMore": "Añadir Más Archivos",
+    "clearAll": "Borrar Todo",
+    "actions": {
+      "moveUp": "Mover arriba",
+      "moveDown": "Mover abajo",
+      "remove": "Eliminar"
+    },
+    "fileInfo": {
+      "pages_one": "{{count}} página",
+      "pages_other": "{{count}} páginas",
+      "loadingPages": "Calculando páginas..."
+    }
+  },
+  "sidebar": {
+    "title": "Configuración de Unión",
+    "description": "Ajusta el orden en la lista. Se compilarán consecutivamente de arriba hacia abajo.",
+    "securityNote": "Los archivos se procesan 100% localmente en tu equipo. Tus secretos nunca salen de tu control."
+  },
+  "errors": {
+    "minFilesRequired": "Por favor añade al menos 2 archivos PDF para unir.",
+    "totalSizeExceeded": "¡Tamaño total excedido! Por favor elimina algunos archivos.",
+    "unexpectedFailure": "Ocurrió un error inesperado al procesar los documentos."
+  },
+  "mergeControls": {
+    "mergeButton": "Unir PDFs",
+    "mergeButtonWithCount": "Unir PDFs ({{count}})",
+    "mergingButton": "Compilando PDF...",
+    "filenamePlaceholder": "documento-unido.pdf"
+  }
+}

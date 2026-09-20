@@ -1,0 +1,62 @@
+{
+  "returnDashboard": "Retour au tableau de bord",
+  "pageTitle": "Fusionner des fichiers PDF gratuitement — Combiner des PDF en ligne",
+  "pageSubtitle": "Combinez plusieurs fichiers PDF en un seul document structuré. Rapide, privé et sans aucun téléversement.",
+  "limitBadge": "Limite : {{limit}}Mo par fichier",
+  "privacyBadge": "100% Privé — Traitement Côté Client",
+  "alerts": {
+    "genericError": "Une erreur est survenue lors de la fusion de vos fichiers PDF.",
+    "processing": "Fusion des fichiers PDF dans votre navigateur...",
+    "success": "PDFs fusionnés avec succès ! Le téléchargement va démarrer automatiquement.",
+    "successTitle": "Fusion terminée avec succès !",
+    "successDescription": "Votre fichier PDF combiné a été généré directement dans votre navigateur.",
+    "downloadButton": "Télécharger le PDF fusionné"
+  },
+  "dropzone": {
+    "title": "Ajouter des fichiers à fusionner",
+    "subtitle": "ou choisissez des fichiers depuis votre ordinateur",
+    "subtitleWithLimit": "Glissez des fichiers PDF ici ou cliquez pour parcourir",
+    "browseButton": "Parcourir les fichiers",
+    "ariaLabel": "Téléverser des fichiers PDF à fusionner",
+    "supportedFormat": "Prend en charge les fichiers PDF jusqu'à 50 Mo"
+  },
+  "emptyState": {
+    "title": "Ajoutez des PDF à fusionner",
+    "description": "Ajoutez au moins deux fichiers PDF ci-dessus pour les combiner en un seul document."
+  },
+  "fileList": {
+    "title": "Fichiers sélectionnés",
+    "titleWithCount": "Organiser l'ordre des fichiers ({{count}} sélectionnés)",
+    "count_one": "{{count}} fichier sélectionné",
+    "count_other": "{{count}} fichiers sélectionnés",
+    "hint": "Glissez les éléments ou utilisez les flèches pour définir l'ordre",
+    "addMore": "Ajouter d'autres fichiers",
+    "clearAll": "Tout effacer",
+    "actions": {
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "remove": "Supprimer"
+    },
+    "fileInfo": {
+      "pages_one": "{{count}} page",
+      "pages_other": "{{count}} pages",
+      "loadingPages": "Calcul des pages..."
+    }
+  },
+  "sidebar": {
+    "title": "Paramètres de fusion",
+    "description": "Définissez l'ordre des pages. La compilation s'effectue de haut en bas.",
+    "securityNote": "Les fichiers sont fusionnés à 100% sur votre appareil. Vos données restent strictement confidentielles."
+  },
+  "errors": {
+    "minFilesRequired": "Veuillez ajouter au moins 2 fichiers PDF.",
+    "totalSizeExceeded": "Taille totale dépassée ! Veuillez retirer des fichiers.",
+    "unexpectedFailure": "Une erreur inattendue est survenue. Vérifiez que les fichiers ne sont pas protégés par mot de passe."
+  },
+  "mergeControls": {
+    "mergeButton": "Fusionner les PDF",
+    "mergeButtonWithCount": "Fusionner les PDF ({{count}})",
+    "mergingButton": "Génération du PDF...",
+    "filenamePlaceholder": "document-fusionne.pdf"
+  }
+}

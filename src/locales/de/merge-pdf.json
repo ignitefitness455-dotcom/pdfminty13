@@ -1,0 +1,62 @@
+{
+  "returnDashboard": "Zurück zur Übersicht",
+  "pageTitle": "PDF zusammenfügen — Kostenlos online PDF-Dateien kombinieren",
+  "pageSubtitle": "Kombinieren Sie mehrere PDF-Dateien zu einem strukturierten Dokument. Schnell, privat und ohne Uploads.",
+  "limitBadge": "Limit: {{limit}}MB pro Datei",
+  "privacyBadge": "100% Privat — Lokale Browser-Verarbeitung",
+  "alerts": {
+    "genericError": "Beim Zusammenfügen der PDF-Dateien ist ein Fehler aufgetreten.",
+    "processing": "PDF-Dateien werden sicher im Browser zusammengefügt...",
+    "success": "PDFs erfolgreich zusammengefügt! Ihr Download startet automatisch.",
+    "successTitle": "Zusammenführung erfolgreich abgeschlossen!",
+    "successDescription": "Ihr zusammengeführtes Dokument wurde vollständig im Browser erstellt.",
+    "downloadButton": "Zusammengeführte PDF herunterladen"
+  },
+  "dropzone": {
+    "title": "Dateien zum Zusammenfügen hinzufügen",
+    "subtitle": "oder Dateien von Ihrem Computer auswählen",
+    "subtitleWithLimit": "PDF-Dateien hier ablegen oder zum Auswählen klicken",
+    "browseButton": "Dateien durchsuchen",
+    "ariaLabel": "PDF-Dateien zum Zusammenfügen hochladen",
+    "supportedFormat": "Unterstützt PDF-Dateien bis zu 50 MB"
+  },
+  "emptyState": {
+    "title": "PDFs zum Zusammenfügen hochladen",
+    "description": "Fügen Sie oben zwei oder mehr PDF-Dateien hinzu, um sie anzuordnen und zu verbinden."
+  },
+  "fileList": {
+    "title": "Ausgewählte Dateien",
+    "titleWithCount": "Dateireihenfolge anpassen ({{count}} ausgewählt)",
+    "count_one": "{{count}} Datei ausgewählt",
+    "count_other": "{{count}} Dateien ausgewählt",
+    "hint": "Ziehen Sie Elemente oder nutzen Sie die Pfeiltasten zur Anordnung",
+    "addMore": "Weitere Dateien hinzufügen",
+    "clearAll": "Alle löschen",
+    "actions": {
+      "moveUp": "Nach oben verschieben",
+      "moveDown": "Nach unten verschieben",
+      "remove": "Löschen"
+    },
+    "fileInfo": {
+      "pages_one": "{{count}} Seite",
+      "pages_other": "{{count}} Seiten",
+      "loadingPages": "Seiten werden ermittelt..."
+    }
+  },
+  "sidebar": {
+    "title": "Zusammenfügen-Einstellungen",
+    "description": "Legen Sie die Reihenfolge fest. Die Dateien werden von oben nach unten zusammengefügt.",
+    "securityNote": "Dateien werden zu 100% lokal auf Ihrem Computer verarbeitet. Nichts wird hochgeladen."
+  },
+  "errors": {
+    "minFilesRequired": "Bitte fügen Sie mindestens 2 PDF-Dateien hinzu.",
+    "totalSizeExceeded": "Gesamtgröße überschritten! Bitte entfernen Sie einige Dateien.",
+    "unexpectedFailure": "Ein unerwarteter Fehler ist aufgetreten. Stellen Sie sicher, dass die PDFs nicht geschützt sind."
+  },
+  "mergeControls": {
+    "mergeButton": "PDFs zusammenfügen",
+    "mergeButtonWithCount": "PDFs zusammenfügen ({{count}})",
+    "mergingButton": "Wird erstellt...",
+    "filenamePlaceholder": "zusammengefuegtes-dokument.pdf"
+  }
+}

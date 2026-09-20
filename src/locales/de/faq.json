@@ -1,0 +1,21 @@
+{
+  "sectionTitle": "Häufig gestellte Fragen",
+  "merge": [
+    {
+      "question": "In welcher Reihenfolge werden meine PDF-Dateien zusammengefügt?",
+      "answer": "Ihre PDFs werden genau in der Reihenfolge kombiniert, in der Sie sie in der Dateiliste anordnen. Nutzen Sie die Pfeiltasten oder Drag & Drop, um die Reihenfolge vor dem Zusammenfügen festzulegen."
+    },
+    {
+      "question": "Gibt es ein Limit für die Anzahl der zusammenzufügenden PDFs?",
+      "answer": "Sie können so viele Dateien zusammenfügen, wie Ihr Gerätespeicher verarbeiten kann. Einzeldateien können bis zu 100 MB groß sein, mit einem Gesamtstapel von 150 MB."
+    },
+    {
+      "question": "Verlieren Bilder oder Texte durch das Zusammenfügen an Qualität?",
+      "answer": "Nein. PdfMinty führt eine verlustfreie Zusammenführung durch. Hohe Auflösung, Originalschriftarten und Vektoren bleiben vollständig erhalten."
+    },
+    {
+      "question": "Werden meine Dokumente auf externe Server hochgeladen?",
+      "answer": "Nein. Die gesamte Verarbeitung erfolgt zu 100% lokal in Ihrem Browser via WebAssembly. Ihre Dokumente verlassen niemals Ihr Gerät."
+    }
+  ]
+}

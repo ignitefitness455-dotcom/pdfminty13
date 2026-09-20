@@ -1,0 +1,42 @@
+import { TOOLS, SITE_URL } from './seo-data';
+
+export { SITE_URL };
+
+export const ROUTES = {
+  HOME: '/',
+  MERGE: `/${TOOLS.find((t) => t.id === 'merge')?.slug || 'merge-pdf'}/`,
+  SPLIT: `/${TOOLS.find((t) => t.id === 'split')?.slug || 'split-pdf'}/`,
+  ROTATE: `/${TOOLS.find((t) => t.id === 'rotate')?.slug || 'rotate-pdf'}/`,
+  DELETE_PAGES: `/${TOOLS.find((t) => t.id === 'delete-pages')?.slug || 'delete-pages-pdf'}/`,
+  EXTRACT_PAGES: `/${TOOLS.find((t) => t.id === 'extract-pages')?.slug || 'extract-pages-pdf'}/`,
+  REORDER: `/${TOOLS.find((t) => t.id === 'reorder')?.slug || 'reorder-pdf'}/`,
+  WATERMARK: `/${TOOLS.find((t) => t.id === 'watermark')?.slug || 'watermark-pdf'}/`,
+  PAGE_NUMBERS: `/${TOOLS.find((t) => t.id === 'page-numbers')?.slug || 'add-page-numbers'}/`,
+  ADD_BLANK: `/${TOOLS.find((t) => t.id === 'add-blank')?.slug || 'add-blank-page'}/`,
+  PROTECT: `/${TOOLS.find((t) => t.id === 'protect')?.slug || 'protect-pdf'}/`,
+  UNLOCK: `/${TOOLS.find((t) => t.id === 'unlock')?.slug || 'unlock-pdf'}/`,
+  IMG_TO_PDF: `/${TOOLS.find((t) => t.id === 'image-to-pdf')?.slug || 'image-to-pdf'}/`,
+  PDF_TO_IMG: `/${TOOLS.find((t) => t.id === 'pdf-to-image')?.slug || 'pdf-to-image'}/`,
+  PDF_TO_MARKDOWN: `/${TOOLS.find((t) => t.id === 'pdf-to-markdown')?.slug || 'pdf-to-markdown'}/`,
+  AI_ANALYZE: `/${TOOLS.find((t) => t.id === 'intelligence')?.slug || 'ai-analyze-pdf'}/`,
+  GRAYSCALE: `/${TOOLS.find((t) => t.id === 'grayscale-pdf')?.slug || 'grayscale-pdf'}/`,
+  FLATTEN: `/${TOOLS.find((t) => t.id === 'flatten-pdf')?.slug || 'flatten-pdf'}/`,
+  REPAIR: `/${TOOLS.find((t) => t.id === 'repair-pdf')?.slug || 'repair-pdf'}/`,
+  EDIT_METADATA: `/${TOOLS.find((t) => t.id === 'edit-metadata')?.slug || 'edit-pdf-metadata'}/`,
+  SANITIZE_PDF: `/${TOOLS.find((t) => t.id === 'sanitize-pdf')?.slug || 'sanitize-pdf'}/`,
+  SIGN_PDF: `/${TOOLS.find((t) => t.id === 'sign-pdf')?.slug || 'sign-pdf'}/`,
+  OCR_PDF: `/${TOOLS.find((t) => t.id === 'ocr-pdf')?.slug || 'ocr-pdf'}/`,
+  TRUST_ARTICLE: `/${TOOLS.find((t) => t.id === 'trust-article')?.slug || 'blog/is-it-safe-to-upload-pdf-to-online-tools'}/`,
+  BLOG: '/blog/',
+  BLOG_POST: '/blog/:postSlug/',
+  PRIVACY_POLICY: '/privacy-policy/',
+  TERMS_OF_SERVICE: '/terms-of-service/',
+  ABOUT_US: '/about-us/',
+  CONTACT: '/contact/',
+  ADOBE_ALTERNATIVE: '/adobe-acrobat-alternative/',
+  ADOBE_SECURITY_ARTICLE: '/blog/adobe-security-vulnerabilities-offline-pdf-tools/',
+  COMPARE_SMALLPDF: '/compare/pdfminty-vs-smallpdf/',
+  COMPARE_ILOVEPDF: '/compare/pdfminty-vs-ilovepdf/',
+  COMPARE_PAGE: '/compare/:postSlug/',
+};
+export default ROUTES;

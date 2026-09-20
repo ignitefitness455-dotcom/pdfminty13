@@ -1,0 +1,72 @@
+{
+  "returnDashboard": "Return to Dashboard",
+  "pageTitle": "Merge PDF Files Free — Combine PDF Documents Online",
+  "pageSubtitle": "Combine several PDFs into a single, structured file. Individual files must be under {{maxSingle}} MB (Max total: {{maxTotal}} MB).",
+  "limitBadge": "Limit: {{limit}}MB per file",
+  "privacyBadge": "100% Private — Client-Side Processing",
+  "alerts": {
+    "genericError": "An error occurred while merging your PDF files. Please try again.",
+    "processing": "Merging PDF files securely in your browser...",
+    "success": "PDFs merged successfully! Your download should start automatically.",
+    "successTitle": "Merge Operation Completed Successfully!",
+    "successDescription": "Your compiled and structured PDF has been built completely in your browser.",
+    "downloadButton": "Download Merged PDF"
+  },
+  "dropzone": {
+    "title": "Add more files to merge",
+    "subtitle": "or choose files from your computer to get started",
+    "subtitleWithLimit": "Drag PDF files here or click to browse (Max limit: {{maxSingle}}MB per file)",
+    "browseButton": "Browse Files",
+    "ariaLabel": "Upload PDF files to merge",
+    "supportedFormat": "Supports PDF files up to 50MB each"
+  },
+  "emptyState": {
+    "title": "Upload PDFs to merge",
+    "description": "Add two or more PDF files above to arrange them and combine into a single document."
+  },
+  "fileList": {
+    "title": "Selected Files",
+    "titleWithCount": "Arrange File Order ({{count}} selected)",
+    "count_one": "{{count}} file selected",
+    "count_other": "{{count}} files selected",
+    "hint": "Drag items or use arrow buttons to arrange page order before merging",
+    "addMore": "Add More Files",
+    "clearAll": "Clear All",
+    "actions": {
+      "moveUp": "Move item up",
+      "moveDown": "Move item down",
+      "remove": "Delete item"
+    },
+    "fileInfo": {
+      "pages_one": "{{count}} page",
+      "pages_other": "{{count}} pages",
+      "loadingPages": "Calculating pages..."
+    }
+  },
+  "sidebar": {
+    "title": "Merge Settings",
+    "description": "Use the ordering switches in the list deck to set page hierarchy. Merge compiles them consecutively from top to bottom.",
+    "securityNote": "Files are merged 100% locally on your computer. Your secrets never leave your side."
+  },
+  "errors": {
+    "minFilesRequired": "Please add at least 2 PDF files to perform the merge operation.",
+    "totalSizeExceeded": "Uploading failed! The combined size of all your files ({{size}} MB) exceeds the absolute combined limit of {{limit}} MB. please remove some files.",
+    "unexpectedFailure": "An unexpected failure occurred while merging documents. Make sure they are not encrypted."
+  },
+  "mergeControls": {
+    "mergeButton": "Merge PDFs",
+    "mergeButtonWithCount": "Merge PDFs ({{count}})",
+    "mergingButton": "Compiling PDF...",
+    "filenamePlaceholder": "merged-document.pdf",
+    "filenameLabel": "Output file name",
+    "outputSummary": "Combine {{count}} documents into a single PDF"
+  },
+  "securityNotice": {
+    "title": "Zero Server Uploads",
+    "description": "Your files are combined entirely within your local browser sandbox using WebAssembly. No documents or sensitive data are ever transmitted to external servers."
+  },
+  "seo": {
+    "metaTitle": "Merge PDF Files Free — Combine PDFs Online | PDFMinty",
+    "metaDescription": "Merge PDF files free online. Combine multiple PDFs into one secure document locally in your browser. No server uploads — your files stay private."
+  }
+}

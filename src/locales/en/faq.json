@@ -1,0 +1,25 @@
+{
+  "sectionTitle": "Frequently Asked Questions",
+  "merge": [
+    {
+      "question": "In what order will my PDF files be merged?",
+      "answer": "Your PDFs are combined strictly in the order you arrange them in the upload list deck. You can use the drag controls or arrow buttons to move files up or down before initiating the merge."
+    },
+    {
+      "question": "Is there a limit on how many PDF files I can merge at once?",
+      "answer": "You can merge as many PDF files as your device memory can handle. Single files can be up to 100MB, with a maximum combined upload batch of 150MB per session."
+    },
+    {
+      "question": "Will merging PDFs degrade the quality of my images or text?",
+      "answer": "No. PdfMinty performs a lossless merge operation. High-resolution graphics, original fonts, vector drawings, and embedded metadata remain completely intact."
+    },
+    {
+      "question": "Can I combine password-protected PDF files?",
+      "answer": "If a PDF requires an open password, you must first unlock it using our Unlock PDF tool before merging it with other documents."
+    },
+    {
+      "question": "Are my merged documents saved or uploaded to external servers?",
+      "answer": "No. All PDF merging is executed 100% locally inside your web browser using WebAssembly. Your documents never touch a third-party cloud or external server."
+    }
+  ]
+}

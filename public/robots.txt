@@ -1,0 +1,106 @@
+# Robots.txt for PDFMinty (https://pdfminty.com)
+User-agent: *
+Allow: /
+Allow: /ads.txt
+Allow: /fonts/
+Allow: /icons/
+Allow: /*.png
+Allow: /*.webp
+Allow: /*.svg
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.ico
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /api/
+Disallow: /cdn-cgi/
+Disallow: /_internal/
+Disallow: /graphql
+
+# Google AdSense Crawler & Verification Bots
+User-agent: Mediapartners-Google
+Allow: /
+Allow: /ads.txt
+
+User-agent: Google-Display-Ads-Bot
+Allow: /
+Allow: /ads.txt
+
+User-agent: Google-adstxt
+Allow: /
+Allow: /ads.txt
+
+# Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# AI Assistants & LLM Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+# XML Sitemaps & AI Index
+Sitemap: https://pdfminty.com/sitemap.xml
+Sitemap: https://pdfminty.com/sitemap-tools.xml
+Sitemap: https://pdfminty.com/sitemap-blog.xml
+Sitemap: https://pdfminty.com/sitemap-pages.xml
+

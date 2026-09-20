@@ -1,0 +1,48 @@
+name: Weekly Error Log Aggregation
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at midnight UTC
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Number of past days to aggregate'
+        required: true
+        default: '7'
+
+permissions:
+  contents: write
+
+jobs:
+  aggregate-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run Weekly Aggregator
+        run: |
+          DAYS_ARG="7"
+          if [ -n "${{ github.event.inputs.days }}" ]; then
+            DAYS_ARG="${{ github.event.inputs.days }}"
+          fi
+          
+          node errors/scripts/weekly-aggregator.cjs --days=$DAYS_ARG
+
+      - name: Commit and Push Weekly Report
+        run: |
+          git config --global user.name 'GitHub Action Analytics Aggregator'
+          git config --global user.email 'error-analytics@github.com'
+          git add errors/logs/weekly-reports/
+          
+          if git diff --cached --quiet; then
+            echo "No new weekly reports to commit."
+          else
+            git commit -m "chore(telemetry): compile consolidated weekly error metrics and rate trends"
+            git push
+          fi

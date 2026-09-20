@@ -1,0 +1,21 @@
+{
+  "sectionTitle": "Foire Aux Questions",
+  "merge": [
+    {
+      "question": "Dans quel ordre mes fichiers PDF seront-ils fusionnés ?",
+      "answer": "Vos PDF sont combinés strictement dans l'ordre où vous les disposez dans la liste. Vous pouvez réordonner les fichiers avant de lancer la fusion."
+    },
+    {
+      "question": "Y a-t-il une limite sur le nombre de fichiers PDF à fusionner ?",
+      "answer": "Vous pouvez fusionner autant de fichiers que la mémoire de votre appareil le permet. Chaque fichier peut peser jusqu'à 100 Mo."
+    },
+    {
+      "question": "La fusion dégrade-t-elle la qualité du document ?",
+      "answer": "Non. PdfMinty effectue une fusion sans perte. Les images haute résolution, polices et dessins vectoriels restent intacts."
+    },
+    {
+      "question": "Mes documents sont-ils envoyés sur des serveurs externes ?",
+      "answer": "Non. Tout le traitement est exécuté à 100% localement dans votre navigateur grâce à WebAssembly. Vos fichiers ne quittent jamais votre appareil."
+    }
+  ]
+}

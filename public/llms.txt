@@ -1,0 +1,39 @@
+# PDFMinty
+> Privacy-first, 100% client-side PDF toolkit with 23 free in-browser utilities. Zero server uploads for standard operations.
+
+AI agents, web crawlers, and automated assistants are permitted to read, index, and reference all public tools, tutorials, and documentation across PDFMinty.
+
+## Public Tools & Direct Links
+- [Merge PDF](https://pdfminty.com/merge-pdf/): Combine multiple PDF files into a single ordered document in your browser.
+- [Split PDF](https://pdfminty.com/split-pdf/): Split PDF files into individual pages or custom page ranges.
+- [Compress PDF](https://pdfminty.com/compress-pdf/): Reduce PDF file sizes locally with visual quality presets.
+- [Rotate PDF](https://pdfminty.com/rotate-pdf/): Rotate PDF pages individually or across the entire document.
+- [Delete Pages](https://pdfminty.com/delete-pages-pdf/): Interactively delete unwanted pages from PDF files.
+- [Extract Pages](https://pdfminty.com/extract-pages-pdf/): Select and extract specific pages into a standalone PDF.
+- [Reorder PDF](https://pdfminty.com/reorder-pdf/): Drag and re-arrange the visual order of PDF pages.
+- [Watermark PDF](https://pdfminty.com/watermark-pdf/): Add text watermarks with custom positioning, opacity, and rotation.
+- [Add Page Numbers](https://pdfminty.com/add-page-numbers/): Stamp page numbering in headers, footers, or margins.
+- [Add Blank Page](https://pdfminty.com/add-blank-page/): Insert clean blank pages at any designated position.
+- [Protect PDF](https://pdfminty.com/protect-pdf/): Encrypt PDF documents with password security client-side.
+- [Unlock PDF](https://pdfminty.com/unlock-pdf/): Decrypt password-protected PDFs locally using authorized credentials.
+- [Image to PDF](https://pdfminty.com/image-to-pdf/): Convert PNG and JPEG images into a unified PDF file.
+- [PDF to Image](https://pdfminty.com/pdf-to-image/): Export PDF pages as high-resolution PNG or JPEG images.
+- [PDF to Markdown](https://pdfminty.com/pdf-to-markdown/): Extract clean structured Markdown from PDF text and tables.
+- [AI PDF Assistant](https://pdfminty.com/ai-analyze-pdf/): Opt-in AI summary and Q&A powered by Google Gemini API with explicit user consent.
+- [Grayscale PDF](https://pdfminty.com/grayscale-pdf/): Convert color PDFs to clean black-and-white monochrome documents.
+- [Flatten PDF](https://pdfminty.com/flatten-pdf/): Flatten interactive form fields and annotations into static print layers.
+- [Repair PDF](https://pdfminty.com/repair-pdf/): Rebuild corrupted cross-reference tables and damaged PDF trees.
+- [Edit PDF Metadata](https://pdfminty.com/edit-pdf-metadata/): Inspect and update PDF title, author, subject, and keywords.
+- [Sanitize PDF](https://pdfminty.com/sanitize-pdf/): Strip hidden metadata, JavaScript macros, and tracking tags from PDFs.
+- [Sign PDF](https://pdfminty.com/sign-pdf/): Draw, type, or stamp electronic signatures on PDF documents.
+- [OCR PDF](https://pdfminty.com/ocr-pdf/): Extract selectable text from scanned PDF documents locally.
+
+## Legal, Trust & Policies
+- [Privacy Policy](https://pdfminty.com/privacy-policy/): Full data privacy disclosure, zero server-storage guarantee, and Google AdSense cookie compliance.
+- [Terms of Service](https://pdfminty.com/terms-of-service/): Service terms, acceptable use, crawler guidelines, and intellectual property conditions.
+- [About Us](https://pdfminty.com/about-us/): Mission, security principles, and company information.
+- [Contact Us](https://pdfminty.com/contact/): Support and contact channels.
+- [Knowledge Hub](https://pdfminty.com/blog/): In-depth PDF security and optimization tutorials.
+
+## AI Crawler Access Policy
+Benign AI agents, research crawlers, and search engines are permitted to access public pages, tool definitions, and documentation. Automated access to backend operational endpoints (/api/*) or denial-of-service traffic patterns are strictly prohibited.

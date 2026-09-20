@@ -1,0 +1,6 @@
+{
+  "name": "PDFMinty",
+  "description": "Free browser-based PDF toolkit with client-side privacy. Combine, split, compress, protect, unlock, and edit PDF files directly in your browser with complete confidentiality.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

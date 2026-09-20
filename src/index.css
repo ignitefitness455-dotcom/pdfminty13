@@ -1,0 +1,612 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-600.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/sora-300.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sora-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/sora-500.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/sora-600.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/sora-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/sora-800.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --custom-bg: #f8fafc;
+  --custom-on-bg: #0f172a;
+  --custom-primary-fixed: #047857; /* emerald-700 for 5.17:1 contrast on white */
+  --custom-primary-fixed-dim: #065f46;
+  --custom-security-green: #047857;
+  --custom-primary: #0f172a;
+  --custom-on-primary: #ffffff;
+
+  --custom-surface: rgba(255, 255, 255, 0.4);
+  --custom-on-surface: #0f172a;
+  --custom-surface-dim: rgba(248, 250, 252, 0.5);
+  --custom-surface-bright: rgba(255, 255, 255, 0.6);
+  --custom-surface-variant: rgba(241, 245, 249, 0.6);
+  --custom-on-surface-variant: #475569;
+  --custom-inverse-surface: #1e293b;
+  --custom-inverse-on-surface: #f8fafc;
+
+  --custom-surface-lowest: rgba(253, 253, 253, 0.3);
+  --custom-surface-low: rgba(248, 250, 252, 0.4);
+  --custom-surface-container: rgba(241, 245, 249, 0.5);
+  --custom-surface-container-high: rgba(226, 232, 240, 0.6);
+  --custom-surface-container-highest: rgba(203, 213, 225, 0.8);
+
+  --custom-border-muted: rgba(0, 0, 0, 0.06);
+  --custom-glass-bg: rgba(255, 255, 255, 0.7);
+  --custom-text-muted-more: #64748b;
+}
+
+html.dark {
+  --custom-bg: #0b0f19;
+  --custom-on-bg: #f8fafc;
+  --custom-primary-fixed: #10b981;
+  --custom-primary-fixed-dim: #059669;
+  --custom-security-green: #10b981;
+  --custom-primary: #f8fafc;
+  --custom-on-primary: #0f172a;
+
+  --custom-surface: rgba(17, 24, 39, 0.4);
+  --custom-on-surface: #f8fafc;
+  --custom-surface-dim: rgba(11, 15, 25, 0.5);
+  --custom-surface-bright: rgba(31, 41, 55, 0.6);
+  --custom-surface-variant: rgba(30, 41, 59, 0.6);
+  --custom-on-surface-variant: #cbd5e1; /* slate-300 for >7:1 contrast on #111827 */
+  --custom-inverse-surface: #f8fafc;
+  --custom-inverse-on-surface: #0f172a;
+
+  --custom-surface-lowest: rgba(7, 10, 18, 0.3);
+  --custom-surface-low: rgba(17, 24, 39, 0.4);
+  --custom-surface-container: rgba(30, 41, 59, 0.5);
+  --custom-surface-container-high: rgba(51, 65, 85, 0.6);
+  --custom-surface-container-highest: rgba(71, 85, 105, 0.8);
+
+  --custom-border-muted: rgba(255, 255, 255, 0.08);
+  --custom-glass-bg: rgba(17, 24, 39, 0.6);
+  --custom-text-muted-more: #94a3b8; /* slate-400 for >4.5:1 contrast on dark background */
+}
+
+@theme {
+  --font-sans: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --color-background: var(--custom-bg);
+  --color-on-background: var(--custom-on-bg);
+  --color-primary-fixed: var(--custom-primary-fixed);
+  --color-primary-fixed-dim: var(--custom-primary-fixed-dim);
+  --color-security-green: var(--custom-security-green);
+  --color-primary: var(--custom-primary);
+  --color-on-primary: var(--custom-on-primary);
+
+  --color-surface: var(--custom-surface);
+  --color-on-surface: var(--custom-on-surface);
+  --color-surface-dim: var(--custom-surface-dim);
+  --color-surface-bright: var(--custom-surface-bright);
+  --color-surface-variant: var(--custom-surface-variant);
+  --color-on-surface-variant: var(--custom-on-surface-variant);
+  --color-inverse-surface: var(--custom-inverse-surface);
+  --color-inverse-on-surface: var(--custom-inverse-on-surface);
+
+  --color-surface-container-lowest: var(--custom-surface-lowest);
+  --color-surface-container-low: var(--custom-surface-low);
+  --color-surface-container: var(--custom-surface-container);
+  --color-surface-container-high: var(--custom-surface-container-high);
+  --color-surface-container-highest: var(--custom-surface-container-highest);
+
+  --color-border-muted: var(--custom-border-muted);
+}
+
+body {
+  background-color: var(--custom-bg);
+  color: var(--custom-on-bg);
+  font-family: var(--font-sans);
+  transition:
+    background-color 0.2s,
+    color 0.15s;
+}
+
+.glass-panel {
+  background: var(--custom-glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--custom-border-muted);
+}
+
+/* Light mode modifications for headers/navs */
+header {
+  background-color: var(--custom-glass-bg) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--custom-border-muted) !important;
+}
+
+html.dark header {
+  background-color: rgba(19, 19, 19, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Navigation items and utilities in dark mode support */
+html.dark .text-on-surface-variant {
+  color: #94a3b8 !important;
+}
+
+/* Hardcoded Light class overrides in Dark/Night Mode */
+html.dark .bg-white {
+  background-color: var(--custom-surface-low) !important;
+}
+
+html.dark .bg-slate-55,
+html.dark .bg-slate-50 {
+  background-color: var(--custom-surface-lowest) !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: var(--custom-surface-low) !important;
+}
+
+html.dark .bg-slate-200 {
+  background-color: var(--custom-surface-container) !important;
+}
+
+html.dark .bg-slate-300 {
+  background-color: var(--custom-surface-container-high) !important;
+  color: var(--custom-text-muted-more) !important;
+}
+
+/* Hover effects inside lists and grids */
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-50\/50:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .dark\:hover\:bg-slate-800:hover {
+  background-color: var(--custom-surface-container-high) !important;
+}
+
+/* Borders and dividers */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-350,
+html.dark .border-slate-300 {
+  border-color: var(--custom-border-muted) !important;
+}
+
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--custom-border-muted) !important;
+}
+
+/* Slate Text Colors */
+html.dark .text-slate-950,
+html.dark .text-slate-900,
+html.dark .text-slate-850,
+html.dark .text-slate-800 {
+  color: var(--custom-primary) !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+  color: var(--custom-on-surface-variant) !important;
+}
+
+html.dark .text-slate-400 {
+  color: var(--custom-text-muted-more) !important;
+}
+
+/* Emerald green alerts/badges and buttons in dark mode */
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-50\/40,
+html.dark .bg-emerald-50\/10 {
+  background-color: rgba(54, 255, 196, 0.05) !important;
+  border-color: rgba(54, 255, 196, 0.15) !important;
+}
+
+html.dark .bg-emerald-100 {
+  background-color: rgba(54, 255, 196, 0.12) !important;
+  color: var(--custom-primary-fixed) !important;
+}
+
+html.dark .text-emerald-500,
+html.dark .text-emerald-600,
+html.dark .text-emerald-700,
+html.dark .text-emerald-800,
+html.dark .text-emerald-900 {
+  color: var(--custom-primary-fixed) !important;
+}
+
+/* Amber/yellow alerts/badges in dark mode */
+html.dark .bg-amber-50,
+html.dark .bg-amber-50\/50,
+html.dark .bg-amber-50\/20 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+html.dark .text-amber-600,
+html.dark .text-amber-700,
+html.dark .text-amber-800,
+html.dark .text-amber-900 {
+  color: #fbbf24 !important; /* amber-400 */
+}
+
+/* Base slate opacity backgrounds in dark mode */
+html.dark .bg-slate-50\/50 {
+  background-color: rgba(14, 14, 14, 0.5) !important;
+}
+
+/* Custom shadow improvements for elements in dark mode */
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Rose error alerts and icons */
+html.dark .bg-rose-50 {
+  background-color: rgba(255, 75, 75, 0.06) !important;
+  border-color: rgba(255, 75, 75, 0.15) !important;
+}
+
+html.dark .bg-rose-100 {
+  background-color: rgba(255, 75, 75, 0.12) !important;
+}
+
+html.dark .text-rose-600,
+html.dark .text-rose-700,
+html.dark .text-rose-800 {
+  color: #ff6b6b !important;
+}
+
+html.dark .hover\:bg-rose-50:hover {
+  background-color: rgba(255, 75, 75, 0.12) !important;
+}
+
+/* Specific button, drag zones and elements */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: var(--custom-surface-low) !important;
+  color: var(--custom-primary) !important;
+  border-color: var(--custom-border-muted) !important;
+}
+
+.active-glow {
+  box-shadow: 0px 0px 20px rgba(0, 255, 194, 0.2);
+  border-color: #00ffc2 !important;
+}
+
+.pulse-mint {
+  animation: pulse-mint 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-mint {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.92);
+  }
+}
+
+.page-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-card:hover {
+  border-color: #00ffc2;
+  background: rgba(0, 255, 194, 0.04);
+  box-shadow: 0px 0px 15px rgba(0, 255, 194, 0.1);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0e0e0e;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00ffc2;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadein,
+.animate-fadeIn {
+  animation: fadein 0.3s ease-out;
+}
+
+/* Respect reduced motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadein,
+  .animate-fadeIn {
+    animation: none;
+  }
+}
+
+/* Global keyboard focus indicators for accessibility */
+:focus-visible {
+  outline: 2px solid var(--custom-primary-fixed, #047857) !important;
+  outline-offset: 2px !important;
+}
+
+html.dark :focus-visible {
+  outline: 2px solid #00ffc2 !important;
+  outline-offset: 2px !important;
+}
+
+/* Custom Blog Article Typography & Styling */
+.blog-prose h1 {
+  display: none !important; /* Hide duplicate H1 inside article body */
+}
+
+/* Ensure .not-prose elements (banners, cards, callouts) are NOT corrupted by blog-prose CSS */
+.blog-prose .not-prose p {
+  color: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  margin-bottom: 0 !important;
+}
+
+.blog-prose .not-prose h2,
+.blog-prose .not-prose h3 {
+  color: inherit !important;
+  background: none !important;
+  border-left: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.blog-prose .not-prose strong {
+  color: inherit !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+.blog-prose h2 {
+  font-size: 1.75rem !important; /* 28px */
+  line-height: 1.25 !important;
+  font-weight: 900 !important;
+  margin-top: 2.75rem !important;
+  margin-bottom: 1.25rem !important;
+  padding: 0.75rem 1.25rem !important;
+  border-left: 6px solid #10b981 !important; /* emerald-500 */
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.01) 100%) !important;
+  border-radius: 0 0.85rem 0.85rem 0 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.025em !important;
+}
+
+html.dark .blog-prose h2 {
+  color: #ffffff !important;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.02) 100%) !important;
+  border-left-color: #34d399 !important;
+}
+
+@media (min-width: 640px) {
+  .blog-prose h2 {
+    font-size: 2.25rem !important; /* 36px */
+    margin-top: 3.5rem !important;
+  }
+}
+
+.blog-prose h3 {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 0.85rem !important;
+  color: #047857 !important;
+}
+
+html.dark .blog-prose h3 {
+  color: #34d399 !important;
+}
+
+@media (min-width: 640px) {
+  .blog-prose h3 {
+    font-size: 1.65rem !important;
+  }
+}
+
+.blog-prose p {
+  font-size: 1.125rem !important; /* 18px */
+  line-height: 1.85 !important;
+  margin-bottom: 1.5rem !important;
+  color: #334155 !important;
+}
+
+html.dark .blog-prose p {
+  color: #cbd5e1 !important;
+}
+
+.blog-prose strong {
+  font-weight: 900 !important;
+  color: #064e3b !important;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  padding: 0.15rem 0.4rem !important;
+  border-radius: 0.375rem !important;
+}
+
+html.dark .blog-prose strong {
+  color: #a7f3d0 !important;
+  background-color: rgba(16, 185, 129, 0.22) !important;
+}
+
+.blog-prose ul, .blog-prose ol {
+  margin-top: 1rem !important;
+  margin-bottom: 1.5rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.blog-prose li {
+  font-size: 1.125rem !important;
+  line-height: 1.8 !important;
+  margin-bottom: 0.6rem !important;
+  color: #334155 !important;
+}
+
+html.dark .blog-prose li {
+  color: #cbd5e1 !important;
+}
+
+.blog-prose a {
+  color: #047857 !important;
+  font-weight: 800 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  transition: all 0.2s !important;
+}
+
+.blog-prose a:hover {
+  color: #10b981 !important;
+}
+
+html.dark .blog-prose a {
+  color: #34d399 !important;
+}
+
+html.dark .blog-prose a:hover {
+  color: #6ee7b7 !important;
+}
+
+/* PDF Editor Mobile & Touch Optimizations */
+.canvas-container {
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.canvas-container .upper-canvas,
+.canvas-container .lower-canvas {
+  touch-action: none !important;
+}
+
+/* Prevent mobile browser zoom on textarea / input focus in PDF editor */
+.canvas-container textarea,
+.canvas-container input,
+.pdf-editor-touch-none {
+  touch-action: none !important;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="search"],
+textarea {
+  font-size: 16px;
+}
+
+/* Prevent unwanted document pull-to-refresh / rubber banding during signature drawing */
+.no-overscroll {
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+
+:root {
+  --font-sig-dancing: 'Dancing Script', cursive;
+  --font-sig-great-vibes: 'Great Vibes', cursive;
+  --font-sig-pacifico: 'Pacifico', cursive;
+  --font-sig-caveat: 'Caveat', cursive;
+  --font-sig-satisfy: 'Satisfy', cursive;
+  --font-sig-homemade: 'Homemade Apple', cursive;
+}

@@ -1,0 +1,40 @@
+# PDFMinty
+
+PDFMinty is a high-speed, 100% client-side, offline-first PDF management suite. All file processing is performed locally inside your browser using clean Web Workers without uploading document contents to external servers, ensuring absolute privacy and enterprise-grade data security.
+
+## Core Features
+
+- **Merge PDF**: Combine multiple PDF files into an atomic ordered document (Up to 150MB total limits).
+- **Split PDF / Extract Pages**: Extract custom page index blocks into fresh, self-contained files.
+- **Compress PDF**: Shrink layout structures and reduce graphical stream footprints (Up to 75MB files).
+- **Rotate Pages**: Re-align skewed layout pages or rotate full documents.
+- **Delete Pages**: Select and discard unwanted pages interactively.
+- **Watermark PDF**: Stamp custom multi-line text overlays diagonally with custom opacity, sizing, and colors.
+- **Add Page Numbers**: Add dynamic pagination strings (e.g., "Page {n} of {total}") in any layout corner/alignment.
+- **Add Blank Page**: Embed blank page sheets at any page index.
+- **Protect PDF**: Secure files utilizing industry-standard password protection systems (Up to 100MB files).
+- **Unlock PDF**: Safely decrypt protected files locally (requires existing password authorization).
+- **Image to PDF**: Convert photos (PNG, JPEG) into standardized PDF pages with margins.
+- **PDF to Images**: High-definition rendering of PDF pages exported directly as PNG files.
+- **AI Analyze & Assistant**: Query documents and synthesize long content summaries locally using the Gemini API.
+
+## Size Capacity Limits
+
+To preserve browser memory safety, individual file size boundaries are set based on operational complexity:
+
+- **Protect / Unlock PDF**: 100 MB per file
+- **Compress PDF**: 75 MB per file
+- **Merge PDF**: 50 MB per file (150 MB combined total)
+- **PDF to Image**: 35 MB per file
+- **Image to PDF**: 20 MB per image (100 MB combined total)
+- **AI Analyze**: 15 MB per file
+- **All other operations (Split, Rotate, Reorder, Delete, Page Numbers, Watermark, Add Blank Page)**: 50 MB per file
+
+## Technological Stack
+
+- Core Framework: React, Vite, TypeScript, Tailwind CSS
+- PDF Processor Engine: `pdf-lib` via client-side Web Workers
+- Layout Visualizer: Custom Canvas & `pdfjs-dist`
+- Animated Elements: `motion`
+- Icon Library: `lucide-react`
+- AI Assistant Integration: `@google/genai` SDK

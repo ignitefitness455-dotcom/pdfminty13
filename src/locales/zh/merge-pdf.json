@@ -1,0 +1,72 @@
+{
+  "returnDashboard": "返回仪表板",
+  "pageTitle": "免费合并 PDF 文件 — 在线合并 PDF 文档",
+  "pageSubtitle": "将多个 PDF 合并为一个结构化文件。单个文件必须小于 {{maxSingle}} MB（最大总计：{{maxTotal}} MB）。",
+  "limitBadge": "限制：每个文件 {{limit}}MB",
+  "privacyBadge": "100% 隐私 — 客户端处理",
+  "alerts": {
+    "genericError": "合并 PDF 文件时出错。请重试。",
+    "processing": "正在您的浏览器中安全地合并 PDF 文件...",
+    "success": "PDF 合并成功！下载将自动开始。",
+    "successTitle": "合并操作已成功完成！",
+    "successDescription": "您的结构化 PDF 已完全在您的浏览器中构建完成。",
+    "downloadButton": "下载合并的 PDF"
+  },
+  "dropzone": {
+    "title": "添加更多文件以合并",
+    "subtitle": "或从您的计算机中选择文件开始",
+    "subtitleWithLimit": "将 PDF 文件拖到此处或点击浏览（每个文件限制：{{maxSingle}}MB）",
+    "browseButton": "浏览文件",
+    "ariaLabel": "上传要合并的 PDF 文件",
+    "supportedFormat": "支持最大 50MB 的 PDF 文件"
+  },
+  "emptyState": {
+    "title": "上传要合并的 PDF",
+    "description": "在上方添加两个或多个 PDF 文件，排列它们并合并为一个文档。"
+  },
+  "fileList": {
+    "title": "已选文件",
+    "titleWithCount": "排列文件顺序（已选择 {{count}} 个）",
+    "count_one": "已选择 {{count}} 个文件",
+    "count_other": "已选择 {{count}} 个文件",
+    "hint": "在合并前，拖动项目或使用箭头按钮排列页面顺序",
+    "addMore": "添加更多文件",
+    "clearAll": "全部清除",
+    "actions": {
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "remove": "删除项目"
+    },
+    "fileInfo": {
+      "pages_one": "{{count}} 页",
+      "pages_other": "{{count}} 页",
+      "loadingPages": "正在计算页数..."
+    }
+  },
+  "sidebar": {
+    "title": "合并设置",
+    "description": "使用列表中的排序开关来设置页面层次结构。合并将从上到下连续编译它们。",
+    "securityNote": "文件 100% 在您的计算机上本地合并。您的数据永远不会离开您的设备。"
+  },
+  "errors": {
+    "minFilesRequired": "请添加至少 2 个 PDF 文件以执行合并操作。",
+    "totalSizeExceeded": "上传失败！所有文件的总大小（{{size}} MB）超出了绝对总限制 {{limit}} MB。请删除一些文件。",
+    "unexpectedFailure": "合并文档时发生意外错误。请确保它们未加密。"
+  },
+  "mergeControls": {
+    "mergeButton": "合并 PDF",
+    "mergeButtonWithCount": "合并 PDF ({{count}})",
+    "mergingButton": "正在编译 PDF...",
+    "filenamePlaceholder": "merged-document.pdf",
+    "filenameLabel": "输出文件名",
+    "outputSummary": "将 {{count}} 个文档合并为一个 PDF"
+  },
+  "securityNotice": {
+    "title": "零服务器上传",
+    "description": "您的文件完全使用 WebAssembly 在您的本地浏览器沙箱中组合。没有任何文档或敏感数据被传输到外部服务器。"
+  },
+  "seo": {
+    "metaTitle": "免费合并 PDF 文件 — 在线合并 PDF | PDFMinty",
+    "metaDescription": "免费在线合并 PDF 文件。在浏览器中本地将多个 PDF 合并为一个安全文档。无需服务器上传 — 您的文件保持私密。"
+  }
+}

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- Preload Critical Local Fonts -->
+    <link rel="preload" href="/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Core SEO Meta Tags -->
+    <title>PDFMinty — Free Browser-Based PDF Tools & Privacy Toolkit</title>
+    <meta name="description" content="Free browser-based PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality." />
+    <meta name="keywords" content="browser pdf tools, free online pdf editor no upload, client-side pdf tools, private browser pdf editor, merge pdf in browser" />
+    <link rel="canonical" href="https://pdfminty.com/" />
+    <link rel="alternate" hreflang="en" href="https://pdfminty.com/" />
+    <link rel="alternate" hreflang="de" href="https://pdfminty.com/de/" />
+    <link rel="alternate" hreflang="fr" href="https://pdfminty.com/fr/" />
+    <link rel="alternate" hreflang="es" href="https://pdfminty.com/es/" />
+    <link rel="alternate" hreflang="bn" href="https://pdfminty.com/bn/" />
+    <link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/" />
+    <link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/" />
+    <link rel="alternate" hreflang="x-default" href="https://pdfminty.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pdfminty.com/" />
+    <meta property="og:title" content="PDFMinty — Free Browser-Based PDF Tools & Privacy Toolkit" />
+    <meta property="og:description" content="Free browser-based PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality." />
+    <meta property="og:image" content="https://pdfminty.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://pdfminty.com/" />
+    <meta name="twitter:title" content="PDFMinty — Free Privacy-First PDF Toolkit" />
+    <meta name="twitter:description" content="Free privacy-first PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality." />
+    <meta name="twitter:image" content="https://pdfminty.com/og-image.png" />
+
+    <!-- Google AdSense -->
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053" crossorigin="anonymous"></script>
+
+    <!-- DNS Prefetch & Preconnect for Third-Party Services -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+
+    <!-- Deferred Third-Party Scripts (Analytics) -->
+    <script>
+      (function() {
+        var GA_ID = 'G-5WYDTKWS1J';
+        var CF_TOKEN = '484669cfa7c04bb18cec08f6d0cc6e63';
+        var loaded = false;
+
+        function loadThirdPartyScripts() {
+          if (loaded || window._thirdPartyLoaded) return;
+          loaded = true;
+          window._thirdPartyLoaded = true;
+
+          var events = ['touchstart', 'scroll', 'pointermove', 'keydown', 'click'];
+          events.forEach(function(e) {
+            window.removeEventListener(e, loadThirdPartyScripts, { passive: true });
+          });
+
+          // Cloudflare Web Analytics (lightweight ~1KB, load first)
+          var cf = document.createElement('script');
+          cf.defer = true;
+          cf.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+          cf.setAttribute('data-cf-beacon', '{"token": "' + CF_TOKEN + '"}');
+          document.body.appendChild(cf);
+
+          // Google Tag Manager / Analytics
+          var g = document.createElement('script');
+          g.async = true;
+          g.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+          document.head.appendChild(g);
+
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', GA_ID);
+        }
+
+        var events = ['touchstart', 'scroll', 'pointermove', 'keydown', 'click'];
+        events.forEach(function(e) {
+          window.addEventListener(e, loadThirdPartyScripts, { passive: true, once: true });
+        });
+
+        // Reduced fallback timeout: 1000ms (was 2500ms) to capture fast bounces
+        if ('requestIdleCallback' in window) {
+          window.addEventListener('load', function() {
+            requestIdleCallback(function() {
+              setTimeout(loadThirdPartyScripts, 1000);
+            });
+          });
+        } else {
+          window.addEventListener('load', function() {
+            setTimeout(loadThirdPartyScripts, 1200);
+          });
+        }
+
+        // Fallback beacon: if user leaves before gtag loads, fire a minimal
+        // page_view event via navigator.sendBeacon to GA4 collect endpoint.
+        // This captures fast-bounce pageviews that the delayed loader misses.
+        window.addEventListener('pagehide', function() {
+          if (loaded) return; // gtag already loaded — it handles this natively
+          if (!navigator.sendBeacon) return;
+          var cid = localStorage.getItem('_ga_cid');
+          if (!cid) {
+            cid = 'xxxxxxxxxxxx.xxxxxxxxxxxx'.replace(/x/g, function() {
+              return Math.floor(Math.random() * 16).toString(16);
+            });
+            try { localStorage.setItem('_ga_cid', cid); } catch (e) {}
+          }
+          var payload = 'v=1&t=pageview&tid=' + GA_ID +
+            '&cid=' + cid +
+            '&dl=' + encodeURIComponent(location.href) +
+            '&dt=' + encodeURIComponent(document.title) +
+            '&dr=' + encodeURIComponent(document.referrer) +
+            '&sr=' + (screen.width + 'x' + screen.height) +
+            '&vp=' + (window.innerWidth + 'x' + window.innerHeight);
+          navigator.sendBeacon('https://www.google-analytics.com/g/collect?' + payload);
+        }, { capture: true });
+      })();
+    </script>
+
+
+    <!-- JSON-LD Structured Data Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://pdfminty.com/#webapp",
+          "name": "PDFMinty",
+          "description": "Free, privacy-first online PDF toolkit. Merge, split, compress, rotate, watermark, and analyze PDFs entirely in your browser.",
+          "url": "https://pdfminty.com/",
+          "applicationCategory": "UtilitiesApplication",
+          "applicationSubCategory": "PDF Software",
+          "operatingSystem": "Any",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "softwareVersion": "1.0.0",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
+          "author": { "@type": "Organization", "name": "PDFMinty", "url": "https://pdfminty.com/" },
+          "publisher": { "@type": "Organization", "name": "PDFMinty", "logo": { "@type": "ImageObject", "url": "https://pdfminty.com/logo-512.png", "width": 512, "height": 512 } },
+          "image": { "@type": "ImageObject", "url": "https://pdfminty.com/og-image.png", "width": 1200, "height": 630 },
+          "featureList": [
+            "Merge multiple PDF files", "Split PDF into separate pages", "Compress PDF file size", "Rotate PDF pages",
+            "Delete pages from PDF", "Add watermarks to PDF", "Add page numbers", "Insert blank pages",
+            "Password protect PDF", "Unlock password-protected PDF", "Convert images to PDF", "Convert PDF to images",
+            "AI-powered PDF analysis"
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://pdfminty.com/#organization",
+          "name": "PDFMinty",
+          "url": "https://pdfminty.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://pdfminty.com/logo-512.png",
+            "width": 512,
+            "height": 512
+          },
+          "image": "https://pdfminty.com/og-image.png",
+          "description": "Privacy-first, client-side PDF toolkit with 23 free tools.",
+          "foundingDate": "2025",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "support@pdfminty.com",
+            "url": "https://pdfminty.com/contact/",
+            "availableLanguage": ["English"]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://pdfminty.com/#website",
+          "url": "https://pdfminty.com/",
+          "name": "PDFMinty",
+          "publisher": { "@id": "https://pdfminty.com/#organization" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": { "@type": "EntryPoint", "urlTemplate": "https://pdfminty.com/?q={search_term_string}" },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://pdfminty.com/#faq",
+          "mainEntity": [
+            { "@type": "Question", "name": "Is PDFMinty really free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, PDFMinty is 100% free to use. All PDF processing happens locally in your browser — no subscription, no upload limits, no hidden fees." } },
+            { "@type": "Question", "name": "Are my files uploaded to your server?", "acceptedAnswer": { "@type": "Answer", "text": "For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box." } },
+            { "@type": "Question", "name": "What is the maximum file size?", "acceptedAnswer": { "@type": "Answer", "text": "Most tools accept PDF files up to 50MB each, with a 150MB combined batch limit. Protect and Unlock support files up to 100MB, while AI Analyze accepts up to 15MB. Each tool's page shows its current limit. Performance also depends on your device's memory." } }
+          ]
+        }
+      ]
+    }
+    </script>
+    <!-- DNS prefetch and preconnect for external APIs -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat&family=Dancing+Script&family=Great+Vibes&family=Homemade+Apple&family=Pacifico&family=Satisfy&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat&family=Dancing+Script&family=Great+Vibes&family=Homemade+Apple&family=Pacifico&family=Satisfy&display=swap" />
+    </noscript>
+    <link rel="dns-prefetch" href="//generativelanguage.googleapis.com" />
+    <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#059669" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="PDFMinty" />
+    <meta name="apple-mobile-web-app-status-bar-style" media="(prefers-color-scheme: light)" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" media="(prefers-color-scheme: dark)" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/logo-192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/logo-192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/logo-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo-192.png" />
+
+    <!-- Anti-flicker Theme Script (Defaults strictly to Light Mode) -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme-preference') || localStorage.getItem('theme');
+          if (saved === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased selection:bg-emerald-500/30">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Cloudflare Web Analytics loaded dynamically -->
+  </body>
+</html>

@@ -1,0 +1,68 @@
+name: Record Error to GitHub Logs
+
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: 'HTTP Status Code (e.g. 400, 403, 500, 504)'
+        required: true
+        default: '500'
+      message:
+        description: 'Squeaky-clean error exception message'
+        required: true
+        default: 'UnhandledException: An unknown failure occurred.'
+      url:
+        description: 'URL, endpoint, or page path where the error occurred'
+        required: false
+        default: '/api/unknown'
+      requests:
+        description: 'Total daily requests denominator (to calculate error rates)'
+        required: false
+        default: '1000'
+      date:
+        description: 'Custom date for the log (YYYY-MM-DD format). Defaults to today.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  log-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Process Error Log
+        run: |
+          DATE_ARG=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            DATE_ARG="--date=${{ github.event.inputs.date }}"
+          fi
+          
+          node errors/scripts/log-processor.cjs \
+            --code="${{ github.event.inputs.code }}" \
+            --message="${{ github.event.inputs.message }}" \
+            --url="${{ github.event.inputs.url }}" \
+            --requests="${{ github.event.inputs.requests }}" \
+            $DATE_ARG
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'GitHub Action Error Tracker'
+          git config --global user.email 'error-tracker@github.com'
+          git add errors/logs/
+          
+          # Check if there are changes to commit to avoid failing the workflow
+          if git diff --cached --quiet; then
+            echo "No new error log changes to commit."
+          else
+            git commit -m "chore(telemetry): record HTTP ${{ github.event.inputs.code }} error to organized logs"
+            git push
+          fi

@@ -1,0 +1,21 @@
+{
+  "sectionTitle": "Preguntas Frecuentes",
+  "merge": [
+    {
+      "question": "¿En qué orden se unirán mis archivos PDF?",
+      "answer": "Tus PDFs se combinan exactamente en el orden en que los organices en la lista. Puedes usar controles de arrastre o flechas para ordenar los documentos antes de unirlos."
+    },
+    {
+      "question": "¿Hay un límite en la cantidad de archivos PDF que puedo unir?",
+      "answer": "Puedes unir tantos archivos PDF como la memoria de tu dispositivo pueda procesar. Los archivos individuales pueden ser de hasta 100 MB."
+    },
+    {
+      "question": "¿Unir archivos PDF reduce la calidad de imágenes o texto?",
+      "answer": "No. PdfMinty realiza una unión sin pérdidas. Las imágenes de alta resolución, fuentes originales y dibujos vectoriales se mantienen intactos."
+    },
+    {
+      "question": "¿Se guardan o suben mis documentos a servidores externos?",
+      "answer": "No. Toda la unión de PDF se ejecuta 100% localmente dentro de tu navegador web usando WebAssembly. Tus documentos nunca tocan un servidor en la nube."
+    }
+  ]
+}
