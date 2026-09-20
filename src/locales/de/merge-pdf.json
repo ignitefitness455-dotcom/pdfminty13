@@ -57,6 +57,16 @@
     "mergeButton": "PDFs zusammenfügen",
     "mergeButtonWithCount": "PDFs zusammenfügen ({{count}})",
     "mergingButton": "Wird erstellt...",
-    "filenamePlaceholder": "zusammengefuegtes-dokument.pdf"
+    "filenamePlaceholder": "zusammengefuegtes-dokument.pdf",
+    "filenameLabel": "Dateiname der Ausgabe",
+    "outputSummary": "{{count}} Dokumente zu einem einzigen PDF kombinieren"
+  },
+  "securityNotice": {
+    "title": "Null Server-Uploads",
+    "description": "Ihre Dateien werden vollständig mit WebAssembly in Ihrer lokalen Browser-Sandbox zusammengeführt. Es werden niemals Dokumente oder sensible Daten an externe Server übertragen."
+  },
+  "seo": {
+    "metaTitle": "PDF zusammenfügen — Kostenlos online PDF-Dateien kombinieren | PDFMinty",
+    "metaDescription": "Fügen Sie mehrere PDF-Dateien kostenlos und sicher direkt im Browser zusammen. 100% clientseitige Verarbeitung — keine Server-Uploads, maximale Privatsphäre."
   }
 }

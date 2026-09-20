@@ -193,13 +193,13 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
     name: 'অনলাইনে আপলোড ছাড়াই নিরাপদে পিডিএফ এডিট করার উপায়',
     shortDesc: 'ফাইল ব্রাউজারে রেখে টেক্সট যোগ, পেজ মোছা ও রোটেট করার নিরাপদ গাইড।',
     body: `<h2>নিরাপদ ব্রাউজার এডিটিং</h2>
-<p>পিডিএফমিন্টির সাহায্যে পেজ ডিলিট (<a href="/delete-pages/">Delete Pages</a>), পেজ রোটেট (<a href="/rotate-pdf/">Rotate PDF</a>), এবং পেজ নম্বর (<a href="/page-numbers/">Page Numbers</a>) সরাসরি যোগ করুন।</p>`
+<p>পিডিএফমিন্টির সাহায্যে পেজ ডিলিট (<a href="/delete-pages-pdf/">Delete Pages</a>), পেজ রোটেট (<a href="/rotate-pdf/">Rotate PDF</a>), এবং পেজ নম্বর (<a href="/add-page-numbers/">Page Numbers</a>) সরাসরি যোগ করুন।</p>`
   },
   'how-to-add-page-numbers-to-a-pdf-for-free': {
     name: '২০২৬ সালে পিডিএফে ফ্রিতে পেজ নম্বর যুক্ত করার নিয়ম',
     shortDesc: 'ডকুমেন্টের উপরে বা নিচে কাস্টম পেজ নাম্বারিং যোগ করার উপায়।',
     body: `<h2>প্রফেশনাল ডকুমেন্টে পেজ নাম্বারিং</h2>
-<p>থিসিস পেপার, আইনি ব্রিফ বা বই তৈরির সময় পেজ নম্বর অত্যন্ত জরুরি। আমাদের <a href="/page-numbers/">Page Numbers</a> টুল ব্যবহার করে মার্জিন, ফন্ট সাইজ ও পজিশন কাস্টমাইজ করে পেজ নম্বর যোগ করুন।</p>`
+<p>থিসিস পেপার, আইনি ব্রিফ বা বই তৈরির সময় পেজ নম্বর অত্যন্ত জরুরি। আমাদের <a href="/add-page-numbers/">Page Numbers</a> টুল ব্যবহার করে মার্জিন, ফন্ট সাইজ ও পজিশন কাস্টমাইজ করে পেজ নম্বর যোগ করুন।</p>`
   },
   'how-to-make-a-scanned-pdf-searchable': {
     name: 'স্ক্যান করা পিডিএফ থেকে অফলাইনে টেক্সট এক্সট্রাক্ট করার উপায় (OCR)',
@@ -211,7 +211,7 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
     name: 'পেজ রেঞ্জ অনুযায়ী পিডিএফ আলাদা ও পেজ এক্সট্রাক্ট করার নিয়ম',
     shortDesc: 'নির্দিষ্ট পাতাগুলো আলাদা করে নতুন ছোট পিডিএফ ফাইল তৈরি করার সহজ টিউটোরিয়াল।',
     body: `<h2>প্রয়োজনীয় পাতা আলাদা করুন</h2>
-<p>১০০ পৃষ্ঠার বই থেকে শুধু ৫-১০ নম্বর পৃষ্ঠা আলাদা করতে চান? ব্যবহার করুন আমাদের <a href="/split-pdf/">Split PDF</a> এবং <a href="/extract-pages/">Extract Pages</a> টুল।</p>`
+<p>১০০ পৃষ্ঠার বই থেকে শুধু ৫-১০ নম্বর পৃষ্ঠা আলাদা করতে চান? ব্যবহার করুন আমাদের <a href="/split-pdf/">Split PDF</a> এবং <a href="/extract-pages-pdf/">Extract Pages</a> টুল।</p>`
   },
   'how-to-password-protect-a-pdf-offline': {
     name: 'অফলাইনে পিডিএফে পাসওয়ার্ড দিয়ে সুরক্ষিত করার বাস্তব নির্দেশিকা',

@@ -143,7 +143,6 @@
 /ocr-pdf /ocr-pdf/ 301
 /pdf-to-image /pdf-to-image/ 301
 /pdf-to-markdown /pdf-to-markdown/ 301
-/privacy-policy /privacy-policy/ 301
 /protect-pdf /protect-pdf/ 301
 /reorder-pdf /reorder-pdf/ 301
 /repair-pdf /repair-pdf/ 301
@@ -163,149 +162,13 @@
 /hi /hi/ 301
 /zh /zh/ 301
 
-# Localized Tools Trailing Slash Normalization (de)
+# Localized Tools Trailing Slash Normalization (merge-pdf)
 /de/merge-pdf /de/merge-pdf/ 301
-/de/split-pdf /de/split-pdf/ 301
-/de/rotate-pdf /de/rotate-pdf/ 301
-/de/protect-pdf /de/protect-pdf/ 301
-/de/unlock-pdf /de/unlock-pdf/ 301
-/de/delete-pages-pdf /de/delete-pages-pdf/ 301
-/de/extract-pages-pdf /de/extract-pages-pdf/ 301
-/de/reorder-pdf /de/reorder-pdf/ 301
-/de/watermark-pdf /de/watermark-pdf/ 301
-/de/add-page-numbers /de/add-page-numbers/ 301
-/de/add-blank-page /de/add-blank-page/ 301
-/de/image-to-pdf /de/image-to-pdf/ 301
-/de/pdf-to-image /de/pdf-to-image/ 301
-/de/grayscale-pdf /de/grayscale-pdf/ 301
-/de/flatten-pdf /de/flatten-pdf/ 301
-/de/repair-pdf /de/repair-pdf/ 301
-/de/sign-pdf /de/sign-pdf/ 301
-/de/edit-pdf-metadata /de/edit-pdf-metadata/ 301
-/de/sanitize-pdf /de/sanitize-pdf/ 301
-/de/ocr-pdf /de/ocr-pdf/ 301
-/de/pdf-to-markdown /de/pdf-to-markdown/ 301
-/de/ai-analyze-pdf /de/ai-analyze-pdf/ 301
-
-# Localized Tools Trailing Slash Normalization (fr)
 /fr/merge-pdf /fr/merge-pdf/ 301
-/fr/split-pdf /fr/split-pdf/ 301
-/fr/rotate-pdf /fr/rotate-pdf/ 301
-/fr/protect-pdf /fr/protect-pdf/ 301
-/fr/unlock-pdf /fr/unlock-pdf/ 301
-/fr/delete-pages-pdf /fr/delete-pages-pdf/ 301
-/fr/extract-pages-pdf /fr/extract-pages-pdf/ 301
-/fr/reorder-pdf /fr/reorder-pdf/ 301
-/fr/watermark-pdf /fr/watermark-pdf/ 301
-/fr/add-page-numbers /fr/add-page-numbers/ 301
-/fr/add-blank-page /fr/add-blank-page/ 301
-/fr/image-to-pdf /fr/image-to-pdf/ 301
-/fr/pdf-to-image /fr/pdf-to-image/ 301
-/fr/grayscale-pdf /fr/grayscale-pdf/ 301
-/fr/flatten-pdf /fr/flatten-pdf/ 301
-/fr/repair-pdf /fr/repair-pdf/ 301
-/fr/sign-pdf /fr/sign-pdf/ 301
-/fr/edit-pdf-metadata /fr/edit-pdf-metadata/ 301
-/fr/sanitize-pdf /fr/sanitize-pdf/ 301
-/fr/ocr-pdf /fr/ocr-pdf/ 301
-/fr/pdf-to-markdown /fr/pdf-to-markdown/ 301
-/fr/ai-analyze-pdf /fr/ai-analyze-pdf/ 301
-
-# Localized Tools Trailing Slash Normalization (es)
 /es/merge-pdf /es/merge-pdf/ 301
-/es/split-pdf /es/split-pdf/ 301
-/es/rotate-pdf /es/rotate-pdf/ 301
-/es/protect-pdf /es/protect-pdf/ 301
-/es/unlock-pdf /es/unlock-pdf/ 301
-/es/delete-pages-pdf /es/delete-pages-pdf/ 301
-/es/extract-pages-pdf /es/extract-pages-pdf/ 301
-/es/reorder-pdf /es/reorder-pdf/ 301
-/es/watermark-pdf /es/watermark-pdf/ 301
-/es/add-page-numbers /es/add-page-numbers/ 301
-/es/add-blank-page /es/add-blank-page/ 301
-/es/image-to-pdf /es/image-to-pdf/ 301
-/es/pdf-to-image /es/pdf-to-image/ 301
-/es/grayscale-pdf /es/grayscale-pdf/ 301
-/es/flatten-pdf /es/flatten-pdf/ 301
-/es/repair-pdf /es/repair-pdf/ 301
-/es/sign-pdf /es/sign-pdf/ 301
-/es/edit-pdf-metadata /es/edit-pdf-metadata/ 301
-/es/sanitize-pdf /es/sanitize-pdf/ 301
-/es/ocr-pdf /es/ocr-pdf/ 301
-/es/pdf-to-markdown /es/pdf-to-markdown/ 301
-/es/ai-analyze-pdf /es/ai-analyze-pdf/ 301
-
-# Localized Tools Trailing Slash Normalization (bn)
 /bn/merge-pdf /bn/merge-pdf/ 301
-/bn/split-pdf /bn/split-pdf/ 301
-/bn/rotate-pdf /bn/rotate-pdf/ 301
-/bn/protect-pdf /bn/protect-pdf/ 301
-/bn/unlock-pdf /bn/unlock-pdf/ 301
-/bn/delete-pages-pdf /bn/delete-pages-pdf/ 301
-/bn/extract-pages-pdf /bn/extract-pages-pdf/ 301
-/bn/reorder-pdf /bn/reorder-pdf/ 301
-/bn/watermark-pdf /bn/watermark-pdf/ 301
-/bn/add-page-numbers /bn/add-page-numbers/ 301
-/bn/add-blank-page /bn/add-blank-page/ 301
-/bn/image-to-pdf /bn/image-to-pdf/ 301
-/bn/pdf-to-image /bn/pdf-to-image/ 301
-/bn/grayscale-pdf /bn/grayscale-pdf/ 301
-/bn/flatten-pdf /bn/flatten-pdf/ 301
-/bn/repair-pdf /bn/repair-pdf/ 301
-/bn/sign-pdf /bn/sign-pdf/ 301
-/bn/edit-pdf-metadata /bn/edit-pdf-metadata/ 301
-/bn/sanitize-pdf /bn/sanitize-pdf/ 301
-/bn/ocr-pdf /bn/ocr-pdf/ 301
-/bn/pdf-to-markdown /bn/pdf-to-markdown/ 301
-/bn/ai-analyze-pdf /bn/ai-analyze-pdf/ 301
-
-# Localized Tools Trailing Slash Normalization (hi)
 /hi/merge-pdf /hi/merge-pdf/ 301
-/hi/split-pdf /hi/split-pdf/ 301
-/hi/rotate-pdf /hi/rotate-pdf/ 301
-/hi/protect-pdf /hi/protect-pdf/ 301
-/hi/unlock-pdf /hi/unlock-pdf/ 301
-/hi/delete-pages-pdf /hi/delete-pages-pdf/ 301
-/hi/extract-pages-pdf /hi/extract-pages-pdf/ 301
-/hi/reorder-pdf /hi/reorder-pdf/ 301
-/hi/watermark-pdf /hi/watermark-pdf/ 301
-/hi/add-page-numbers /hi/add-page-numbers/ 301
-/hi/add-blank-page /hi/add-blank-page/ 301
-/hi/image-to-pdf /hi/image-to-pdf/ 301
-/hi/pdf-to-image /hi/pdf-to-image/ 301
-/hi/grayscale-pdf /hi/grayscale-pdf/ 301
-/hi/flatten-pdf /hi/flatten-pdf/ 301
-/hi/repair-pdf /hi/repair-pdf/ 301
-/hi/sign-pdf /hi/sign-pdf/ 301
-/hi/edit-pdf-metadata /hi/edit-pdf-metadata/ 301
-/hi/sanitize-pdf /hi/sanitize-pdf/ 301
-/hi/ocr-pdf /hi/ocr-pdf/ 301
-/hi/pdf-to-markdown /hi/pdf-to-markdown/ 301
-/hi/ai-analyze-pdf /hi/ai-analyze-pdf/ 301
-
-# Localized Tools Trailing Slash Normalization (zh)
 /zh/merge-pdf /zh/merge-pdf/ 301
-/zh/split-pdf /zh/split-pdf/ 301
-/zh/rotate-pdf /zh/rotate-pdf/ 301
-/zh/protect-pdf /zh/protect-pdf/ 301
-/zh/unlock-pdf /zh/unlock-pdf/ 301
-/zh/delete-pages-pdf /zh/delete-pages-pdf/ 301
-/zh/extract-pages-pdf /zh/extract-pages-pdf/ 301
-/zh/reorder-pdf /zh/reorder-pdf/ 301
-/zh/watermark-pdf /zh/watermark-pdf/ 301
-/zh/add-page-numbers /zh/add-page-numbers/ 301
-/zh/add-blank-page /zh/add-blank-page/ 301
-/zh/image-to-pdf /zh/image-to-pdf/ 301
-/zh/pdf-to-image /zh/pdf-to-image/ 301
-/zh/grayscale-pdf /zh/grayscale-pdf/ 301
-/zh/flatten-pdf /zh/flatten-pdf/ 301
-/zh/repair-pdf /zh/repair-pdf/ 301
-/zh/sign-pdf /zh/sign-pdf/ 301
-/zh/edit-pdf-metadata /zh/edit-pdf-metadata/ 301
-/zh/sanitize-pdf /zh/sanitize-pdf/ 301
-/zh/ocr-pdf /zh/ocr-pdf/ 301
-/zh/pdf-to-markdown /zh/pdf-to-markdown/ 301
-/zh/ai-analyze-pdf /zh/ai-analyze-pdf/ 301
 
 # SPA Single Page App fallback
 /* /index.html 200

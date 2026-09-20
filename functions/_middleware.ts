@@ -82,10 +82,32 @@ export const onRequest: PagesFunction = async (context) => {
   const url = new URL(context.request.url);
   const rawPath = url.pathname;
 
+  // Safe redirect helper that strictly prevents self-redirect loops and CDN cache-poisoning
+  const createRedirectResponse = (targetUrl: string, status: 301 | 302 = 301): Response | null => {
+    // Strictly prevent redirecting to the exact same URL (infinite loop guard)
+    const currentCanonical = `${url.origin}${url.pathname}${url.search}`;
+    if (
+      targetUrl === url.href ||
+      targetUrl === context.request.url ||
+      targetUrl === currentCanonical
+    ) {
+      return null;
+    }
+    const redirectRes = Response.redirect(targetUrl, status);
+    // Never allow CDN/browser to cache a redirect loop or stale redirect indefinitely
+    redirectRes.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    return redirectRes;
+  };
+
+  // Determine effective client protocol using x-forwarded-proto header (protect against Cloudflare Flexible SSL loop)
+  const forwardedProto = context.request.headers.get('x-forwarded-proto') || (url.protocol ? url.protocol.replace(':', '') : 'https');
+  const isPlainHttp = forwardedProto === 'http';
+
   // 1. Canonical Hostname (www -> non-www) & Protocol (http -> https) normalization
-  if (url.hostname === 'www.pdfminty.com' || (url.hostname === 'pdfminty.com' && url.protocol === 'http:')) {
+  if (url.hostname === 'www.pdfminty.com' || (url.hostname === 'pdfminty.com' && isPlainHttp)) {
     const targetUrl = `https://pdfminty.com${rawPath}${url.search}`;
-    return Response.redirect(targetUrl, 301);
+    const redirect = createRedirectResponse(targetUrl, 301);
+    if (redirect) return redirect;
   }
 
   // Guaranteed immediate handler for Google AdSense ads.txt
@@ -101,7 +123,8 @@ export const onRequest: PagesFunction = async (context) => {
     });
   }
   if (rawPath === '/ads.txt/') {
-    return Response.redirect('https://pdfminty.com/ads.txt', 301);
+    const redirect = createRedirectResponse('https://pdfminty.com/ads.txt', 301);
+    if (redirect) return redirect;
   }
 
   // Fast bypass for static assets: Vite chunks, CSS, fonts, images, wasm, etc.
@@ -128,25 +151,26 @@ export const onRequest: PagesFunction = async (context) => {
   if (LEGACY_REDIRECTS[strippedPath]) {
     const destination = LEGACY_REDIRECTS[strippedPath];
     // Prevent self-redirect loops: only redirect if destination is different from normalized path
-    if (destination !== normalizedLower) {
+    if (destination !== normalizedLower && destination !== rawPath) {
       const targetHost = url.hostname === 'www.pdfminty.com' ? 'pdfminty.com' : url.hostname;
-      const targetProtocol = (url.hostname === 'pdfminty.com' || url.hostname === 'www.pdfminty.com') ? 'https:' : url.protocol;
+      const targetProtocol = (url.hostname === 'pdfminty.com' || url.hostname === 'www.pdfminty.com') ? 'https:' : (isPlainHttp ? 'https:' : url.protocol);
       const targetUrl = `${targetProtocol}//${targetHost}${destination}${url.search}`;
-      return Response.redirect(targetUrl, 301);
+      const redirect = createRedirectResponse(targetUrl, 301);
+      if (redirect) return redirect;
     }
   }
 
   // 2. Canonical URL Normalization: Hostname (www -> non-www) & Protocol (http -> https)
   let shouldRedirect = false;
   let targetHost = url.hostname;
-  let targetProtocol = url.protocol;
+  let targetProtocol = isPlainHttp ? 'https:' : url.protocol;
   let targetPathname = rawPath;
 
   if (url.hostname === 'www.pdfminty.com') {
     targetHost = 'pdfminty.com';
     targetProtocol = 'https:';
     shouldRedirect = true;
-  } else if (url.hostname === 'pdfminty.com' && url.protocol === 'http:') {
+  } else if (url.hostname === 'pdfminty.com' && isPlainHttp) {
     targetProtocol = 'https:';
     shouldRedirect = true;
   }
@@ -201,7 +225,8 @@ export const onRequest: PagesFunction = async (context) => {
 
   if (shouldRedirect) {
     const targetUrl = `${targetProtocol}//${targetHost}${targetPathname}${url.search}`;
-    return Response.redirect(targetUrl, 301);
+    const redirect = createRedirectResponse(targetUrl, 301);
+    if (redirect) return redirect;
   }
 
   const pathname = lowerPath;

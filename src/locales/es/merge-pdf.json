@@ -57,6 +57,16 @@
     "mergeButton": "Unir PDFs",
     "mergeButtonWithCount": "Unir PDFs ({{count}})",
     "mergingButton": "Compilando PDF...",
-    "filenamePlaceholder": "documento-unido.pdf"
+    "filenamePlaceholder": "documento-unido.pdf",
+    "filenameLabel": "Nombre del archivo de salida",
+    "outputSummary": "Combinar {{count}} documentos en un solo PDF"
+  },
+  "securityNotice": {
+    "title": "Cero subidas al servidor",
+    "description": "Tus archivos se combinan completamente mediante WebAssembly dentro del entorno seguro de tu navegador local. Ningún documento ni dato confidencial se envía a servidores externos."
+  },
+  "seo": {
+    "metaTitle": "Unir PDF Gratis — Combinar Documentos PDF Online | PDFMinty",
+    "metaDescription": "Une varios archivos PDF gratis y de forma segura directamente en tu navegador. Procesamiento 100% local — sin subir archivos a ningún servidor."
   }
 }

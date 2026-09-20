@@ -57,6 +57,16 @@
     "mergeButton": "Fusionner les PDF",
     "mergeButtonWithCount": "Fusionner les PDF ({{count}})",
     "mergingButton": "Génération du PDF...",
-    "filenamePlaceholder": "document-fusionne.pdf"
+    "filenamePlaceholder": "document-fusionne.pdf",
+    "filenameLabel": "Nom du fichier de sortie",
+    "outputSummary": "Combiner {{count}} documents en un seul PDF"
+  },
+  "securityNotice": {
+    "title": "Zéro téléversement sur serveur",
+    "description": "Vos fichiers sont combinés directement dans votre navigateur grâce à WebAssembly. Aucun document ni donnée sensible n'est jamais transmis à un serveur distant."
+  },
+  "seo": {
+    "metaTitle": "Fusionner PDF Gratuit — Combiner des fichiers PDF en ligne | PDFMinty",
+    "metaDescription": "Fusionnez plusieurs fichiers PDF gratuitement et en toute sécurité dans votre navigateur. Traitement 100% local — aucun téléversement, confidentialité totale."
   }
 }

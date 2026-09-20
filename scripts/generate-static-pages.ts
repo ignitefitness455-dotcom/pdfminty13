@@ -105,6 +105,222 @@ async function generateAllAssets(publicDir: string, distDir: string): Promise<vo
   }
 }
 
+interface LocalizedPageData {
+  metaTitle: string;
+  metaDescription: string;
+  h1: string;
+  lead: string;
+  howToTitle: string;
+  howToSteps: { title: string; desc: string }[];
+  whyTitle: string;
+  features: { title: string; desc: string }[];
+  faqTitle: string;
+  faqs: { q: string; a: string }[];
+  relatedTitle: string;
+  relatedTools: { url: string; text: string }[];
+}
+
+const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedPageData> = {
+  bn: {
+    metaTitle: 'বিনামূল্যে PDF মার্জ করুন — একাধিক ফাইল যুক্ত করুন | PDFMinty',
+    metaDescription: 'সম্পূর্ণ বিনামূল্যে এবং নিরাপদে একাধিক PDF ফাইল একটি ফাইলে যুক্ত করুন। ১০০% ব্রাউজার প্রসেসিং, কোনো ফাইল সার্ভারে আপলোড হয় না।',
+    h1: 'বিনামূল্যে PDF ফাইল মার্জ করুন — একাধিক PDF এক ডকুমেন্টে যুক্ত করুন (১০০% ব্রাউজার প্রসেসিং)',
+    lead: 'অনলাইনে সম্পূর্ণ বিনামূল্যে এবং নিরাপদে একাধিক PDF ফাইল একটি ডকুমেন্টে মার্জ বা একত্রিত করুন। কোনো সফটওয়্যার ইন্সটল করার প্রয়োজন নেই এবং আপনার ফাইল কখনোই কোনো রিমোট সার্ভারে আপলোড করা হয় না।',
+    howToTitle: 'কীভাবে একাধিক PDF ফাইল মার্জ করবেন?',
+    howToSteps: [
+      { title: 'ফাইল নির্বাচন করুন:', desc: "'ফাইল বাছুন' বোতামে ক্লিক করুন অথবা আপনার ডিভাইস থেকে PDF ফাইলগুলো ড্র্যাগ ও ড্রপ করুন।" },
+      { title: 'ক্রম সাজান:', desc: 'ড্র্যাগ কন্ট্রোল বা তীর বোতাম ব্যবহার করে ফাইলগুলো আপনার পছন্দমতো ক্রমানুসারে সাজান।' },
+      { title: 'মার্জ বোতামে চাপুন:', desc: "'PDF মার্জ করুন' বোতামে ক্লিক করলেই ব্রাউজারের ভেতর মেমোরিতে ফাইলগুলো একত্রিত হবে।" },
+      { title: 'ডাউনলোড করুন:', desc: 'মার্জ সম্পন্ন হলে স্বয়ংক্রিয়ভাবে আপনার নতুন একক PDF ফাইলটি ডাউনলোড হয়ে যাবে।' }
+    ],
+    whyTitle: 'কেন PdfMinty-এর PDF মার্জার সেরা?',
+    features: [
+      { title: '১০০% ক্লায়েন্ট-সাইড প্রাইভেসি:', desc: 'ফাইলগুলো WebAssembly প্রযুক্তিতে সরাসরি আপনার ডিভাইসে প্রসেস হয়।' },
+      { title: 'কোনো সীমা বা ওয়াটারমার্ক নেই:', desc: 'সম্পূর্ণ ফ্রি এবং কোনো জলছাপ যুক্ত করা হয় না।' },
+      { title: 'লিপিবদ্ধ কোয়ালিটি অক্ষত:', desc: 'টেক্সট, হাই-রেজোলিউশন ছবি ও ভেক্টর ড্রয়িং মূল কোয়ালিটিতে বজায় থাকে।' },
+      { title: 'অফলাইন সাপোর্ট:', desc: 'একবার লোড হওয়ার পর ইন্টারনেট সংযোগ ছাড়াও টুলটি কাজ করতে সক্ষম।' }
+    ],
+    faqTitle: 'সচরাচর জিজ্ঞাসিত প্রশ্নাবলী (FAQ)',
+    faqs: [
+      { q: 'আমার PDF ফাইলগুলো কি কোনো সার্ভারে সেভ হয়?', a: 'না, একদমই না। PdfMinty একটি জিরো-আপলোড আর্কিটেকচার অনুসরণ করে। ফাইল প্রসেসিং সম্পূর্ণ আপনার ডিভাইসের র‍্যামে ঘটে।' },
+      { q: 'একসাথে কতগুলো PDF ফাইল মার্জ করা যায়?', a: 'আপনার ডিভাইসের মেমোরি অনুযায়ী যতগুলো প্রয়োজন আপনি মার্জ করতে পারবেন। প্রতিটি ফাইল সর্বোচ্চ 100MB পর্যন্ত হতে পারে।' },
+      { q: 'PDF মার্জ করলে কি কোয়ালিটি হ্রাস পায়?', a: 'না, মার্জিং প্রক্রিয়াটি সম্পূর্ণ লসলেস (lossless)। মূল ফন্ট, মেটাডাটা এবং ছবির রেজোলিউশন পুরোপুরি অক্ষত থাকে।' }
+    ],
+    relatedTitle: 'অন্যান্য প্রয়োজনীয় PDF টুলস',
+    relatedTools: [
+      { url: '/split-pdf/', text: 'PDF স্প্লিট করুন — বড় PDF থেকে পেজ আলাদা করুন' },
+      { url: '/protect-pdf/', text: 'PDF পাসওয়ার্ড দিয়ে সুরক্ষিত করুন — অফলাইনে শক্তিশালী এনক্রিপশন' },
+      { url: '/rotate-pdf/', text: 'PDF রোটেট করুন — উল্টো বা বাঁকা পেজ সোজা করুন' },
+      { url: '/extract-pages-pdf/', text: 'PDF পেজ এক্সট্র্যাক্ট করুন — নির্দিষ্ট পাতাগুলো আলাদা করুন' }
+    ]
+  },
+  de: {
+    metaTitle: 'PDF zusammenfügen — Kostenlos online PDF-Dateien kombinieren | PDFMinty',
+    metaDescription: 'Fügen Sie mehrere PDF-Dateien kostenlos und sicher direkt im Browser zusammen. 100% clientseitige Verarbeitung — keine Server-Uploads, maximale Privatsphäre.',
+    h1: 'Kostenlos PDF-Dateien zusammenfügen — Mehrere PDFs online kombinieren (100% im Browser)',
+    lead: 'Fügen Sie mehrere PDF-Dateien schnell, sicher und kostenlos direkt in Ihrem Webbrowser zu einem Dokument zusammen. Keine Installation erforderlich und Ihre vertraulichen Dokumente verlassen niemals Ihr Gerät.',
+    howToTitle: 'Wie füge ich mehrere PDF-Dateien zusammen?',
+    howToSteps: [
+      { title: 'Dateien auswählen:', desc: "Klicken Sie auf 'Dateien auswählen' oder ziehen Sie Ihre PDF-Dokumente per Drag & Drop in den Bereich." },
+      { title: 'Reihenfolge anpassen:', desc: 'Ordnen Sie die Dokumente per Drag & Drop in der gewünschten Reihenfolge an.' },
+      { title: 'Zusammenfügen:', desc: "Klicken Sie auf 'PDFs zusammenfügen', um die Dateien direkt im lokalen Speicher zu verbinden." },
+      { title: 'Herunterladen:', desc: 'Speichern Sie Ihre neue zusammengefügte PDF-Datei sofort auf Ihrem Gerät.' }
+    ],
+    whyTitle: 'Warum PDFMinty für das Zusammenfügen von PDFs wählen?',
+    features: [
+      { title: '100% Privatsphäre & Datenschutz:', desc: 'Alle Operationen werden lokal mit WebAssembly ausgeführt. Null Server-Uploads.' },
+      { title: 'Keine Beschränkungen oder Wasserzeichen:', desc: 'Völlig kostenlos ohne störende Markierungen oder Registrierungszwang.' },
+      { title: 'Originalqualität bleibt erhalten:', desc: 'Scharfe Vektorgrafiken, lesbare Schriften und Bilder bleiben 1:1 intakt.' },
+      { title: 'Offline nutzbar:', desc: 'Nach dem ersten Aufruf funktioniert das Werkzeug auch ohne aktive Internetverbindung.' }
+    ],
+    faqTitle: 'Häufig gestellte Fragen (FAQ)',
+    faqs: [
+      { q: 'Werden meine PDF-Dateien auf einem Server gespeichert?', a: 'Nein, niemals. Die Verarbeitung erfolgt vollständig im Arbeitsspeicher Ihres Browsers.' },
+      { q: 'Wie viele Dateien kann ich gleichzeitig verbinden?', a: 'Beliebig viele, abhängig vom Speicher Ihres Endgeräts. Einzelne Dateien können bis zu 100 MB groß sein.' },
+      { q: 'Verliert das Dokument durch das Zusammenfügen an Qualität?', a: 'Nein, der Vorgang ist absolut verlustfrei. Vektoren, Texte und Formatierungen bleiben unverändert.' }
+    ],
+    relatedTitle: 'Weitere nützliche PDF-Tools',
+    relatedTools: [
+      { url: '/split-pdf/', text: 'PDF teilen — Seiten aus großen PDFs trennen' },
+      { url: '/protect-pdf/', text: 'PDF mit Passwort schützen — Starke Offline-Verschlüsselung' },
+      { url: '/rotate-pdf/', text: 'PDF drehen — Schiefe oder verkehrt herum liegende Seiten korrigieren' },
+      { url: '/extract-pages-pdf/', text: 'PDF-Seiten extrahieren — Spezifische Einzelseiten speichern' }
+    ]
+  },
+  es: {
+    metaTitle: 'Unir PDF Gratis — Combinar Documentos PDF Online | PDFMinty',
+    metaDescription: 'Une varios archivos PDF gratis y de forma segura directamente en tu navegador. Procesamiento 100% local — sin subir archivos a ningún servidor.',
+    h1: 'Unir archivos PDF gratis — Combinar múltiples documentos PDF online (100% en el navegador)',
+    lead: 'Combina varios archivos PDF en un solo documento organizado de forma rápida, privada y gratuita. Sin necesidad de instalar software y sin que tus archivos salgan de tu dispositivo.',
+    howToTitle: '¿Cómo unir varios archivos PDF?',
+    howToSteps: [
+      { title: 'Seleccionar archivos:', desc: "Haz clic en 'Seleccionar archivos' o arrastra y suelta tus documentos PDF en el área indicada." },
+      { title: 'Organizar el orden:', desc: 'Reordena los archivos fácilmente arrastrándolos a la posición deseada.' },
+      { title: 'Unir archivos:', desc: "Haz clic en 'Unir PDFs' para procesar los documentos instantáneamente en tu navegador." },
+      { title: 'Descargar:', desc: 'Guarda tu nuevo documento PDF unificado de inmediato en tu dispositivo.' }
+    ],
+    whyTitle: '¿Por qué elegir PDFMinty para unir PDFs?',
+    features: [
+      { title: 'Privacidad total garantizada:', desc: 'Procesamiento local seguro con WebAssembly. Cero subidas a la nube.' },
+      { title: 'Sin límites ni marcas de agua:', desc: 'Herramienta 100% gratuita y sin marcas añadidas a tus documentos.' },
+      { title: 'Calidad intacta:', desc: 'Mantiene la resolución de las imágenes, fuentes tipográficas y diseño original.' },
+      { title: 'Funciona sin conexión:', desc: 'Una vez cargada la página, puedes unir archivos incluso sin conexión a internet.' }
+    ],
+    faqTitle: 'Preguntas frecuentes (FAQ)',
+    faqs: [
+      { q: '¿Se suben mis archivos a algún servidor?', a: 'No, en absoluto. Todo el proceso ocurre en la memoria RAM de tu propio navegador.' },
+      { q: '¿Cuántos archivos PDF puedo unir a la vez?', a: 'Tantos como admita la memoria de tu dispositivo. Cada archivo puede ser de hasta 100 MB.' },
+      { q: '¿Se pierde calidad al unir los documentos?', a: 'No, la combinación se realiza de forma totalmente fiel y sin compresión destructiva.' }
+    ],
+    relatedTitle: 'Otras herramientas PDF útiles',
+    relatedTools: [
+      { url: '/split-pdf/', text: 'Dividir PDF — Separar páginas de un PDF extenso' },
+      { url: '/protect-pdf/', text: 'Proteger PDF — Encriptar con contraseña sin conexión' },
+      { url: '/rotate-pdf/', text: 'Rotar PDF — Enderezar páginas giradas o invertidas' },
+      { url: '/extract-pages-pdf/', text: 'Extraer páginas — Guardar rangos de páginas seleccionadas' }
+    ]
+  },
+  fr: {
+    metaTitle: 'Fusionner PDF Gratuit — Combiner des fichiers PDF en ligne | PDFMinty',
+    metaDescription: 'Fusionnez plusieurs fichiers PDF gratuitement et en toute sécurité dans votre navigateur. Traitement 100% local — aucun téléversement, confidentialité totale.',
+    h1: 'Fusionner des fichiers PDF gratuitement — Combiner plusieurs PDF en ligne (100% dans le navigateur)',
+    lead: 'Assemblez plusieurs documents PDF en un seul fichier structuré en quelques secondes. Simple, gratuit et strictement confidentiel : aucun fichier n\'est téléversé sur un serveur.',
+    howToTitle: 'Comment fusionner plusieurs fichiers PDF ?',
+    howToSteps: [
+      { title: 'Sélectionner les fichiers :', desc: "Cliquez sur 'Sélectionner des fichiers' ou glissez-déposez vos documents PDF." },
+      { title: 'Organiser l\'ordre :', desc: 'Réorganisez facilement les fichiers dans l\'ordre de votre choix.' },
+      { title: 'Fusionner :', desc: "Cliquez sur 'Fusionner les PDF' pour combiner les pages dans la mémoire locale." },
+      { title: 'Télécharger :', desc: 'Enregistrez immédiatement votre nouveau document PDF consolidé.' }
+    ],
+    whyTitle: 'Pourquoi choisir PDFMinty pour fusionner vos PDF ?',
+    features: [
+      { title: 'Confidentialité absolue :', desc: 'Traitement local via WebAssembly. Zéro transfert de données vers des serveurs distants.' },
+      { title: 'Sans filigrane ni inscription :', desc: 'Service entièrement gratuit sans marquage publicitaire.' },
+      { title: 'Préservation de la qualité :', desc: 'Vos textes, images et éléments vectoriels conservent leur netteté d\'origine.' },
+      { title: 'Fonctionnement hors ligne :', desc: 'L\'outil reste pleinement opérationnel même sans accès à Internet une fois chargé.' }
+    ],
+    faqTitle: 'Foire aux questions (FAQ)',
+    faqs: [
+      { q: 'Mes documents sont-ils stockés en ligne ?', a: 'Non. PdfMinty fonctionne exclusivement dans la mémoire vive de votre navigateur.' },
+      { q: 'Combien de fichiers puis-je combiner ?', a: 'Autant que la mémoire de votre appareil le permet. Chaque fichier peut aller jusqu\'à 100 Mo.' },
+      { q: 'Y a-t-il une perte de qualité ?', a: 'Non, le processus de fusion est rigoureusement sans perte.' }
+    ],
+    relatedTitle: 'Autres outils PDF pratiques',
+    relatedTools: [
+      { url: '/split-pdf/', text: 'Diviser un PDF — Séparer les pages d\'un gros document' },
+      { url: '/protect-pdf/', text: 'Protéger par mot de passe — Chiffrement fort hors ligne' },
+      { url: '/rotate-pdf/', text: 'Pivoter un PDF — Redresser les pages inversées' },
+      { url: '/extract-pages-pdf/', text: 'Extraire des pages — Isoler des sections précises' }
+    ]
+  },
+  hi: {
+    metaTitle: 'मुफ़्त में पीडीएफ फ़ाइलें मर्ज करें — ऑनलाइन पीडीएफ मिलाएं | PDFMinty',
+    metaDescription: 'मुफ़्त में ऑनलाइन पीडीएफ फ़ाइलें मर्ज करें। अपने ब्राउज़र में स्थानीय रूप से कई पीडीएफ को एक सुरक्षित दस्तावेज़ में संयोजित करें। कोई सर्वर अपलोड नहीं — आपकी फ़ाइलें निजी रहती हैं।',
+    h1: 'मुफ़्त में पीडीएफ फाइलें मर्ज करें — कई पीडीएफ एक साथ जोड़ें (१००% ब्राउज़र प्रोसेसिंग)',
+    lead: 'ऑनलाइन मुफ़्त और सुरक्षित तरीके से कई पीडीएफ फाइलों को एक दस्तावेज़ में मिलाएं। किसी सॉफ्टवेयर को इंस्टॉल करने की आवश्यकता नहीं है और आपकी फाइलें कभी भी किसी रिमोट सर्वर पर अपलोड नहीं होती हैं।',
+    howToTitle: 'कई पीडीएफ फाइलों को कैसे मर्ज करें?',
+    howToSteps: [
+      { title: 'फाइलें चुनें:', desc: "'फाइलें चुनें' बटन पर क्लिक करें या अपने डिवाइस से पीडीएफ फाइलों को ड्रैग और ड्रॉप करें।" },
+      { title: 'क्रम व्यवस्थित करें:', desc: 'फाइलों को अपनी इच्छानुसार क्रम में व्यवस्थित करें।' },
+      { title: 'मर्ज बटन दबाएं:', desc: "'पीडीएफ मर्ज करें' पर क्लिक करें, फाइलें स्थानीय रूप से जुड़ जाएंगी।" },
+      { title: 'डाउनलोड करें:', desc: 'नई संयुक्त पीडीएफ फाइल तुरंत डाउनलोड करें।' }
+    ],
+    whyTitle: 'पीडीएफ मर्ज करने के लिए PDFMinty क्यों चुनें?',
+    features: [
+      { title: '१००% स्थानीय गोपनीयता:', desc: 'वेबअसेम्बली के साथ फाइलें आपके डिवाइस पर सुरक्षित रूप से प्रोसेस होती हैं।' },
+      { title: 'कोई सीमा या वॉटरमार्क नहीं:', desc: 'पूरी तरह से मुफ्त और बिना किसी वॉटरमार्क के।' },
+      { title: 'मूल गुणवत्ता बरकरार:', desc: 'टेक्स्ट और इमेज की गुणवत्ता मूल रूप में बनी रहती है।' },
+      { title: 'ऑफलाइन कार्यक्षमता:', desc: 'एक बार लोड होने के बाद बिना इंटरनेट के भी काम करता है।' }
+    ],
+    faqTitle: 'अक्सर पूछे जाने वाले प्रश्न (FAQ)',
+    faqs: [
+      { q: 'क्या मेरी फाइलें किसी सर्वर पर सुरक्षित की जाती हैं?', a: 'नहीं, कभी नहीं। Processing केवल आपके ब्राउज़र की रैम में होती है।' },
+      { q: 'मैं एक बार में कितनी फाइलें जोड़ सकता हूं?', a: 'आपके डिवाइस की मेमोरी के अनुसार जितनी चाहें उतनी। प्रत्येक फ़ाइल 100MB तक हो सकती है।' },
+      { q: 'क्या मर्ज करने से गुणवत्ता कम होती है?', a: 'नहीं, प्रक्रिया पूरी तरह से दोषरहित है।' }
+    ],
+    relatedTitle: 'अन्य उपयोगी पीडीएफ टूल्स',
+    relatedTools: [
+      { url: '/split-pdf/', text: 'पीडीएफ विभाजित करें — बड़ी फाइलों से पेज अलग करें' },
+      { url: '/protect-pdf/', text: 'पासवर्ड से सुरक्षित करें — मजबूत ऑफलाइन एन्क्रिप्शन' },
+      { url: '/rotate-pdf/', text: 'पीडीएफ घुमाएं — उल्टे पेजों को सीधा करें' },
+      { url: '/extract-pages-pdf/', text: 'पेज निकालें — विशिष्ट पेजों को नई फाइल में सहेजें' }
+    ]
+  },
+  zh: {
+    metaTitle: '免费合并 PDF 文件 — 在线合并 PDF | PDFMinty',
+    metaDescription: '免费在线合并 PDF 文件。在浏览器中本地将多个 PDF 合并为一个安全文档。无需服务器上传 — 您的文件保持私密。',
+    h1: '免费合并 PDF 文件 — 在线将多个 PDF 组合为一个文档（100% 浏览器本地处理）',
+    lead: '快速、安全且完全免费地在线将多个 PDF 文件合并为一个结构化文档。无需安装软件，您的私密文件永远不会上传到任何远程服务器。',
+    howToTitle: '如何合并多个 PDF 文件？',
+    howToSteps: [
+      { title: '选择文件：', desc: '点击“选择文件”按钮或直接将 PDF 文件拖放到页面中。' },
+      { title: '调整顺序：', desc: '轻松拖拽文件以按所需顺序重新排列。' },
+      { title: '点击合并：', desc: '点击“合并 PDF”，在浏览器内存中极速组合文件。' },
+      { title: '立即下载：', desc: '合并完成后即可一键下载全新的单一 PDF 文件。' }
+    ],
+    whyTitle: '为什么选择 PDFMinty 合并 PDF？',
+    features: [
+      { title: '100% 客户端隐私保护：', desc: '使用 WebAssembly 技术在本地处理，零服务器上传。' },
+      { title: '无限制无水印：', desc: '完全免费使用，绝不在生成的文件中添加任何水印。' },
+      { title: '保持原始内容品质：', desc: '文字、高分辨率图片和矢量图完全无损保留。' },
+      { title: '离线可用：', desc: '网页加载后，即使在断网状态下也能正常处理文件。' }
+    ],
+    faqTitle: '常见问题解答 (FAQ)',
+    faqs: [
+      { q: '我的 PDF 会被上传或保存在服务器上吗？', a: '绝对不会。所有文件仅在您设备的本地内存中处理。' },
+      { q: '我一次可以合并多少个 PDF 文件？', a: '取决于您设备的可用内存，通常可轻松处理数十个文件。单个文件上限 100MB。' },
+      { q: '合并后 PDF 会丢失清晰度吗？', a: '不会，合并过程为无损组合，保持原稿品质。' }
+    ],
+    relatedTitle: '其他常用 PDF 工具',
+    relatedTools: [
+      { url: '/split-pdf/', text: '拆分 PDF — 从大文件中分离页面' },
+      { url: '/protect-pdf/', text: 'PDF 密码保护 — 强力离线加密' },
+      { url: '/rotate-pdf/', text: '旋转 PDF — 纠正倒置或倾斜的页面' },
+      { url: '/extract-pages-pdf/', text: '提取 PDF 页面 — 导出选定页面为新文件' }
+    ]
+  }
+};
+
 async function run(): Promise<void> {
   const distDir: string = path.join(__dirname, "../dist");
   const publicDir: string = path.join(__dirname, "../public");
@@ -132,6 +348,7 @@ async function run(): Promise<void> {
     clean = clean.replace(/<title>[^<]*<\/title>/gi, "");
     clean = clean.replace(/<meta\s+name="description"[^>]*>/gi, "");
     clean = clean.replace(/<link\s+rel="canonical"[^>]*>/gi, "");
+    clean = clean.replace(/<link\s+rel="alternate"\s+hreflang="[^"]*"\s+href="[^"]*"\s*\/?>/gi, "");
     clean = clean.replace(/<meta\s+property="og:[^>]*>/gi, ""); // Purge all og: properties
     clean = clean.replace(/<meta\s+name="twitter:[^>]*>/gi, ""); // Purge all twitter: properties
     
@@ -431,8 +648,8 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
     };
 
     let finalBody: string = item.longFormBody;
-    // Strip any existing <h1> in body and convert to <h2> so there is strictly no duplicate H1
-    finalBody = finalBody.replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>');
+    // Strip any existing <h1> in body completely to avoid duplicate title headings
+    finalBody = finalBody.replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/gi, '');
 
     // Prepend the page's exact, canonical <h1> tag
     finalBody = `<h1>${item.h1 || item.name}</h1>\n${finalBody}`;
@@ -466,61 +683,108 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
             fs.mkdirSync(locTargetFolder, { recursive: true });
           }
           const locPageUrl = getCanonicalUrl(item.slug, locLang, SITE_URL);
-          const locMetaTitle = locLang === 'bn' && item.slug === 'merge-pdf'
-            ? 'বিনামূল্যে PDF মার্জ করুন — একাধিক ফাইল যুক্ত করুন | PDFMinty'
-            : item.metaTitle;
-          const locMetaDesc = locLang === 'bn' && item.slug === 'merge-pdf'
-            ? 'সম্পূর্ণ বিনামূল্যে এবং নিরাপদে একাধিক PDF ফাইল একটি ফাইলে যুক্ত করুন। ১০০% ব্রাউজার প্রসেসিং, কোনো ফাইল সার্ভারে আপলোড হয় না।'
-            : item.metaDescription;
+          
+          // Retrieve localized content for merge-pdf or other localized tools
+          const locData = item.slug === 'merge-pdf' ? MERGE_PDF_LOCALIZED_DATA[locLang] : undefined;
+          const locMetaTitle = locData ? locData.metaTitle : item.metaTitle;
+          const locMetaDesc = locData ? locData.metaDescription : item.metaDescription;
 
           let locPreRenderedContent = preRenderedContent;
-          if (locLang === 'bn' && item.slug === 'merge-pdf') {
+          if (locData) {
+            const stepsHtml = locData.howToSteps.map(s => `          <li><strong>${s.title}</strong> ${s.desc}</li>`).join('\n');
+            const featuresHtml = locData.features.map(f => `          <li><strong>${f.title}</strong> ${f.desc}</li>`).join('\n');
+            const faqsHtml = locData.faqs.map(faq => `        <h3>${faq.q}</h3>\n        <p>${faq.a}</p>`).join('\n\n');
+            const relatedHtml = locData.relatedTools.map(t => `            <li><a href="${t.url}">${t.text}</a></li>`).join('\n');
+
             locPreRenderedContent = `
     <div id="root">
       <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
-        <h1>বিনামূল্যে PDF ফাইল মার্জ করুন — একাধিক PDF এক ডকুমেন্টে যুক্ত করুন (১০০% ব্রাউজার প্রসেসিং)</h1>
+        <h1>${locData.h1}</h1>
         <p class="lead text-lg font-medium text-slate-700 dark:text-slate-300">
-          অনলাইনে সম্পূর্ণ বিনামূল্যে এবং নিরাপদে একাধিক PDF ফাইল একটি ডকুমেন্টে মার্জ বা একত্রিত করুন। কোনো সফটওয়্যার ইন্সটল করার প্রয়োজন নেই এবং আপনার ফাইল কখনোই কোনো রিমোট সার্ভারে আপলোড করা হয় না।
+          ${locData.lead}
         </p>
 
-        <h2>কীভাবে একাধিক PDF ফাইল মার্জ করবেন?</h2>
+        <h2>${locData.howToTitle}</h2>
         <ol>
-          <li><strong>ফাইল নির্বাচন করুন:</strong> 'ফাইল বাছুন' বোতামে ক্লিক করুন অথবা আপনার ডিভাইস থেকে PDF ফাইলগুলো ড্র্যাগ ও ড্রপ করুন।</li>
-          <li><strong>ক্রম সাজান:</strong> ড্র্যাগ কন্ট্রোল বা তীর বোতাম ব্যবহার করে ফাইলগুলো আপনার পছন্দমতো ক্রমানুসারে সাজান।</li>
-          <li><strong>মার্জ বোতামে চাপুন:</strong> 'PDF মার্জ করুন' বোতামে ক্লিক করলেই ব্রাউজারের ভেতর মেমোরিতে ফাইলগুলো একত্রিত হবে।</li>
-          <li><strong>ডাউনলোড করুন:</strong> মার্জ সম্পন্ন হলে স্বয়ংক্রিয়ভাবে আপনার নতুন একক PDF ফাইলটি ডাউনলোড হয়ে যাবে।</li>
+${stepsHtml}
         </ol>
 
-        <h2>কেন PdfMinty-এর PDF মার্জার সেরা?</h2>
+        <h2>${locData.whyTitle}</h2>
         <ul>
-          <li><strong>১০০% ক্লায়েন্ট-সাইড প্রাইভেসি:</strong> ফাইলগুলো WebAssembly প্রযুক্তিতে সরাসরি আপনার ডিভাইসে প্রসেস হয়।</li>
-          <li><strong>কোনো সীমা বা ওয়াটারমার্ক নেই:</strong> সম্পূর্ণ ফ্রি এবং কোনো জলছাপ যুক্ত করা হয় না।</li>
-          <li><strong>লিপিবদ্ধ কোয়ালিটি অক্ষত:</strong> টেক্সট, হাই-রেজোলিউশন ছবি ও ভেক্টর ড্রয়িং মূল কোয়ালিটিতে বজায় থাকে।</li>
-          <li><strong>অফলাইন সাপোর্ট:</strong> একবার লোড হওয়ার পর ইন্টারনেট সংযোগ ছাড়াও টুলটি কাজ করতে সক্ষম।</li>
+${featuresHtml}
         </ul>
 
-        <h2>সচরাচর জিজ্ঞাসিত প্রশ্নাবলী (FAQ)</h2>
-        <h3>আমার PDF ফাইলগুলো কি কোনো সার্ভারে সেভ হয়?</h3>
-        <p>না, একদমই না। PdfMinty একটি জিরো-আপলোড আর্কিটেকচার অনুসরণ করে। ফাইল প্রসেসিং সম্পূর্ণ আপনার ডিভাইসের র‍্যামে ঘটে।</p>
-
-        <h3>একসাথে কতগুলো PDF ফাইল মার্জ করা যায়?</h3>
-        <p>আপনার ডিভাইসের মেমোরি অনুযায়ী যতগুলো প্রয়োজন আপনি মার্জ করতে পারবেন। প্রতিটি ফাইল সর্বোচ্চ 100MB পর্যন্ত হতে পারে।</p>
-
-        <h3>PDF মার্জ করলে কি কোয়ালিটি হ্রাস পায়?</h3>
-        <p>না, মার্জিং প্রক্রিয়াটি সম্পূর্ণ লসলেস (lossless)। মূল ফন্ট, মেটাডাটা এবং ছবির রেজোলিউশন পুরোপুরি অক্ষত থাকে।</p>
+        <h2>${locData.faqTitle}</h2>
+${faqsHtml}
 
         <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-          <h3>অন্যান্য প্রয়োজনীয় PDF টুলস</h3>
+          <h3>${locData.relatedTitle}</h3>
           <ul>
-            <li><a href="/split-pdf/">PDF স্প্লিট করুন</a> — বড় PDF থেকে পেজ আলাদা করুন</li>
-            <li><a href="/protect-pdf/">PDF পাসওয়ার্ড দিয়ে সুরক্ষিত করুন</a> — অফলাইনে শক্তিশালী এনক্রিপশন</li>
-            <li><a href="/blog/how-to-compress-a-pdf-without-losing-quality-2026/">PDF সাইজ অপ্টিমাইজ করুন</a> — গুণমান বজায় রেখে ফাইল সাইজ কমান</li>
-            <li><a href="/rotate-pdf/">PDF রোটেট করুন</a> — উল্টো বা বাঁকা পেজ সোজা করুন</li>
+${relatedHtml}
           </ul>
         </div>
       </article>
     </div>
             `;
+          }
+
+          let locJsonLdMarkup = jsonLdMarkup;
+          if (locData) {
+            const locSchemas: any[] = [
+              {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": `PdfMinty - ${locMetaTitle.split('—')[0].trim()}`,
+                "url": locPageUrl,
+                "description": locMetaDesc,
+                "applicationCategory": "UtilitiesApplication",
+                "operatingSystem": "All",
+                "browserRequirements": "Requires HTML5, WebAssembly",
+                "inLanguage": locLang
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": `${SITE_URL}/${locLang}/`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": locData.h1,
+                    "item": locPageUrl
+                  }
+                ]
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": locData.faqs.map(f => ({
+                  "@type": "Question",
+                  "name": f.q,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": f.a
+                  }
+                }))
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "HowTo",
+                "name": locData.howToTitle,
+                "step": locData.howToSteps.map((step, idx) => ({
+                  "@type": "HowToStep",
+                  "position": idx + 1,
+                  "name": step.title.replace(':', ''),
+                  "text": step.desc
+                }))
+              }
+            ];
+            locJsonLdMarkup = locSchemas.map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n  ');
           }
 
           const locHeadMeta: string = `
@@ -537,7 +801,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   <meta name="twitter:title" content="${locMetaTitle}">
   <meta name="twitter:description" content="${locMetaDesc}">
   <meta name="twitter:image" content="${SITE_URL}/og-image.png">
-  ${jsonLdMarkup}
+  ${locJsonLdMarkup}
   `;
           let locHtml: string = optimizedBase.replace(/<html(\s+[^>]*)?lang="[a-zA-Z\-]+"/i, `<html lang="${locLang}"`);
           if (!locHtml.includes(`lang="${locLang}"`)) {

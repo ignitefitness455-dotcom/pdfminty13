@@ -84,30 +84,9 @@ export const LOCALE_METADATA: Record<SupportedLocale, LocaleMetadata> = {
   },
 };
 
-// Tool slugs configured with localized routing enabled
+// Tool slugs configured with localized routing enabled (Option B: only tools with complete 7-locale translations)
 export const I18N_TOOL_SLUGS = [
   'merge-pdf',
-  'split-pdf',
-  'grayscale-pdf',
-  'protect-pdf',
-  'image-to-pdf',
-  'pdf-to-image',
-  'rotate-pdf',
-  'delete-pages-pdf',
-  'extract-pages-pdf',
-  'reorder-pdf',
-  'watermark-pdf',
-  'add-page-numbers',
-  'add-blank-page',
-  'unlock-pdf',
-  'pdf-to-markdown',
-  'ai-analyze-pdf',
-  'flatten-pdf',
-  'repair-pdf',
-  'sign-pdf',
-  'ocr-pdf',
-  'edit-pdf-metadata',
-  'sanitize-pdf'
 ] as const;
 export type I18nToolSlug = (typeof I18N_TOOL_SLUGS)[number];
 
