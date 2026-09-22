@@ -11,8 +11,21 @@ export const CtaSection: React.FC = () => {
 
   return (
     <div className="mt-24 border border-white/50 dark:border-white/10 rounded-[32px] bg-white/40 dark:bg-black/30 backdrop-blur-xl p-10 md:p-14 text-center text-primary relative overflow-hidden z-20 shadow-2xl">
-      <div className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] pointer-events-none opacity-20" style={{ background: 'radial-gradient(circle, var(--custom-security-green) 0%, transparent 70%)' }} aria-hidden="true"></div>
-      <div className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] pointer-events-none opacity-10" style={{ background: 'radial-gradient(circle, var(--custom-primary-fixed-dim) 0%, transparent 70%)' }} aria-hidden="true"></div>
+      <div
+        className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] pointer-events-none opacity-20"
+        style={{
+          background: 'radial-gradient(circle, var(--custom-security-green) 0%, transparent 70%)',
+        }}
+        aria-hidden="true"
+      ></div>
+      <div
+        className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] pointer-events-none opacity-10"
+        style={{
+          background:
+            'radial-gradient(circle, var(--custom-primary-fixed-dim) 0%, transparent 70%)',
+        }}
+        aria-hidden="true"
+      ></div>
       <div className="relative z-10 max-w-xl mx-auto space-y-5">
         <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-tight font-sans">
           {t('home.cta.title', { defaultValue: 'Ready to manage your PDFs with total privacy?' })}

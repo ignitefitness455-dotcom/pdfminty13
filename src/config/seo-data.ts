@@ -53,7 +53,7 @@ export interface ToolSEOInfo {
   faqs?: { q: string; a: string }[];
   ogImage?: string; // Path like '/og-merge-pdf.png'. Falls back to /og-image.png if absent.
   datePublished?: string; // ISO date string, e.g. '2025-01-15'
-  dateModified?: string;  // ISO date string
+  dateModified?: string; // ISO date string
   author?: string;
 
   // Prompt 6 expanded tool fields
@@ -86,28 +86,118 @@ export interface ToolSEOInfo {
 }
 
 export const RELATED_TOOL_MAPPING: Record<string, string[]> = {
-  'edit-pdf-metadata': ["sanitize-pdf","protect-pdf","unlock-pdf","repair-pdf","flatten-pdf"],
-  'sanitize-pdf': ["edit-pdf-metadata","protect-pdf","unlock-pdf","flatten-pdf","repair-pdf"],
-  'merge-pdf': ["split-pdf","reorder-pdf","extract-pages-pdf","delete-pages-pdf","add-blank-page"],
-  'split-pdf': ["merge-pdf","extract-pages-pdf","delete-pages-pdf","reorder-pdf","add-blank-page"],
-  'rotate-pdf': ["reorder-pdf","delete-pages-pdf","extract-pages-pdf","merge-pdf","add-blank-page"],
-  'delete-pages-pdf': ["extract-pages-pdf","reorder-pdf","split-pdf","merge-pdf","add-blank-page"],
-  'extract-pages-pdf': ["delete-pages-pdf","reorder-pdf","split-pdf","merge-pdf","add-blank-page"],
-  'reorder-pdf': ["rotate-pdf","delete-pages-pdf","extract-pages-pdf","merge-pdf","add-blank-page"],
-  'watermark-pdf': ["add-page-numbers","sign-pdf","protect-pdf","flatten-pdf","edit-pdf-metadata"],
-  'add-page-numbers': ["watermark-pdf","add-blank-page","reorder-pdf","merge-pdf","flatten-pdf"],
-  'add-blank-page': ["merge-pdf","split-pdf","reorder-pdf","add-page-numbers","delete-pages-pdf"],
-  'protect-pdf': ["unlock-pdf","sanitize-pdf","edit-pdf-metadata","flatten-pdf","sign-pdf"],
-  'unlock-pdf': ["protect-pdf","sanitize-pdf","edit-pdf-metadata","repair-pdf","flatten-pdf"],
-  'image-to-pdf': ["pdf-to-image","merge-pdf","pdf-to-markdown","ocr-pdf","ai-analyze-pdf"],
-  'pdf-to-image': ["image-to-pdf","extract-pages-pdf","pdf-to-markdown","ocr-pdf","ai-analyze-pdf"],
-  'pdf-to-markdown': ["ocr-pdf","ai-analyze-pdf","pdf-to-image","image-to-pdf","extract-pages-pdf"],
-  'ai-analyze-pdf': ["pdf-to-markdown","ocr-pdf","sanitize-pdf","edit-pdf-metadata","pdf-to-image"],
-  'grayscale-pdf': ["flatten-pdf","sanitize-pdf","watermark-pdf","repair-pdf","edit-pdf-metadata"],
-  'flatten-pdf': ["sign-pdf","grayscale-pdf","protect-pdf","sanitize-pdf","watermark-pdf"],
-  'repair-pdf': ["unlock-pdf","sanitize-pdf","flatten-pdf","edit-pdf-metadata","merge-pdf"],
-  'sign-pdf': ["watermark-pdf","flatten-pdf","protect-pdf","edit-pdf-metadata","add-page-numbers"],
-  'ocr-pdf': ["pdf-to-markdown","ai-analyze-pdf","pdf-to-image","image-to-pdf","extract-pages-pdf"],
+  'edit-pdf-metadata': ['sanitize-pdf', 'protect-pdf', 'unlock-pdf', 'repair-pdf', 'flatten-pdf'],
+  'sanitize-pdf': ['edit-pdf-metadata', 'protect-pdf', 'unlock-pdf', 'flatten-pdf', 'repair-pdf'],
+  'merge-pdf': [
+    'split-pdf',
+    'reorder-pdf',
+    'extract-pages-pdf',
+    'delete-pages-pdf',
+    'add-blank-page',
+  ],
+  'split-pdf': [
+    'merge-pdf',
+    'extract-pages-pdf',
+    'delete-pages-pdf',
+    'reorder-pdf',
+    'add-blank-page',
+  ],
+  'rotate-pdf': [
+    'reorder-pdf',
+    'delete-pages-pdf',
+    'extract-pages-pdf',
+    'merge-pdf',
+    'add-blank-page',
+  ],
+  'delete-pages-pdf': [
+    'extract-pages-pdf',
+    'reorder-pdf',
+    'split-pdf',
+    'merge-pdf',
+    'add-blank-page',
+  ],
+  'extract-pages-pdf': [
+    'delete-pages-pdf',
+    'reorder-pdf',
+    'split-pdf',
+    'merge-pdf',
+    'add-blank-page',
+  ],
+  'reorder-pdf': [
+    'rotate-pdf',
+    'delete-pages-pdf',
+    'extract-pages-pdf',
+    'merge-pdf',
+    'add-blank-page',
+  ],
+  'watermark-pdf': [
+    'add-page-numbers',
+    'sign-pdf',
+    'protect-pdf',
+    'flatten-pdf',
+    'edit-pdf-metadata',
+  ],
+  'add-page-numbers': [
+    'watermark-pdf',
+    'add-blank-page',
+    'reorder-pdf',
+    'merge-pdf',
+    'flatten-pdf',
+  ],
+  'add-blank-page': [
+    'merge-pdf',
+    'split-pdf',
+    'reorder-pdf',
+    'add-page-numbers',
+    'delete-pages-pdf',
+  ],
+  'protect-pdf': ['unlock-pdf', 'sanitize-pdf', 'edit-pdf-metadata', 'flatten-pdf', 'sign-pdf'],
+  'unlock-pdf': ['protect-pdf', 'sanitize-pdf', 'edit-pdf-metadata', 'repair-pdf', 'flatten-pdf'],
+  'image-to-pdf': ['pdf-to-image', 'merge-pdf', 'pdf-to-markdown', 'ocr-pdf', 'ai-analyze-pdf'],
+  'pdf-to-image': [
+    'image-to-pdf',
+    'extract-pages-pdf',
+    'pdf-to-markdown',
+    'ocr-pdf',
+    'ai-analyze-pdf',
+  ],
+  'pdf-to-markdown': [
+    'ocr-pdf',
+    'ai-analyze-pdf',
+    'pdf-to-image',
+    'image-to-pdf',
+    'extract-pages-pdf',
+  ],
+  'ai-analyze-pdf': [
+    'pdf-to-markdown',
+    'ocr-pdf',
+    'sanitize-pdf',
+    'edit-pdf-metadata',
+    'pdf-to-image',
+  ],
+  'grayscale-pdf': [
+    'flatten-pdf',
+    'sanitize-pdf',
+    'watermark-pdf',
+    'repair-pdf',
+    'edit-pdf-metadata',
+  ],
+  'flatten-pdf': ['sign-pdf', 'grayscale-pdf', 'protect-pdf', 'sanitize-pdf', 'watermark-pdf'],
+  'repair-pdf': ['unlock-pdf', 'sanitize-pdf', 'flatten-pdf', 'edit-pdf-metadata', 'merge-pdf'],
+  'sign-pdf': [
+    'watermark-pdf',
+    'flatten-pdf',
+    'protect-pdf',
+    'edit-pdf-metadata',
+    'add-page-numbers',
+  ],
+  'ocr-pdf': [
+    'pdf-to-markdown',
+    'ai-analyze-pdf',
+    'pdf-to-image',
+    'image-to-pdf',
+    'extract-pages-pdf',
+  ],
 };
 
 export const TOOLS: ToolSEOInfo[] = [
@@ -118,7 +208,8 @@ export const TOOLS: ToolSEOInfo[] = [
     ogImage: '/og-image.png',
     shortDescription: 'Change PDF title, author, subject, and keywords offline',
     metaTitle: 'Edit PDF Metadata Free — Clean & Change PDF Info | PDFMinty',
-    metaDescription: 'Edit PDF metadata properties including Title, Author, Subject, and Keywords online for free. Secure offline processing.',
+    metaDescription:
+      'Edit PDF metadata properties including Title, Author, Subject, and Keywords online for free. Secure offline processing.',
     h1: 'Edit PDF Metadata Free — Clean & Change PDF Properties',
     icon: 'FilePenLine',
     iconColor: 'text-security-green',
@@ -127,62 +218,63 @@ export const TOOLS: ToolSEOInfo[] = [
     priority: 0.7,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "PDF files automatically store hidden metadata tags—such as author names, editing software, and document creation history—that can expose personal or corporate data when shared externally.",
-    primaryCtaText: "Upload PDF to Edit Metadata",
+    problemSolved:
+      'PDF files automatically store hidden metadata tags—such as author names, editing software, and document creation history—that can expose personal or corporate data when shared externally.',
+    primaryCtaText: 'Upload PDF to Edit Metadata',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)",
-    "Standard PDF 1.0 - 2.0"
-  ],
-  "output": [
-    "Cleaned PDF (.pdf)"
-  ],
-  "limits": "Max 50MB per file. Encrypted PDFs must be unlocked prior to editing."
-},
+      input: ['PDF (.pdf)', 'Standard PDF 1.0 - 2.0'],
+      output: ['Cleaned PDF (.pdf)'],
+      limits: 'Max 50MB per file. Encrypted PDFs must be unlocked prior to editing.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Works on all modern desktop and mobile browsers (Chrome, Firefox, Safari, Edge).",
-  "fileSizeMemory": "Processes files up to 50MB directly in local browser WebAssembly heap (~100MB RAM peak).",
-  "accessibility": "Full keyboard navigation (Tab/Shift+Tab, Enter) and screen reader ARIA labels."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Metadata fields are modified in local browser memory and never sent to any server.",
+      deviceBrowser:
+        'Works on all modern desktop and mobile browsers (Chrome, Firefox, Safari, Edge).',
+      fileSizeMemory:
+        'Processes files up to 50MB directly in local browser WebAssembly heap (~100MB RAM peak).',
+      accessibility:
+        'Full keyboard navigation (Tab/Shift+Tab, Enter) and screen reader ARIA labels.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Metadata fields are modified in local browser memory and never sent to any server.',
     troubleshooting: [
-  {
-    "issue": "PDF is password protected",
-    "resolution": "Unlock the document using our Unlock PDF tool before editing metadata tags."
-  },
-  {
-    "issue": "Updated properties do not show in desktop reader",
-    "resolution": "Save and open the newly downloaded file rather than reviewing the cached original."
-  }
-],
+      {
+        issue: 'PDF is password protected',
+        resolution: 'Unlock the document using our Unlock PDF tool before editing metadata tags.',
+      },
+      {
+        issue: 'Updated properties do not show in desktop reader',
+        resolution:
+          'Save and open the newly downloaded file rather than reviewing the cached original.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Sanitize PDF",
-    "url": "/sanitize-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Protect PDF",
-    "url": "/protect-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Remove PDF Metadata Guide",
-    "url": "/blog/how-to-remove-pdf-metadata-for-privacy/",
-    "type": "guide"
-  },
-  {
-    "title": "PDFMinty vs SmallPDF",
-    "url": "/compare/pdfminty-vs-smallpdf/",
-    "type": "comparison"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Security Architecture Team",
+      {
+        title: 'Sanitize PDF',
+        url: '/sanitize-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Protect PDF',
+        url: '/protect-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Remove PDF Metadata Guide',
+        url: '/blog/how-to-remove-pdf-metadata-for-privacy/',
+        type: 'guide',
+      },
+      {
+        title: 'PDFMinty vs SmallPDF',
+        url: '/compare/pdfminty-vs-smallpdf/',
+        type: 'comparison',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Security Architecture Team',
     howTo: {
       name: 'How to Edit PDF Metadata',
       totalTime: 'PT20S',
@@ -198,22 +290,28 @@ export const TOOLS: ToolSEOInfo[] = [
         q: 'What metadata fields can I edit on a PDF?',
         a: 'You can edit the Title, Author, Subject, Keywords, Creator, and Producer fields — the standard metadata tags stored in every PDF file.',
       },
-  {
+      {
         q: "Will editing metadata change my PDF's pages or formatting?",
-        a: 'No. Only the document\'s info tags are updated; page content, layout, and formatting are left exactly as they are.',
+        a: "No. Only the document's info tags are updated; page content, layout, and formatting are left exactly as they are.",
       },
-  {
+      {
         q: 'Is it safe to edit metadata on sensitive PDFs?',
         a: 'Yes. Metadata editing happens entirely in your browser — files up to 50MB are processed locally and never uploaded to a server.',
       },
-  {
+      {
         q: 'Why would I need to edit PDF metadata?',
         a: 'Common reasons include removing personal information left in the Author field before sharing a document, adding consistent branding across company PDFs, or adding keywords to make files easier to find in search.',
       },
     ],
-        keywords: ["edit pdf metadata","change pdf author","clean pdf properties","modify pdf title","pdf metadata editor"],
-    relatedTools: ["sanitize-pdf","protect-pdf","unlock-pdf","repair-pdf","flatten-pdf"],
-longFormBody: `
+    keywords: [
+      'edit pdf metadata',
+      'change pdf author',
+      'clean pdf properties',
+      'modify pdf title',
+      'pdf metadata editor',
+    ],
+    relatedTools: ['sanitize-pdf', 'protect-pdf', 'unlock-pdf', 'repair-pdf', 'flatten-pdf'],
+    longFormBody: `
       <h2>Edit PDF Metadata Free — Clean & Change PDF Properties</h2>
       <h2>Why PDF Metadata Cleaning Matters for Digital Privacy</h2>
       <p>Every PDF document generated by word processors, scan utilities, or desktop design software embeds invisible metadata properties. These include the author's operating system username, organization details, internal computer file paths, editing software version strings (e.g., Acrobat, Microsoft Word, Canva), and exact timestamps of creation and last modification. Sharing documents without inspecting or sanitizing these tags exposes sensitive corporate and personal details.</p>
@@ -242,7 +340,8 @@ longFormBody: `
     ogImage: '/og-image.png',
     shortDescription: 'Remove embedded scripts and hidden metadata',
     metaTitle: 'Sanitize PDF Free — Remove Hidden Data & Scripts | PDFMinty',
-    metaDescription: 'Securely sanitize PDF files. Remove hidden metadata, embedded scripts, and malicious launch actions offline for free.',
+    metaDescription:
+      'Securely sanitize PDF files. Remove hidden metadata, embedded scripts, and malicious launch actions offline for free.',
     h1: 'Sanitize PDF Free — Remove Hidden Data & Metadata',
     icon: 'ShieldBan',
     iconColor: 'text-security-green',
@@ -251,52 +350,52 @@ longFormBody: `
     priority: 0.7,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "PDFs can hide embedded JavaScript, automated open actions, and launch commands that pose security vulnerabilities or track user activity when opened.",
-    primaryCtaText: "Select PDF File to Sanitize",
+    problemSolved:
+      'PDFs can hide embedded JavaScript, automated open actions, and launch commands that pose security vulnerabilities or track user activity when opened.',
+    primaryCtaText: 'Select PDF File to Sanitize',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Sanitized PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Neutralizes hidden scripts while preserving visible layout, text, and vector graphics."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Sanitized PDF (.pdf)'],
+      limits:
+        'Max 50MB. Neutralizes hidden scripts while preserving visible layout, text, and vector graphics.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Compatible across Windows, macOS, Linux, iOS, and Android web browsers.",
-  "fileSizeMemory": "Instant client-side execution in local browser RAM without network delays.",
-  "accessibility": "Screen reader accessible uploader and status alerts."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Document sanitization executes entirely inside your browser sandbox.",
+      deviceBrowser: 'Compatible across Windows, macOS, Linux, iOS, and Android web browsers.',
+      fileSizeMemory: 'Instant client-side execution in local browser RAM without network delays.',
+      accessibility: 'Screen reader accessible uploader and status alerts.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Document sanitization executes entirely inside your browser sandbox.',
     troubleshooting: [
-  {
-    "issue": "Form calculations no longer trigger",
-    "resolution": "Sanitization strips active JavaScript macros for safety. Re-enable macros in trusted local PDF viewers if needed."
-  }
-],
+      {
+        issue: 'Form calculations no longer trigger',
+        resolution:
+          'Sanitization strips active JavaScript macros for safety. Re-enable macros in trusted local PDF viewers if needed.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Edit Metadata",
-    "url": "/edit-pdf-metadata/",
-    "type": "tool"
-  },
-  {
-    "title": "Is Uploading PDF Safe?",
-    "url": "/blog/is-it-safe-to-upload-pdf-to-online-tools/",
-    "type": "guide"
-  },
-  {
-    "title": "PDFMinty vs iLovePDF",
-    "url": "/compare/pdfminty-vs-ilovepdf/",
-    "type": "comparison"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Security Architecture Team",
+      {
+        title: 'Edit Metadata',
+        url: '/edit-pdf-metadata/',
+        type: 'tool',
+      },
+      {
+        title: 'Is Uploading PDF Safe?',
+        url: '/blog/is-it-safe-to-upload-pdf-to-online-tools/',
+        type: 'guide',
+      },
+      {
+        title: 'PDFMinty vs iLovePDF',
+        url: '/compare/pdfminty-vs-ilovepdf/',
+        type: 'comparison',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Security Architecture Team',
     howTo: {
       name: 'How to Sanitize a PDF',
       totalTime: 'PT15S',
@@ -312,22 +411,28 @@ longFormBody: `
         q: 'What does Sanitize PDF actually remove?',
         a: 'It neutralizes embedded JavaScript, OpenAction triggers, and Launch actions — the mechanisms most often used to hide unwanted behavior inside a PDF file.',
       },
-  {
+      {
         q: 'Why would a normal PDF contain scripts or hidden actions?',
         a: 'Some PDFs use embedded scripts for legitimate interactive forms, but the same mechanism can hide tracking or malicious code — sanitizing removes it regardless of intent.',
       },
-  {
+      {
         q: 'Does sanitizing remove visible content or formatting?',
         a: 'No. Sanitizing only strips hidden scripts and actions from the file structure; visible pages, text, and formatting are untouched.',
       },
-  {
+      {
         q: 'Is this different from Edit Metadata?',
         a: 'Yes. Edit Metadata changes visible info tags like Title and Author. Sanitize PDF removes hidden, potentially harmful code — many people use the two together before sharing a sensitive document.',
       },
     ],
-        keywords: ["sanitize pdf","remove pdf javascript","clean pdf metadata","strip pdf actions","secure pdf offline"],
-    relatedTools: ["edit-pdf-metadata","protect-pdf","unlock-pdf","flatten-pdf","repair-pdf"],
-longFormBody: `
+    keywords: [
+      'sanitize pdf',
+      'remove pdf javascript',
+      'clean pdf metadata',
+      'strip pdf actions',
+      'secure pdf offline',
+    ],
+    relatedTools: ['edit-pdf-metadata', 'protect-pdf', 'unlock-pdf', 'flatten-pdf', 'repair-pdf'],
+    longFormBody: `
       <h2>Sanitize PDF Free — Remove Hidden Data & Metadata</h2>
       <h2>What is PDF Sanitization and Why Is It Critical?</h2>
       <p>A standard PDF document is far more than static text and graphics. Under the ISO 32000 specification, PDFs can encapsulate embedded executable JavaScript (<code>/JS</code> and <code>/JavaScript</code> object dictionaries), automated launch actions (<code>/Launch</code>), document-open triggers (<code>/OpenAction</code> and <code>/AA</code>), and external URI phone-home beacons. Malicious actors and automated telemetry tools frequently exploit these hooks to track readers or deliver exploits.</p>
@@ -367,67 +472,65 @@ longFormBody: `
     priority: 0.9,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Combining multiple individual PDF files (invoices, reports, chapters, or receipts) into a single ordered document without uploading confidential files to external servers.",
-    primaryCtaText: "Select PDF Files to Merge",
+    problemSolved:
+      'Combining multiple individual PDF files (invoices, reports, chapters, or receipts) into a single ordered document without uploading confidential files to external servers.',
+    primaryCtaText: 'Select PDF Files to Merge',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)",
-    "Multiple PDF Documents"
-  ],
-  "output": [
-    "Combined PDF (.pdf)"
-  ],
-  "limits": "Max 50MB per single file, 150MB total combined deck limit. Files must be decrypted first."
-},
+      input: ['PDF (.pdf)', 'Multiple PDF Documents'],
+      output: ['Combined PDF (.pdf)'],
+      limits:
+        'Max 50MB per single file, 150MB total combined deck limit. Files must be decrypted first.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Supports drag-and-drop reordering on desktop and touch devices.",
-  "fileSizeMemory": "Merges up to 150MB total deck size in WebAssembly memory in seconds.",
-  "accessibility": "Includes Move Up and Move Down keyboard controls for screen reader users."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. All PDF files are merged locally on your CPU/RAM with zero server file uploads.",
+      deviceBrowser: 'Supports drag-and-drop reordering on desktop and touch devices.',
+      fileSizeMemory: 'Merges up to 150MB total deck size in WebAssembly memory in seconds.',
+      accessibility: 'Includes Move Up and Move Down keyboard controls for screen reader users.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. All PDF files are merged locally on your CPU/RAM with zero server file uploads.',
     troubleshooting: [
-  {
-    "issue": "Error: Please add at least 2 PDF files",
-    "resolution": "Select 2 or more PDF documents in the uploader to proceed."
-  },
-  {
-    "issue": "Merged pages are out of order",
-    "resolution": "Use the up/down arrow controls in the file deck before clicking Merge."
-  }
-],
+      {
+        issue: 'Error: Please add at least 2 PDF files',
+        resolution: 'Select 2 or more PDF documents in the uploader to proceed.',
+      },
+      {
+        issue: 'Merged pages are out of order',
+        resolution: 'Use the up/down arrow controls in the file deck before clicking Merge.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Combine Scanned Documents Guide",
-    "url": "/blog/how-to-combine-scanned-documents-into-one-pdf/",
-    "type": "guide"
-  },
-  {
-    "title": "Split PDF",
-    "url": "/split-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Reorder PDF",
-    "url": "/reorder-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Merge PDF Guide 2026",
-    "url": "/blog/how-to-merge-pdf-files-online-for-free-2026-guide/",
-    "type": "guide"
-  },
-  {
-    "title": "PDFMinty vs SmallPDF",
-    "url": "/compare/pdfminty-vs-smallpdf/",
-    "type": "comparison"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Combine Scanned Documents Guide',
+        url: '/blog/how-to-combine-scanned-documents-into-one-pdf/',
+        type: 'guide',
+      },
+      {
+        title: 'Split PDF',
+        url: '/split-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Reorder PDF',
+        url: '/reorder-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Merge PDF Guide 2026',
+        url: '/blog/how-to-merge-pdf-files-online-for-free-2026-guide/',
+        type: 'guide',
+      },
+      {
+        title: 'PDFMinty vs SmallPDF',
+        url: '/compare/pdfminty-vs-smallpdf/',
+        type: 'comparison',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Merge PDF Files Online',
       totalTime: 'PT30S',
@@ -443,22 +546,34 @@ longFormBody: `
         q: 'Can I merge password-protected PDFs?',
         a: 'Password-protected or encrypted PDFs cannot be merged directly. You must first unlock them using our "Unlock PDF" tool before combining them.',
       },
-  {
+      {
         q: 'Is there a limit to the number of files or file size I can merge?',
         a: 'No. Because all processing happens directly on your device rather than on our servers, there are no file size triggers or file count restrictions.',
       },
-  {
+      {
         q: 'Will merging PDFs affect the formatting, fonts, or links?',
         a: 'No. Our merging engine retains all text formatting, embedded fonts, vectors, active hyperlinks, and original page layouts without modification.',
       },
-  {
+      {
         q: 'Is my data safe when merging files here?',
         a: 'Yes, absolutely. Your documents are merged fully in your browser sandbox using local client-side processing. Your file packets never navigate over network channels.',
       },
     ],
-        keywords: ["merge pdf","combine pdf files","join pdf pages","merge pdfs offline","pdf combiner free"],
-    relatedTools: ["split-pdf","reorder-pdf","extract-pages-pdf","delete-pages-pdf","add-blank-page"],
-longFormBody: `
+    keywords: [
+      'merge pdf',
+      'combine pdf files',
+      'join pdf pages',
+      'merge pdfs offline',
+      'pdf combiner free',
+    ],
+    relatedTools: [
+      'split-pdf',
+      'reorder-pdf',
+      'extract-pages-pdf',
+      'delete-pages-pdf',
+      'add-blank-page',
+    ],
+    longFormBody: `
       <h2>Merge PDF Files Online - Combine Documents Locally</h2>
       <p>PDFMinty introduces a fundamentally modern, secure way to combine your critical administrative documents. Traditionally, using free online PDF mergers meant uploading your tax returns, financial records, or medical scans to unknown cloud servers. If you are handling large, image-heavy paper batches, check our tutorial on <a href="/blog/how-to-combine-scanned-documents-into-one-pdf/">how to combine scanned documents into one PDF without crashing</a>. PDFMinty relies entirely on offline-capable browser sandboxing, meaning your private pages are combined piece-by-piece right on your local device. This client-side execution ensures your standard documents are processed in local browser memory without network file uploads.</p>
       
@@ -496,58 +611,56 @@ longFormBody: `
     priority: 0.9,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Extracting specific page ranges or splitting a large multi-page PDF into smaller separate files without re-scanning or uploading.",
-    primaryCtaText: "Select PDF File to Split",
+    problemSolved:
+      'Extracting specific page ranges or splitting a large multi-page PDF into smaller separate files without re-scanning or uploading.',
+    primaryCtaText: 'Select PDF File to Split',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Split PDF Pages (.pdf)",
-    "ZIP Archive"
-  ],
-  "limits": "Max 50MB file size. Custom page range syntax (e.g., 1-3, 5, 8-10) supported."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Split PDF Pages (.pdf)', 'ZIP Archive'],
+      limits: 'Max 50MB file size. Custom page range syntax (e.g., 1-3, 5, 8-10) supported.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Cross-platform support across all desktop and mobile browsers.",
-  "fileSizeMemory": "Executes page parsing in browser memory in under 1 second.",
-  "accessibility": "Numeric page inputs feature explicit labels and screen reader error messaging."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. PDF page separation occurs locally on your machine.",
+      deviceBrowser: 'Cross-platform support across all desktop and mobile browsers.',
+      fileSizeMemory: 'Executes page parsing in browser memory in under 1 second.',
+      accessibility:
+        'Numeric page inputs feature explicit labels and screen reader error messaging.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. PDF page separation occurs locally on your machine.',
     troubleshooting: [
-  {
-    "issue": "Invalid page range error",
-    "resolution": "Verify that entered page numbers fall within the document total page count."
-  }
-],
+      {
+        issue: 'Invalid page range error',
+        resolution: 'Verify that entered page numbers fall within the document total page count.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Split PDF by Page Range Guide",
-    "url": "/blog/how-to-split-pdf-by-page-range-and-extract-pages/",
-    "type": "guide"
-  },
-  {
-    "title": "Merge PDF",
-    "url": "/merge-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Extract Pages",
-    "url": "/extract-pages-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Delete Pages",
-    "url": "/delete-pages-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Split PDF by Page Range Guide',
+        url: '/blog/how-to-split-pdf-by-page-range-and-extract-pages/',
+        type: 'guide',
+      },
+      {
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Extract Pages',
+        url: '/extract-pages-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Delete Pages',
+        url: '/delete-pages-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Split a PDF Offline',
       totalTime: 'PT30S',
@@ -563,22 +676,34 @@ longFormBody: `
         q: 'How do I specify which pages to extract?',
         a: 'You can type specific page numbers or ranges, such as "1-3, 5, 8-10". Comma-separated or hyphenated formats are fully supported.',
       },
-  {
+      {
         q: 'Will the extracted PDF be larger in file size?',
         a: 'No. The splitting processor isolates internal document streams precisely, preserving target vectors while discarding unselected resource footprints.',
       },
-  {
+      {
         q: 'Can I split encrypted PDF files?',
         a: 'You must decrypt secured or locked files before splitting them. Please use our "Unlock PDF" tool first if you know the password of the file.',
       },
-  {
+      {
         q: 'Is split processing done on your cloud servers?',
         a: 'No. The splitting routine binds directly inside your browser cache. This client-side execution makes it impossible for third parties to view your records.',
       },
     ],
-        keywords: ["split pdf","extract pdf pages","separate pdf pages","split pdf ranges","pdf splitter offline"],
-    relatedTools: ["merge-pdf","extract-pages-pdf","delete-pages-pdf","reorder-pdf","add-blank-page"],
-longFormBody: `
+    keywords: [
+      'split pdf',
+      'extract pdf pages',
+      'separate pdf pages',
+      'split pdf ranges',
+      'pdf splitter offline',
+    ],
+    relatedTools: [
+      'merge-pdf',
+      'extract-pages-pdf',
+      'delete-pages-pdf',
+      'reorder-pdf',
+      'add-blank-page',
+    ],
+    longFormBody: `
       <h2>Split PDF Online - Separate and Extract Pages</h2>
       <p>Dealing with massive documents or manuals often means you only need a couple of pages. PDFMinty's split PDF tool extracts target page ranges with surgical utility. Unlike legacy services that host server processes to rip files apart, our system uses client-side parser bindings. This allows you to split pages or isolate multi-page scopes on your laptop or smartphone without exposing confidential content. Need assistance splitting custom intervals or extracting specific page groups? Follow our tutorial on <a href="/blog/how-to-split-pdf-by-page-range-and-extract-pages/">how to split PDF files by page range and extract specific pages</a>.</p>
       
@@ -616,47 +741,46 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Permanently fixing upside-down or sideways scanned pages across an entire PDF or specific page indices.",
-    primaryCtaText: "Select PDF File to Rotate",
+    problemSolved:
+      'Permanently fixing upside-down or sideways scanned pages across an entire PDF or specific page indices.',
+    primaryCtaText: 'Select PDF File to Rotate',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Rotated PDF (.pdf)"
-  ],
-  "limits": "Max 50MB file size. Rotates by 90°, 180°, or 270° clockwise/counter-clockwise."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Rotated PDF (.pdf)'],
+      limits: 'Max 50MB file size. Rotates by 90°, 180°, or 270° clockwise/counter-clockwise.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Visual page thumbnail preview supported on touch screens and desktop mice.",
-  "fileSizeMemory": "Updates page orientation transforms instantly in local memory.",
-  "accessibility": "Accessible degree rotation buttons with ARIA announcements."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Page rotation tags are updated directly inside local browser memory.",
+      deviceBrowser: 'Visual page thumbnail preview supported on touch screens and desktop mice.',
+      fileSizeMemory: 'Updates page orientation transforms instantly in local memory.',
+      accessibility: 'Accessible degree rotation buttons with ARIA announcements.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Page rotation tags are updated directly inside local browser memory.',
     troubleshooting: [
-  {
-    "issue": "Pages revert to original in desktop app",
-    "resolution": "Download and open the newly saved output file rather than re-opening the unrotated source."
-  }
-],
+      {
+        issue: 'Pages revert to original in desktop app',
+        resolution:
+          'Download and open the newly saved output file rather than re-opening the unrotated source.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Reorder PDF",
-    "url": "/reorder-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Delete Pages",
-    "url": "/delete-pages-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Reorder PDF',
+        url: '/reorder-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Delete Pages',
+        url: '/delete-pages-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Rotate PDF Pages Online',
       totalTime: 'PT20S',
@@ -672,22 +796,34 @@ longFormBody: `
         q: 'Can I rotate only a single page of a larger PDF?',
         a: 'Yes. You can click on specific page thumbnails to rotate selected pages separately, or rotate all pages in the document simultaneously.',
       },
-  {
+      {
         q: 'Does rotating pages alter the original resolution or layout?',
         a: 'No. Page rotation simply updates the "Rotate" tag coordinate inside the PDF\'s native structural catalog. Text, vector layers, and layouts remain identical.',
       },
-  {
+      {
         q: 'Is there a limit to the document size I can rotate?',
         a: 'No. Page orientation shifts are incredibly lightweight and fast. The changes are written to the document schema instantly in your browser.',
       },
-  {
+      {
         q: 'Do you store my rotated documents?',
         a: 'No files are ever saved or transmitted. The rotation happens on your computer locally, guaranteeing 100% data confidentiality.',
       },
     ],
-        keywords: ["rotate pdf","rotate pdf pages","turn pdf 90 degrees","fix upside down pdf","pdf orientation changer"],
-    relatedTools: ["reorder-pdf","delete-pages-pdf","extract-pages-pdf","merge-pdf","add-blank-page"],
-longFormBody: `
+    keywords: [
+      'rotate pdf',
+      'rotate pdf pages',
+      'turn pdf 90 degrees',
+      'fix upside down pdf',
+      'pdf orientation changer',
+    ],
+    relatedTools: [
+      'reorder-pdf',
+      'delete-pages-pdf',
+      'extract-pages-pdf',
+      'merge-pdf',
+      'add-blank-page',
+    ],
+    longFormBody: `
       <h2>Rotate PDF Pages Online with Instant Verification</h2>
       <p>Mismatched column alignments, inverted form scans, or sideways landscape architectural blueprints can disrupt reading. PDFMinty's browser-bound rotate PDF utility easily corrects page orientation. You can select specific pages or rotate all pages simultaneously, watching the layout shift in real-time, all completely on your local device.</p>
       
@@ -726,47 +862,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Removing redundant cover sheets, blank pages, or sensitive material from a PDF before sharing.",
-    primaryCtaText: "Select PDF File to Delete Pages",
+    problemSolved:
+      'Removing redundant cover sheets, blank pages, or sensitive material from a PDF before sharing.',
+    primaryCtaText: 'Select PDF File to Delete Pages',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Updated PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Document must retain at least 1 page."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Updated PDF (.pdf)'],
+      limits: 'Max 50MB. Document must retain at least 1 page.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Interactive visual page thumbnail selector rendered in local browser canvas.",
-  "fileSizeMemory": "Purges unneeded pages from WebAssembly memory upon download.",
-  "accessibility": "Keyboard selectable page grids."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Deleted pages are permanently removed in local memory and never saved anywhere.",
+      deviceBrowser: 'Interactive visual page thumbnail selector rendered in local browser canvas.',
+      fileSizeMemory: 'Purges unneeded pages from WebAssembly memory upon download.',
+      accessibility: 'Keyboard selectable page grids.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Deleted pages are permanently removed in local memory and never saved anywhere.',
     troubleshooting: [
-  {
-    "issue": "Cannot delete all pages",
-    "resolution": "A valid PDF requires at least one page. Keep at least one page unselected."
-  }
-],
+      {
+        issue: 'Cannot delete all pages',
+        resolution: 'A valid PDF requires at least one page. Keep at least one page unselected.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Extract Pages",
-    "url": "/extract-pages-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Split PDF",
-    "url": "/split-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Extract Pages',
+        url: '/extract-pages-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Split PDF',
+        url: '/split-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Delete Pages from a PDF',
       totalTime: 'PT20S',
@@ -782,22 +916,28 @@ longFormBody: `
         q: 'Can I undo deleting page thumbnails before compiling?',
         a: 'Yes. You can click or toggle page selection cards on and off to easily adjust what pages to delete before clicking the final process button.',
       },
-  {
+      {
         q: 'Does deleting pages reduce the overall PDF file size?',
         a: 'Yes. The processor removes deleted page structures and their associated media elements, resulting in a cleaner, lighter PDF document.',
       },
-  {
+      {
         q: 'Can I delete pages from protected PDFs?',
         a: 'You must enter the authorized password to unlock encrypted files first before editing page layouts or deleting specific pages.',
       },
-  {
+      {
         q: 'Is my document text analyzed or sent to the cloud?',
         a: 'No. Your pages are rendered and cropped inside local browser sandboxes. No files or personal text ever travel over remote web servers.',
       },
     ],
-        keywords: ["delete pdf pages","remove pages from pdf","cut pdf pages","delete blank pdf pages","remove pdf sheets"],
-    relatedTools: ["extract-pages-pdf","reorder-pdf","split-pdf","merge-pdf","add-blank-page"],
-longFormBody: `
+    keywords: [
+      'delete pdf pages',
+      'remove pages from pdf',
+      'cut pdf pages',
+      'delete blank pdf pages',
+      'remove pdf sheets',
+    ],
+    relatedTools: ['extract-pages-pdf', 'reorder-pdf', 'split-pdf', 'merge-pdf', 'add-blank-page'],
+    longFormBody: `
       <h2>Delete PDF Pages Online - Eliminate Unwanted Sheets</h2>
       <p>Preparing a document for presentation often requires cutting unnecessary filler, confidential metadata, or blank trailing pages. PDFMinty's delete pages feature makes editing simple. Our visual workspace lets you select, toggle, and strip out unwanted sheets locally, ensuring confidential details stay within your device boundaries.</p>
       
@@ -836,47 +976,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Isolating key pages from a complex PDF to build a clean, standalone excerpt file.",
-    primaryCtaText: "Select PDF File to Extract Pages",
+    problemSolved:
+      'Isolating key pages from a complex PDF to build a clean, standalone excerpt file.',
+    primaryCtaText: 'Select PDF File to Extract Pages',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Extracted PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Preserves vector resolution, text layers, and embedded fonts."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Extracted PDF (.pdf)'],
+      limits: 'Max 50MB. Preserves vector resolution, text layers, and embedded fonts.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Compatible with all modern web browsers.",
-  "fileSizeMemory": "Instant browser download with zero network buffering.",
-  "accessibility": "Labeled page selection controls."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Page extraction executes completely on your device.",
+      deviceBrowser: 'Compatible with all modern web browsers.',
+      fileSizeMemory: 'Instant browser download with zero network buffering.',
+      accessibility: 'Labeled page selection controls.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Page extraction executes completely on your device.',
     troubleshooting: [
-  {
-    "issue": "Page index out of bounds",
-    "resolution": "Enter page numbers that match the document length."
-  }
-],
+      {
+        issue: 'Page index out of bounds',
+        resolution: 'Enter page numbers that match the document length.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Delete Pages",
-    "url": "/delete-pages-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Split PDF",
-    "url": "/split-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Delete Pages',
+        url: '/delete-pages-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Split PDF',
+        url: '/split-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Extract Pages from a PDF',
       totalTime: 'PT20S',
@@ -892,22 +1030,28 @@ longFormBody: `
         q: 'How is "Extract Pages" different from "Split PDF"?',
         a: '"Extract Pages" provides an interactive, visual interface where you can preview and select thumbnails, whereas "Split PDF" lets you specify custom ranges using text input.',
       },
-  {
+      {
         q: 'Will hyperlinks or bookmarks stay active in the extracted pages?',
         a: 'Yes. Active links, internal bookmarks, outline definitions, and formatting are preserved for all extracted pages.',
       },
-  {
+      {
         q: 'Can I extract pages and rearrange them at the same time?',
         a: 'To extract pages, use this tool. Once extracted and downloaded, you can use our "Reorder PDF Pages" tool to easily rearrange their sequence.',
       },
-  {
+      {
         q: 'Is visual page extraction secure in my browser?',
         a: 'Yes. Rendered page images are loaded locally and are never transmitted over the internet or indexed by online search engines.',
       },
     ],
-        keywords: ["extract pdf pages","save specific pdf pages","pull pages from pdf","isolate pdf pages","export pdf pages"],
-    relatedTools: ["delete-pages-pdf","reorder-pdf","split-pdf","merge-pdf","add-blank-page"],
-longFormBody: `
+    keywords: [
+      'extract pdf pages',
+      'save specific pdf pages',
+      'pull pages from pdf',
+      'isolate pdf pages',
+      'export pdf pages',
+    ],
+    relatedTools: ['delete-pages-pdf', 'reorder-pdf', 'split-pdf', 'merge-pdf', 'add-blank-page'],
+    longFormBody: `
       <h2>Extract PDF Pages Safely - Isolate Crucial Documents</h2>
       <p>PDFMinty's extract PDF pages tool allows you to pull important sheets out of complex reports and save them as standalone files. Keep your relevant tax summaries, contract signatures, or chart illustrations, while discarding the rest of the document. Like all PDFMinty tools, the extraction process is completed directly in your browser with zero server latency.</p>
       
@@ -946,52 +1090,50 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Rearranging out-of-order pages in scanned booklets, contracts, or slides.",
-    primaryCtaText: "Select PDF File to Reorder",
+    problemSolved: 'Rearranging out-of-order pages in scanned booklets, contracts, or slides.',
+    primaryCtaText: 'Select PDF File to Reorder',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Reordered PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Drag-and-drop or button-controlled reordering."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Reordered PDF (.pdf)'],
+      limits: 'Max 50MB. Drag-and-drop or button-controlled reordering.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Supports mouse drag-and-drop and touch screen input.",
-  "fileSizeMemory": "Processes page tree structure in local browser memory.",
-  "accessibility": "Includes keyboard accessible Up/Down buttons."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Page order is modified in local browser memory.",
+      deviceBrowser: 'Supports mouse drag-and-drop and touch screen input.',
+      fileSizeMemory: 'Processes page tree structure in local browser memory.',
+      accessibility: 'Includes keyboard accessible Up/Down buttons.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Page order is modified in local browser memory.',
     troubleshooting: [
-  {
-    "issue": "Thumbnails loading slowly",
-    "resolution": "Allow a few seconds for high-resolution page canvas rendering on multi-page files."
-  }
-],
+      {
+        issue: 'Thumbnails loading slowly',
+        resolution:
+          'Allow a few seconds for high-resolution page canvas rendering on multi-page files.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Rearrange PDF Pages Guide",
-    "url": "/blog/how-to-rearrange-pdf-pages-offline/",
-    "type": "guide"
-  },
-  {
-    "title": "Rotate PDF",
-    "url": "/rotate-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Merge PDF",
-    "url": "/merge-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Rearrange PDF Pages Guide',
+        url: '/blog/how-to-rearrange-pdf-pages-offline/',
+        type: 'guide',
+      },
+      {
+        title: 'Rotate PDF',
+        url: '/rotate-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Reorder PDF Pages',
       totalTime: 'PT25S',
@@ -1007,22 +1149,34 @@ longFormBody: `
         q: 'How does visual reordering work?',
         a: 'Upload your PDF to view interactive page cards. Drag and drop the page previews into your desired position, and click download to compile.',
       },
-  {
-        q: 'Does rearranging pages mess up my document\'s index or table of contents?',
+      {
+        q: "Does rearranging pages mess up my document's index or table of contents?",
         a: 'It organizes target pages physically, but does not auto-rewrite text titles. Double-check your page references if you change the structure significantly.',
       },
-  {
+      {
         q: 'Can I reorder files of any size?',
         a: 'Yes. Large documents are rendered locally as lightweight thumbnails at an optimized resolution so you can arrange them smoothly to prevent lags.',
       },
-  {
+      {
         q: 'Does PDFMinty upload my reordered chapters to a server?',
         a: 'No files are transferred. The reordering calculation runs entirely in your local browser sandbox, giving you absolute privacy.',
       },
     ],
-        keywords: ["reorder pdf pages","rearrange pdf order","organize pdf pages","sort pdf pages","change pdf page sequence"],
-    relatedTools: ["rotate-pdf","delete-pages-pdf","extract-pages-pdf","merge-pdf","add-blank-page"],
-longFormBody: `
+    keywords: [
+      'reorder pdf pages',
+      'rearrange pdf order',
+      'organize pdf pages',
+      'sort pdf pages',
+      'change pdf page sequence',
+    ],
+    relatedTools: [
+      'rotate-pdf',
+      'delete-pages-pdf',
+      'extract-pages-pdf',
+      'merge-pdf',
+      'add-blank-page',
+    ],
+    longFormBody: `
       <h2>Reorder PDF Pages - Arrange and Organize Pages Online</h2>
       <p>Scanned files and compiled reports can easily end up with pages mixed up or out of sequence. PDFMinty's reorder PDF pages tool provides an easy drag-and-drop workspace to organize your document layouts. This interactive interface works 100% inside your web browser, keeping your page ordering simple, fast, and completely private.</p>
       
@@ -1060,47 +1214,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Stamping custom text watermarks ('DRAFT', 'CONFIDENTIAL', or logo text) across PDF pages to discourage unauthorized copying.",
-    primaryCtaText: "Select PDF File to Watermark",
+    problemSolved:
+      "Stamping custom text watermarks ('DRAFT', 'CONFIDENTIAL', or logo text) across PDF pages to discourage unauthorized copying.",
+    primaryCtaText: 'Select PDF File to Watermark',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Watermarked PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Customizable text, opacity, size, and diagonal rotation."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Watermarked PDF (.pdf)'],
+      limits: 'Max 50MB. Customizable text, opacity, size, and diagonal rotation.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Responsive text positioning preview across desktop and mobile screens.",
-  "fileSizeMemory": "Renders vector text overlays in local memory.",
-  "accessibility": "Form inputs feature clear ARIA labels for opacity and size."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Watermarks are embedded into the PDF structure locally.",
+      deviceBrowser: 'Responsive text positioning preview across desktop and mobile screens.',
+      fileSizeMemory: 'Renders vector text overlays in local memory.',
+      accessibility: 'Form inputs feature clear ARIA labels for opacity and size.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Watermarks are embedded into the PDF structure locally.',
     troubleshooting: [
-  {
-    "issue": "Watermark obscures text",
-    "resolution": "Set transparency/opacity to 15-20% for background watermarking."
-  }
-],
+      {
+        issue: 'Watermark obscures text',
+        resolution: 'Set transparency/opacity to 15-20% for background watermarking.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Add Page Numbers",
-    "url": "/add-page-numbers/",
-    "type": "tool"
-  },
-  {
-    "title": "Protect PDF",
-    "url": "/protect-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Add Page Numbers',
+        url: '/add-page-numbers/',
+        type: 'tool',
+      },
+      {
+        title: 'Protect PDF',
+        url: '/protect-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Add a Watermark to a PDF',
       totalTime: 'PT30S',
@@ -1116,22 +1268,34 @@ longFormBody: `
         q: 'Can someone easily strip my watermark text overlay?',
         a: 'Watermarks are stamped directly to the document vectors and graphic plates, making them very difficult to remove without professional PDF editing tools.',
       },
-  {
+      {
         q: 'Can I customize watermark text size, angles, and transparency?',
         a: 'Yes. You can customize the overlay text, choose diagonal or straight rotation angles, set desired transparency levels, and scale font sizes easily.',
       },
-  {
+      {
         q: 'Will the watermark cover up my original text?',
         a: 'You can adjust the opacity slider to make the watermark text semi-transparent. This ensures your background content remains highly readable.',
       },
-  {
+      {
         q: 'Are my custom watermark terms or files saved?',
         a: 'No. Watermark stamping is calculated fully in-browser through offscreen rendering. Your inputs and layouts stay private to your workspace.',
       },
     ],
-        keywords: ["watermark pdf","add watermark to pdf","confidential watermark pdf","draft stamp pdf","text watermark pdf"],
-    relatedTools: ["add-page-numbers","sign-pdf","protect-pdf","flatten-pdf","edit-pdf-metadata"],
-longFormBody: `
+    keywords: [
+      'watermark pdf',
+      'add watermark to pdf',
+      'confidential watermark pdf',
+      'draft stamp pdf',
+      'text watermark pdf',
+    ],
+    relatedTools: [
+      'add-page-numbers',
+      'sign-pdf',
+      'protect-pdf',
+      'flatten-pdf',
+      'edit-pdf-metadata',
+    ],
+    longFormBody: `
       <h2>Add Watermark to PDF - Overlay Custom Text Seals Safely</h2>
       <p>Stamping documents with custom text overlays is a great way to safeguard intellectual property, label drafts, and discourage unauthorized sharing. PDFMinty's watermark tool lets you apply customizable, transparent watermarks to all of your PDF pages locally, right inside your web browser, without relying on vulnerable cloud servers.</p>
       
@@ -1169,52 +1333,50 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Stamping formal page numbers ('Page X of Y') on unnumbered legal, corporate, or academic PDFs.",
-    primaryCtaText: "Select PDF File to Add Page Numbers",
+    problemSolved:
+      "Stamping formal page numbers ('Page X of Y') on unnumbered legal, corporate, or academic PDFs.",
+    primaryCtaText: 'Select PDF File to Add Page Numbers',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Numbered PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Custom positions (top/bottom, left/center/right)."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Numbered PDF (.pdf)'],
+      limits: 'Max 50MB. Custom positions (top/bottom, left/center/right).',
+    },
     technicalNotes: {
-  "deviceBrowser": "Works across all modern browsers.",
-  "fileSizeMemory": "Instant client-side execution in local memory.",
-  "accessibility": "Accessible form selectors."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Page numbers are calculated and stamped on your device.",
+      deviceBrowser: 'Works across all modern browsers.',
+      fileSizeMemory: 'Instant client-side execution in local memory.',
+      accessibility: 'Accessible form selectors.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Page numbers are calculated and stamped on your device.',
     troubleshooting: [
-  {
-    "issue": "Page numbers overlap footer text",
-    "resolution": "Adjust vertical margin offset or place numbers in top header position."
-  }
-],
+      {
+        issue: 'Page numbers overlap footer text',
+        resolution: 'Adjust vertical margin offset or place numbers in top header position.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Add Page Numbers Guide",
-    "url": "/blog/how-to-add-page-numbers-to-a-pdf-for-free/",
-    "type": "guide"
-  },
-  {
-    "title": "Watermark PDF",
-    "url": "/watermark-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Add Blank Page",
-    "url": "/add-blank-page/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Add Page Numbers Guide',
+        url: '/blog/how-to-add-page-numbers-to-a-pdf-for-free/',
+        type: 'guide',
+      },
+      {
+        title: 'Watermark PDF',
+        url: '/watermark-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Add Blank Page',
+        url: '/add-blank-page/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Add Page Numbers to a PDF',
       totalTime: 'PT20S',
@@ -1230,22 +1392,28 @@ longFormBody: `
         q: 'Where are the page numbers placed on my PDF sheet?',
         a: 'You can place page numbers in headers (top) or footers (bottom), aligned to the left side, center, or right side of the pages.',
       },
-  {
+      {
         q: 'Can I skip adding page numbers on the first page?',
         a: 'Yes. You can choose whether to number all pages or skip numbering on the first sheet (useful for title pages and cover slides).',
       },
-  {
+      {
         q: 'Can I customize the numbering format and starting index?',
         a: 'Yes. You can change standard text patterns, select professional templates, and define custom starting pages or step increments easily.',
       },
-  {
+      {
         q: 'Will adding page numbers overwrite any of my existing headers or text?',
-        a: 'Page numbers are aligned cleanly in your document\'s blank margins. Make sure your layout has sufficient footer/header breathing space to avoid overlap.',
+        a: "Page numbers are aligned cleanly in your document's blank margins. Make sure your layout has sufficient footer/header breathing space to avoid overlap.",
       },
     ],
-        keywords: ["add page numbers to pdf","number pdf pages","insert pdf page numbers","page numbering tool","bates numbering pdf"],
-    relatedTools: ["watermark-pdf","add-blank-page","reorder-pdf","merge-pdf","flatten-pdf"],
-longFormBody: `
+    keywords: [
+      'add page numbers to pdf',
+      'number pdf pages',
+      'insert pdf page numbers',
+      'page numbering tool',
+      'bates numbering pdf',
+    ],
+    relatedTools: ['watermark-pdf', 'add-blank-page', 'reorder-pdf', 'merge-pdf', 'flatten-pdf'],
+    longFormBody: `
       <h2>Add Page Numbers to PDF - Format Documents Instantly</h2>
       <p>Unnumbered documents are difficult to navigate and reference in professional and academic settings. PDFMinty's page numbers tool lets you automatically stamp consistent, clear page counts onto your PDFs. Best of all, our tool operates entirely within your web browser, keeping your files safe, secure, and private.</p>
       
@@ -1283,47 +1451,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Inserting blank pages into a PDF for duplex printing alignment, chapter dividers, or extra note space.",
-    primaryCtaText: "Select PDF File to Add Blank Page",
+    problemSolved:
+      'Inserting blank pages into a PDF for duplex printing alignment, chapter dividers, or extra note space.',
+    primaryCtaText: 'Select PDF File to Add Blank Page',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Updated PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Insert blank pages at start, end, or specific page index."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Updated PDF (.pdf)'],
+      limits: 'Max 50MB. Insert blank pages at start, end, or specific page index.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Works in all browsers.",
-  "fileSizeMemory": "Instant execution.",
-  "accessibility": "Accessible numeric index input."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Blank pages are inserted locally without network calls.",
+      deviceBrowser: 'Works in all browsers.',
+      fileSizeMemory: 'Instant execution.',
+      accessibility: 'Accessible numeric index input.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Blank pages are inserted locally without network calls.',
     troubleshooting: [
-  {
-    "issue": "Page size mismatch",
-    "resolution": "Blank page automatically matches dimensions of adjacent document pages."
-  }
-],
+      {
+        issue: 'Page size mismatch',
+        resolution: 'Blank page automatically matches dimensions of adjacent document pages.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Merge PDF",
-    "url": "/merge-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Reorder PDF",
-    "url": "/reorder-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Reorder PDF',
+        url: '/reorder-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Insert a Blank Page into a PDF',
       totalTime: 'PT15S',
@@ -1339,22 +1505,28 @@ longFormBody: `
         q: 'Where can I insert an empty blank sheet in my PDF document?',
         a: 'You can insert blank pages at the very start of the document, at the end, or after any specific page number of your choice.',
       },
-  {
+      {
         q: 'What paper templates and layouts are supported?',
         a: 'Our compiler supports A4, Letter, and custom formats, and automatically matches the paper dimensions and orientations of your existing pages.',
       },
-  {
+      {
         q: 'Will inserting a blank page corrupt my active hyperlinks?',
         a: 'No. The internal cross-reference list is systematically updated to offset subsequent page layouts, leaving internal links and bookmarks functional.',
       },
-  {
+      {
         q: 'Is it safe to add spacing pages to my official documents here?',
         a: 'Absolutely. Processing runs entirely on your local machine. Your commercial files, invoices, and contracts never exit your browser.',
       },
     ],
-        keywords: ["add blank page to pdf","insert empty pdf page","duplex blank page pdf","add page between pdf","insert blank sheet"],
-    relatedTools: ["merge-pdf","split-pdf","reorder-pdf","add-page-numbers","delete-pages-pdf"],
-longFormBody: `
+    keywords: [
+      'add blank page to pdf',
+      'insert empty pdf page',
+      'duplex blank page pdf',
+      'add page between pdf',
+      'insert blank sheet',
+    ],
+    relatedTools: ['merge-pdf', 'split-pdf', 'reorder-pdf', 'add-page-numbers', 'delete-pages-pdf'],
+    longFormBody: `
       <h2>Add Blank Page to PDF - Insert Space Margins Safely</h2>
       <p>Adding blank separator sheets, section spacers, or duplex buffer pages is straightforward with PDFMinty. The tool inserts empty page objects matching your target document dimensions, running entirely in browser memory without sending data over the network.</p>
       
@@ -1393,52 +1565,51 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Securing sensitive financial records, medical documents, or contracts with strong AES password encryption.",
-    primaryCtaText: "Select PDF File to Protect",
+    problemSolved:
+      'Securing sensitive financial records, medical documents, or contracts with strong AES password encryption.',
+    primaryCtaText: 'Select PDF File to Protect',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Encrypted PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Standard 128/256-bit AES PDF encryption."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Encrypted PDF (.pdf)'],
+      limits: 'Max 50MB. Standard 128/256-bit AES PDF encryption.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Uses local browser Web Cryptography API.",
-  "fileSizeMemory": "Encrypts in local memory; passwords are never sent over network.",
-  "accessibility": "Password inputs include toggle visibility and ARIA labels."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Passwords and encrypted files remain entirely in your browser.",
+      deviceBrowser: 'Uses local browser Web Cryptography API.',
+      fileSizeMemory: 'Encrypts in local memory; passwords are never sent over network.',
+      accessibility: 'Password inputs include toggle visibility and ARIA labels.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Passwords and encrypted files remain entirely in your browser.',
     troubleshooting: [
-  {
-    "issue": "Lost password",
-    "resolution": "PDFMinty does not store or log passwords. Keep password saved in a secure manager like NordPass."
-  }
-],
+      {
+        issue: 'Lost password',
+        resolution:
+          'PDFMinty does not store or log passwords. Keep password saved in a secure manager like NordPass.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "PDF Repair & Recovery Guide",
-    "url": "/blog/how-to-repair-a-corrupted-pdf/",
-    "type": "guide"
-  },
-  {
-    "title": "Unlock PDF",
-    "url": "/unlock-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Protect PDF Guide",
-    "url": "/blog/how-to-password-protect-a-pdf-offline/",
-    "type": "guide"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Security Architecture Team",
+      {
+        title: 'PDF Repair & Recovery Guide',
+        url: '/blog/how-to-repair-a-corrupted-pdf/',
+        type: 'guide',
+      },
+      {
+        title: 'Unlock PDF',
+        url: '/unlock-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Protect PDF Guide',
+        url: '/blog/how-to-password-protect-a-pdf-offline/',
+        type: 'guide',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Security Architecture Team',
     howTo: {
       name: 'How to Password Protect a PDF',
       totalTime: 'PT20S',
@@ -1454,22 +1625,28 @@ longFormBody: `
         q: 'How strong is the password protection applied to my PDF?',
         a: 'We use high-strength standard cryptographic file-locking models. Unlocking the PDF requires brute-forcing, making it extremely secure.',
       },
-  {
+      {
         q: 'What is the difference between an owner password and a user password?',
         a: 'A "User Password" restricts open permissions, requiring password entry to view content. An "Owner Password" lets users read but blocks printing, copying, or modifications.',
       },
-  {
+      {
         q: 'Can I set permissions to disable only printing?',
         a: 'Yes. You can choose to encrypt file access completely or enforce specific restrictions to disable text copying and printing separately.',
       },
-  {
+      {
         q: 'Does PDFMinty know or store my chosen password?',
         a: 'No. Encryption calculations run locally. We have no backend databases or telemetry logs, so we can never recover a forgotten password.',
       },
     ],
-        keywords: ["protect pdf","encrypt pdf password","lock pdf offline","set pdf password","aes encrypted pdf"],
-    relatedTools: ["unlock-pdf","sanitize-pdf","edit-pdf-metadata","flatten-pdf","sign-pdf"],
-longFormBody: `
+    keywords: [
+      'protect pdf',
+      'encrypt pdf password',
+      'lock pdf offline',
+      'set pdf password',
+      'aes encrypted pdf',
+    ],
+    relatedTools: ['unlock-pdf', 'sanitize-pdf', 'edit-pdf-metadata', 'flatten-pdf', 'sign-pdf'],
+    longFormBody: `
       <h2>Password Protect PDF - Secure Documents with AES Encryption</h2>
       <p>PDFMinty's protect tool lets you lock your sensitive PDF documents with robust encryption. Encrypting your files ensures key tax filings, financial spreadsheets, or business reports are shielded from prying eyes. Best of all, our high-speed tool encrypts your files directly in your web browser, keeping your passwords and content completely confidential. For guidance on creating strong document passwords and choosing between standard encryption tiers, see our guide on <a href="/blog/how-to-password-protect-a-pdf-offline/">how to password protect a PDF offline</a>.</p>
       
@@ -1507,47 +1684,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Removing owner passwords and permission locks from PDFs you are authorized to edit or print.",
-    primaryCtaText: "Select PDF File to Unlock",
+    problemSolved:
+      'Removing owner passwords and permission locks from PDFs you are authorized to edit or print.',
+    primaryCtaText: 'Select PDF File to Unlock',
     supportedFormats: {
-  "input": [
-    "Encrypted PDF (.pdf)"
-  ],
-  "output": [
-    "Unlocked PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Requires valid user password for password-protected files."
-},
+      input: ['Encrypted PDF (.pdf)'],
+      output: ['Unlocked PDF (.pdf)'],
+      limits: 'Max 50MB. Requires valid user password for password-protected files.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Compatible across all browsers.",
-  "fileSizeMemory": "Decryption executes locally in browser RAM.",
-  "accessibility": "Keyboard focusable password entry form."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Password verification happens locally in browser memory.",
+      deviceBrowser: 'Compatible across all browsers.',
+      fileSizeMemory: 'Decryption executes locally in browser RAM.',
+      accessibility: 'Keyboard focusable password entry form.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Password verification happens locally in browser memory.',
     troubleshooting: [
-  {
-    "issue": "Incorrect password",
-    "resolution": "Enter the exact password assigned to the encrypted document."
-  }
-],
+      {
+        issue: 'Incorrect password',
+        resolution: 'Enter the exact password assigned to the encrypted document.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Protect PDF",
-    "url": "/protect-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Sanitize PDF",
-    "url": "/sanitize-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Security Architecture Team",
+      {
+        title: 'Protect PDF',
+        url: '/protect-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Sanitize PDF',
+        url: '/sanitize-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Security Architecture Team',
     howTo: {
       name: 'How to Remove Password from a PDF',
       totalTime: 'PT15S',
@@ -1563,22 +1738,28 @@ longFormBody: `
         q: 'Can I unlock a protected PDF if I do not know the password?',
         a: 'No. To unlock a file, you must enter the correct authorized password. Our tool is a clean decryptor, not a brute-force hacking tool.',
       },
-  {
+      {
         q: 'What kinds of security restrictions can I remove with this tool?',
         a: 'It strips away print bans, copy-paste blocks, page editing constraints, and password protection flags, reverting documents to standard files.',
       },
-  {
+      {
         q: 'Will decrypting a PDF alter its formatting or image quality?',
         a: 'No. Unlocking only changes security headers and permission streams inside the document structure. Your fonts, formatting, and layouts remain unchanged.',
       },
-  {
+      {
         q: 'Is it safe to type my sensitive passwords on your website?',
         a: 'Yes. Decryption runs 100% locally in your browser sandbox using your CPU. No password characters or document bytes are sent over the network.',
       },
     ],
-        keywords: ["unlock pdf","remove pdf password","decrypt pdf offline","remove pdf restrictions","pdf password remover"],
-    relatedTools: ["protect-pdf","sanitize-pdf","edit-pdf-metadata","repair-pdf","flatten-pdf"],
-longFormBody: `
+    keywords: [
+      'unlock pdf',
+      'remove pdf password',
+      'decrypt pdf offline',
+      'remove pdf restrictions',
+      'pdf password remover',
+    ],
+    relatedTools: ['protect-pdf', 'sanitize-pdf', 'edit-pdf-metadata', 'repair-pdf', 'flatten-pdf'],
+    longFormBody: `
       <h2>Unlock PDF - Decrypt Password Restricted PDF Documents</h2>
       <p>PDFMinty's unlock tool decrypts pages in client memory so you can access, read, and print your files without server queues. If you need to prepare restricted PDFs for archival or eliminate repetitive password prompts on documents you own, the tool strips restrictions in seconds directly inside your web browser.</p>
       
@@ -1617,50 +1798,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Converting photos, scanned receipts, or graphics (JPG, PNG, WebP) into a standardized single PDF.",
-    primaryCtaText: "Select Images to Convert to PDF",
+    problemSolved:
+      'Converting photos, scanned receipts, or graphics (JPG, PNG, WebP) into a standardized single PDF.',
+    primaryCtaText: 'Select Images to Convert to PDF',
     supportedFormats: {
-  "input": [
-    "JPG (.jpg)",
-    "PNG (.png)",
-    "WebP (.webp)",
-    "BMP (.bmp)"
-  ],
-  "output": [
-    "Compiled PDF (.pdf)"
-  ],
-  "limits": "Max 50MB combined size. Customizable orientation and margins."
-},
+      input: ['JPG (.jpg)', 'PNG (.png)', 'WebP (.webp)', 'BMP (.bmp)'],
+      output: ['Compiled PDF (.pdf)'],
+      limits: 'Max 50MB combined size. Customizable orientation and margins.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Renders images to local HTML5 canvas.",
-  "fileSizeMemory": "Efficient canvas compression in local memory.",
-  "accessibility": "Accessible image list deck."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Images are converted to PDF format locally in browser memory.",
+      deviceBrowser: 'Renders images to local HTML5 canvas.',
+      fileSizeMemory: 'Efficient canvas compression in local memory.',
+      accessibility: 'Accessible image list deck.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Images are converted to PDF format locally in browser memory.',
     troubleshooting: [
-  {
-    "issue": "Image appears stretched",
-    "resolution": "Select 'Fit to Page' or 'Maintain Aspect Ratio' in page layout options."
-  }
-],
+      {
+        issue: 'Image appears stretched',
+        resolution: "Select 'Fit to Page' or 'Maintain Aspect Ratio' in page layout options.",
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "PDF to Image",
-    "url": "/pdf-to-image/",
-    "type": "tool"
-  },
-  {
-    "title": "Merge PDF",
-    "url": "/merge-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'PDF to Image',
+        url: '/pdf-to-image/',
+        type: 'tool',
+      },
+      {
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Convert Images to PDF',
       totalTime: 'PT30S',
@@ -1676,22 +1852,28 @@ longFormBody: `
         q: 'Can I convert multiple JPG or PNG images into a single PDF?',
         a: 'Yes. You can upload multiple files at once, drag the thumbnail cards to arrange their page order, and generate a clean, unified multi-page PDF.',
       },
-  {
+      {
         q: 'Will converting images to PDF reduce their original quality?',
         a: 'No. Our converter translates raw raster bytes directly into lossless vector layout envelopes inside the PDF, keeping your layout crisp.',
       },
-  {
+      {
         q: 'Can I mix different image sizes and formats in the same file?',
         a: 'Yes. You can upload a mix of PNG, JPEG, and WebP, and set output paper sizes like A4 or Letter to fit files cleanly.',
       },
-  {
+      {
         q: 'Are my personal photos uploaded to a cloud server?',
         a: 'No. Image parsing and envelope packing occur entirely within your browser memory. Your personal images never leave your local workspace.',
       },
     ],
-        keywords: ["image to pdf","convert jpg to pdf","png to pdf offline","photos to pdf","picture to pdf converter"],
-    relatedTools: ["pdf-to-image","merge-pdf","pdf-to-markdown","ocr-pdf","ai-analyze-pdf"],
-longFormBody: `
+    keywords: [
+      'image to pdf',
+      'convert jpg to pdf',
+      'png to pdf offline',
+      'photos to pdf',
+      'picture to pdf converter',
+    ],
+    relatedTools: ['pdf-to-image', 'merge-pdf', 'pdf-to-markdown', 'ocr-pdf', 'ai-analyze-pdf'],
+    longFormBody: `
       <h2>Convert Image to PDF - Turn JPEG and PNG Photos into PDFs</h2>
       <p>Converting scanned files, sketches, and mobile photos into clean, organized PDFs can make them much easier to view and share. PDFMinty's image to PDF tool lets you combine JPG, PNG, and WebP files into professional documents. Our conversion process runs 100% locally in your web browser, keeping your photos secure without uploading them to remote servers.</p>
       
@@ -1729,54 +1911,50 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Exporting PDF pages into high-resolution JPG or PNG images for slides, web publishing, or graphic editing.",
-    primaryCtaText: "Select PDF File to Convert to Images",
+    problemSolved:
+      'Exporting PDF pages into high-resolution JPG or PNG images for slides, web publishing, or graphic editing.',
+    primaryCtaText: 'Select PDF File to Convert to Images',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "PNG Images (.png)",
-    "JPG Images (.jpg)",
-    "ZIP Archive"
-  ],
-  "limits": "Max 50MB. Renders at 150-300 DPI canvas resolution."
-},
+      input: ['PDF (.pdf)'],
+      output: ['PNG Images (.png)', 'JPG Images (.jpg)', 'ZIP Archive'],
+      limits: 'Max 50MB. Renders at 150-300 DPI canvas resolution.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Uses local PDF.js canvas renderer in browser.",
-  "fileSizeMemory": "Renders page-by-page to optimize memory on mobile devices.",
-  "accessibility": "Keyboard downloadable image previews."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. PDF canvas rendering occurs 100% locally on your machine.",
+      deviceBrowser: 'Uses local PDF.js canvas renderer in browser.',
+      fileSizeMemory: 'Renders page-by-page to optimize memory on mobile devices.',
+      accessibility: 'Keyboard downloadable image previews.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. PDF canvas rendering occurs 100% locally on your machine.',
     troubleshooting: [
-  {
-    "issue": "Blurry text on output image",
-    "resolution": "Choose 300 DPI high resolution in settings before exporting."
-  }
-],
+      {
+        issue: 'Blurry text on output image',
+        resolution: 'Choose 300 DPI high resolution in settings before exporting.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "High-Resolution PDF to JPG Guide",
-    "url": "/blog/how-to-convert-pdf-to-jpg-high-resolution/",
-    "type": "guide"
-  },
-  {
-    "title": "Image to PDF",
-    "url": "/image-to-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Extract Pages",
-    "url": "/extract-pages-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'High-Resolution PDF to JPG Guide',
+        url: '/blog/how-to-convert-pdf-to-jpg-high-resolution/',
+        type: 'guide',
+      },
+      {
+        title: 'Image to PDF',
+        url: '/image-to-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Extract Pages',
+        url: '/extract-pages-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Convert PDF to Images',
       totalTime: 'PT20S',
@@ -1792,22 +1970,34 @@ longFormBody: `
         q: 'Why is there a customizable page conversion limit setting?',
         a: 'Rendering high-definition images (1.5x) uses substantial memory. Large PDFs can freeze your tab if converted all at once, so we provide customizable limits with a memory warning.',
       },
-  {
+      {
         q: 'What formats can I export my PDF pages into?',
         a: 'You can export pages as lossless, highly detailed PNG files or optimized JPG sheets. The images are conveniently compressed into a single ZIP archive.',
       },
-  {
+      {
         q: 'Can I convert password-protected documents to images?',
         a: 'Yes, but you must first decrypt the secured PDF files using our "Unlock PDF" tool before converting pages to raster images.',
       },
-  {
+      {
         q: 'Is it secure to convert confidential invoices to images?',
         a: 'Yes. The canvas drawing sequence executes entirely on your local machine using the browser viewport. No server assets or remote databases are utilized.',
       },
     ],
-        keywords: ["pdf to image","convert pdf to jpg","pdf to png offline","extract images from pdf","high resolution pdf to image"],
-    relatedTools: ["image-to-pdf","extract-pages-pdf","pdf-to-markdown","ocr-pdf","ai-analyze-pdf"],
-longFormBody: `
+    keywords: [
+      'pdf to image',
+      'convert pdf to jpg',
+      'pdf to png offline',
+      'extract images from pdf',
+      'high resolution pdf to image',
+    ],
+    relatedTools: [
+      'image-to-pdf',
+      'extract-pages-pdf',
+      'pdf-to-markdown',
+      'ocr-pdf',
+      'ai-analyze-pdf',
+    ],
+    longFormBody: `
       <h2>Convert PDF to Image - Export Pages to PNG and JPEG</h2>
       <p>Converting PDF pages into individual image files can make them easy to share, view on mobile devices, or use in web projects. PDFMinty's PDF to image tool converts files into lossless PNGs or high-quality JPGs in seconds. Best of all, our conversion process runs entirely in your web browser, keeping your critical documents completely private and secure.</p>
       
@@ -1845,53 +2035,51 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Extracting structured text, headings, bullet points, and code blocks from PDFs into clean Markdown for documentation.",
-    primaryCtaText: "Select PDF File to Convert to Markdown",
+    problemSolved:
+      'Extracting structured text, headings, bullet points, and code blocks from PDFs into clean Markdown for documentation.',
+    primaryCtaText: 'Select PDF File to Convert to Markdown',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Markdown File (.md)",
-    "Plain Text (.txt)"
-  ],
-  "limits": "Max 50MB. Parses document text structure locally."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Markdown File (.md)', 'Plain Text (.txt)'],
+      limits: 'Max 50MB. Parses document text structure locally.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Client-side text parser engine.",
-  "fileSizeMemory": "Fast text stream processing.",
-  "accessibility": "Copy button with ARIA feedback."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Text parsing occurs in local browser memory.",
+      deviceBrowser: 'Client-side text parser engine.',
+      fileSizeMemory: 'Fast text stream processing.',
+      accessibility: 'Copy button with ARIA feedback.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Text parsing occurs in local browser memory.',
     troubleshooting: [
-  {
-    "issue": "Empty output text",
-    "resolution": "If the PDF is a scanned image without a text layer, use our OCR PDF tool first."
-  }
-],
+      {
+        issue: 'Empty output text',
+        resolution:
+          'If the PDF is a scanned image without a text layer, use our OCR PDF tool first.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "OCR PDF",
-    "url": "/ocr-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Make Scanned PDF Searchable Guide",
-    "url": "/blog/how-to-make-a-scanned-pdf-searchable/",
-    "type": "guide"
-  },
-  {
-    "title": "AI Analyze PDF",
-    "url": "/ai-analyze-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'OCR PDF',
+        url: '/ocr-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Make Scanned PDF Searchable Guide',
+        url: '/blog/how-to-make-a-scanned-pdf-searchable/',
+        type: 'guide',
+      },
+      {
+        title: 'AI Analyze PDF',
+        url: '/ai-analyze-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Convert PDF to Markdown Online',
       totalTime: 'PT30S',
@@ -1907,26 +2095,38 @@ longFormBody: `
         q: 'Does PDF to Markdown work offline?',
         a: 'Yes! PDFMinty processes your document 100% client-side inside your browser using secure Web Workers. Your files never leave your device.',
       },
-  {
+      {
         q: 'Can it detect headings, tables, and lists?',
         a: 'Yes. Our conversion engine analyzes font sizes, weights, multi-column alignments, and list glyphs to accurately reconstruct your PDF into semantic Markdown syntax.',
       },
-  {
+      {
         q: 'What happens if my PDF contains embedded images?',
         a: 'If you enable the "Extract images too" toggle, embedded images are extracted and bundled with your Markdown file into a single convenient .zip archive.',
       },
-  {
+      {
         q: 'Can I convert scanned or image-only PDFs?',
         a: 'Scanned image-only PDFs do not contain selectable text streams. Our tool will automatically detect if a file lacks selectable text and alert you immediately.',
       },
-  {
+      {
         q: 'Is this Markdown output suitable for LLMs and RAG pipelines?',
         a: 'Yes. The extracted Markdown preserves document hierarchy (#, ##, ###), tables, code blocks, and list indentations, making it the ideal clean ingestion format for Large Language Models, vector embeddings, Obsidian, and Cursor.',
       },
     ],
-        keywords: ["pdf to markdown","convert pdf to md","pdf text for llm","pdf to obsidian","extract pdf markdown"],
-    relatedTools: ["ocr-pdf","ai-analyze-pdf","pdf-to-image","image-to-pdf","extract-pages-pdf"],
-longFormBody: `
+    keywords: [
+      'pdf to markdown',
+      'convert pdf to md',
+      'pdf text for llm',
+      'pdf to obsidian',
+      'extract pdf markdown',
+    ],
+    relatedTools: [
+      'ocr-pdf',
+      'ai-analyze-pdf',
+      'pdf-to-image',
+      'image-to-pdf',
+      'extract-pages-pdf',
+    ],
+    longFormBody: `
       <h2>PDF to Markdown Free — Convert PDF to Editable MD</h2>
       <h2>PDF to Markdown — Clean Ingestion for LLMs, RAG & Documentation</h2>
       <p>Converting PDF documents into clean, structured Markdown has become an essential workflow for AI engineers, developers, and researchers. Legacy PDF tools either flatten text into unformatted strings or transmit proprietary source code, internal whitepapers, and confidential technical specs to external cloud APIs. PDFMinty solves this challenge with a 100% in-browser WebAssembly converter that preserves document hierarchy without risking corporate data exposure.</p>
@@ -1973,57 +2173,56 @@ longFormBody: `
     priority: 0.85,
     changefreq: 'weekly',
     type: 'tool',
-    problemSolved: "Asking questions, generating summaries, or extracting key insights from lengthy PDF documents without manual reading.",
-    primaryCtaText: "Select PDF File for AI Analysis",
+    problemSolved:
+      'Asking questions, generating summaries, or extracting key insights from lengthy PDF documents without manual reading.',
+    primaryCtaText: 'Select PDF File for AI Analysis',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Interactive AI Q&A Response",
-    "Summary Report"
-  ],
-  "limits": "Max 50MB. Text extracted from up to first 12 pages per query. Requires opt-in consent."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Interactive AI Q&A Response', 'Summary Report'],
+      limits:
+        'Max 50MB. Text extracted from up to first 12 pages per query. Requires opt-in consent.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Requires internet connection for Google Gemini API communication.",
-  "fileSizeMemory": "Text extracted in local browser memory; plain text payload transmitted via encrypted proxy.",
-  "accessibility": "Keyboard accessible chat input and action buttons."
-},
-    privacyNote: "Client-Side Text Extraction + Opt-In Gemini AI. Document text is extracted locally in your browser. Upon checking the consent box, extracted plain text (up to 12 pages) is transmitted via encrypted HTTPS to Google Gemini. Binary PDF files are never uploaded or stored.",
+      deviceBrowser: 'Requires internet connection for Google Gemini API communication.',
+      fileSizeMemory:
+        'Text extracted in local browser memory; plain text payload transmitted via encrypted proxy.',
+      accessibility: 'Keyboard accessible chat input and action buttons.',
+    },
+    privacyNote:
+      'Client-Side Text Extraction + Opt-In Gemini AI. Document text is extracted locally in your browser. Upon checking the consent box, extracted plain text (up to 12 pages) is transmitted via encrypted HTTPS to Google Gemini. Binary PDF files are never uploaded or stored.',
     troubleshooting: [
-  {
-    "issue": "Rate limit reached",
-    "resolution": "Please wait a few minutes before submitting another query."
-  },
-  {
-    "issue": "Consent required",
-    "resolution": "Check the consent box agreeing to transmit extracted text to Google Gemini."
-  }
-],
+      {
+        issue: 'Rate limit reached',
+        resolution: 'Please wait a few minutes before submitting another query.',
+      },
+      {
+        issue: 'Consent required',
+        resolution: 'Check the consent box agreeing to transmit extracted text to Google Gemini.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "PDF to Markdown",
-    "url": "/pdf-to-markdown/",
-    "type": "tool"
-  },
-  {
-    "title": "Sanitize PDF",
-    "url": "/sanitize-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Privacy Policy",
-    "url": "/privacy-policy/",
-    "type": "guide"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by AI Engineering & Security Team",
+      {
+        title: 'PDF to Markdown',
+        url: '/pdf-to-markdown/',
+        type: 'tool',
+      },
+      {
+        title: 'Sanitize PDF',
+        url: '/sanitize-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Privacy Policy',
+        url: '/privacy-policy/',
+        type: 'guide',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by AI Engineering & Security Team',
     howTo: {
       name: 'How to Analyze a PDF with AI',
       totalTime: 'PT60S',
@@ -2039,22 +2238,34 @@ longFormBody: `
         q: 'Is my entire document uploaded to third-party databases?',
         a: 'No. To safeguard your privacy, PDFMinty parses your text characters locally inside your browser, only sending plain text prompts to secure server-side API links.',
       },
-  {
+      {
         q: 'Is there a maximum character count for AI analysis?',
         a: 'Our parser handles standard books and complex documents. If a document is exceptionally large, some text pools are prioritized to fit within the prompt window.',
       },
-  {
+      {
         q: 'Can the AI translate my PDF text to other languages?',
         a: 'Yes. You can ask our AI Analyzer to summarize, rewrite, translate text layers, and search for specific data inside your files in the chat box.',
       },
-  {
+      {
         q: 'Does the AI analyze scanned hand-written paper or photos?',
         a: 'Scanned text requires OCR. If your PDF has selectable text layer blocks, the analyzer can read them easily. For scans, make sure characters are crisp.',
       },
     ],
-        keywords: ["ai analyze pdf","chat with pdf offline","summarize pdf with ai","ask questions to pdf","private ai pdf reader"],
-    relatedTools: ["pdf-to-markdown","ocr-pdf","sanitize-pdf","edit-pdf-metadata","pdf-to-image"],
-longFormBody: `
+    keywords: [
+      'ai analyze pdf',
+      'chat with pdf offline',
+      'summarize pdf with ai',
+      'ask questions to pdf',
+      'private ai pdf reader',
+    ],
+    relatedTools: [
+      'pdf-to-markdown',
+      'ocr-pdf',
+      'sanitize-pdf',
+      'edit-pdf-metadata',
+      'pdf-to-image',
+    ],
+    longFormBody: `
       <h2>AI Analyze PDF - Summarize and Query Documents with Gemini</h2>
       <p>Reading through lengthy PDFs, research papers, legal contracts, or technical manuals can be incredibly time-consuming. PDFMinty's AI Analyze tool lets you summarize and chat with your documents using powerful artificial intelligence, helping you find key insights instantly.</p>
       
@@ -2093,47 +2304,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Converting color PDFs to monochrome/grayscale to save printer ink or reduce document size.",
-    primaryCtaText: "Select PDF File to Convert to Grayscale",
+    problemSolved:
+      'Converting color PDFs to monochrome/grayscale to save printer ink or reduce document size.',
+    primaryCtaText: 'Select PDF File to Convert to Grayscale',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Grayscale PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Converts vector graphics, text, and embedded images."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Grayscale PDF (.pdf)'],
+      limits: 'Max 50MB. Converts vector graphics, text, and embedded images.',
+    },
     technicalNotes: {
-  "deviceBrowser": "WebAssembly image luminance processor.",
-  "fileSizeMemory": "Processes in local browser RAM.",
-  "accessibility": "Keyboard accessible action controls."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Color transformation occurs in local browser memory.",
+      deviceBrowser: 'WebAssembly image luminance processor.',
+      fileSizeMemory: 'Processes in local browser RAM.',
+      accessibility: 'Keyboard accessible action controls.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Color transformation occurs in local browser memory.',
     troubleshooting: [
-  {
-    "issue": "Images appear too dark",
-    "resolution": "Adjust contrast settings if original document contains dark backgrounds."
-  }
-],
+      {
+        issue: 'Images appear too dark',
+        resolution: 'Adjust contrast settings if original document contains dark backgrounds.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Flatten PDF",
-    "url": "/flatten-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Watermark PDF",
-    "url": "/watermark-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Flatten PDF',
+        url: '/flatten-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Watermark PDF',
+        url: '/watermark-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Convert a PDF to Grayscale',
       totalTime: 'PT20S',
@@ -2149,18 +2358,30 @@ longFormBody: `
         q: 'Does converting a PDF to grayscale save printer ink?',
         a: 'Yes, converting your documents to black and white or monochrome removes color cartridges usage completely, saving expensive color print toner and ink.',
       },
-  {
+      {
         q: 'Will my PDF lose its original text or format?',
         a: 'No. The text, formatting, alignments, and vectors remain completely preserved, just rendered in high-contrast gray levels instead of colors.',
       },
-  {
+      {
         q: 'Is my data safe during the grayscale conversion?',
         a: 'Absolutely. The entire grayscale mapping runs locally on your machine using standard browser sandboxes. No network calls or uploads are made.',
       },
     ],
-        keywords: ["grayscale pdf","convert pdf to black and white","monochrome pdf","save printer ink pdf","black and white pdf converter"],
-    relatedTools: ["flatten-pdf","sanitize-pdf","watermark-pdf","repair-pdf","edit-pdf-metadata"],
-longFormBody: `
+    keywords: [
+      'grayscale pdf',
+      'convert pdf to black and white',
+      'monochrome pdf',
+      'save printer ink pdf',
+      'black and white pdf converter',
+    ],
+    relatedTools: [
+      'flatten-pdf',
+      'sanitize-pdf',
+      'watermark-pdf',
+      'repair-pdf',
+      'edit-pdf-metadata',
+    ],
+    longFormBody: `
       <h2>Convert Color PDFs to Black & White (Grayscale)</h2>
       <p>Printing document packets, research papers, or shipping labels can consume significant color ink volumes. PDFMinty's grayscale PDF tool allows you to instantly convert color PDF assets to pure monochrome black-and-white layouts locally in your browser.</p>
       
@@ -2199,47 +2420,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Merging fillable form fields, annotations, signatures, and layered elements permanently into flat page objects to lock editing.",
-    primaryCtaText: "Select PDF File to Flatten",
+    problemSolved:
+      'Merging fillable form fields, annotations, signatures, and layered elements permanently into flat page objects to lock editing.',
+    primaryCtaText: 'Select PDF File to Flatten',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)"
-  ],
-  "output": [
-    "Flattened PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Locks interactive form fields and annotations."
-},
+      input: ['PDF (.pdf)'],
+      output: ['Flattened PDF (.pdf)'],
+      limits: 'Max 50MB. Locks interactive form fields and annotations.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Compatible across all desktop and mobile browsers.",
-  "fileSizeMemory": "Renders layers into static objects in WebAssembly heap.",
-  "accessibility": "Accessible buttons with ARIA labels."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Form flattening executes locally in browser memory.",
+      deviceBrowser: 'Compatible across all desktop and mobile browsers.',
+      fileSizeMemory: 'Renders layers into static objects in WebAssembly heap.',
+      accessibility: 'Accessible buttons with ARIA labels.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Form flattening executes locally in browser memory.',
     troubleshooting: [
-  {
-    "issue": "Form fields still editable",
-    "resolution": "Ensure you download and open the newly flattened output file."
-  }
-],
+      {
+        issue: 'Form fields still editable',
+        resolution: 'Ensure you download and open the newly flattened output file.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Sign PDF",
-    "url": "/sign-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Protect PDF",
-    "url": "/protect-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Sign PDF',
+        url: '/sign-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Protect PDF',
+        url: '/protect-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Flatten a PDF Form',
       totalTime: 'PT15S',
@@ -2255,18 +2474,24 @@ longFormBody: `
         q: 'What does flattening a PDF actually do?',
         a: 'Flattening merges fillable forms, text fields, radio buttons, and annotations directly into the background page canvas, turning them into standard non-interactive vectors/text.',
       },
-  {
+      {
         q: 'Why should I flatten my PDF forms?',
         a: 'Flattening prevents other people from changing the values you entered in text fields, checking other checkboxes, or modifying signatures, ensuring document integrity.',
       },
-  {
+      {
         q: 'Is this process local or does it upload my files?',
         a: 'Like all PDFMinty tools, the flattening operation is executed entirely inside your browser sandbox on your device. Your sensitive forms never leave your computer.',
       },
     ],
-        keywords: ["flatten pdf","flatten pdf forms","lock pdf form fields","flatten acroforms","flatten pdf annotations"],
-    relatedTools: ["sign-pdf","grayscale-pdf","protect-pdf","sanitize-pdf","watermark-pdf"],
-longFormBody: `
+    keywords: [
+      'flatten pdf',
+      'flatten pdf forms',
+      'lock pdf form fields',
+      'flatten acroforms',
+      'flatten pdf annotations',
+    ],
+    relatedTools: ['sign-pdf', 'grayscale-pdf', 'protect-pdf', 'sanitize-pdf', 'watermark-pdf'],
+    longFormBody: `
       <h2>Flatten PDF Forms and Interactive Fields</h2>
       <p>Interactive PDF forms are great for inputting text, checking boxes, and adding electronic signatures. However, once a document is completed, sending an active, editable form can lead to unauthorized edits or visual bugs in different viewer apps. PDFMinty's local Flatten PDF tool makes all field values permanent and immutable.</p>
       
@@ -2305,47 +2530,45 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Recovering damaged, corrupted, or unreadable PDF files caused by interrupted downloads or broken cross-reference tables.",
-    primaryCtaText: "Select PDF File to Repair",
+    problemSolved:
+      'Recovering damaged, corrupted, or unreadable PDF files caused by interrupted downloads or broken cross-reference tables.',
+    primaryCtaText: 'Select PDF File to Repair',
     supportedFormats: {
-  "input": [
-    "Damaged / Corrupted PDF (.pdf)"
-  ],
-  "output": [
-    "Repaired PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Rebuilds cross-reference (XRef) and page tree structure."
-},
+      input: ['Damaged / Corrupted PDF (.pdf)'],
+      output: ['Repaired PDF (.pdf)'],
+      limits: 'Max 50MB. Rebuilds cross-reference (XRef) and page tree structure.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Local PDF structure parser.",
-  "fileSizeMemory": "Executes in browser memory heap.",
-  "accessibility": "Accessible repair buttons."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Document recovery runs entirely inside your browser.",
+      deviceBrowser: 'Local PDF structure parser.',
+      fileSizeMemory: 'Executes in browser memory heap.',
+      accessibility: 'Accessible repair buttons.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Document recovery runs entirely inside your browser.',
     troubleshooting: [
-  {
-    "issue": "Repair failed: File is 0 bytes",
-    "resolution": "If a file is zeroed or completely corrupted, restore from backup if possible."
-  }
-],
+      {
+        issue: 'Repair failed: File is 0 bytes',
+        resolution: 'If a file is zeroed or completely corrupted, restore from backup if possible.',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "Unlock PDF",
-    "url": "/unlock-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Sanitize PDF",
-    "url": "/sanitize-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Product Engineering Team",
+      {
+        title: 'Unlock PDF',
+        url: '/unlock-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Sanitize PDF',
+        url: '/sanitize-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Product Engineering Team',
     howTo: {
       name: 'How to Repair a Corrupted PDF',
       totalTime: 'PT20S',
@@ -2361,18 +2584,24 @@ longFormBody: `
         q: 'What kinds of corruptions can this tool fix?',
         a: 'This tool is highly successful at repairing PDFs that fail to open due to corrupt cross-reference tables (XREFs), missing EOF markers, or trailing junk bytes appended during web downloads.',
       },
-  {
+      {
         q: 'Will my PDF files be secure during repair?',
         a: 'Absolutely. The repair engine operates 100% locally inside your web browser. No files are ever sent to external servers or cloud services.',
       },
-  {
+      {
         q: 'What if the file is completely unrecoverable?',
         a: 'If the core binary stream of your PDF is completely overwritten or missing, recovery might not be possible. However, we attempt a multi-stage fallback to recover as much content as we can.',
       },
     ],
-        keywords: ["repair pdf","fix corrupted pdf","restore broken pdf","rebuild pdf xref","damaged pdf recovery"],
-    relatedTools: ["unlock-pdf","sanitize-pdf","flatten-pdf","edit-pdf-metadata","merge-pdf"],
-longFormBody: `
+    keywords: [
+      'repair pdf',
+      'fix corrupted pdf',
+      'restore broken pdf',
+      'rebuild pdf xref',
+      'damaged pdf recovery',
+    ],
+    relatedTools: ['unlock-pdf', 'sanitize-pdf', 'flatten-pdf', 'edit-pdf-metadata', 'merge-pdf'],
+    longFormBody: `
       <h2>Repair Corrupted and Damaged PDF Files Locally</h2>
       <p>PDF documents can easily become corrupted or damaged due to interrupted network transfers, improper server-side downloads, or software crashes during editing. When a PDF becomes corrupted, readers usually fail to open it entirely, displaying vague error messages. PDFMinty's client-side PDF Repair tool can reconstruct damaged documents safely and securely.</p>
       
@@ -2400,7 +2629,8 @@ longFormBody: `
     ogImage: '/og-image.png',
     shortDescription: 'Draw, type, or upload custom e-signatures onto PDF pages offline',
     metaTitle: 'Sign PDF — eSign documents online for free',
-    metaDescription: 'Sign PDF documents online. Draw, type or upload your signature, place it on any page and download your signed PDF in seconds. Files never leave your device.',
+    metaDescription:
+      'Sign PDF documents online. Draw, type or upload your signature, place it on any page and download your signed PDF in seconds. Files never leave your device.',
     h1: 'Sign PDF Free — Add Electronic Signature to Documents',
     icon: 'FilePenLine',
     iconColor: 'text-security-green',
@@ -2410,73 +2640,70 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Draw, type, or upload a signature to sign contracts and forms directly in your browser without printing.",
-    primaryCtaText: "Select PDF File to Sign",
+    problemSolved:
+      'Draw, type, or upload a signature to sign contracts and forms directly in your browser without printing.',
+    primaryCtaText: 'Select PDF File to Sign',
     supportedFormats: {
-  "input": [
-    "PDF (.pdf)",
-    "PNG/JPG Signature Image"
-  ],
-  "output": [
-    "Signed PDF (.pdf)"
-  ],
-  "limits": "Max 50MB. Supports drawn, typed, and image signatures."
-},
+      input: ['PDF (.pdf)', 'PNG/JPG Signature Image'],
+      output: ['Signed PDF (.pdf)'],
+      limits: 'Max 50MB. Supports drawn, typed, and image signatures.',
+    },
     technicalNotes: {
-  "deviceBrowser": "HTML5 canvas signature pad supports stylus, touch finger, and mouse.",
-  "fileSizeMemory": "Signature is embedded into local PDF stream.",
-  "accessibility": "Accessible typed signature options."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Your signature and document remain 100% private in local browser memory.",
+      deviceBrowser: 'HTML5 canvas signature pad supports stylus, touch finger, and mouse.',
+      fileSizeMemory: 'Signature is embedded into local PDF stream.',
+      accessibility: 'Accessible typed signature options.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Your signature and document remain 100% private in local browser memory.',
     troubleshooting: [
-  {
-    "issue": "Signature drawing is jittery",
-    "resolution": "Use the 'Type Signature' tab or upload a clear PNG image signature."
-  }
-],
+      {
+        issue: 'Signature drawing is jittery',
+        resolution: "Use the 'Type Signature' tab or upload a clear PNG image signature.",
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "US Tax Form & NDA Signing Guide",
-    "url": "/blog/us-tax-w9-nda-secure-pdf-signing/",
-    "type": "guide"
-  },
-  {
-    "title": "eIDAS Compliance Guide",
-    "url": "/blog/eidas-compliant-pdf-signatures-uk-eu/",
-    "type": "guide"
-  },
-  {
-    "title": "Free PDF E-Signature Guide",
-    "url": "/blog/free-pdf-e-signature-sign-documents-without-uploading/",
-    "type": "guide"
-  },
-  {
-    "title": "Electronic vs Digital Signatures",
-    "url": "/blog/electronic-signature-vs-digital-signature/",
-    "type": "guide"
-  },
-  {
-    "title": "Sign Without Adobe or DocuSign",
-    "url": "/blog/how-to-sign-pdf-without-adobe-or-docusign/",
-    "type": "guide"
-  },
-  {
-    "title": "Flatten PDF",
-    "url": "/flatten-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Protect PDF",
-    "url": "/protect-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Security & Product Engineering Team",
+      {
+        title: 'US Tax Form & NDA Signing Guide',
+        url: '/blog/us-tax-w9-nda-secure-pdf-signing/',
+        type: 'guide',
+      },
+      {
+        title: 'eIDAS Compliance Guide',
+        url: '/blog/eidas-compliant-pdf-signatures-uk-eu/',
+        type: 'guide',
+      },
+      {
+        title: 'Free PDF E-Signature Guide',
+        url: '/blog/free-pdf-e-signature-sign-documents-without-uploading/',
+        type: 'guide',
+      },
+      {
+        title: 'Electronic vs Digital Signatures',
+        url: '/blog/electronic-signature-vs-digital-signature/',
+        type: 'guide',
+      },
+      {
+        title: 'Sign Without Adobe or DocuSign',
+        url: '/blog/how-to-sign-pdf-without-adobe-or-docusign/',
+        type: 'guide',
+      },
+      {
+        title: 'Flatten PDF',
+        url: '/flatten-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Protect PDF',
+        url: '/protect-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Security & Product Engineering Team',
     howTo: {
       name: 'How to Add Electronic Signatures to a PDF',
       totalTime: 'PT40S',
@@ -2485,30 +2712,42 @@ longFormBody: `
         'Choose whether to draw your signature, type it, or upload a handwritten signature image.',
         'Create your custom signature and click anywhere on the document to place it.',
         'Drag and resize the signature block to position it perfectly on any page.',
-        "Click 'Apply & Download' to securely compile and save your signed PDF document."
+        "Click 'Apply & Download' to securely compile and save your signed PDF document.",
       ],
     },
     faqs: [
       {
         q: 'Is it safe to sign sensitive agreements or NDAs on PDFMinty?',
-        a: 'Yes. The signature creation and document compilation happen entirely inside your web browser’s memory via HTML5 Canvas and client-side JavaScript. Your contracts, personal information, and signature images are never transmitted to any external server.'
+        a: 'Yes. The signature creation and document compilation happen entirely inside your web browser’s memory via HTML5 Canvas and client-side JavaScript. Your contracts, personal information, and signature images are never transmitted to any external server.',
       },
       {
         q: 'Are electronic signatures created with PDFMinty legally valid?',
-        a: 'In many commercial scenarios, yes. Under statutory frameworks like the US ESIGN Act (15 U.S.C. § 7001), UETA, and EU eIDAS (Regulation (EU) No 910/2014), visual electronic signatures (Simple Electronic Signatures, or SES) are recognized for routine commercial contracts, freelance agreements, and internal forms. However, statutory exceptions exist: documents like wills, testamentary trusts, family law orders, and court filings often require Qualified Electronic Signatures (QES) with cryptographic PKI certificates or physical notarization.'
+        a: 'In many commercial scenarios, yes. Under statutory frameworks like the US ESIGN Act (15 U.S.C. § 7001), UETA, and EU eIDAS (Regulation (EU) No 910/2014), visual electronic signatures (Simple Electronic Signatures, or SES) are recognized for routine commercial contracts, freelance agreements, and internal forms. However, statutory exceptions exist: documents like wills, testamentary trusts, family law orders, and court filings often require Qualified Electronic Signatures (QES) with cryptographic PKI certificates or physical notarization.',
       },
       {
         q: 'What is the difference between an electronic signature and a digital signature?',
-        a: 'An electronic signature (SES) is a visual mark, image, or typed representation indicating an intent to sign. A digital signature is a cryptographic implementation using public key infrastructure (PKI) and X.509 digital certificates to mathematically seal the document and detect subsequent tampering.'
+        a: 'An electronic signature (SES) is a visual mark, image, or typed representation indicating an intent to sign. A digital signature is a cryptographic implementation using public key infrastructure (PKI) and X.509 digital certificates to mathematically seal the document and detect subsequent tampering.',
       },
       {
         q: 'Can I use PDFMinty without creating an account or paying a subscription?',
-        a: 'Yes. PDFMinty requires no user account, no email address, and no subscription fee. The tool is free and operates completely client-side in your local browser session.'
-      }
+        a: 'Yes. PDFMinty requires no user account, no email address, and no subscription fee. The tool is free and operates completely client-side in your local browser session.',
+      },
     ],
-        keywords: ["sign pdf","electronic signature pdf","draw signature on pdf","sign document offline","free pdf signer"],
-    relatedTools: ["watermark-pdf","flatten-pdf","protect-pdf","edit-pdf-metadata","add-page-numbers"],
-longFormBody: `
+    keywords: [
+      'sign pdf',
+      'electronic signature pdf',
+      'draw signature on pdf',
+      'sign document offline',
+      'free pdf signer',
+    ],
+    relatedTools: [
+      'watermark-pdf',
+      'flatten-pdf',
+      'protect-pdf',
+      'edit-pdf-metadata',
+      'add-page-numbers',
+    ],
+    longFormBody: `
       <h2>Free Browser-Side PDF E-Signing with PDFMinty</h2>
       <p>Electronic signatures are an everyday necessity for business contracts, freelance agreements, lease documents, and NDAs. Most online signing services require costly recurring subscriptions or compel users to upload confidential files to third-party cloud servers. PDFMinty provides a free, 100% private, browser-side signature tool where your documents never leave your computer.</p>
       
@@ -2535,9 +2774,11 @@ longFormBody: `
     slug: 'ocr-pdf',
     name: 'OCR PDF',
     ogImage: '/og-image.png',
-    shortDescription: 'Extract clean, searchable text or Markdown from scanned and image-only PDFs with AI Vision',
+    shortDescription:
+      'Extract clean, searchable text or Markdown from scanned and image-only PDFs with AI Vision',
     metaTitle: 'OCR PDF Free — Extract Text from Scanned PDF | PDFMinty',
-    metaDescription: 'Extract text from scanned PDFs and images online for free. Leverage highly accurate Multimodal AI Vision OCR to convert scans into selectable Markdown.',
+    metaDescription:
+      'Extract text from scanned PDFs and images online for free. Leverage highly accurate Multimodal AI Vision OCR to convert scans into selectable Markdown.',
     h1: 'OCR PDF Free — Extract Text & Tables from Scanned PDFs',
     icon: 'Sparkles',
     iconColor: 'text-security-green',
@@ -2547,48 +2788,46 @@ longFormBody: `
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Converting scanned image-based PDF documents into searchable, selectable text using optical character recognition.",
-    primaryCtaText: "Select PDF File to OCR",
+    problemSolved:
+      'Converting scanned image-based PDF documents into searchable, selectable text using optical character recognition.',
+    primaryCtaText: 'Select PDF File to OCR',
     supportedFormats: {
-  "input": [
-    "Scanned PDF (.pdf)",
-    "Image PDF"
-  ],
-  "output": [
-    "Searchable Text / Markdown (.txt, .md)"
-  ],
-  "limits": "Max 50MB. Local Tesseract.js WebAssembly OCR engine."
-},
+      input: ['Scanned PDF (.pdf)', 'Image PDF'],
+      output: ['Searchable Text / Markdown (.txt, .md)'],
+      limits: 'Max 50MB. Local Tesseract.js WebAssembly OCR engine.',
+    },
     technicalNotes: {
-  "deviceBrowser": "Loads Tesseract WASM language workers in browser memory.",
-  "fileSizeMemory": "Requires ~200-400MB temporary RAM during OCR processing.",
-  "accessibility": "Extracted text output displayed in copyable text box."
-},
-    privacyNote: "100% Client-Side In-Browser Processing. Optical character recognition runs in local WebAssembly workers on your device.",
+      deviceBrowser: 'Loads Tesseract WASM language workers in browser memory.',
+      fileSizeMemory: 'Requires ~200-400MB temporary RAM during OCR processing.',
+      accessibility: 'Extracted text output displayed in copyable text box.',
+    },
+    privacyNote:
+      '100% Client-Side In-Browser Processing. Optical character recognition runs in local WebAssembly workers on your device.',
     troubleshooting: [
-  {
-    "issue": "OCR taking long",
-    "resolution": "Local WebAssembly OCR processes page by page on your CPU (~5-10 seconds per page)."
-  }
-],
+      {
+        issue: 'OCR taking long',
+        resolution:
+          'Local WebAssembly OCR processes page by page on your CPU (~5-10 seconds per page).',
+      },
+    ],
     relatedLinks: [
-  {
-    "title": "PDF to Markdown",
-    "url": "/pdf-to-markdown/",
-    "type": "tool"
-  },
-  {
-    "title": "AI Analyze PDF",
-    "url": "/ai-analyze-pdf/",
-    "type": "tool"
-  },
-  {
-    "title": "Home",
-    "url": "/",
-    "type": "home"
-  }
-],
-    lastReviewedDate: "August 2026 • Verified by Engineering Team",
+      {
+        title: 'PDF to Markdown',
+        url: '/pdf-to-markdown/',
+        type: 'tool',
+      },
+      {
+        title: 'AI Analyze PDF',
+        url: '/ai-analyze-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
+    ],
+    lastReviewedDate: 'August 2026 • Verified by Engineering Team',
     howTo: {
       name: 'How to Extract Text from Scanned PDF using OCR',
       totalTime: 'PT30S',
@@ -2597,26 +2836,38 @@ longFormBody: `
         'Select the target pages you wish to perform OCR on.',
         "Click the 'Extract Text with AI Vision' button to initiate the OCR engine.",
         'Preview the extracted text and cleanly structured Markdown tables on screen.',
-        'Copy the text directly to your clipboard or download it as a text (.txt) or markdown (.md) file.'
+        'Copy the text directly to your clipboard or download it as a text (.txt) or markdown (.md) file.',
       ],
     },
     faqs: [
       {
         q: 'What is OCR and when do I need it?',
-        a: 'OCR (Optical Character Recognition) is the process of converting scanned paper documents, PDF scans, or images into selectable and editable text. You need it when you try to highlight or copy text in a PDF and find that it is actually just a flat picture.'
+        a: 'OCR (Optical Character Recognition) is the process of converting scanned paper documents, PDF scans, or images into selectable and editable text. You need it when you try to highlight or copy text in a PDF and find that it is actually just a flat picture.',
       },
-  {
-        q: 'Does PDFMinty\'s OCR tool support tables and complex formatting?',
-        a: 'Yes. The OCR pipeline uses multimodal vision recognition to parse column boundaries and table structures, preserving row alignments as structured Markdown tables rather than collapsing data into raw unformatted text blocks.'
+      {
+        q: "Does PDFMinty's OCR tool support tables and complex formatting?",
+        a: 'Yes. The OCR pipeline uses multimodal vision recognition to parse column boundaries and table structures, preserving row alignments as structured Markdown tables rather than collapsing data into raw unformatted text blocks.',
       },
-  {
+      {
         q: 'Are my scanned files kept private?',
-        a: 'Absolutely. PDFMinty handles initial page conversions and layout preparation entirely inside your browser sandbox. Only high-security, secure proxy calls are made to transcribe the pixels, and no data is retained or stored on any server.'
-      }
+        a: 'Absolutely. PDFMinty handles initial page conversions and layout preparation entirely inside your browser sandbox. Only high-security, secure proxy calls are made to transcribe the pixels, and no data is retained or stored on any server.',
+      },
     ],
-        keywords: ["ocr pdf","extract text from scanned pdf","searchable pdf converter","optical character recognition pdf","image to text pdf"],
-    relatedTools: ["pdf-to-markdown","ai-analyze-pdf","pdf-to-image","image-to-pdf","extract-pages-pdf"],
-longFormBody: `
+    keywords: [
+      'ocr pdf',
+      'extract text from scanned pdf',
+      'searchable pdf converter',
+      'optical character recognition pdf',
+      'image to text pdf',
+    ],
+    relatedTools: [
+      'pdf-to-markdown',
+      'ai-analyze-pdf',
+      'pdf-to-image',
+      'image-to-pdf',
+      'extract-pages-pdf',
+    ],
+    longFormBody: `
       <h2>Advanced Multimodal AI Vision OCR for Scanned Documents</h2>
       <p>Most basic PDF converters fail completely when processing scanned documents because they only read standard selectable text-layers. When pages are composed of flat images, traditional text extraction yields nothing. PDFMinty's OCR tool utilizes advanced Multimodal AI Vision models to transcribe non-selectable, hand-written, or printed texts directly into editable Markdown text sheets. For a full workflow on <a href="/blog/how-to-make-a-scanned-pdf-searchable/">diagnosing and extracting text from image-only documents</a>, read our extraction guide.</p>
       
@@ -2784,7 +3035,8 @@ longFormBody: `
     ogImage: '/og-image.png',
     shortDescription: 'Latest PDF tips, privacy tutorials, and security guides on PDFMinty.',
     metaTitle: 'PDFMinty Blog - PDF Tips, Security & Privacy Guides',
-    metaDescription: 'Read the latest guides, security tips, and tutorials about processing PDF documents offline and safely on PDFMinty.',
+    metaDescription:
+      'Read the latest guides, security tips, and tutorials about processing PDF documents offline and safely on PDFMinty.',
     h1: 'PDFMinty Blog: PDF Tips & Privacy Guides',
     icon: 'BookOpen',
     category: 'info',
@@ -2804,9 +3056,11 @@ longFormBody: `
     slug: 'blog/the-complete-guide-to-pdf-metadata-and-how-to-remove-it',
     name: 'The Forensic Guide to PDF Metadata (Structures & Legal Exposure)',
     ogImage: '/og-image.png',
-    shortDescription: 'Discover the hidden metadata stored inside your PDFs and learn how to scrub personal information before sharing.',
+    shortDescription:
+      'Discover the hidden metadata stored inside your PDFs and learn how to scrub personal information before sharing.',
     metaTitle: 'The Forensic Guide to PDF Metadata & Privacy Risks | PDFMinty',
-    metaDescription: 'Read about the hidden tracking data stored inside PDF headers (such as author names and software tags) and learn how to scrub it offline.',
+    metaDescription:
+      'Read about the hidden tracking data stored inside PDF headers (such as author names and software tags) and learn how to scrub it offline.',
     h1: 'The Forensic Guide to PDF Metadata: What Data is Hidden Inside?',
     icon: 'FilePenLine',
     category: 'blog',
@@ -2882,9 +3136,11 @@ longFormBody: `
     slug: 'blog/why-privacy-first-pdf-tools-matter-in-2026',
     name: 'Why Privacy-First PDF Tools Matter in 2026',
     ogImage: '/og-image.png',
-    shortDescription: 'In a landscape of rising data breaches and strict regulations, discover why browser-side processing is no longer optional for document security.',
+    shortDescription:
+      'In a landscape of rising data breaches and strict regulations, discover why browser-side processing is no longer optional for document security.',
     metaTitle: 'Why Privacy-First PDF Tools Matter in 2026 | PDFMinty Blog',
-    metaDescription: 'Explore why privacy-first offline PDF editors are critical in 2026 to prevent data breaches, and how browser-side processing protects sensitive files.',
+    metaDescription:
+      'Explore why privacy-first offline PDF editors are critical in 2026 to prevent data breaches, and how browser-side processing protects sensitive files.',
     h1: 'Why Privacy-First PDF Tools Matter in 2026',
     icon: 'Shield',
     category: 'blog',
@@ -3001,9 +3257,11 @@ longFormBody: `
     slug: 'blog/how-to-batch-process-50-pdfs-in-under-2-minutes',
     name: 'How to Batch Process 50 PDFs in Under 2 Minutes',
     ogImage: '/og-image.png',
-    shortDescription: 'Tired of processing PDFs one by one? Learn how to use PDFMinty\'s bulk tools to compress, merge, and convert 50 files simultaneously in seconds—100% locally.',
+    shortDescription:
+      "Tired of processing PDFs one by one? Learn how to use PDFMinty's bulk tools to compress, merge, and convert 50 files simultaneously in seconds—100% locally.",
     metaTitle: 'Batch Process 50 PDFs in Under 2 Minutes | PDFMinty',
-    metaDescription: 'Batch process up to 50 PDFs in under 2 minutes. Compress, merge, or convert files simultaneously with PDFMinty fast local browser-side tools.',
+    metaDescription:
+      'Batch process up to 50 PDFs in under 2 minutes. Compress, merge, or convert files simultaneously with PDFMinty fast local browser-side tools.',
     h1: 'How to Batch Process 50 PDFs in Under 2 Minutes',
     icon: 'Cpu',
     category: 'blog',
@@ -3171,9 +3429,11 @@ longFormBody: `
     slug: 'blog/free-pdf-e-signature-sign-documents-without-uploading',
     name: 'Free PDF E-Signature: Sign Documents Without Uploading',
     ogImage: '/og-image.png',
-    shortDescription: 'Discover how to sign PDF documents for free without uploading them. Learn how local browser-side e-signing protects confidentiality while meeting legal requirements.',
+    shortDescription:
+      'Discover how to sign PDF documents for free without uploading them. Learn how local browser-side e-signing protects confidentiality while meeting legal requirements.',
     metaTitle: 'Free PDF E-Signature: Sign Documents Online | PDFMinty',
-    metaDescription: 'Add electronic signatures to your PDFs for free with zero uploads. Learn about statutory validity under ESIGN and eIDAS with private in-browser processing.',
+    metaDescription:
+      'Add electronic signatures to your PDFs for free with zero uploads. Learn about statutory validity under ESIGN and eIDAS with private in-browser processing.',
     h1: 'Free PDF E-Signature: Sign Documents Without Uploading',
     icon: 'FileSignature',
     category: 'blog',
@@ -3184,25 +3444,25 @@ longFormBody: `
     dateModified: '2026-07-21',
     relatedLinks: [
       {
-        title: "Sign PDF Online (Free Tool)",
-        url: "/sign-pdf/",
-        type: "tool"
+        title: 'Sign PDF Online (Free Tool)',
+        url: '/sign-pdf/',
+        type: 'tool',
       },
       {
-        title: "Electronic vs Digital Signatures",
-        url: "/blog/electronic-signature-vs-digital-signature/",
-        type: "guide"
+        title: 'Electronic vs Digital Signatures',
+        url: '/blog/electronic-signature-vs-digital-signature/',
+        type: 'guide',
       },
       {
-        title: "Sign Without Adobe or DocuSign",
-        url: "/blog/how-to-sign-pdf-without-adobe-or-docusign/",
-        type: "guide"
+        title: 'Sign Without Adobe or DocuSign',
+        url: '/blog/how-to-sign-pdf-without-adobe-or-docusign/',
+        type: 'guide',
       },
       {
-        title: "Protect PDF with Password",
-        url: "/protect-pdf/",
-        type: "tool"
-      }
+        title: 'Protect PDF with Password',
+        url: '/protect-pdf/',
+        type: 'tool',
+      },
     ],
     longFormBody: `
       <h2>Free PDF E-Signature: Sign Documents Without Uploading</h2>
@@ -3420,9 +3680,11 @@ longFormBody: `
     slug: 'blog/how-to-remove-pdf-metadata-for-privacy',
     name: 'How to Remove PDF Metadata for Privacy (2026 Guide)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to remove PDF metadata — author name, creation date, GPS, software version — for free, entirely in your browser, without uploading your file anywhere.',
+    shortDescription:
+      'Learn how to remove PDF metadata — author name, creation date, GPS, software version — for free, entirely in your browser, without uploading your file anywhere.',
     metaTitle: 'How to Remove PDF Metadata for Privacy (2026) | PDFMinty',
-    metaDescription: 'Remove PDF metadata — author, creation date, GPS, software version — for free entirely in your browser, without uploading your file anywhere.',
+    metaDescription:
+      'Remove PDF metadata — author, creation date, GPS, software version — for free entirely in your browser, without uploading your file anywhere.',
     h1: 'How to Remove PDF Metadata for Privacy (2026 Guide)',
     icon: 'Shield',
     category: 'blog',
@@ -3436,17 +3698,17 @@ longFormBody: `
         q: 'Does removing metadata change the visible content of my PDF?',
         a: 'No. Metadata removal only strips the hidden properties (author, dates, software info). The text, images, and layout on the page are untouched.',
       },
-  {
+      {
         q: 'Can metadata be added back after I remove it?',
         a: 'Only if someone re-edits the file with software that writes new metadata. A cleaned, "sanitized" PDF stays clean unless it\'s opened and re-saved in a tool that reintroduces those fields.',
       },
-  {
+      {
         q: 'Is it safe to remove metadata using an online tool?',
-        a: 'Only if the tool processes the file locally in your browser rather than uploading it to a server. Uploading a sensitive document to strip its metadata is a contradiction — you\'re trusting a third party with the exact file you\'re trying to protect.',
+        a: "Only if the tool processes the file locally in your browser rather than uploading it to a server. Uploading a sensitive document to strip its metadata is a contradiction — you're trusting a third party with the exact file you're trying to protect.",
       },
-  {
+      {
         q: 'Do scanned PDFs carry more risk than typed documents?',
-        a: 'Often, yes. Scanned PDFs built from phone photos can carry embedded GPS coordinates and camera details in addition to standard author/date fields, so they\'re worth checking even more carefully.',
+        a: "Often, yes. Scanned PDFs built from phone photos can carry embedded GPS coordinates and camera details in addition to standard author/date fields, so they're worth checking even more carefully.",
       },
     ],
     longFormBody: `
@@ -3571,9 +3833,11 @@ longFormBody: `
     slug: 'about-us',
     name: 'About Us',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn about PdfMinty — a privacy-first, 100% client-side PDF toolkit built by an independent developer.',
+    shortDescription:
+      'Learn about PdfMinty — a privacy-first, 100% client-side PDF toolkit built by an independent developer.',
     metaTitle: 'About Us | PdfMinty — Free Online PDF Tools',
-    metaDescription: 'Learn about PdfMinty, a privacy-first, 100% client-side PDF toolkit. Explore our mission, 22+ free online tools, and private document processing.',
+    metaDescription:
+      'Learn about PdfMinty, a privacy-first, 100% client-side PDF toolkit. Explore our mission, 22+ free online tools, and private document processing.',
     h1: 'About Us | PdfMinty — Free Online PDF Tools',
     icon: 'ShieldCheck',
     category: 'info',
@@ -3630,9 +3894,11 @@ longFormBody: `
     slug: 'contact',
     name: 'Contact Us',
     ogImage: '/og-image.png',
-    shortDescription: 'Get in touch with the PdfMinty team. Send your questions, feedback, or feature requests to support@pdfminty.com. Response within 24-48 hours.',
+    shortDescription:
+      'Get in touch with the PdfMinty team. Send your questions, feedback, or feature requests to support@pdfminty.com. Response within 24-48 hours.',
     metaTitle: 'Contact Us | PDFMinty — Free & Private PDF Toolkit',
-    metaDescription: 'Have questions, feature requests, or feedback about PdfMinty? Get in touch with us at support@pdfminty.com. We usually respond within 24-48 hours.',
+    metaDescription:
+      'Have questions, feature requests, or feedback about PdfMinty? Get in touch with us at support@pdfminty.com. We usually respond within 24-48 hours.',
     h1: 'Contact Us | PdfMinty',
     icon: 'Mail',
     category: 'info',
@@ -3661,9 +3927,11 @@ longFormBody: `
     slug: 'blog/how-to-merge-pdf-files-online-for-free-2026-guide',
     name: 'How to Merge PDF Files Online for Free (2026 Guide)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to combine multiple PDF files into one clean document for free without uploading files to remote servers.',
+    shortDescription:
+      'Learn how to combine multiple PDF files into one clean document for free without uploading files to remote servers.',
     metaTitle: 'How to Merge PDF Files for Free (2026 Guide) | PdfMinty',
-    metaDescription: 'Combine multiple PDF files into one clean document for free. Learn how to merge PDFs instantly in your browser with zero file uploads and 100% privacy.',
+    metaDescription:
+      'Combine multiple PDF files into one clean document for free. Learn how to merge PDFs instantly in your browser with zero file uploads and 100% privacy.',
     h1: 'How to Merge PDF Files Online for Free (2026 Guide)',
     icon: 'Layers',
     category: 'blog',
@@ -3677,15 +3945,15 @@ longFormBody: `
         q: 'Is merging PDF files on PdfMinty completely free?',
         a: 'Yes! PdfMinty is 100% free forever with no hidden paywalls, subscription traps, or limits on the number of files you can merge.',
       },
-  {
+      {
         q: 'Will my original PDF files be deleted after merging?',
         a: 'Your original files stay safely on your computer. PdfMinty processes your files locally in your browser memory and generates a brand new merged PDF for you to save.',
       },
-  {
+      {
         q: 'Are my confidential documents uploaded to any server?',
         a: 'No. PdfMinty processes all files 100% inside your web browser. Your files never leave your computer or touch any remote cloud server.',
       },
-  {
+      {
         q: 'Can I reorder pages before merging my PDFs?',
         a: 'Yes! You can easily drag and drop your PDF files into any order you like before merging them into a single document.',
       },
@@ -4204,59 +4472,59 @@ longFormBody: `
         q: 'Is PDFMinty really free, or is there a paid tier later?',
         a: "Every tool on PDFMinty is free with no account and no watermark. There's no hidden upgrade wall.",
       },
-  {
+      {
         q: 'Do I need to sign up or install anything?',
         a: 'No. Open the tool in your browser and use it. Nothing to download, nothing to register.',
       },
-  {
+      {
         q: 'Where do my files go when I use PDFMinty?',
         a: 'Nowhere but your own device. Processing happens locally in your browser — files are never uploaded to a server.',
       },
-  {
+      {
         q: 'Can PDFMinty fully replace Adobe Acrobat?',
         a: "For merging, splitting, compressing, rotating, watermarking, password protection, and image/PDF conversion — yes, for most everyday use. If you rely on Acrobat's advanced enterprise e-signature workflows, complex form logic, or admin/compliance controls, PDFMinty isn't there yet.",
       },
-  {
+      {
         q: 'Is a browser-based tool as safe as a desktop app?',
         a: "Since your file never leaves your device, there's no upload step and no server storing a copy of your document — see our related post on PDF tool security for the full picture, including the limits of that claim.",
       },
     ],
     relatedLinks: [
       {
-        title: "Best Offline PDF Tools Guide",
-        url: "/blog/best-offline-pdf-tools-for-sensitive-documents-2026/",
-        type: "guide"
+        title: 'Best Offline PDF Tools Guide',
+        url: '/blog/best-offline-pdf-tools-for-sensitive-documents-2026/',
+        type: 'guide',
       },
       {
-        title: "Merge PDF",
-        url: "/merge-pdf/",
-        type: "tool"
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
       },
       {
-        title: "Protect PDF",
-        url: "/protect-pdf/",
-        type: "tool"
+        title: 'Protect PDF',
+        url: '/protect-pdf/',
+        type: 'tool',
       },
       {
-        title: "Sign PDF",
-        url: "/sign-pdf/",
-        type: "tool"
+        title: 'Sign PDF',
+        url: '/sign-pdf/',
+        type: 'tool',
       },
       {
-        title: "Grayscale PDF (Compress)",
-        url: "/grayscale-pdf/",
-        type: "tool"
+        title: 'Grayscale PDF (Compress)',
+        url: '/grayscale-pdf/',
+        type: 'tool',
       },
       {
-        title: "Adobe Security Analysis",
-        url: "/blog/adobe-security-vulnerabilities-offline-pdf-tools/",
-        type: "guide"
+        title: 'Adobe Security Analysis',
+        url: '/blog/adobe-security-vulnerabilities-offline-pdf-tools/',
+        type: 'guide',
       },
       {
-        title: "Home",
-        url: "/",
-        type: "home"
-      }
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
     ],
   },
   {
@@ -4264,9 +4532,11 @@ longFormBody: `
     slug: 'blog/adobe-security-vulnerabilities-offline-pdf-tools',
     name: "Adobe's Security Vulnerabilities & Why Offline PDF Tools Sidestep Them",
     ogImage: '/og-image.png',
-    shortDescription: "Adobe just patched critical vulnerabilities and moved to a twice-monthly release cycle. Here's what that means, and why offline PDF tools face a different risk.",
+    shortDescription:
+      "Adobe just patched critical vulnerabilities and moved to a twice-monthly release cycle. Here's what that means, and why offline PDF tools face a different risk.",
     metaTitle: 'Is Adobe Acrobat Safe? What Its Latest Patches Reveal',
-    metaDescription: "Adobe just patched critical vulnerabilities and moved to a twice-monthly release cycle. Here's what that means, and why offline PDF tools face a different risk.",
+    metaDescription:
+      "Adobe just patched critical vulnerabilities and moved to a twice-monthly release cycle. Here's what that means, and why offline PDF tools face a different risk.",
     h1: 'Is Adobe Acrobat Safe? What Its Latest Security Patches Actually Reveal',
     icon: 'Shield',
     category: 'blog',
@@ -4278,13 +4548,13 @@ longFormBody: `
     faqs: [
       {
         q: 'Is Adobe Acrobat safe to use?',
-        a: "Adobe Acrobat is widely used, but recent security bulletins like APSB26-87 highlight that complex desktop/cloud software carries a large attack surface. Offline browser-based tools eliminate server-side security risks entirely.",
+        a: 'Adobe Acrobat is widely used, but recent security bulletins like APSB26-87 highlight that complex desktop/cloud software carries a large attack surface. Offline browser-based tools eliminate server-side security risks entirely.',
       },
-  {
+      {
         q: 'Why did Adobe move to a twice-monthly security patch schedule?',
         a: 'Adobe increased its patch frequency to handle the rising volume and urgency of vulnerability fixes needed across its desktop, cloud, and plugin ecosystem.',
       },
-  {
+      {
         q: 'Are offline browser-based PDF tools safer than cloud converters?',
         a: 'Yes, because your documents are processed locally on your device and never uploaded to remote servers. This eliminates risks related to server breaches, data leaks, and cloud account compromises.',
       },
@@ -4358,9 +4628,11 @@ longFormBody: `
     slug: 'blog/ilovepdf-vs-smallpdf-vs-pdfminty-2026',
     name: 'ILovePDF vs Smallpdf vs PdfMinty: Which PDF Tool Wins in 2026?',
     ogImage: '/og-image.png',
-    shortDescription: 'Comparing ILovePDF vs Smallpdf vs PdfMinty? See which PDF tool is fastest, safest, and most affordable in 2026.',
+    shortDescription:
+      'Comparing ILovePDF vs Smallpdf vs PdfMinty? See which PDF tool is fastest, safest, and most affordable in 2026.',
     metaTitle: 'ILovePDF vs Smallpdf vs PdfMinty (2026) | PdfMinty',
-    metaDescription: 'Comparing ILovePDF vs Smallpdf vs PdfMinty? See which PDF tool is fastest, safest, and most affordable in 2026. Spoiler: one of them never uploads your files.',
+    metaDescription:
+      'Comparing ILovePDF vs Smallpdf vs PdfMinty? See which PDF tool is fastest, safest, and most affordable in 2026. Spoiler: one of them never uploads your files.',
     h1: 'ILovePDF vs Smallpdf vs PdfMinty: Which PDF Tool Wins in 2026?',
     icon: 'Scale',
     category: 'blog',
@@ -4374,15 +4646,15 @@ longFormBody: `
         q: 'Which PDF tool is safest for sensitive documents?',
         a: 'PdfMinty provides 100% local, browser-side processing for our standard PDF tools with zero server uploads, keeping documents private on your device (the AI Analyze tool only sends extracted text to Google Gemini after you explicitly check a consent box).',
       },
-  {
+      {
         q: 'Is PdfMinty faster than ILovePDF and Smallpdf?',
         a: 'Yes. Because PdfMinty processes documents directly on your device without upload or download network delays, it finishes processing in 3-8 seconds compared to 15-30 seconds on server-based tools.',
       },
-  {
+      {
         q: 'Do ILovePDF or Smallpdf store my uploaded files?',
         a: 'Both ILovePDF and Smallpdf upload your files to cloud servers and state that files are deleted within 1 to 2 hours. However, server logs, temporary caching, and third-party integrations can still create privacy exposure points.',
       },
-  {
+      {
         q: 'Is PdfMinty free to use?',
         a: 'Yes! PdfMinty offers a generous free tier with zero daily task limits, no mandatory account signups, and 100% offline-capable browser processing.',
       },
@@ -4600,9 +4872,11 @@ longFormBody: `
     slug: 'blog/how-to-compress-a-pdf-without-losing-quality-2026',
     name: 'How to Compress a PDF Without Losing Quality (2026 Guide)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to compress a PDF without losing quality in 2026. Compare the best free tools, avoid common mistakes, and keep your files private with browser-side compression.',
+    shortDescription:
+      'Learn how to compress a PDF without losing quality in 2026. Compare the best free tools, avoid common mistakes, and keep your files private with browser-side compression.',
     metaTitle: 'Compress PDF Without Losing Quality (2026) | PdfMinty',
-    metaDescription: 'Learn how to compress a PDF without losing quality in 2026. Compare top free tools, avoid common mistakes, and keep files private with browser-side compression.',
+    metaDescription:
+      'Learn how to compress a PDF without losing quality in 2026. Compare top free tools, avoid common mistakes, and keep files private with browser-side compression.',
     h1: 'How to Compress a PDF Without Losing Quality (2026 Guide)',
     icon: 'Minimize2',
     category: 'blog',
@@ -4616,17 +4890,17 @@ longFormBody: `
         q: 'Does compressing a PDF reduce text quality?',
         a: 'No. Text in PDFs is stored as vector data, not images. Compression only affects embedded images. Text remains perfectly sharp at any compression level.',
       },
-  {
+      {
         q: 'Can I compress a password-protected PDF?',
         a: 'Most tools, including PdfMinty, require you to unlock a password-protected PDF before compressing it. Use the unlock feature first, then compress.',
       },
-  {
-        q: 'How much can I reduce a PDF\'s file size?',
+      {
+        q: "How much can I reduce a PDF's file size?",
         a: 'It depends on the content. Text-only PDFs may only reduce by 10–20%. Image-heavy PDFs can often be reduced by 60–80% with medium compression.',
       },
-  {
+      {
         q: 'Is it safe to compress PDFs online?',
-        a: 'Only if the tool uses browser-side processing. Tools that upload your file to a server create privacy risks. PdfMinty\'s no-upload model keeps your files completely private.',
+        a: "Only if the tool uses browser-side processing. Tools that upload your file to a server create privacy risks. PdfMinty's no-upload model keeps your files completely private.",
       },
     ],
     longFormBody: `
@@ -4814,9 +5088,11 @@ longFormBody: `
     slug: 'blog/how-to-convert-pdf-to-word-for-free-2026',
     name: 'How to Convert PDF to Word for Free (The Text Extraction Method)',
     ogImage: '/og-image.png',
-    shortDescription: 'Tired of broken formatting when converting PDF to Word? Learn how to extract clean Markdown text and paste it safely into Word without using risky cloud converters.',
+    shortDescription:
+      'Tired of broken formatting when converting PDF to Word? Learn how to extract clean Markdown text and paste it safely into Word without using risky cloud converters.',
     metaTitle: 'How to Convert PDF to Word for Free (Text Method) | PdfMinty',
-    metaDescription: 'Convert PDF to Word safely offline. Extract clean text and Markdown to paste into Microsoft Word without formatting headaches or cloud privacy risks.',
+    metaDescription:
+      'Convert PDF to Word safely offline. Extract clean text and Markdown to paste into Microsoft Word without formatting headaches or cloud privacy risks.',
     h1: 'How to Convert PDF to Word for Free (The Text Extraction Method)',
     icon: 'FileText',
     category: 'blog',
@@ -4828,7 +5104,8 @@ longFormBody: `
     author: 'PdfMinty Editorial Team',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "Converting PDFs directly to .docx often results in horribly broken tables, invisible text boxes, and massive formatting headaches. This guide offers a cleaner, safer text-extraction workaround.",
+    problemSolved:
+      'Converting PDFs directly to .docx often results in horribly broken tables, invisible text boxes, and massive formatting headaches. This guide offers a cleaner, safer text-extraction workaround.',
     relatedLinks: [
       {
         title: 'PDF to Markdown Tool',
@@ -4854,7 +5131,7 @@ longFormBody: `
       {
         q: 'Is there a safer way to convert without uploading?',
         a: 'Yes. Instead of forcing a direct .docx conversion on a cloud server, use a local tool to extract the raw text (as Markdown), and paste it into a blank Word document. You control the formatting.',
-      }
+      },
     ],
     longFormBody: `
       <h2>How to Convert PDF to Word for Free (The Text Extraction Method)</h2>
@@ -4898,16 +5175,18 @@ longFormBody: `
       <p>
         Navigate to the <a href="/ocr-pdf/" class="text-emerald-600 font-bold underline">OCR PDF tool</a>. Run the character recognition locally in your browser, copy the transcribed text, and paste it directly into your Word document.
       </p>
-    `
+    `,
   },
   {
     id: 'compare-pdfminty-vs-smallpdf',
     slug: 'compare/pdfminty-vs-smallpdf',
     name: 'PDFMinty vs SmallPDF: Which Keeps Files Private? | PdfMinty',
     ogImage: '/og-image.png',
-    shortDescription: 'Compare Smallpdf vs PdfMinty: privacy, file upload models, speed, and limits. See why local client-side processing keeps your PDF documents private.',
+    shortDescription:
+      'Compare Smallpdf vs PdfMinty: privacy, file upload models, speed, and limits. See why local client-side processing keeps your PDF documents private.',
     metaTitle: 'PDFMinty vs SmallPDF: Which Keeps Files Private? | PdfMinty',
-    metaDescription: 'Compare Smallpdf vs PdfMinty: privacy, file upload models, speed, and limits. See why local client-side processing keeps your PDF documents private.',
+    metaDescription:
+      'Compare Smallpdf vs PdfMinty: privacy, file upload models, speed, and limits. See why local client-side processing keeps your PDF documents private.',
     h1: 'PDFMinty vs SmallPDF: Which One Actually Keeps Your Files Private?',
     icon: 'Shield',
     category: 'blog',
@@ -4921,15 +5200,15 @@ longFormBody: `
         q: "Is SmallPDF's free plan actually private?",
         a: "No — free and paid tiers both process files on SmallPDF's servers. The privacy difference isn't about the price, it's about the architecture.",
       },
-  {
+      {
         q: 'Does PDFMinty have AI features like SmallPDF?',
-        a: "Not currently. If you specifically need AI summarization or \"chat with your PDF,\" that's a real gap — SmallPDF (and PDFMinty's own /ai-analyze-pdf tool) covers that differently.",
+        a: 'Not currently. If you specifically need AI summarization or "chat with your PDF," that\'s a real gap — SmallPDF (and PDFMinty\'s own /ai-analyze-pdf tool) covers that differently.',
       },
-  {
+      {
         q: 'Which is better for very large files?',
         a: "SmallPDF's server-side processing can handle bulk operations more predictably than a browser can. If you're processing dozens of large files at once, that's worth factoring in.",
       },
-  {
+      {
         q: 'Is PDFMinty really free with no catch?',
         a: 'Yes — no account, no watermark, no daily limits on the core tools.',
       },
@@ -5112,9 +5391,11 @@ longFormBody: `
     slug: 'compare/pdfminty-vs-ilovepdf',
     name: 'PDFMinty vs iLovePDF — No Ads, No Uploads, No Monthly Fee',
     ogImage: '/og-image.png',
-    shortDescription: 'Compare iLovePDF vs PdfMinty: privacy, server uploads, ads, and tools. Discover why 100% in-browser PDF processing offers superior security and speed.',
+    shortDescription:
+      'Compare iLovePDF vs PdfMinty: privacy, server uploads, ads, and tools. Discover why 100% in-browser PDF processing offers superior security and speed.',
     metaTitle: 'PDFMinty vs iLovePDF — No Ads, No Uploads, No Monthly Fee',
-    metaDescription: 'Compare iLovePDF vs PdfMinty: privacy, server uploads, ads, and tools. Discover why 100% in-browser PDF processing offers superior security and speed.',
+    metaDescription:
+      'Compare iLovePDF vs PdfMinty: privacy, server uploads, ads, and tools. Discover why 100% in-browser PDF processing offers superior security and speed.',
     h1: 'PDFMinty vs iLovePDF: No Ads. No Uploads. No Monthly Fee.',
     icon: 'Shield',
     category: 'blog',
@@ -5128,15 +5409,15 @@ longFormBody: `
         q: "Does iLovePDF's free plan upload my files?",
         a: "Yes — like any browser-based cloud tool, files are sent to iLovePDF's servers for processing, free or paid.",
       },
-  {
+      {
         q: "Why does iLovePDF show ads on the free plan and PDFMinty doesn't, ever?",
         a: "iLovePDF's ads help fund the server infrastructure that processes your file. PDFMinty doesn't need that infrastructure, since processing happens on your own device.",
       },
-  {
+      {
         q: 'Does PDFMinty offer e-signatures or OCR like iLovePDF Premium?',
         a: "Not currently — that's a genuine gap if those are must-haves for your workflow.",
       },
-  {
+      {
         q: 'Is there a catch to PDFMinty being free?',
         a: "No account, no watermark, no task limits on the core tools — it's free the same way it's private: because there's no server-side cost per file to recover.",
       },
@@ -5291,9 +5572,11 @@ longFormBody: `
     slug: 'blog/best-offline-pdf-tools-for-sensitive-documents-2026',
     name: 'Best Offline PDF Tools for Sensitive Documents (2026 Ranking Guide)',
     ogImage: '/og-image.png',
-    shortDescription: 'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools never upload your files — PDFMinty ranks #1.',
+    shortDescription:
+      'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools never upload your files — PDFMinty ranks #1.',
     metaTitle: 'Best Offline PDF Tools for Sensitive Docs 2026 | PDFMinty',
-    metaDescription: 'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools never upload your files — PDFMinty ranks #1.',
+    metaDescription:
+      'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools never upload your files — PDFMinty ranks #1.',
     h1: 'Best Offline PDF Tools for Sensitive Documents (2026 Ranking Guide)',
     icon: 'Shield',
     category: 'blog',
@@ -5307,17 +5590,17 @@ longFormBody: `
         q: 'What makes a PDF tool "offline" or "local"?',
         a: 'It means the actual file processing — merging, compressing, editing — happens on your own device rather than being uploaded to a remote server. Some tools, like PdfMinty, do this inside your browser using WebAssembly; others are traditional desktop applications you install.',
       },
-  {
+      {
         q: 'Are offline PDF tools free?',
         a: 'It depends on the tool. PdfMinty is free with no account required. Desktop suites like Adobe Acrobat Pro are local but paid (subscription-based). Some open-source desktop tools are both local and free, though they usually require installation and more manual setup.',
       },
-  {
+      {
         q: 'Is it safe to use offline PDF tools for HIPAA or legal documents?',
         a: 'A tool that never uploads your file removes the single biggest exposure point — the file leaving your control. That said, "offline" addresses the upload risk specifically; your organization\'s own device security, access controls, and retention policies still apply on top of that.',
       },
-  {
-        q: 'What\'s the difference between PdfMinty and a desktop tool like Adobe Acrobat?',
-        a: 'Both process files locally rather than uploading them. The difference is friction: PdfMinty runs in your existing browser with nothing to install and no cost, while Acrobat is a full paid desktop application with a broader (and more complex) feature set built for teams already standardized on Adobe\'s ecosystem.',
+      {
+        q: "What's the difference between PdfMinty and a desktop tool like Adobe Acrobat?",
+        a: "Both process files locally rather than uploading them. The difference is friction: PdfMinty runs in your existing browser with nothing to install and no cost, while Acrobat is a full paid desktop application with a broader (and more complex) feature set built for teams already standardized on Adobe's ecosystem.",
       },
     ],
     longFormBody: `
@@ -5511,9 +5794,11 @@ longFormBody: `
     slug: 'blog/how-to-make-a-pdf-online-free',
     name: 'How to Make a PDF Online for Free in 2026: 3 Simple Methods (No Upload Needed)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn 3 free ways to make a PDF online — from photos, multiple files, or a blank page. Everything runs in your browser, so your files are never uploaded.',
+    shortDescription:
+      'Learn 3 free ways to make a PDF online — from photos, multiple files, or a blank page. Everything runs in your browser, so your files are never uploaded.',
     metaTitle: 'How to Make a PDF Online Free (No Upload) | PdfMinty',
-    metaDescription: 'Learn 3 free ways to make a PDF online — from photos, multiple files, or a blank page. Everything runs in your browser, so your files are never uploaded.',
+    metaDescription:
+      'Learn 3 free ways to make a PDF online — from photos, multiple files, or a blank page. Everything runs in your browser, so your files are never uploaded.',
     h1: 'How to Make a PDF Online for Free in 2026: 3 Simple Methods (No Upload Needed)',
     icon: 'FileText',
     category: 'blog',
@@ -5527,25 +5812,25 @@ longFormBody: `
         q: 'Is it safe to make a PDF online?',
         a: "It depends entirely on the tool. If the tool uploads your file to a server, your safety depends on that company's storage and deletion policies. Browser-based tools like PdfMinty avoid the question altogether — your file is never transmitted anywhere, so there's nothing to secure in transit or delete later.",
       },
-  {
+      {
         q: 'Do I need to install software to make a PDF?',
         a: "No. Any modern browser can run PdfMinty's tools directly — no download, no plugin, no installation.",
       },
-  {
+      {
         q: 'Can I make a PDF from a photo taken on my phone?',
         a: "Yes. Upload the JPG or PNG to the Image to PDF tool and it converts instantly, right on your phone's browser.",
       },
-  {
+      {
         q: 'Do I need to create an account?',
         a: "No. PdfMinty doesn't require sign-up for its core tools.",
       },
-  {
+      {
         q: 'Will my PDF have a watermark added by the tool itself?',
         a: "No. PdfMinty doesn't stamp its own branding on your files — the only watermark on your PDF is one you choose to add.",
       },
-  {
+      {
         q: 'Can I make a PDF without an internet connection?',
-        a: "Once the PdfMinty page has loaded, processing happens locally in your browser, so tools generally continue to work even if your connection drops mid-task.",
+        a: 'Once the PdfMinty page has loaded, processing happens locally in your browser, so tools generally continue to work even if your connection drops mid-task.',
       },
     ],
     longFormBody: `
@@ -5773,9 +6058,11 @@ longFormBody: `
     slug: 'blog/secure-pdf-editing-without-uploading',
     name: 'How to Edit PDFs Securely Without Uploading Them Online',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to merge, split, compress, and edit sensitive PDFs without uploading them to remote servers. A practical guide to secure local PDF workflows.',
+    shortDescription:
+      'Learn how to merge, split, compress, and edit sensitive PDFs without uploading them to remote servers. A practical guide to secure local PDF workflows.',
     metaTitle: 'How to Edit PDFs Securely Without Uploading | PdfMinty',
-    metaDescription: 'Learn how to merge, split, compress, and edit sensitive PDFs without uploading them to remote servers. A practical guide to secure local PDF workflows.',
+    metaDescription:
+      'Learn how to merge, split, compress, and edit sensitive PDFs without uploading them to remote servers. A practical guide to secure local PDF workflows.',
     h1: 'How to Edit PDFs Securely Without Uploading Them Online',
     icon: 'Shield',
     category: 'blog',
@@ -5791,46 +6078,46 @@ longFormBody: `
       {
         title: 'Privacy-First PDF Toolkit',
         url: '/',
-        type: 'home'
+        type: 'home',
       },
-  {
+      {
         title: 'Merge PDF',
         url: '/merge-pdf/',
-        type: 'tool'
+        type: 'tool',
       },
-  {
+      {
         title: 'PDF Metadata Removal Guide',
         url: '/blog/how-to-remove-pdf-metadata-for-privacy/',
-        type: 'guide'
+        type: 'guide',
       },
-  {
+      {
         title: 'Online PDF Upload Safety Guide',
         url: '/blog/is-it-safe-to-upload-pdf-to-online-tools/',
-        type: 'guide'
+        type: 'guide',
       },
-  {
+      {
         title: 'PDF Compression Guide',
         url: '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
-        type: 'guide'
-      }
+        type: 'guide',
+      },
     ],
     faqs: [
       {
         q: 'Does PdfMinty upload my PDF?',
-        a: 'PdfMinty’s core privacy-first workflow is designed for browser-side processing. Because implementations can vary by tool and may change over time, users should review the current tool description, privacy policy, and browser Network activity before processing highly sensitive documents.'
+        a: 'PdfMinty’s core privacy-first workflow is designed for browser-side processing. Because implementations can vary by tool and may change over time, users should review the current tool description, privacy policy, and browser Network activity before processing highly sensitive documents.',
       },
-  {
+      {
         q: 'Do browser-side PDF tools work offline?',
-        a: 'Some core tools may continue to work offline after the required application assets are available in the browser. The initial page load, application updates, external fonts, analytics, and specialized AI or OCR features may require an internet connection. Offline availability should be verified for each tool.'
+        a: 'Some core tools may continue to work offline after the required application assets are available in the browser. The initial page load, application updates, external fonts, analytics, and specialized AI or OCR features may require an internet connection. Offline availability should be verified for each tool.',
       },
-  {
+      {
         q: 'What happens if I forget the password for a protected PDF?',
-        a: 'Keep a secure recovery procedure before applying password protection. If a password is lost, the document may not be recoverable, especially when processing is performed locally and no service provider retains a copy.'
+        a: 'Keep a secure recovery procedure before applying password protection. If a password is lost, the document may not be recoverable, especially when processing is performed locally and no service provider retains a copy.',
       },
-  {
+      {
         q: 'Does removing PDF metadata make a document completely anonymous?',
-        a: 'No. Metadata removal may reduce author, title, or software information, but visible content, images, signatures, filenames, and external activity can still reveal information. Metadata removal is one privacy measure, not a guarantee of anonymity.'
-      }
+        a: 'No. Metadata removal may reduce author, title, or software information, but visible content, images, signatures, filenames, and external activity can still reveal information. Metadata removal is one privacy measure, not a guarantee of anonymity.',
+      },
     ],
     longFormBody: `
       <h2>How to Edit PDFs Securely Without Uploading Them Online</h2>
@@ -6036,9 +6323,11 @@ longFormBody: `
     slug: 'blog/how-to-add-page-numbers-to-a-pdf-for-free',
     name: 'How to Add Page Numbers to a PDF for Free in 2026',
     ogImage: '/og-image.png',
-    shortDescription: 'Add page numbers to a PDF for free — skip the cover page, start from any page, choose the format you need. 100% browser-based, zero uploads, zero sign-up.',
+    shortDescription:
+      'Add page numbers to a PDF for free — skip the cover page, start from any page, choose the format you need. 100% browser-based, zero uploads, zero sign-up.',
     metaTitle: 'How to Add Page Numbers to PDF Free (2026) | PdfMinty',
-    metaDescription: 'Add page numbers to a PDF for free — skip the cover page, start from any page, choose the format you need. 100% browser-based, zero uploads, zero sign-up.',
+    metaDescription:
+      'Add page numbers to a PDF for free — skip the cover page, start from any page, choose the format you need. 100% browser-based, zero uploads, zero sign-up.',
     h1: 'How to Add Page Numbers to a PDF for Free in 2026 (Without Uploading It Anywhere)',
     icon: 'Hash',
     category: 'blog',
@@ -6056,22 +6345,22 @@ longFormBody: `
         url: '/add-page-numbers/',
         type: 'tool',
       },
-  {
+      {
         title: 'How to Make a PDF Online Free',
         url: '/blog/how-to-make-a-pdf-online-free/',
         type: 'guide',
       },
-  {
+      {
         title: 'How to Merge PDF Files Online Free',
         url: '/blog/how-to-merge-pdf-files-online-for-free-2026-guide/',
         type: 'guide',
       },
-  {
+      {
         title: 'Is It Safe to Upload PDF to Online Tools?',
         url: '/blog/is-it-safe-to-upload-pdf-to-online-tools/',
         type: 'guide',
       },
-  {
+      {
         title: 'How to Edit PDFs Securely Without Uploading',
         url: '/blog/secure-pdf-editing-without-uploading/',
         type: 'guide',
@@ -6082,19 +6371,19 @@ longFormBody: `
         q: 'Does adding page numbers upload my file anywhere?',
         a: "Not with PdfMinty — the entire process runs in your browser using your device's own processing power. The PDF never leaves your computer or phone.",
       },
-  {
+      {
         q: 'Can I start numbering from a specific page, like page 3?',
         a: 'Yes. Set the starting page to the page you want numbering to begin on, and set the starting number separately (usually 1) so your cover and table of contents stay unnumbered.',
       },
-  {
+      {
         q: 'Will this work on my phone?',
-        a: "Yes — since everything runs in the browser itself rather than on a server, it works the same way on a laptop, tablet, or phone browser.",
+        a: 'Yes — since everything runs in the browser itself rather than on a server, it works the same way on a laptop, tablet, or phone browser.',
       },
-  {
+      {
         q: 'Is it really free, with no watermark or sign-up?',
         a: "Yes. There's no account required and no watermark added to your file.",
       },
-  {
+      {
         q: 'What if I need to change the numbers after downloading?',
         a: "Just re-open the edited PDF in the same tool and re-run it with your updated settings — there's no limit on how many times you can process a file.",
       },
@@ -6270,9 +6559,11 @@ longFormBody: `
     slug: 'blog/how-to-make-a-scanned-pdf-searchable',
     name: 'How to Extract Text from a Scanned PDF Image Offline',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to use offline OCR to extract readable, copyable text or Markdown from scanned and image-only PDFs without uploading them.',
+    shortDescription:
+      'Learn how to use offline OCR to extract readable, copyable text or Markdown from scanned and image-only PDFs without uploading them.',
     metaTitle: 'How to Extract Text from a Scanned PDF Image (OCR Guide) | PdfMinty',
-    metaDescription: 'Extract text from scanned PDFs safely offline. Learn how to run optical character recognition (OCR) locally to pull text and Markdown from image-only documents.',
+    metaDescription:
+      'Extract text from scanned PDFs safely offline. Learn how to run optical character recognition (OCR) locally to pull text and Markdown from image-only documents.',
     h1: 'How to Extract Text from a Scanned PDF Image Offline',
     icon: 'Scan',
     category: 'blog',
@@ -6284,7 +6575,8 @@ longFormBody: `
     author: 'PdfMinty Editorial Team',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "Users have an image-only PDF and need to extract the text out of it so they can paste it into Word, edit it, or search it—without relying on privacy-invasive cloud OCR services.",
+    problemSolved:
+      'Users have an image-only PDF and need to extract the text out of it so they can paste it into Word, edit it, or search it—without relying on privacy-invasive cloud OCR services.',
     relatedLinks: [
       {
         title: 'OCR PDF Tool',
@@ -6319,7 +6611,7 @@ longFormBody: `
       {
         q: 'How does PdfMinty handle privacy during OCR processing?',
         a: 'The OCR engine runs entirely inside your browser (using WebAssembly) on your local device. The text recognition happens offline, and your confidential scanned images are never uploaded to a cloud server.',
-      }
+      },
     ],
     longFormBody: `
       <h2>How to Extract Text from a Scanned PDF Image Offline</h2>
@@ -6367,16 +6659,18 @@ longFormBody: `
           Traditional OCR services require you to upload your sensitive medical records or financial scans to remote servers. PdfMinty executes the OCR engine directly inside your web browser via WebAssembly. Your images are transcribed locally, ensuring absolute data sovereignty.
         </p>
       </div>
-    `
+    `,
   },
   {
     id: 'how-to-split-pdf-by-page-range-and-extract-pages',
     slug: 'blog/how-to-split-pdf-by-page-range-and-extract-pages',
     name: 'How to Split a PDF by Page Range and Extract Selected Pages Privately',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to split a PDF by page range, extract selected pages, preserve the original, name outputs clearly, and avoid privacy mistakes when handling documents.',
+    shortDescription:
+      'Learn how to split a PDF by page range, extract selected pages, preserve the original, name outputs clearly, and avoid privacy mistakes when handling documents.',
     metaTitle: 'How to Split PDF by Page Range Free | PdfMinty',
-    metaDescription: 'Learn how to split a PDF by page range, extract selected pages, preserve the original, name outputs clearly, and avoid privacy mistakes when handling documents.',
+    metaDescription:
+      'Learn how to split a PDF by page range, extract selected pages, preserve the original, name outputs clearly, and avoid privacy mistakes when handling documents.',
     h1: 'How to Split a PDF by Page Range and Extract Selected Pages Privately',
     icon: 'Split',
     category: 'blog',
@@ -6394,27 +6688,27 @@ longFormBody: `
         url: '/split-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Extract PDF Pages Tool',
         url: '/extract-pages-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Delete PDF Pages Tool',
         url: '/delete-pages-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Edit PDF Metadata Tool',
         url: '/edit-pdf-metadata/',
         type: 'tool',
       },
-  {
+      {
         title: 'Sanitize PDF Tool',
         url: '/sanitize-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'How to Edit a PDF Offline Without Uploading It',
         url: '/blog/secure-pdf-editing-without-uploading/',
         type: 'guide',
@@ -6425,19 +6719,19 @@ longFormBody: `
         q: 'What is the difference between splitting and extracting PDF pages?',
         a: 'Splitting divides a document into multiple output files according to page ranges or chapters. Extracting pulls specific individual pages (e.g., pages 2, 7, and 10) into a single new PDF document. Deleting removes unwanted pages from a copy while keeping remaining pages intact.',
       },
-  {
+      {
         q: 'Does splitting a PDF reduce document quality or resolution?',
         a: 'No. Splitting and page extraction operate on existing PDF vector streams and raster assets without lossy re-rendering or compression. Visual fidelity, text sharpness, and high-resolution images remain identical to the source document.',
       },
-  {
+      {
         q: 'How can I avoid extracting the wrong pages due to page numbering differences?',
         a: 'Compare the viewer’s physical thumbnail index with the printed page number on the page itself. If a document has Roman numerals for front matter or cover pages, physical page 3 might be printed as page 1. Always verify thumbnail numbers before extracting.',
       },
-  {
+      {
         q: 'Does extracting pages remove sensitive metadata automatically?',
         a: 'No. Extracting pages creates a new document structure but often carries over document metadata such as author, creation tool, and modification dates. Use a metadata editor or sanitization utility to clean sensitive document properties before sharing.',
       },
-  {
+      {
         q: 'How can I split PDF pages without uploading files to a cloud server?',
         a: 'Use client-side tools like PdfMinty that execute document parsing and page rearrangement directly in your web browser using WebAssembly. Your PDF never leaves your device or gets transmitted across the network.',
       },
@@ -6623,9 +6917,11 @@ longFormBody: `
     slug: 'blog/how-to-password-protect-a-pdf-offline',
     name: 'How to Password Protect a PDF Offline: A Practical Guide to Safer Sharing',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to password protect a PDF offline, choose a stronger passphrase, share it safely, and avoid common mistakes when sending sensitive documents.',
+    shortDescription:
+      'Learn how to password protect a PDF offline, choose a stronger passphrase, share it safely, and avoid common mistakes when sending sensitive documents.',
     metaTitle: 'How to Password Protect a PDF Offline | PdfMinty',
-    metaDescription: 'Learn how to password protect a PDF offline, choose a stronger passphrase, share it safely, and avoid common mistakes when sending sensitive documents.',
+    metaDescription:
+      'Learn how to password protect a PDF offline, choose a stronger passphrase, share it safely, and avoid common mistakes when sending sensitive documents.',
     h1: 'How to Password Protect a PDF Offline: A Practical Guide to Safer Sharing',
     icon: 'Lock',
     category: 'blog',
@@ -6643,22 +6939,22 @@ longFormBody: `
         url: '/protect-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Unlock PDF Tool',
         url: '/unlock-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Edit PDF Metadata Tool',
         url: '/edit-pdf-metadata/',
         type: 'tool',
       },
-  {
+      {
         title: 'Sanitize PDF Tool',
         url: '/sanitize-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'How to Edit a PDF Offline Without Uploading It',
         url: '/blog/secure-pdf-editing-without-uploading/',
         type: 'guide',
@@ -6669,19 +6965,19 @@ longFormBody: `
         q: 'What does password-protecting a PDF actually do?',
         a: 'A password-protected PDF requires a valid decryption password before a viewer or application can render the document or allow permission-based actions like editing, copying, or printing. It encrypts the internal data stream to prevent unauthorized access.',
       },
-  {
+      {
         q: 'How should I safely transmit the password to the recipient?',
         a: 'Never send the password and the protected PDF in the same communication (such as the same email). Send the PDF file via email or cloud share, and communicate the password separately via SMS, a phone call, or an encrypted messaging app.',
       },
-  {
+      {
         q: 'What makes a strong PDF passphrase?',
         a: 'Use a unique sequence of unrelated words or a complex combination of alphanumeric and symbol characters that is not reused across accounts. Avoid predictable details like birthdays, names, phone numbers, or company names.',
       },
-  {
+      {
         q: 'Does password protection prevent screenshots or redistribution by authorized recipients?',
         a: 'No. Once an authorized recipient unlocks the PDF, they can screenshot, print, photograph, or re-export the file. Password protection secures files against unauthorized interception during transit and storage, but does not control authorized user behavior.',
       },
-  {
+      {
         q: 'How can I protect a PDF without uploading it to external cloud servers?',
         a: 'Use client-side PDF tools like PdfMinty that run WebAssembly encryption algorithms locally in your browser. The file is encrypted directly on your device memory without transmitting document bytes over the network.',
       },
@@ -6865,9 +7161,11 @@ longFormBody: `
     slug: 'blog/how-to-repair-a-corrupted-pdf',
     name: 'How to Repair a Corrupted PDF: A Safe Recovery Workflow Before You Give Up',
     ogImage: '/og-image.png',
-    shortDescription: "PDF won't open? Learn how to repair corrupted PDF files safely, preserve original data, fix damaged structure, and avoid common recovery mistakes.",
+    shortDescription:
+      "PDF won't open? Learn how to repair corrupted PDF files safely, preserve original data, fix damaged structure, and avoid common recovery mistakes.",
     metaTitle: 'How to Repair Corrupted PDF Safely | PdfMinty',
-    metaDescription: "PDF won't open? Learn how to repair corrupted PDF files safely, preserve original data, fix damaged structure, and avoid common recovery mistakes.",
+    metaDescription:
+      "PDF won't open? Learn how to repair corrupted PDF files safely, preserve original data, fix damaged structure, and avoid common recovery mistakes.",
     h1: 'How to Repair a Corrupted PDF: A Safe Recovery Workflow Before You Give Up',
     icon: 'Wrench',
     category: 'blog',
@@ -6885,22 +7183,22 @@ longFormBody: `
         url: '/repair-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Edit PDF Metadata Tool',
         url: '/edit-pdf-metadata/',
         type: 'tool',
       },
-  {
+      {
         title: 'Sanitize PDF Tool',
         url: '/sanitize-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'How to Edit a PDF Offline Without Uploading It',
         url: '/blog/secure-pdf-editing-without-uploading/',
         type: 'guide',
       },
-  {
+      {
         title: 'How to Split a PDF by Page Range and Extract Pages',
         url: '/blog/how-to-split-pdf-by-page-range-and-extract-pages/',
         type: 'guide',
@@ -6911,19 +7209,19 @@ longFormBody: `
         q: 'What causes a PDF file to become corrupted or unreadable?',
         a: 'Common causes include incomplete file downloads, interrupted network transfers, browser or software crashes during export, damaged storage drives, or corrupted cross-reference (XREF) tables and object headers.',
       },
-  {
+      {
         q: 'Why should I never work directly on the only original copy of a corrupted PDF?',
         a: 'Repair algorithms rewrite internal byte streams and object dictionaries. If a repair attempt fails or introduces further errors, modifying your sole original copy can cause permanent data loss. Always make a read-only duplicate first.',
       },
-  {
+      {
         q: 'How does client-side in-browser PDF repair work?',
         a: 'PdfMinty runs WebAssembly parser engines directly within your browser memory. It scans the document structure, reconstructs damaged cross-reference tables, repairs broken font and page pointers, and generates a valid PDF stream without sending file bytes to external servers.',
       },
-  {
+      {
         q: 'Does repairing a corrupted PDF guarantee 100% data recovery?',
         a: 'No repair tool can restore bytes that were never downloaded or physically destroyed on storage media. However, structural repairs can often recover uncorrupted pages, text layers, and embedded assets from partially damaged files.',
       },
-  {
+      {
         q: 'What should I do if a repaired PDF opens but has missing fonts or broken images?',
         a: 'Try opening the repaired copy in multiple viewers (e.g., Chrome, Adobe Acrobat, Apple Preview). If fonts or images remain broken, check if a previous revision exists or request a fresh export from the original author.',
       },
@@ -7141,9 +7439,11 @@ longFormBody: `
     slug: 'blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload',
     name: 'How to Fix "PDF File Size Too Large" for Email and Portal Uploads',
     ogImage: '/og-image.png',
-    shortDescription: 'Solve PDF file size limit errors for Gmail, Outlook, job portals, and visa applications without losing quality.',
+    shortDescription:
+      'Solve PDF file size limit errors for Gmail, Outlook, job portals, and visa applications without losing quality.',
     metaTitle: 'Fix "PDF File Size Too Large" Error | PdfMinty',
-    metaDescription: 'Stuck with a PDF too large to email or upload to a government/job portal? Learn practical ways to shrink PDF size under 2MB or 500KB without blurry text.',
+    metaDescription:
+      'Stuck with a PDF too large to email or upload to a government/job portal? Learn practical ways to shrink PDF size under 2MB or 500KB without blurry text.',
     h1: 'How to Fix "PDF File Size Too Large" for Email and Portal Uploads (Under 2MB or 500KB)',
     icon: 'Minimize2',
     category: 'Optimization',
@@ -7152,29 +7452,30 @@ longFormBody: `
     type: 'article',
     datePublished: '2026-08-29',
     dateModified: '2026-08-29',
-    problemSolved: "Getting rejected by upload forms or email attachments with strict 2MB, 1MB, or 500KB PDF file size caps.",
+    problemSolved:
+      'Getting rejected by upload forms or email attachments with strict 2MB, 1MB, or 500KB PDF file size caps.',
     relatedLinks: [
       {
         title: 'Grayscale PDF (Reduce Size)',
         url: '/grayscale-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Flatten PDF',
         url: '/flatten-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Delete Unneeded Pages',
         url: '/delete-pages-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Sanitize PDF Metadata',
         url: '/sanitize-pdf/',
         type: 'tool',
       },
-  {
+      {
         title: 'Split Large PDF',
         url: '/split-pdf/',
         type: 'tool',
@@ -7185,15 +7486,15 @@ longFormBody: `
         q: 'Why is my single-page or 3-page PDF file over 20MB?',
         a: 'The most common culprits are uncompressed 600+ DPI scanner images, embedded CMYK print profiles, redundant duplicate font packages, and unflattened vector graphics layers created by graphic software.',
       },
-  {
+      {
         q: 'What is the standard attachment limit for Gmail and Outlook?',
         a: 'Gmail and Outlook both enforce a 25MB maximum attachment limit per message. However, government job portals, university application forms, and visa portals typically enforce strict 2MB, 1MB, or even 200KB-500KB limits.',
       },
-  {
+      {
         q: 'How can I shrink a PDF under 2MB or 500KB without blurry text?',
         a: 'Convert colorful decorative pages to Grayscale if color is not required, downsample or delete unneeded pages, flatten form fields, and sanitize unnecessary metadata catalogs from the file.',
       },
-  {
+      {
         q: 'Is it safe to optimize confidential PDFs like tax returns or bank statements on PdfMinty?',
         a: 'Yes, because all PdfMinty tools execute 100% locally inside your web browser using WebAssembly. Your files are never uploaded to any remote server or cloud storage.',
       },
@@ -7369,9 +7670,11 @@ longFormBody: `
     slug: 'privacy-policy',
     name: 'Privacy Policy',
     ogImage: '/og-image.png',
-    shortDescription: '100% in-browser processing privacy policy for PdfMinty with Google AdSense disclosures',
+    shortDescription:
+      '100% in-browser processing privacy policy for PdfMinty with Google AdSense disclosures',
     metaTitle: 'Privacy Policy — 100% Zero-Data Collection | PdfMinty',
-    metaDescription: "Read PdfMinty's Privacy Policy. We do not collect, upload, store, or transmit your PDF files. All processing happens 100% locally inside your web browser. Includes Google AdSense and cookie disclosures.",
+    metaDescription:
+      "Read PdfMinty's Privacy Policy. We do not collect, upload, store, or transmit your PDF files. All processing happens 100% locally inside your web browser. Includes Google AdSense and cookie disclosures.",
     h1: 'Privacy Policy',
     icon: 'Shield',
     category: 'static',
@@ -7430,7 +7733,8 @@ longFormBody: `
     ogImage: '/og-image.png',
     shortDescription: 'Service terms, acceptable use, and crawler guidelines for PdfMinty',
     metaTitle: 'Terms of Service — PdfMinty',
-    metaDescription: "Read PdfMinty's Terms of Service. Understand our terms of use, privacy guarantee, acceptable use policy, and crawler guidelines.",
+    metaDescription:
+      "Read PdfMinty's Terms of Service. Understand our terms of use, privacy guarantee, acceptable use policy, and crawler guidelines.",
     h1: 'Terms of Service',
     icon: 'Scale',
     category: 'static',
@@ -7475,9 +7779,11 @@ longFormBody: `
     slug: 'blog/electronic-signature-vs-digital-signature',
     name: 'Electronic Signature vs Digital Signature: Legal Differences (2026)',
     ogImage: '/og-image.png',
-    shortDescription: 'Understand the legal, technical, and cryptographic differences between electronic signatures (SES) and digital signatures (PKI/QES). Learn which to use under ESIGN and eIDAS.',
+    shortDescription:
+      'Understand the legal, technical, and cryptographic differences between electronic signatures (SES) and digital signatures (PKI/QES). Learn which to use under ESIGN and eIDAS.',
     metaTitle: 'Electronic vs Digital Signatures: Legal Differences | PDFMinty',
-    metaDescription: 'Electronic signature vs digital signature explained: Learn the technical, cryptographic, and legal distinctions under US ESIGN, UETA, and EU eIDAS regulations.',
+    metaDescription:
+      'Electronic signature vs digital signature explained: Learn the technical, cryptographic, and legal distinctions under US ESIGN, UETA, and EU eIDAS regulations.',
     h1: 'Electronic Signature vs. Digital Signature: Understanding Legal and Technical Differences',
     icon: 'Scale',
     category: 'blog',
@@ -7490,41 +7796,41 @@ longFormBody: `
       {
         title: 'Sign PDF Online (Free Tool)',
         url: '/sign-pdf/',
-        type: 'tool'
+        type: 'tool',
       },
       {
         title: 'How to Sign Without Adobe or DocuSign',
         url: '/blog/how-to-sign-pdf-without-adobe-or-docusign/',
-        type: 'guide'
+        type: 'guide',
       },
       {
         title: 'Sign Documents Without Uploading',
         url: '/blog/free-pdf-e-signature-sign-documents-without-uploading/',
-        type: 'guide'
+        type: 'guide',
       },
       {
         title: 'Flatten PDF',
         url: '/flatten-pdf/',
-        type: 'tool'
-      }
+        type: 'tool',
+      },
     ],
     faqs: [
       {
         q: 'What is the fundamental difference between an electronic signature and a digital signature?',
-        a: 'An electronic signature (such as a drawn, typed, or image mark) is a legal term representing the signer’s intent to agree to document terms. A digital signature is a specific mathematical and cryptographic technology utilizing public key infrastructure (PKI) and asymmetric cryptography to authenticate identity and prove that the document has not been altered.'
+        a: 'An electronic signature (such as a drawn, typed, or image mark) is a legal term representing the signer’s intent to agree to document terms. A digital signature is a specific mathematical and cryptographic technology utilizing public key infrastructure (PKI) and asymmetric cryptography to authenticate identity and prove that the document has not been altered.',
       },
       {
         q: 'Is an electronic signature legally binding without a cryptographic digital certificate?',
-        a: 'Yes, in most routine commercial scenarios. Under the US ESIGN Act (15 U.S.C. § 7001), UETA, and EU eIDAS Article 25(1), Simple Electronic Signatures (SES) are legally valid for standard contracts, freelance agreements, nondisclosure agreements (NDAs), and purchase orders, provided that mutual intent to sign and document integrity can be established.'
+        a: 'Yes, in most routine commercial scenarios. Under the US ESIGN Act (15 U.S.C. § 7001), UETA, and EU eIDAS Article 25(1), Simple Electronic Signatures (SES) are legally valid for standard contracts, freelance agreements, nondisclosure agreements (NDAs), and purchase orders, provided that mutual intent to sign and document integrity can be established.',
       },
       {
         q: 'When is a Simple Electronic Signature (SES) not sufficient?',
-        a: 'Statutes in many jurisdictions explicitly exclude certain high-stakes documents from standard electronic execution. Wills, codicils, testamentary trusts, family law divorce decrees, certain notices of default, and real estate deeds of conveyance often require qualified digital certificates (QES) or physical in-person notarization.'
+        a: 'Statutes in many jurisdictions explicitly exclude certain high-stakes documents from standard electronic execution. Wills, codicils, testamentary trusts, family law divorce decrees, certain notices of default, and real estate deeds of conveyance often require qualified digital certificates (QES) or physical in-person notarization.',
       },
       {
         q: 'How does PDFMinty handle signatures?',
-        a: 'PDFMinty generates Simple Electronic Signatures (SES). It converts your drawn, typed, or uploaded signature into a rasterized bitmap and permanently burns it into the local PDF stream using client-side JavaScript, ensuring zero bytes of your document are uploaded to any external server.'
-      }
+        a: 'PDFMinty generates Simple Electronic Signatures (SES). It converts your drawn, typed, or uploaded signature into a rasterized bitmap and permanently burns it into the local PDF stream using client-side JavaScript, ensuring zero bytes of your document are uploaded to any external server.',
+      },
     ],
     longFormBody: `
       <h2>Electronic Signature vs. Digital Signature: Understanding Legal and Technical Differences</h2>
@@ -7652,9 +7958,11 @@ longFormBody: `
     slug: 'blog/how-to-sign-pdf-without-adobe-or-docusign',
     name: 'How to Sign a PDF Without Adobe Acrobat or DocuSign (2026)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to sign PDF documents for free without Adobe Acrobat subscriptions or DocuSign accounts. Compare workflows, privacy implications, and zero-upload alternatives.',
+    shortDescription:
+      'Learn how to sign PDF documents for free without Adobe Acrobat subscriptions or DocuSign accounts. Compare workflows, privacy implications, and zero-upload alternatives.',
     metaTitle: 'How to Sign a PDF Without Adobe or DocuSign | PDFMinty',
-    metaDescription: 'Tired of $20/mo subscriptions just to sign a contract? Learn how to sign PDFs privately in your browser without Adobe Acrobat, DocuSign, or server uploads.',
+    metaDescription:
+      'Tired of $20/mo subscriptions just to sign a contract? Learn how to sign PDFs privately in your browser without Adobe Acrobat, DocuSign, or server uploads.',
     h1: 'How to Sign a PDF Without Adobe Acrobat or a DocuSign Subscription',
     icon: 'FilePenLine',
     category: 'blog',
@@ -7667,41 +7975,41 @@ longFormBody: `
       {
         title: 'Sign PDF Online (Free Tool)',
         url: '/sign-pdf/',
-        type: 'tool'
+        type: 'tool',
       },
       {
         title: 'Electronic vs Digital Signatures',
         url: '/blog/electronic-signature-vs-digital-signature/',
-        type: 'guide'
+        type: 'guide',
       },
       {
         title: 'Sign Documents Without Uploading',
         url: '/blog/free-pdf-e-signature-sign-documents-without-uploading/',
-        type: 'guide'
+        type: 'guide',
       },
       {
         title: 'Adobe Acrobat Alternative',
         url: '/adobe-acrobat-alternative/',
-        type: 'tool'
-      }
+        type: 'tool',
+      },
     ],
     faqs: [
       {
         q: 'Do I need an Adobe or DocuSign account to sign a PDF contract?',
-        a: 'No. You do not need an Adobe Acrobat subscription or a DocuSign account to sign a PDF. Client-side tools like PDFMinty allow you to draw, type, or upload your signature directly in your web browser and download the signed PDF without registering or paying.'
+        a: 'No. You do not need an Adobe Acrobat subscription or a DocuSign account to sign a PDF. Client-side tools like PDFMinty allow you to draw, type, or upload your signature directly in your web browser and download the signed PDF without registering or paying.',
       },
       {
         q: 'Is it safe to sign contracts without paying for enterprise e-signature software?',
-        a: 'Yes. In fact, signing client-side in your web browser is often safer for confidential agreements than uploading them to third-party cloud platforms, because zero bytes of your document or signature data are transmitted over the internet.'
+        a: 'Yes. In fact, signing client-side in your web browser is often safer for confidential agreements than uploading them to third-party cloud platforms, because zero bytes of your document or signature data are transmitted over the internet.',
       },
       {
         q: 'What is the key difference between single-party signing and DocuSign envelopes?',
-        a: 'DocuSign specializes in multi-party envelope routing, where a sender defines a signing order and automated emails are dispatched to multiple stakeholders. Single-party signing is when you simply have a PDF (received via email or download) that needs your signature before you send it back.'
+        a: 'DocuSign specializes in multi-party envelope routing, where a sender defines a signing order and automated emails are dispatched to multiple stakeholders. Single-party signing is when you simply have a PDF (received via email or download) that needs your signature before you send it back.',
       },
       {
         q: 'Can the recipient tell that I did not use Adobe Acrobat to sign?',
-        a: 'The output is a standard, compliant PDF specification document. When viewed in any PDF reader, your signature appears cleanly on the designated page just as if it were signed in Adobe or printed and scanned.'
-      }
+        a: 'The output is a standard, compliant PDF specification document. When viewed in any PDF reader, your signature appears cleanly on the designated page just as if it were signed in Adobe or printed and scanned.',
+      },
     ],
     longFormBody: `
       <h2>How to Sign a PDF Without Adobe Acrobat or a DocuSign Subscription</h2>
@@ -7784,9 +8092,11 @@ longFormBody: `
     slug: 'blog/why-is-my-pdf-so-large',
     name: 'Why Is My PDF So Large? (5 Hidden Causes & How to Fix Them)',
     ogImage: '/og-image.png',
-    shortDescription: 'Discover why your 3-page PDF is surprisingly 40MB. Learn the hidden structural reasons behind PDF file bloat and how to diagnose and shrink it instantly.',
+    shortDescription:
+      'Discover why your 3-page PDF is surprisingly 40MB. Learn the hidden structural reasons behind PDF file bloat and how to diagnose and shrink it instantly.',
     metaTitle: 'Why Is My PDF So Large? 5 Hidden Causes of File Bloat | PdfMinty',
-    metaDescription: 'Discover why your simple 3-page PDF is 40MB. Learn about un-subsetted fonts, 600 DPI scanner presets, hidden metadata, and how to shrink it instantly.',
+    metaDescription:
+      'Discover why your simple 3-page PDF is 40MB. Learn about un-subsetted fonts, 600 DPI scanner presets, hidden metadata, and how to shrink it instantly.',
     h1: 'Why Is My PDF So Large? (5 Hidden Causes & How to Fix Them)',
     icon: 'Search',
     category: 'Optimization',
@@ -7795,7 +8105,8 @@ longFormBody: `
     type: 'article',
     datePublished: '2026-08-31',
     dateModified: '2026-08-31',
-    problemSolved: "Trying to figure out why a simple PDF file has ballooned to 20MB, 40MB, or even 100MB and diagnosing the technical root causes.",
+    problemSolved:
+      'Trying to figure out why a simple PDF file has ballooned to 20MB, 40MB, or even 100MB and diagnosing the technical root causes.',
     relatedLinks: [
       {
         title: 'How to Fix "PDF File Size Too Large"',
@@ -7835,7 +8146,7 @@ longFormBody: `
       {
         q: 'How does converting to Grayscale help reduce size?',
         a: 'Converting a 24-bit RGB scanned document to an 8-bit Grayscale document immediately discards two-thirds of the color channel data in embedded raster images, often reducing total file size by up to 70%.',
-      }
+      },
     ],
     longFormBody: `
       <h2>Why Is My PDF So Large? (5 Hidden Causes & How to Fix Them)</h2>
@@ -7937,9 +8248,11 @@ longFormBody: `
     slug: 'blog/how-to-combine-scanned-documents-into-one-pdf',
     name: 'How to Combine Scanned Documents into One PDF (Without Crashing)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to merge heavy scanned PDFs, reduce their file size using Grayscale conversion, and create a single clean document offline.',
+    shortDescription:
+      'Learn how to merge heavy scanned PDFs, reduce their file size using Grayscale conversion, and create a single clean document offline.',
     metaTitle: 'How to Combine Scanned Documents into One PDF | PdfMinty',
-    metaDescription: 'Merge large scanned image PDFs safely offline. Learn how to combine documents, reduce file size with grayscale compression, and organize pages.',
+    metaDescription:
+      'Merge large scanned image PDFs safely offline. Learn how to combine documents, reduce file size with grayscale compression, and organize pages.',
     h1: 'How to Combine Scanned Documents into One PDF (Without Crashing)',
     icon: 'Layers',
     category: 'Optimization',
@@ -7948,7 +8261,8 @@ longFormBody: `
     type: 'article',
     datePublished: '2026-09-02',
     dateModified: '2026-09-02',
-    problemSolved: "Combining multiple high-resolution scanned PDFs often results in a massive, un-shareable file that crashes email clients. This guide solves the merging and optimization workflow.",
+    problemSolved:
+      'Combining multiple high-resolution scanned PDFs often results in a massive, un-shareable file that crashes email clients. This guide solves the merging and optimization workflow.',
     relatedLinks: [
       {
         title: 'Merge PDF Tool',
@@ -7974,7 +8288,7 @@ longFormBody: `
       {
         q: 'How can I reduce the size after merging?',
         a: 'The most effective method for scanned documents is converting the final merged PDF to Grayscale. This instantly discards unnecessary color channel data and shrinks the file significantly.',
-      }
+      },
     ],
     longFormBody: `
       <h2>How to Combine Scanned Documents into One PDF (Without Crashing)</h2>
@@ -8011,9 +8325,11 @@ longFormBody: `
     slug: 'blog/how-to-rearrange-pdf-pages-offline',
     name: 'How to Rearrange Pages in a PDF (Offline Drag & Drop Guide)',
     ogImage: '/og-image.png',
-    shortDescription: 'Learn how to visually rearrange, swap, and reorder PDF pages securely offline without using Adobe Acrobat.',
+    shortDescription:
+      'Learn how to visually rearrange, swap, and reorder PDF pages securely offline without using Adobe Acrobat.',
     metaTitle: 'How to Rearrange Pages in a PDF Offline | PdfMinty',
-    metaDescription: 'Easily rearrange and swap PDF pages using an offline, visual drag-and-drop editor. No Adobe Acrobat required. 100% private in-browser processing.',
+    metaDescription:
+      'Easily rearrange and swap PDF pages using an offline, visual drag-and-drop editor. No Adobe Acrobat required. 100% private in-browser processing.',
     h1: 'How to Rearrange Pages in a PDF (Offline Drag & Drop Guide)',
     icon: 'ListOrdered',
     category: 'organize',
@@ -8022,7 +8338,8 @@ longFormBody: `
     type: 'article',
     datePublished: '2026-09-04',
     dateModified: '2026-09-04',
-    problemSolved: "Users needing to fix the page order of a compiled PDF document without expensive desktop software or risky cloud uploads.",
+    problemSolved:
+      'Users needing to fix the page order of a compiled PDF document without expensive desktop software or risky cloud uploads.',
     relatedLinks: [
       {
         title: 'Reorder PDF Pages Tool',
@@ -8043,7 +8360,7 @@ longFormBody: `
       {
         q: 'Is the page quality preserved when I reorder them?',
         a: 'Yes. Reordering tools simply update the PDF catalog index. The actual page content, resolution, and quality remain 100% untouched and original.',
-      }
+      },
     ],
     longFormBody: `
       <h2>How to Rearrange Pages in a PDF (Offline Drag & Drop Guide)</h2>
@@ -8082,9 +8399,11 @@ longFormBody: `
     slug: 'blog/how-to-convert-pdf-to-jpg-high-resolution',
     name: 'How to Convert PDF to JPG High Resolution (Without Blurry Text)',
     ogImage: '/og-image.png',
-    shortDescription: 'Stop getting blurry images when converting PDFs. Learn how to extract high-resolution, 300 DPI quality JPGs and PNGs from your PDF documents.',
+    shortDescription:
+      'Stop getting blurry images when converting PDFs. Learn how to extract high-resolution, 300 DPI quality JPGs and PNGs from your PDF documents.',
     metaTitle: 'How to Convert PDF to JPG High Resolution | PdfMinty',
-    metaDescription: 'Learn how to convert PDF pages into high-resolution JPG or PNG images without blurry text. Master scaling, DPI settings, and lossless extraction offline.',
+    metaDescription:
+      'Learn how to convert PDF pages into high-resolution JPG or PNG images without blurry text. Master scaling, DPI settings, and lossless extraction offline.',
     h1: 'How to Convert PDF to JPG High Resolution (Without Blurry Text)',
     icon: 'Image',
     category: 'convert',
@@ -8093,7 +8412,8 @@ longFormBody: `
     type: 'article',
     datePublished: '2026-09-05',
     dateModified: '2026-09-05',
-    problemSolved: "Users complaining that their exported JPGs from PDFs are blurry, pixelated, or unreadable, and seeking a high-DPI extraction workflow.",
+    problemSolved:
+      'Users complaining that their exported JPGs from PDFs are blurry, pixelated, or unreadable, and seeking a high-DPI extraction workflow.',
     relatedLinks: [
       {
         title: 'PDF to Image Tool',
@@ -8114,7 +8434,7 @@ longFormBody: `
       {
         q: 'Which is better for PDF extraction: JPG or PNG?',
         a: 'If your PDF contains mostly text, charts, or flat graphics, PNG is vastly superior because it uses lossless compression that keeps text edges sharp. JPG is better if the PDF consists entirely of photographs.',
-      }
+      },
     ],
     longFormBody: `
       <h2>How to Convert PDF to JPG High Resolution (Without Blurry Text)</h2>
@@ -8159,9 +8479,11 @@ longFormBody: `
     slug: 'blog/pdf-privacy-benchmark-2026',
     name: 'PDF Privacy Benchmark 2026: Cloud vs. Local Processing',
     ogImage: '/og-image.png',
-    shortDescription: 'Technical analysis of network payloads, data transit, and retention policies of top PDF tools using Chrome DevTools.',
+    shortDescription:
+      'Technical analysis of network payloads, data transit, and retention policies of top PDF tools using Chrome DevTools.',
     metaTitle: 'PDF Privacy Benchmark 2026: Cloud vs Local Analysis | PdfMinty',
-    metaDescription: 'Technical benchmark comparing data transit, network payloads, and retention policies of leading PDF tools using reproducible Chrome DevTools metrics.',
+    metaDescription:
+      'Technical benchmark comparing data transit, network payloads, and retention policies of leading PDF tools using reproducible Chrome DevTools metrics.',
     h1: 'PDF Privacy Benchmark 2026: Cloud vs. Local Processing',
     icon: 'ShieldCheck',
     category: 'blog',
@@ -8173,7 +8495,8 @@ longFormBody: `
     author: 'Alex Mercer, Security Lead',
     reviewedBy: 'PdfMinty Engineering Team',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "Evaluating the empirical privacy claims of online PDF editors by measuring their actual network behavior and payload transit.",
+    problemSolved:
+      'Evaluating the empirical privacy claims of online PDF editors by measuring their actual network behavior and payload transit.',
     relatedLinks: [
       {
         title: 'GDPR Compliant PDF Workflows',
@@ -8199,7 +8522,7 @@ longFormBody: `
         title: 'Compare PdfMinty vs Smallpdf',
         url: '/compare/pdfminty-vs-smallpdf/',
         type: 'comparison',
-      }
+      },
     ],
     faqs: [
       {
@@ -8209,7 +8532,7 @@ longFormBody: `
       {
         q: 'Are local browser tools truly 100% private?',
         a: 'Standard operations execute locally without network transit. However, AI-dependent tasks (like OCR or Summarization) require data transit to API endpoints. Absolute privacy depends on the specific tool module being used.',
-      }
+      },
     ],
     longFormBody: `
       <h2>PDF Privacy Benchmark 2026: Cloud vs. Local Processing</h2>
@@ -8281,16 +8604,18 @@ longFormBody: `
       <p>
         "Privacy" is not a marketing label; it is a verifiable architectural state. By shifting the processing locus from the cloud server to the client's local CPU, organizations can mitigate third-party data exposure, subpoena risks, and breach vulnerabilities associated with remote file processing. For regulated industries, this architectural shift eliminates common compliance friction: see how browser processing aligns with <a href="/blog/gdpr-compliant-pdf-processing-europe/">GDPR data residency mandates in Europe</a> and secures electronic Protected Health Information under <a href="/blog/hipaa-compliant-pdf-tools-healthcare/">HIPAA healthcare document regulations</a>.
       </p>
-    `
+    `,
   },
   {
     id: 'blog-client-side-pdf-processing-explained',
     slug: 'blog/client-side-pdf-processing-explained',
     name: 'Client-Side PDF Processing Explained (WebAssembly & Blobs)',
     ogImage: '/og-image.png',
-    shortDescription: 'Technical breakdown of how modern browsers parse, edit, and render PDF binaries locally without server interaction.',
+    shortDescription:
+      'Technical breakdown of how modern browsers parse, edit, and render PDF binaries locally without server interaction.',
     metaTitle: 'Client-Side PDF Processing Explained: WASM & Security | PdfMinty',
-    metaDescription: 'Learn how WebAssembly and JavaScript ArrayBuffers manipulate PDF binaries completely offline inside the browser sandbox.',
+    metaDescription:
+      'Learn how WebAssembly and JavaScript ArrayBuffers manipulate PDF binaries completely offline inside the browser sandbox.',
     h1: 'Client-Side PDF Processing Explained',
     icon: 'Terminal',
     category: 'blog',
@@ -8302,7 +8627,8 @@ longFormBody: `
     author: 'Alex Mercer, Security Lead',
     reviewedBy: 'PdfMinty Engineering Team',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "Explaining the underlying technology (WASM, ArrayBuffers, Blobs) that enables secure, serverless PDF manipulation directly inside the web browser.",
+    problemSolved:
+      'Explaining the underlying technology (WASM, ArrayBuffers, Blobs) that enables secure, serverless PDF manipulation directly inside the web browser.',
     relatedLinks: [
       {
         title: 'PDF Privacy Benchmark 2026',
@@ -8323,7 +8649,7 @@ longFormBody: `
       {
         q: 'Where does the file go after it is processed locally?',
         a: 'It remains in your browsers ephemeral RAM as a Blob (Binary Large Object). When you close the tab, the JavaScript garbage collector clears the memory. It is never saved to a hard drive or server.',
-      }
+      },
     ],
     longFormBody: `
       <h2>Client-Side PDF Processing Explained</h2>
@@ -8375,7 +8701,7 @@ longFormBody: `
           While structural manipulation (splitting, merging, <a href="/sanitize-pdf/" class="font-bold underline hover:text-emerald-600">stripping metadata structures</a>) excels in WASM, heavy machine-learning workloads (like Optical Character Recognition via Tesseract or semantic analysis via LLMs) require massive model files that cannot be efficiently loaded into a mobile browser. For these specific, opt-in intelligence features, secure API transit remains necessary.
         </p>
       </div>
-    `
+    `,
   },
 
   {
@@ -8383,9 +8709,11 @@ longFormBody: `
     slug: 'blog/hipaa-compliant-pdf-tools-healthcare',
     name: 'HIPAA Compliant PDF Workflows: Why US Healthcare Needs Client-Side Processing',
     ogImage: '/og-image.png',
-    shortDescription: 'Why uploading patient records to free online PDF editors violates HIPAA, and how client-side WebAssembly tools mitigate ePHI data transit risks.',
+    shortDescription:
+      'Why uploading patient records to free online PDF editors violates HIPAA, and how client-side WebAssembly tools mitigate ePHI data transit risks.',
     metaTitle: 'HIPAA Compliant PDF Tools for US Healthcare | PdfMinty',
-    metaDescription: 'Learn why cloud PDF tools violate HIPAA compliance by exposing ePHI, and how client-side WebAssembly (WASM) enables secure, zero-upload document workflows.',
+    metaDescription:
+      'Learn why cloud PDF tools violate HIPAA compliance by exposing ePHI, and how client-side WebAssembly (WASM) enables secure, zero-upload document workflows.',
     h1: 'HIPAA Compliant PDF Workflows: Why Healthcare Needs Client-Side Processing',
     icon: 'ShieldAlert',
     category: 'blog',
@@ -8397,7 +8725,8 @@ longFormBody: `
     author: 'Alex Mercer, Security Lead',
     reviewedBy: 'PdfMinty Compliance Team',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "Healthcare professionals (doctors, admins, billers) need to merge, compress, or edit patient records but cannot legally upload them to standard online PDF tools due to HIPAA restrictions.",
+    problemSolved:
+      'Healthcare professionals (doctors, admins, billers) need to merge, compress, or edit patient records but cannot legally upload them to standard online PDF tools due to HIPAA restrictions.',
     relatedLinks: [
       {
         title: 'PDF Privacy Benchmark 2026',
@@ -8413,7 +8742,7 @@ longFormBody: `
         title: 'Sanitize PDF',
         url: '/sanitize-pdf/',
         type: 'tool',
-      }
+      },
     ],
     faqs: [
       {
@@ -8423,7 +8752,7 @@ longFormBody: `
       {
         q: 'How does client-side PDF processing solve HIPAA compliance?',
         a: 'Client-side tools (like PdfMinty) use WebAssembly to process files directly inside the RAM of your local machine. Because the PDF is never transmitted across the network or stored on a remote server, third-party BAA requirements are bypassed.',
-      }
+      },
     ],
     longFormBody: `
       <h2>HIPAA Compliant PDF Workflows: Why Healthcare Needs Client-Side Processing</h2>
@@ -8474,16 +8803,18 @@ longFormBody: `
           While zero-upload client-side tools mitigate third-party transmission risks under HIPAA, your organization must still ensure that the physical device being used (the endpoint) is secure, encrypted, and authorized for handling ePHI. Always consult your organization's Compliance Officer before introducing new workflows.
         </p>
       </div>
-    `
+    `,
   },
   {
     id: 'blog-us-tax-legal-forms-w9',
     slug: 'blog/us-tax-w9-nda-secure-pdf-signing',
     name: 'How to Securely Sign US Tax Forms (W-9) & NDAs Offline',
     ogImage: '/og-image.png',
-    shortDescription: 'Freelancers and contractors: Learn how to fill out and sign sensitive US tax forms (W-9, 1099) and NDAs without uploading your Social Security Number to the cloud.',
+    shortDescription:
+      'Freelancers and contractors: Learn how to fill out and sign sensitive US tax forms (W-9, 1099) and NDAs without uploading your Social Security Number to the cloud.',
     metaTitle: 'Securely Sign W-9 & Tax Forms Offline | PdfMinty',
-    metaDescription: 'Do not upload your SSN to the cloud. Learn how to securely fill, sign, and flatten US tax forms (W-9, 1099) and NDAs using offline browser tools.',
+    metaDescription:
+      'Do not upload your SSN to the cloud. Learn how to securely fill, sign, and flatten US tax forms (W-9, 1099) and NDAs using offline browser tools.',
     h1: 'How to Securely Sign US Tax Forms & NDAs Offline',
     icon: 'FileSignature',
     category: 'blog',
@@ -8495,7 +8826,8 @@ longFormBody: `
     author: 'PdfMinty Security Team',
     reviewedBy: 'PdfMinty Engineering',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "US freelancers and small businesses need to fill out and sign W-9s or NDAs containing their Social Security Number (SSN) or EIN, but want to avoid the identity theft risks of cloud PDF editors.",
+    problemSolved:
+      'US freelancers and small businesses need to fill out and sign W-9s or NDAs containing their Social Security Number (SSN) or EIN, but want to avoid the identity theft risks of cloud PDF editors.',
     relatedLinks: [
       {
         title: 'Sign PDF',
@@ -8511,7 +8843,7 @@ longFormBody: `
         title: 'Protect PDF (Password)',
         url: '/protect-pdf/',
         type: 'tool',
-      }
+      },
     ],
     faqs: [
       {
@@ -8521,7 +8853,7 @@ longFormBody: `
       {
         q: 'How do I stop someone from editing my signature on an NDA?',
         a: 'After signing the document, you must "flatten" the PDF. This paints the interactive signature and text fields directly onto the background canvas, preventing the recipient from altering the text or deleting your signature.',
-      }
+      },
     ],
     longFormBody: `
       <h2>How to Securely Sign US Tax Forms & NDAs Offline</h2>
@@ -8565,7 +8897,7 @@ longFormBody: `
           Under the US Electronic Signatures in Global and National Commerce (ESIGN) Act of 2000, an electronic signature carries the same legal weight as a wet-ink signature. A flattened, drawn signature on an NDA or W-9 is fully legally binding in all 50 states, provided both parties demonstrate intent to sign electronically.
         </p>
       </div>
-    `
+    `,
   },
 
   {
@@ -8573,9 +8905,11 @@ longFormBody: `
     slug: 'blog/gdpr-compliant-pdf-processing-europe',
     name: 'GDPR Compliant PDF Workflows: Why EU Businesses Need Local Processing',
     ogImage: '/og-image.png',
-    shortDescription: 'Uploading European employee or customer data to cloud PDF tools can trigger severe GDPR fines. Learn how client-side WebAssembly solves this compliance nightmare.',
+    shortDescription:
+      'Uploading European employee or customer data to cloud PDF tools can trigger severe GDPR fines. Learn how client-side WebAssembly solves this compliance nightmare.',
     metaTitle: 'GDPR Compliant PDF Tools for EU Businesses | PdfMinty',
-    metaDescription: 'Learn how client-side WebAssembly enables GDPR-compliant PDF workflows for EU businesses, keeping sensitive documents private with zero server uploads.',
+    metaDescription:
+      'Learn how client-side WebAssembly enables GDPR-compliant PDF workflows for EU businesses, keeping sensitive documents private with zero server uploads.',
     h1: 'GDPR Compliant PDF Workflows: Why EU Businesses Need Local Processing',
     icon: 'Euro',
     category: 'blog',
@@ -8587,7 +8921,8 @@ longFormBody: `
     author: 'PdfMinty Compliance Team',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "European businesses need to process PDFs (CVs, contracts, invoices) containing personal data (PII) without violating the strict data transfer and processing limitations of the General Data Protection Regulation (GDPR).",
+    problemSolved:
+      'European businesses need to process PDFs (CVs, contracts, invoices) containing personal data (PII) without violating the strict data transfer and processing limitations of the General Data Protection Regulation (GDPR).',
     relatedLinks: [
       {
         title: 'PDF Privacy Benchmark 2026',
@@ -8603,7 +8938,7 @@ longFormBody: `
         title: 'Remove Metadata',
         url: '/sanitize-pdf/',
         type: 'tool',
-      }
+      },
     ],
     faqs: [
       {
@@ -8613,7 +8948,7 @@ longFormBody: `
       {
         q: 'How does client-side PDF processing comply with the GDPR?',
         a: 'Client-side tools (like PdfMinty) execute entirely within your local browser sandbox. Because the file is never uploaded to a remote server, no external "Data Processor" is involved, and the data never crosses international borders. This aligns perfectly with the GDPR principles of Data Minimization and Storage Limitation.',
-      }
+      },
     ],
     longFormBody: `
       <h2>GDPR Compliant PDF Workflows: Why EU Businesses Need Local Processing</h2>
@@ -8663,16 +8998,18 @@ longFormBody: `
           While client-side processing mitigates third-party processor risks under the GDPR, your organization must still ensure that the physical endpoints (laptops, networks) are secured and that internal data handling policies are strictly followed. Always consult with your Data Protection Officer (DPO) regarding organizational compliance.
         </p>
       </div>
-    `
+    `,
   },
   {
     id: 'blog-eidas-compliant-pdf-signatures',
     slug: 'blog/eidas-compliant-pdf-signatures-uk-eu',
     name: 'Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)',
     ogImage: '/og-image.png',
-    shortDescription: 'Understand the legal weight of electronic signatures under the EU eIDAS Regulation and UK law. Learn how to securely sign PDFs offline.',
+    shortDescription:
+      'Understand the legal weight of electronic signatures under the EU eIDAS Regulation and UK law. Learn how to securely sign PDFs offline.',
     metaTitle: 'eIDAS & UK Law: Are PDF Signatures Legally Binding? | PdfMinty',
-    metaDescription: 'Learn how electronic signatures are governed by the EU eIDAS regulation and UK law, and how to securely sign PDF contracts offline without uploading them.',
+    metaDescription:
+      'Learn how electronic signatures are governed by the EU eIDAS regulation and UK law, and how to securely sign PDF contracts offline without uploading them.',
     h1: 'Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)',
     icon: 'PenTool',
     category: 'blog',
@@ -8684,7 +9021,8 @@ longFormBody: `
     author: 'PdfMinty Legal Tech Desk',
     reviewedBy: 'PdfMinty Compliance Team',
     lastReviewedDate: 'September 4, 2026',
-    problemSolved: "Businesses in the UK and EU need to know if drawing a signature on a PDF using a free online tool is legally binding for B2B contracts, and how to do it securely.",
+    problemSolved:
+      'Businesses in the UK and EU need to know if drawing a signature on a PDF using a free online tool is legally binding for B2B contracts, and how to do it securely.',
     relatedLinks: [
       {
         title: 'Sign PDF',
@@ -8700,7 +9038,7 @@ longFormBody: `
         title: 'Electronic vs Digital Signature',
         url: '/blog/electronic-signature-vs-digital-signature/',
         type: 'article',
-      }
+      },
     ],
     faqs: [
       {
@@ -8710,7 +9048,7 @@ longFormBody: `
       {
         q: 'What is the difference between a Simple (SES) and a Qualified Electronic Signature (QES)?',
         a: 'Drawing your signature on a PDF is a Simple Electronic Signature (SES), sufficient for most business. A Qualified Electronic Signature (QES) requires cryptographic identity verification (using digital certificates) and is typically only required for high-risk legal documents like real estate transfers or wills.',
-      }
+      },
     ],
     longFormBody: `
       <h2>Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)</h2>
@@ -8767,17 +9105,19 @@ longFormBody: `
           After applying your signature, run the file through a <a href="/flatten-pdf/" class="text-emerald-600 font-bold underline">Flatten PDF tool</a>. Flattening permanently bakes the signature layer into the underlying vector and raster canvas, ensuring the recipient cannot click to modify fields or remove your signature after transmission.
         </li>
       </ol>
-    `
+    `,
   },
   {
     id: 'pdf-wont-open',
     slug: 'blog/pdf-wont-open',
-    name: 'PDF Won\'t Open?',
+    name: "PDF Won't Open?",
     ogImage: '/og-pdf-wont-open.png',
-    shortDescription: 'Fix corrupted files, broken app associations, browser conflicts and locked PDFs with 9 step-by-step fixes.',
-    metaTitle: 'PDF Won\'t Open? 9 Real Fixes That Work (Windows, Mac, Mobile)',
-    metaDescription: 'PDF won\'t open? Fix corrupted files, broken app associations, browser conflicts and locked PDFs with 9 step-by-step fixes that work on Windows, Mac and mobile.',
-    h1: 'PDF Won\'t Open? 9 Real Fixes for Windows, Mac & Mobile (2026)',
+    shortDescription:
+      'Fix corrupted files, broken app associations, browser conflicts and locked PDFs with 9 step-by-step fixes.',
+    metaTitle: "PDF Won't Open? 9 Real Fixes That Work (Windows, Mac, Mobile)",
+    metaDescription:
+      "PDF won't open? Fix corrupted files, broken app associations, browser conflicts and locked PDFs with 9 step-by-step fixes that work on Windows, Mac and mobile.",
+    h1: "PDF Won't Open? 9 Real Fixes for Windows, Mac & Mobile (2026)",
     icon: 'Wrench',
     category: 'guides',
     priority: 0.8,
@@ -8933,16 +9273,18 @@ longFormBody: `
     <p>A5. Related but different. Blank pages usually mean missing embedded fonts or image resources rather than structural damage. Try a different viewer first; if a second modern viewer also shows blanks, the file was generated with a broken export — re-export from the source if possible.</p>
   </div>
 </div>
-    `
+    `,
   },
   {
     id: 'cant-copy-text-from-pdf',
     slug: 'blog/cant-copy-text-from-pdf',
     name: "Can't Copy Text from a PDF?",
     ogImage: '/og-image.png',
-    shortDescription: "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 fixes, including OCR that works without uploading your file.",
+    shortDescription:
+      "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 fixes, including OCR that works without uploading your file.",
     metaTitle: "Can't Copy Text from a PDF? Why It Happens + 5 Real Fixes",
-    metaDescription: "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 fixes, including OCR that works without uploading your file.",
+    metaDescription:
+      "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 fixes, including OCR that works without uploading your file.",
     h1: "Can't Copy Text from a PDF? Here's Why It Happens (and 5 Real Fixes)",
     icon: 'FileText',
     category: 'guides',
@@ -8973,7 +9315,7 @@ longFormBody: `
         title: 'How to Make a Scanned PDF Searchable',
         url: '/blog/how-to-make-a-scanned-pdf-searchable/',
         type: 'article',
-      }
+      },
     ],
     faqs: [
       {
@@ -8990,12 +9332,12 @@ longFormBody: `
       },
       {
         q: 'Can I copy text from a PDF on my phone?',
-        a: 'Yes, with the same logic: long-press selection works where a text layer exists; where it doesn\'t, run the file through an OCR tool. Mobile browsers handle browser-side PDF tools well, including the local-processing ones.',
+        a: "Yes, with the same logic: long-press selection works where a text layer exists; where it doesn't, run the file through an OCR tool. Mobile browsers handle browser-side PDF tools well, including the local-processing ones.",
       },
       {
         q: 'Why does copied text lose its formatting?',
         a: 'Because copying exports characters, not layout. PDF is a print-layout format; when text leaves it, the font, size, columns, and spacing mostly stay behind. Direct extraction to Markdown preserves document structure (headings, lists) far better than clipboard copying.',
-      }
+      },
     ],
     longFormBody: `
 <p>You select a paragraph in a PDF, hit Ctrl+C, paste it into your document — and get nothing. Or worse: a single line of gibberish, squares, or half-translated characters. The text is right there on your screen, visible, perfectly readable. So why can't you copy it?</p>
@@ -9121,16 +9463,18 @@ longFormBody: `
     <p>A5. Because copying exports characters, not layout. PDF is a print-layout format; when text leaves it, the font, size, columns, and spacing mostly stay behind. Direct extraction to Markdown preserves document structure (headings, lists) far better than clipboard copying.</p>
   </div>
 </div>
-`
+`,
   },
   {
     id: 'blog-pdf-form-wont-let-me-type',
     slug: 'blog/pdf-form-wont-let-me-type',
     name: "PDF Form Won't Let You Type? How to Fill Out Non-Fillable Forms (2026)",
     ogImage: '/og-image.png',
-    shortDescription: "PDF form won't let you type? The form is flattened or an image. Here are 5 ways to fill non-fillable PDF forms — add text, sign, and save without printing anything.",
+    shortDescription:
+      "PDF form won't let you type? The form is flattened or an image. Here are 5 ways to fill non-fillable PDF forms — add text, sign, and save without printing anything.",
     metaTitle: "PDF Form Won't Let You Type? How to Fill Non-Fillable Forms",
-    metaDescription: "PDF form won't let you type? The form is flattened or an image. Here are 5 ways to fill non-fillable PDF forms — add text, sign, and save without printing anything.",
+    metaDescription:
+      "PDF form won't let you type? The form is flattened or an image. Here are 5 ways to fill non-fillable PDF forms — add text, sign, and save without printing anything.",
     h1: "PDF Form Won't Let You Type? How to Fill Out Non-Fillable Forms (2026)",
     icon: 'FilePenLine',
     iconColor: 'text-emerald-500',
@@ -9143,60 +9487,60 @@ longFormBody: `
     author: 'PDFMinty Security & Document Research Team',
     keywords: [
       "pdf form won't let me type",
-      "how to fill out a pdf form that is not fillable",
-      "cant type in pdf form",
-      "pdf form fields not fillable",
-      "fill in non fillable pdf",
-      "flatten pdf"
+      'how to fill out a pdf form that is not fillable',
+      'cant type in pdf form',
+      'pdf form fields not fillable',
+      'fill in non fillable pdf',
+      'flatten pdf',
     ],
     faqs: [
       {
         q: "Why do some PDF forms have fields and others don't?",
-        a: "Because interactive fields are an optional layer an author must deliberately add with a form editor. Scans and Word exports never had them; flattened forms once did but had them converted to permanent content."
+        a: 'Because interactive fields are an optional layer an author must deliberately add with a form editor. Scans and Word exports never had them; flattened forms once did but had them converted to permanent content.',
       },
       {
-        q: "Is filling a form with overlay text legally valid?",
-        a: "In the overwhelming majority of cases, yes — what matters legally is the content and, where required, the signature. Some institutions additionally require field-level data or wet-ink signatures; when in doubt for high-stakes paperwork, ask the receiving office before submitting."
+        q: 'Is filling a form with overlay text legally valid?',
+        a: 'In the overwhelming majority of cases, yes — what matters legally is the content and, where required, the signature. Some institutions additionally require field-level data or wet-ink signatures; when in doubt for high-stakes paperwork, ask the receiving office before submitting.',
       },
       {
-        q: "Can I turn a flat form back into a fillable one?",
-        a: "Yes, with a form editor that adds new interactive fields over the existing layout — you are rebuilding the field layer, not recovering it. It is worth doing only for forms you fill repeatedly; for one-off documents, the overlay method is dramatically faster."
+        q: 'Can I turn a flat form back into a fillable one?',
+        a: 'Yes, with a form editor that adds new interactive fields over the existing layout — you are rebuilding the field layer, not recovering it. It is worth doing only for forms you fill repeatedly; for one-off documents, the overlay method is dramatically faster.',
       },
       {
-        q: "What does flattening actually do?",
-        a: "It merges every visual layer — overlay text, signatures, form field contents — permanently into the page content. The result cannot be accidentally edited and looks identical everywhere. It is the digital equivalent of ink drying on paper."
+        q: 'What does flattening actually do?',
+        a: 'It merges every visual layer — overlay text, signatures, form field contents — permanently into the page content. The result cannot be accidentally edited and looks identical everywhere. It is the digital equivalent of ink drying on paper.',
       },
       {
-        q: "The form is on my phone. Different story?",
-        a: "No — the same logic applies, and modern mobile browsers run browser-side fill-and-sign tools well. Place your text, add a finger-drawn signature, flatten if needed, and email it back without ever touching a desktop."
-      }
+        q: 'The form is on my phone. Different story?',
+        a: 'No — the same logic applies, and modern mobile browsers run browser-side fill-and-sign tools well. Place your text, add a finger-drawn signature, flatten if needed, and email it back without ever touching a desktop.',
+      },
     ],
     relatedLinks: [
       {
-        title: "Sign PDF Tool",
-        url: "/sign-pdf/",
-        type: "tool"
+        title: 'Sign PDF Tool',
+        url: '/sign-pdf/',
+        type: 'tool',
       },
       {
-        title: "Flatten PDF Tool",
-        url: "/flatten-pdf/",
-        type: "tool"
+        title: 'Flatten PDF Tool',
+        url: '/flatten-pdf/',
+        type: 'tool',
       },
       {
-        title: "Image to PDF Tool",
-        url: "/image-to-pdf/",
-        type: "tool"
+        title: 'Image to PDF Tool',
+        url: '/image-to-pdf/',
+        type: 'tool',
       },
       {
-        title: "Free PDF E-Signature Guide",
-        url: "/blog/free-pdf-e-signature-sign-documents-without-uploading/",
-        type: "article"
+        title: 'Free PDF E-Signature Guide',
+        url: '/blog/free-pdf-e-signature-sign-documents-without-uploading/',
+        type: 'article',
       },
       {
-        title: "Home",
-        url: "/",
-        type: "home"
-      }
+        title: 'Home',
+        url: '/',
+        type: 'home',
+      },
     ],
     longFormBody: `
 <p>You downloaded the application form, the tax template, the rental agreement. You click into the first field to type your name — and the cursor never appears. You click every box, every line, every gray rectangle. Nothing. The printer sits in the corner looking smug, and the form's deadline is not going to move.</p>
@@ -9331,6 +9675,6 @@ longFormBody: `
     <p>A5. No — the same logic applies, and modern mobile browsers run browser-side fill-and-sign tools well. Place your text, add a finger-drawn signature, flatten if needed, and email it back without ever touching a desktop.</p>
   </div>
 </div>
-`
+`,
   },
 ];

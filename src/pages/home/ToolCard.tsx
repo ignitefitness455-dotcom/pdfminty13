@@ -42,7 +42,13 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
     navigate(`/${tool.slug}/`);
   };
 
-  const isHighlighted = ['sign-pdf', 'ocr-pdf', 'ai-analyze-pdf', 'merge-pdf', 'split-pdf'].includes(tool.slug);
+  const isHighlighted = [
+    'sign-pdf',
+    'ocr-pdf',
+    'ai-analyze-pdf',
+    'merge-pdf',
+    'split-pdf',
+  ].includes(tool.slug);
 
   return (
     <button
@@ -63,7 +69,10 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
       <div>
         <div className="flex items-center justify-between gap-2 mb-4">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs shrink-0">
-            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+            <Icon
+              className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400"
+              aria-hidden="true"
+            />
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {isHighlighted && (
@@ -91,7 +100,10 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
 
       <div className="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:border-emerald-600 dark:group-hover:border-emerald-500 text-slate-700 dark:text-slate-200 group-hover:text-white transition-all duration-200 flex items-center justify-between text-xs sm:text-sm font-bold shadow-2xs">
         <span>{t('home.toolCard.useTool', { defaultValue: 'Use Tool' })}</span>
-        <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+        <ArrowRight
+          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+          aria-hidden="true"
+        />
       </div>
     </button>
   );

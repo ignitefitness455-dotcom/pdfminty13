@@ -1,122 +1,149 @@
-import { Eraser, ImageUp, Loader2 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import SignaturePad from 'signature_pad'
+import { Eraser, ImageUp, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import SignaturePad from 'signature_pad';
 
-import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
-import { Input } from '../ui/input'
-import { Label } from '../ui/label'
-import { Switch } from '../ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+import { cn } from '../../lib/utils';
+import { Button } from '../ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Switch } from '../ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
-import { imageFileToAsset, initialsFromName, trimCanvasToAsset, typedTextToAsset } from './signature-image'
-import { INK_COLORS, SIGNATURE_FONTS, type SignatureAsset, type SignatureSet } from './types'
+import {
+  imageFileToAsset,
+  initialsFromName,
+  trimCanvasToAsset,
+  typedTextToAsset,
+} from './signature-image';
+import { INK_COLORS, SIGNATURE_FONTS, type SignatureAsset, type SignatureSet } from './types';
 
 type Props = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  initial: SignatureSet
-  onApply: (set: SignatureSet) => void
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initial: SignatureSet;
+  onApply: (set: SignatureSet) => void;
+};
 
-type Mode = 'type' | 'draw' | 'upload'
+type Mode = 'type' | 'draw' | 'upload';
 
 export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props) {
-  const { t } = useTranslation('common')
-  const [mode, setMode] = useState<Mode>('type')
-  const [fullName, setFullName] = useState(initial.fullName)
-  const [initialsText, setInitialsText] = useState(initial.initialsText)
-  const [initialsTouched, setInitialsTouched] = useState(Boolean(initial.initialsText))
-  const [fontId, setFontId] = useState<(typeof SIGNATURE_FONTS)[number]['id']>('dancing')
-  const [color, setColor] = useState<string>(INK_COLORS[0].value)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { t } = useTranslation('common');
+  const [mode, setMode] = useState<Mode>('type');
+  const [fullName, setFullName] = useState(initial.fullName);
+  const [initialsText, setInitialsText] = useState(initial.initialsText);
+  const [initialsTouched, setInitialsTouched] = useState(Boolean(initial.initialsText));
+  const [fontId, setFontId] = useState<(typeof SIGNATURE_FONTS)[number]['id']>('dancing');
+  const [color, setColor] = useState<string>(INK_COLORS[0].value);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [drawnSignature, setDrawnSignature] = useState<SignatureAsset | null>(null)
-  const [drawnInitials, setDrawnInitials] = useState<SignatureAsset | null>(null)
-  const [uploadedSignature, setUploadedSignature] = useState<SignatureAsset | null>(null)
-  const [uploadedInitials, setUploadedInitials] = useState<SignatureAsset | null>(null)
-  const [removeBg, setRemoveBg] = useState(true)
-  const [pendingFiles, setPendingFiles] = useState<{ signature?: File; initials?: File }>({})
+  const [drawnSignature, setDrawnSignature] = useState<SignatureAsset | null>(null);
+  const [drawnInitials, setDrawnInitials] = useState<SignatureAsset | null>(null);
+  const [uploadedSignature, setUploadedSignature] = useState<SignatureAsset | null>(null);
+  const [uploadedInitials, setUploadedInitials] = useState<SignatureAsset | null>(null);
+  const [removeBg, setRemoveBg] = useState(true);
+  const [pendingFiles, setPendingFiles] = useState<{ signature?: File; initials?: File }>({});
 
   useEffect(() => {
     if (open) {
-      setFullName(initial.fullName)
-      setInitialsText(initial.initialsText)
-      setInitialsTouched(Boolean(initial.initialsText))
-      setError(null)
+      setFullName(initial.fullName);
+      setInitialsText(initial.initialsText);
+      setInitialsTouched(Boolean(initial.initialsText));
+      setError(null);
     }
-  }, [open, initial.fullName, initial.initialsText])
+  }, [open, initial.fullName, initial.initialsText]);
 
   const handleNameChange = (value: string) => {
-    setFullName(value)
-    if (!initialsTouched) setInitialsText(initialsFromName(value))
-  }
+    setFullName(value);
+    if (!initialsTouched) setInitialsText(initialsFromName(value));
+  };
 
   const reprocessUpload = useCallback(
     async (which: 'signature' | 'initials', file: File | undefined, remove: boolean) => {
-      if (!file) return
+      if (!file) return;
       try {
-        const asset = await imageFileToAsset(file, remove)
-        if (which === 'signature') setUploadedSignature(asset)
-        else setUploadedInitials(asset)
+        const asset = await imageFileToAsset(file, remove);
+        if (which === 'signature') setUploadedSignature(asset);
+        else setUploadedInitials(asset);
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('signPdf.dialog.imageReadError', { defaultValue: 'Could not read the image.' }))
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('signPdf.dialog.imageReadError', { defaultValue: 'Could not read the image.' })
+        );
       }
     },
-    [t],
-  )
+    [t]
+  );
 
   useEffect(() => {
-    void reprocessUpload('signature', pendingFiles.signature, removeBg)
-    void reprocessUpload('initials', pendingFiles.initials, removeBg)
-  }, [removeBg, pendingFiles, reprocessUpload])
+    void reprocessUpload('signature', pendingFiles.signature, removeBg);
+    void reprocessUpload('initials', pendingFiles.initials, removeBg);
+  }, [removeBg, pendingFiles, reprocessUpload]);
 
   const canApply =
     fullName.trim().length > 0 &&
-    (mode === 'type' ? true : mode === 'draw' ? drawnSignature !== null : uploadedSignature !== null)
+    (mode === 'type'
+      ? true
+      : mode === 'draw'
+        ? drawnSignature !== null
+        : uploadedSignature !== null);
 
   const apply = async () => {
-    setError(null)
+    setError(null);
     if (!fullName.trim()) {
-      setError(t('signPdf.dialog.enterNameError', { defaultValue: 'Please enter your full name.' }))
-      return
+      setError(
+        t('signPdf.dialog.enterNameError', { defaultValue: 'Please enter your full name.' })
+      );
+      return;
     }
-    setBusy(true)
+    setBusy(true);
     try {
-      const font = SIGNATURE_FONTS.find((f) => f.id === fontId) ?? SIGNATURE_FONTS[0]
-      let signature: SignatureAsset | null = null
-      let initials: SignatureAsset | null = null
+      const font = SIGNATURE_FONTS.find((f) => f.id === fontId) ?? SIGNATURE_FONTS[0];
+      let signature: SignatureAsset | null = null;
+      let initials: SignatureAsset | null = null;
 
       if (mode === 'type') {
-        signature = await typedTextToAsset(fullName, font.css, color)
-        initials = initialsText.trim() ? await typedTextToAsset(initialsText, font.css, color) : null
+        signature = await typedTextToAsset(fullName, font.css, color);
+        initials = initialsText.trim()
+          ? await typedTextToAsset(initialsText, font.css, color)
+          : null;
       } else if (mode === 'draw') {
-        signature = drawnSignature
-        initials = drawnInitials ?? (initialsText.trim() ? await typedTextToAsset(initialsText, font.css, color) : null)
-      } else {
-        signature = uploadedSignature
+        signature = drawnSignature;
         initials =
-          uploadedInitials ?? (initialsText.trim() ? await typedTextToAsset(initialsText, font.css, color) : null)
+          drawnInitials ??
+          (initialsText.trim() ? await typedTextToAsset(initialsText, font.css, color) : null);
+      } else {
+        signature = uploadedSignature;
+        initials =
+          uploadedInitials ??
+          (initialsText.trim() ? await typedTextToAsset(initialsText, font.css, color) : null);
       }
 
       if (!signature) {
         setError(
           mode === 'draw'
             ? t('signPdf.dialog.drawSigError', { defaultValue: 'Please draw your signature.' })
-            : t('signPdf.dialog.uploadSigError', { defaultValue: 'Please upload a signature image.' }),
-        )
-        return
+            : t('signPdf.dialog.uploadSigError', {
+                defaultValue: 'Please upload a signature image.',
+              })
+        );
+        return;
       }
 
-      onApply({ fullName: fullName.trim(), initialsText: initialsText.trim(), signature, initials })
-      onOpenChange(false)
+      onApply({
+        fullName: fullName.trim(),
+        initialsText: initialsText.trim(),
+        signature,
+        initials,
+      });
+      onOpenChange(false);
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -156,8 +183,8 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
                 maxLength={4}
                 placeholder="JD"
                 onChange={(e) => {
-                  setInitialsTouched(true)
-                  setInitialsText(e.target.value.toUpperCase())
+                  setInitialsTouched(true);
+                  setInitialsText(e.target.value.toUpperCase());
                 }}
               />
             </div>
@@ -178,9 +205,13 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
 
             <TabsContent value="type" className="flex flex-col gap-4 pt-2">
               <ColorPicker value={color} onChange={setColor} />
-              <div role="radiogroup" aria-label="Signature style" className="grid gap-2 sm:grid-cols-2">
+              <div
+                role="radiogroup"
+                aria-label="Signature style"
+                className="grid gap-2 sm:grid-cols-2"
+              >
                 {SIGNATURE_FONTS.map((font) => {
-                  const selected = font.id === fontId
+                  const selected = font.id === fontId;
                   return (
                     <button
                       key={font.id}
@@ -190,7 +221,9 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
                       onClick={() => setFontId(font.id)}
                       className={cn(
                         'flex h-20 items-center justify-between gap-3 rounded-lg border bg-white dark:bg-slate-900 px-4 text-left transition-colors hover:border-emerald-600/60',
-                        selected ? 'border-emerald-600 ring-2 ring-emerald-600/30' : 'border-slate-200 dark:border-slate-700',
+                        selected
+                          ? 'border-emerald-600 ring-2 ring-emerald-600/30'
+                          : 'border-slate-200 dark:border-slate-700'
                       )}
                     >
                       <span
@@ -198,11 +231,12 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
                         style={{ fontFamily: font.css, color }}
                         aria-hidden="true"
                       >
-                        {fullName.trim() || t('signPdf.dialog.yourName', { defaultValue: 'Your name' })}
+                        {fullName.trim() ||
+                          t('signPdf.dialog.yourName', { defaultValue: 'Your name' })}
                       </span>
                       <span className="shrink-0 text-[11px] text-slate-500">{font.label}</span>
                     </button>
-                  )
+                  );
                 })}
               </div>
             </TabsContent>
@@ -248,7 +282,10 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
           </Tabs>
 
           {error ? (
-            <p role="alert" className="rounded-md bg-rose-50 dark:bg-rose-900/20 px-3 py-2 text-sm text-rose-600 dark:text-rose-400">
+            <p
+              role="alert"
+              className="rounded-md bg-rose-50 dark:bg-rose-900/20 px-3 py-2 text-sm text-rose-600 dark:text-rose-400"
+            >
               {error}
             </p>
           ) : null}
@@ -265,11 +302,11 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation('common');
   return (
     <div
       role="radiogroup"
@@ -289,13 +326,13 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
           onClick={() => onChange(c.value)}
           className={cn(
             'size-6 rounded-full border-2 transition-transform hover:scale-105',
-            value === c.value ? 'border-slate-900 dark:border-slate-100' : 'border-transparent',
+            value === c.value ? 'border-slate-900 dark:border-slate-100' : 'border-transparent'
           )}
           style={{ backgroundColor: c.value }}
         />
       ))}
     </div>
-  )
+  );
 }
 
 function DrawPad({
@@ -304,21 +341,21 @@ function DrawPad({
   height,
   onChange,
 }: {
-  label: string
-  color: string
-  height: number
-  onChange: (asset: SignatureAsset | null) => void
+  label: string;
+  color: string;
+  height: number;
+  onChange: (asset: SignatureAsset | null) => void;
 }) {
-  const { t } = useTranslation('common')
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const padRef = useRef<SignaturePad | null>(null)
-  const [empty, setEmpty] = useState(true)
+  const { t } = useTranslation('common');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const padRef = useRef<SignaturePad | null>(null);
+  const [empty, setEmpty] = useState(true);
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    const wrap = wrapRef.current
-    if (!canvas || !wrap) return
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
 
     const pad = new SignaturePad(canvas, {
       penColor: color,
@@ -326,59 +363,59 @@ function DrawPad({
       maxWidth: 3.2,
       throttle: 8,
       velocityFilterWeight: 0.6,
-    })
-    padRef.current = pad
+    });
+    padRef.current = pad;
 
     const resize = () => {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1)
-      const data = pad.toData()
-      canvas.width = wrap.clientWidth * ratio
-      canvas.height = height * ratio
-      canvas.style.width = `${wrap.clientWidth}px`
-      canvas.style.height = `${height}px`
-      canvas.getContext('2d')?.scale(ratio, ratio)
-      pad.clear()
-      if (data.length) pad.fromData(data)
-    }
-    resize()
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const data = pad.toData();
+      canvas.width = wrap.clientWidth * ratio;
+      canvas.height = height * ratio;
+      canvas.style.width = `${wrap.clientWidth}px`;
+      canvas.style.height = `${height}px`;
+      canvas.getContext('2d')?.scale(ratio, ratio);
+      pad.clear();
+      if (data.length) pad.fromData(data);
+    };
+    resize();
 
-    const observer = new ResizeObserver(resize)
-    observer.observe(wrap)
+    const observer = new ResizeObserver(resize);
+    observer.observe(wrap);
 
     const commit = () => {
-      const isEmpty = pad.isEmpty()
-      setEmpty(isEmpty)
-      onChange(isEmpty ? null : trimCanvasToAsset(canvas, 10))
-    }
-    pad.addEventListener('endStroke', commit)
+      const isEmpty = pad.isEmpty();
+      setEmpty(isEmpty);
+      onChange(isEmpty ? null : trimCanvasToAsset(canvas, 10));
+    };
+    pad.addEventListener('endStroke', commit);
 
     return () => {
-      observer.disconnect()
-      pad.removeEventListener('endStroke', commit)
-      pad.off()
-      padRef.current = null
-    }
+      observer.disconnect();
+      pad.removeEventListener('endStroke', commit);
+      pad.off();
+      padRef.current = null;
+    };
     // color is applied separately so re-init doesn't wipe strokes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [height])
+  }, [height]);
 
   useEffect(() => {
-    const pad = padRef.current
-    const canvas = canvasRef.current
-    if (!pad || !canvas) return
-    pad.penColor = color
-    const data = pad.toData()
-    if (!data.length) return
-    for (const group of data) group.penColor = color
-    pad.fromData(data)
-    onChange(trimCanvasToAsset(canvas, 10))
-  }, [color, onChange])
+    const pad = padRef.current;
+    const canvas = canvasRef.current;
+    if (!pad || !canvas) return;
+    pad.penColor = color;
+    const data = pad.toData();
+    if (!data.length) return;
+    for (const group of data) group.penColor = color;
+    pad.fromData(data);
+    onChange(trimCanvasToAsset(canvas, 10));
+  }, [color, onChange]);
 
   const clear = () => {
-    padRef.current?.clear()
-    setEmpty(true)
-    onChange(null)
-  }
+    padRef.current?.clear();
+    setEmpty(true);
+    onChange(null);
+  };
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -397,7 +434,10 @@ function DrawPad({
         <canvas
           ref={canvasRef}
           className="block touch-none"
-          aria-label={t('signPdf.dialog.drawAria', { label: label.toLowerCase(), defaultValue: `Draw your ${label.toLowerCase()}` })}
+          aria-label={t('signPdf.dialog.drawAria', {
+            label: label.toLowerCase(),
+            defaultValue: `Draw your ${label.toLowerCase()}`,
+          })}
           role="img"
         />
         <div
@@ -411,7 +451,7 @@ function DrawPad({
         ) : null}
       </div>
     </div>
-  )
+  );
 }
 
 function UploadBox({
@@ -419,12 +459,12 @@ function UploadBox({
   asset,
   onFile,
 }: {
-  label: string
-  asset: SignatureAsset | null
-  onFile: (file: File) => void
+  label: string;
+  asset: SignatureAsset | null;
+  onFile: (file: File) => void;
 }) {
-  const { t } = useTranslation('common')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation('common');
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-slate-500">{label}</span>
@@ -434,9 +474,9 @@ function UploadBox({
         className="flex h-[200px] flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm text-slate-500 transition-colors hover:border-emerald-600/60 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer"
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
-          e.preventDefault()
-          const f = e.dataTransfer.files?.[0]
-          if (f) onFile(f)
+          e.preventDefault();
+          const f = e.dataTransfer.files?.[0];
+          if (f) onFile(f);
         }}
       >
         {asset ? (
@@ -454,7 +494,9 @@ function UploadBox({
         ) : (
           <>
             <ImageUp className="size-6" aria-hidden="true" />
-            <span>{t('signPdf.dialog.clickOrDrop', { defaultValue: 'Click or drop an image' })}</span>
+            <span>
+              {t('signPdf.dialog.clickOrDrop', { defaultValue: 'Click or drop an image' })}
+            </span>
             <span className="text-xs">PNG, JPG</span>
           </>
         )}
@@ -465,11 +507,11 @@ function UploadBox({
         accept="image/png,image/jpeg,image/webp"
         className="sr-only"
         onChange={(e) => {
-          const f = e.target.files?.[0]
-          if (f) onFile(f)
-          e.target.value = ''
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = '';
         }}
       />
     </div>
-  )
+  );
 }

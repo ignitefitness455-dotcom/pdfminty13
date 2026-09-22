@@ -17,33 +17,87 @@ import { TermsOfServicePage } from './pages/TermsOfServicePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Lazy: all interactive heavy tools — splits each tool's code out of the initial bundle.
-const MergePage = lazyWithRetry(() => import('./pages/MergePage').then((m) => ({ default: m.MergePage })));
-const SplitPage = lazyWithRetry(() => import('./pages/SplitPage').then((m) => ({ default: m.SplitPage })));
-const RotatePage = lazyWithRetry(() => import('./pages/RotatePage').then((m) => ({ default: m.RotatePage })));
-const DeletePagesPage = lazyWithRetry(() => import('./pages/DeletePagesPage').then((m) => ({ default: m.DeletePagesPage })));
-const ExtractPagesPdfPage = lazyWithRetry(() => import('./pages/ExtractPagesPdfPage').then((m) => ({ default: m.ExtractPagesPdfPage })));
-const ReorderPdfPage = lazyWithRetry(() => import('./pages/ReorderPdfPage').then((m) => ({ default: m.ReorderPdfPage })));
-const WatermarkPage = lazyWithRetry(() => import('./pages/WatermarkPage').then((m) => ({ default: m.WatermarkPage })));
-const PageNumbersPage = lazyWithRetry(() => import('./pages/PageNumbersPage').then((m) => ({ default: m.PageNumbersPage })));
-const AddBlankPage = lazyWithRetry(() => import('./pages/AddBlankPage').then((m) => ({ default: m.AddBlankPage })));
-const ProtectPage = lazyWithRetry(() => import('./pages/ProtectPage').then((m) => ({ default: m.ProtectPage })));
-const UnlockPage = lazyWithRetry(() => import('./pages/UnlockPage').then((m) => ({ default: m.UnlockPage })));
-const ImgToPdfPage = lazyWithRetry(() => import('./pages/ImgToPdfPage').then((m) => ({ default: m.ImgToPdfPage })));
-const PdfToImgPage = lazyWithRetry(() => import('./pages/PdfToImgPage').then((m) => ({ default: m.PdfToImgPage })));
-const PdfToMarkdownPage = lazyWithRetry(() => import('./pages/PdfToMarkdownPage').then((m) => ({ default: m.PdfToMarkdownPage })));
-const AiAnalyzePage = lazyWithRetry(() => import('./pages/AiAnalyzePage').then((m) => ({ default: m.AiAnalyzePage })));
-const GrayscalePdfPage = lazyWithRetry(() => import('./pages/GrayscalePdfPage').then((m) => ({ default: m.GrayscalePdfPage })));
-const FlattenPdfPage = lazyWithRetry(() => import('./pages/FlattenPdfPage').then((m) => ({ default: m.FlattenPdfPage })));
-const RepairPdfPage = lazyWithRetry(() => import('./pages/RepairPdfPage').then((m) => ({ default: m.RepairPdfPage })));
-const IsSafePdfArticlePage = lazyWithRetry(() => import('./pages/IsSafePdfArticlePage').then((m) => ({ default: m.IsSafePdfArticlePage })));
-const EditMetadataPage = lazyWithRetry(() => import('./pages/EditMetadataPage').then((m) => ({ default: m.default })));
-const SanitizePdfPage = lazyWithRetry(() => import('./pages/SanitizePdfPage').then((m) => ({ default: m.default })));
-const SignPdfPage = lazyWithRetry(() => import('./pages/SignPdfPage').then((m) => ({ default: m.SignPdfPage })));
-const OcrPdfPage = lazyWithRetry(() => import('./pages/OcrPdfPage').then((m) => ({ default: m.OcrPdfPage })));
-const BlogPage = lazyWithRetry(() => import('./pages/BlogPage').then((m) => ({ default: m.BlogPage })));
-const BlogPostPage = lazyWithRetry(() => import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })));
-const AdobeAlternativePage = lazyWithRetry(() => import('./pages/AdobeAlternativePage').then((m) => ({ default: m.AdobeAlternativePage })));
-const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
+const MergePage = lazyWithRetry(() =>
+  import('./pages/MergePage').then((m) => ({ default: m.MergePage }))
+);
+const SplitPage = lazyWithRetry(() =>
+  import('./pages/SplitPage').then((m) => ({ default: m.SplitPage }))
+);
+const RotatePage = lazyWithRetry(() =>
+  import('./pages/RotatePage').then((m) => ({ default: m.RotatePage }))
+);
+const DeletePagesPage = lazyWithRetry(() =>
+  import('./pages/DeletePagesPage').then((m) => ({ default: m.DeletePagesPage }))
+);
+const ExtractPagesPdfPage = lazyWithRetry(() =>
+  import('./pages/ExtractPagesPdfPage').then((m) => ({ default: m.ExtractPagesPdfPage }))
+);
+const ReorderPdfPage = lazyWithRetry(() =>
+  import('./pages/ReorderPdfPage').then((m) => ({ default: m.ReorderPdfPage }))
+);
+const WatermarkPage = lazyWithRetry(() =>
+  import('./pages/WatermarkPage').then((m) => ({ default: m.WatermarkPage }))
+);
+const PageNumbersPage = lazyWithRetry(() =>
+  import('./pages/PageNumbersPage').then((m) => ({ default: m.PageNumbersPage }))
+);
+const AddBlankPage = lazyWithRetry(() =>
+  import('./pages/AddBlankPage').then((m) => ({ default: m.AddBlankPage }))
+);
+const ProtectPage = lazyWithRetry(() =>
+  import('./pages/ProtectPage').then((m) => ({ default: m.ProtectPage }))
+);
+const UnlockPage = lazyWithRetry(() =>
+  import('./pages/UnlockPage').then((m) => ({ default: m.UnlockPage }))
+);
+const ImgToPdfPage = lazyWithRetry(() =>
+  import('./pages/ImgToPdfPage').then((m) => ({ default: m.ImgToPdfPage }))
+);
+const PdfToImgPage = lazyWithRetry(() =>
+  import('./pages/PdfToImgPage').then((m) => ({ default: m.PdfToImgPage }))
+);
+const PdfToMarkdownPage = lazyWithRetry(() =>
+  import('./pages/PdfToMarkdownPage').then((m) => ({ default: m.PdfToMarkdownPage }))
+);
+const AiAnalyzePage = lazyWithRetry(() =>
+  import('./pages/AiAnalyzePage').then((m) => ({ default: m.AiAnalyzePage }))
+);
+const GrayscalePdfPage = lazyWithRetry(() =>
+  import('./pages/GrayscalePdfPage').then((m) => ({ default: m.GrayscalePdfPage }))
+);
+const FlattenPdfPage = lazyWithRetry(() =>
+  import('./pages/FlattenPdfPage').then((m) => ({ default: m.FlattenPdfPage }))
+);
+const RepairPdfPage = lazyWithRetry(() =>
+  import('./pages/RepairPdfPage').then((m) => ({ default: m.RepairPdfPage }))
+);
+const IsSafePdfArticlePage = lazyWithRetry(() =>
+  import('./pages/IsSafePdfArticlePage').then((m) => ({ default: m.IsSafePdfArticlePage }))
+);
+const EditMetadataPage = lazyWithRetry(() =>
+  import('./pages/EditMetadataPage').then((m) => ({ default: m.default }))
+);
+const SanitizePdfPage = lazyWithRetry(() =>
+  import('./pages/SanitizePdfPage').then((m) => ({ default: m.default }))
+);
+const SignPdfPage = lazyWithRetry(() =>
+  import('./pages/SignPdfPage').then((m) => ({ default: m.SignPdfPage }))
+);
+const OcrPdfPage = lazyWithRetry(() =>
+  import('./pages/OcrPdfPage').then((m) => ({ default: m.OcrPdfPage }))
+);
+const BlogPage = lazyWithRetry(() =>
+  import('./pages/BlogPage').then((m) => ({ default: m.BlogPage }))
+);
+const BlogPostPage = lazyWithRetry(() =>
+  import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage }))
+);
+const AdobeAlternativePage = lazyWithRetry(() =>
+  import('./pages/AdobeAlternativePage').then((m) => ({ default: m.AdobeAlternativePage }))
+);
+const NotFoundPage = lazyWithRetry(() =>
+  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+);
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -408,8 +462,18 @@ export const App: React.FC = () => {
             <Route path="/intelligence" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
             <Route path="/protect" element={<Navigate to={ROUTES.PROTECT} replace />} />
             <Route path="/unlock" element={<Navigate to={ROUTES.UNLOCK} replace />} />
-            <Route path="/compress" element={<Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />} />
-            <Route path="/compress-pdf" element={<Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />} />
+            <Route
+              path="/compress"
+              element={
+                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
+              }
+            />
+            <Route
+              path="/compress-pdf"
+              element={
+                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
+              }
+            />
             <Route path="/delete-pages" element={<Navigate to={ROUTES.DELETE_PAGES} replace />} />
             <Route path="/extract-pages" element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />} />
             <Route path="/reorder" element={<Navigate to={ROUTES.REORDER} replace />} />
@@ -427,17 +491,48 @@ export const App: React.FC = () => {
             <Route path="/merge" element={<Navigate to={ROUTES.MERGE} replace />} />
             <Route path="/split" element={<Navigate to={ROUTES.SPLIT} replace />} />
             <Route path="/rotate" element={<Navigate to={ROUTES.ROTATE} replace />} />
-            <Route path="/switch-from-adobe-acrobat" element={<Navigate to={ROUTES.ADOBE_ALTERNATIVE} replace />} />
-            <Route path="/is-it-safe-to-upload-pdf-to-online-tools" element={<Navigate to={ROUTES.TRUST_ARTICLE} replace />} />
-            <Route path="/pdfminty-vs-smallpdf" element={<Navigate to={ROUTES.COMPARE_SMALLPDF} replace />} />
-            <Route path="/pdfminty-vs-ilovepdf" element={<Navigate to={ROUTES.COMPARE_ILOVEPDF} replace />} />
+            <Route
+              path="/switch-from-adobe-acrobat"
+              element={<Navigate to={ROUTES.ADOBE_ALTERNATIVE} replace />}
+            />
+            <Route
+              path="/is-it-safe-to-upload-pdf-to-online-tools"
+              element={<Navigate to={ROUTES.TRUST_ARTICLE} replace />}
+            />
+            <Route
+              path="/pdfminty-vs-smallpdf"
+              element={<Navigate to={ROUTES.COMPARE_SMALLPDF} replace />}
+            />
+            <Route
+              path="/pdfminty-vs-ilovepdf"
+              element={<Navigate to={ROUTES.COMPARE_ILOVEPDF} replace />}
+            />
 
             {/* Merged / Consolidated Blog Post Redirects */}
-            <Route path="/blog/best-free-pdf-compressor-without-losing-quality" element={<Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />} />
-            <Route path="/blog/how-to-compress-pdf-without-losing-quality-locally" element={<Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />} />
-            <Route path="/blog/how-to-protect-a-pdf-with-password-in-3-easy-steps" element={<Navigate to="/blog/how-to-password-protect-a-pdf-offline/" replace />} />
-            <Route path="/blog/how-to-edit-a-pdf-offline-without-uploading-it" element={<Navigate to="/blog/secure-pdf-editing-without-uploading/" replace />} />
-            <Route path="/blog/why-offline-pdf-editors-are-the-future-of-privacy" element={<Navigate to="/blog/why-privacy-first-pdf-tools-matter-in-2026/" replace />} />
+            <Route
+              path="/blog/best-free-pdf-compressor-without-losing-quality"
+              element={
+                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
+              }
+            />
+            <Route
+              path="/blog/how-to-compress-pdf-without-losing-quality-locally"
+              element={
+                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
+              }
+            />
+            <Route
+              path="/blog/how-to-protect-a-pdf-with-password-in-3-easy-steps"
+              element={<Navigate to="/blog/how-to-password-protect-a-pdf-offline/" replace />}
+            />
+            <Route
+              path="/blog/how-to-edit-a-pdf-offline-without-uploading-it"
+              element={<Navigate to="/blog/secure-pdf-editing-without-uploading/" replace />}
+            />
+            <Route
+              path="/blog/why-offline-pdf-editors-are-the-future-of-privacy"
+              element={<Navigate to="/blog/why-privacy-first-pdf-tools-matter-in-2026/" replace />}
+            />
 
             {/* 404 fallback — shows real 404 page with noindex */}
             <Route path="*" element={<NotFoundPage />} />

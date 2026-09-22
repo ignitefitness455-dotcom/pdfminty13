@@ -17,7 +17,9 @@ export const PdfToImgPage: React.FC = () => {
   const { t } = useTranslation('common');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [imageUrls, setImageUrls] = useState<{ page: number; dataUrl: string; format: string }[]>([]);
+  const [imageUrls, setImageUrls] = useState<{ page: number; dataUrl: string; format: string }[]>(
+    []
+  );
   const [error, setError] = useState<string | null>(null);
   const [maxPagesLimit, setMaxPagesLimit] = useState<string>('15');
   const [exportFormat, setExportFormat] = useState<'image/png' | 'image/jpeg'>('image/png');
@@ -48,7 +50,7 @@ export const PdfToImgPage: React.FC = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
-      operationTokenRef.current++;  // Invalidate in-flight render
+      operationTokenRef.current++; // Invalidate in-flight render
       imageUrls.forEach((item) => URL.revokeObjectURL(item.dataUrl));
       setSelectedFile(files[0]);
       setImageUrls([]);
@@ -165,7 +167,8 @@ export const PdfToImgPage: React.FC = () => {
       setError(
         errMsg ||
           t('pdfToImg.parseError', {
-            defaultValue: 'Error occurred during PDF parsing. Encrypted documents are not supported for canvas extraction.',
+            defaultValue:
+              'Error occurred during PDF parsing. Encrypted documents are not supported for canvas extraction.',
           })
       );
     } finally {
@@ -219,7 +222,7 @@ export const PdfToImgPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => {
-                    operationTokenRef.current++;  // Invalidate any in-flight rendering
+                    operationTokenRef.current++; // Invalidate any in-flight rendering
                     setSelectedFile(null);
                     imageUrls.forEach((item) => URL.revokeObjectURL(item.dataUrl));
                     setImageUrls([]);
@@ -239,10 +242,17 @@ export const PdfToImgPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="pdf_to_img_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="pdf_to_img_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>{t('pdfToImg.successTitle', { defaultValue: 'Conversion Completed Successfully! Your files are ready.' })}</span>
+                <span>
+                  {t('pdfToImg.successTitle', {
+                    defaultValue: 'Conversion Completed Successfully! Your files are ready.',
+                  })}
+                </span>
               </div>
               {downloadUrl && (
                 <div className="pt-2">
@@ -253,7 +263,11 @@ export const PdfToImgPage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('pdfToImg.downloadCompiled', { defaultValue: 'Download Compiled Images (ZIP / Image)' })}</span>
+                    <span>
+                      {t('pdfToImg.downloadCompiled', {
+                        defaultValue: 'Download Compiled Images (ZIP / Image)',
+                      })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -261,10 +275,18 @@ export const PdfToImgPage: React.FC = () => {
           )}
 
           {progress && (
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm" role="status" aria-live="polite">
+            <div
+              className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm"
+              role="status"
+              aria-live="polite"
+            >
               <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-2">
-                <span>{t('pdfToImg.renderingProgress', { defaultValue: 'Rendering pages...' })}</span>
-                <span>{progress.current} / {progress.total}</span>
+                <span>
+                  {t('pdfToImg.renderingProgress', { defaultValue: 'Rendering pages...' })}
+                </span>
+                <span>
+                  {progress.current} / {progress.total}
+                </span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                 <div
@@ -277,8 +299,13 @@ export const PdfToImgPage: React.FC = () => {
 
           {!selectedFile && (
             <EmptyState
-              title={t('pdfToImg.emptyTitle', { defaultValue: 'Upload a PDF to convert to images' })}
-              description={t('pdfToImg.emptyDesc', { defaultValue: 'Select a document above to render and extract high-definition image files.' })}
+              title={t('pdfToImg.emptyTitle', {
+                defaultValue: 'Upload a PDF to convert to images',
+              })}
+              description={t('pdfToImg.emptyDesc', {
+                defaultValue:
+                  'Select a document above to render and extract high-definition image files.',
+              })}
             />
           )}
 
@@ -307,7 +334,10 @@ export const PdfToImgPage: React.FC = () => {
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs">
                       <span className="font-bold text-slate-700">
-                        {t('pdfToImg.pageLabel', { page: item.page, defaultValue: `Page ${item.page}` })}
+                        {t('pdfToImg.pageLabel', {
+                          page: item.page,
+                          defaultValue: `Page ${item.page}`,
+                        })}
                       </span>
                       <button
                         onClick={() => downloadImage(item.dataUrl, item.page, item.format)}
@@ -332,13 +362,17 @@ export const PdfToImgPage: React.FC = () => {
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               {t('pdfToImg.exportDesc', {
-                defaultValue: 'Export is performed entirely inside your browser. No document data is ever sent to a server.',
+                defaultValue:
+                  'Export is performed entirely inside your browser. No document data is ever sent to a server.',
               })}
             </p>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="export_format_select" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label
+                  htmlFor="export_format_select"
+                  className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+                >
                   {t('pdfToImg.formatLabel', { defaultValue: 'Export Format:' })}
                 </label>
                 <select
@@ -351,13 +385,18 @@ export const PdfToImgPage: React.FC = () => {
                     {t('pdfToImg.formatPng', { defaultValue: 'PNG (Lossless, higher quality)' })}
                   </option>
                   <option value="image/jpeg">
-                    {t('pdfToImg.formatJpeg', { defaultValue: 'JPEG (Smaller file size, fast sharing)' })}
+                    {t('pdfToImg.formatJpeg', {
+                      defaultValue: 'JPEG (Smaller file size, fast sharing)',
+                    })}
                   </option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="scale_select" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label
+                  htmlFor="scale_select"
+                  className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+                >
                   {t('pdfToImg.qualityLabel', { defaultValue: 'Render Quality:' })}
                 </label>
                 <select
@@ -379,7 +418,10 @@ export const PdfToImgPage: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="max_pages_limit_select" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label
+                  htmlFor="max_pages_limit_select"
+                  className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+                >
                   {t('pdfToImg.maxPagesLabel', { defaultValue: 'Max pages to convert:' })}
                 </label>
                 <select
@@ -422,7 +464,9 @@ export const PdfToImgPage: React.FC = () => {
             <div className="p-3 bg-violet-50 rounded-xl border border-violet-100 text-[11px] text-violet-800 font-medium leading-normal flex items-center space-x-1.5">
               <Sparkles className="w-4 h-4 text-violet-500 flex-shrink-0" />
               <span>
-                {t('pdfToImg.featureBadge', { defaultValue: 'Converts PDF plates locally to raw PNG grids' })}
+                {t('pdfToImg.featureBadge', {
+                  defaultValue: 'Converts PDF plates locally to raw PNG grids',
+                })}
               </span>
             </div>
           </div>
@@ -448,7 +492,9 @@ export const PdfToImgPage: React.FC = () => {
                 {loading ? (
                   <span className="flex items-center space-x-1.5">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>{t('pdfToImg.extractingButton', { defaultValue: 'Extracting layers...' })}</span>
+                    <span>
+                      {t('pdfToImg.extractingButton', { defaultValue: 'Extracting layers...' })}
+                    </span>
                   </span>
                 ) : (
                   <>

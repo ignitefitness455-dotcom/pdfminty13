@@ -96,7 +96,11 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
         </div>
 
         {/* Accordion list */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/60" role="region" aria-label="FAQ Accordion">
+        <div
+          className="divide-y divide-slate-100 dark:divide-slate-800/60"
+          role="region"
+          aria-label="FAQ Accordion"
+        >
           {faqs.map((faq, index) => {
             const isOpen = openIndexes.includes(index);
             const questionId = `faq-q-${index}`;

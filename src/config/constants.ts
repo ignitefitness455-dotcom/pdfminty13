@@ -73,8 +73,7 @@ export const tools: Tool[] = [
   {
     id: 'protect-pdf',
     title: 'Protect PDF',
-    description:
-      'Encrypt and secure sensitive PDFs using client-side AES standard algorithms.',
+    description: 'Encrypt and secure sensitive PDFs using client-side AES standard algorithms.',
     category: 'security-edit',
     path: '/protect-pdf',
     icon: 'Shield',
@@ -134,7 +133,8 @@ export const tools: Tool[] = [
   {
     id: 'extract-pages',
     title: 'Extract Pages',
-    description: 'Selectively extract and export individual pages into a separate, clean PDF document instantly.',
+    description:
+      'Selectively extract and export individual pages into a separate, clean PDF document instantly.',
     category: 'organize',
     path: '/extract-pages-pdf',
     icon: 'CheckSquare',
@@ -142,7 +142,8 @@ export const tools: Tool[] = [
   {
     id: 'reorder',
     title: 'Reorder PDF',
-    description: 'Sort, rearrange, or shuffle PDF pages interactively with real-time thumbnail previews.',
+    description:
+      'Sort, rearrange, or shuffle PDF pages interactively with real-time thumbnail previews.',
     category: 'organize',
     path: '/reorder-pdf',
     icon: 'Move',
@@ -158,7 +159,8 @@ export const tools: Tool[] = [
   {
     id: 'repair-pdf',
     title: 'Repair PDF',
-    description: 'Fix corrupt cross-reference tables (XREFs), strip trailing junk bytes, and align headers locally.',
+    description:
+      'Fix corrupt cross-reference tables (XREFs), strip trailing junk bytes, and align headers locally.',
     category: 'security-edit',
     path: '/repair-pdf',
     icon: 'Wrench',
@@ -174,7 +176,8 @@ export const tools: Tool[] = [
   {
     id: 'sanitize-pdf',
     title: 'Sanitize PDF',
-    description: 'Remove embedded scripts, hidden metadata, and malicious actions for secure sharing.',
+    description:
+      'Remove embedded scripts, hidden metadata, and malicious actions for secure sharing.',
     category: 'security-edit',
     path: '/sanitize-pdf',
     icon: 'ShieldBan',
@@ -190,7 +193,8 @@ export const tools: Tool[] = [
   {
     id: 'ocr-pdf',
     title: 'OCR PDF',
-    description: 'Extract clean, searchable text or Markdown from scanned and image-only PDFs with AI Vision.',
+    description:
+      'Extract clean, searchable text or Markdown from scanned and image-only PDFs with AI Vision.',
     category: 'intelligence',
     path: '/ocr-pdf',
     icon: 'Sparkles',

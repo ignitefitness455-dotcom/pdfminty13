@@ -119,7 +119,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             const buf = new Uint8Array(await slice.arrayBuffer());
             let isPdfHeader = false;
             for (let j = 0; j <= buf.length - 4; j++) {
-              if (buf[j] === 0x25 && buf[j + 1] === 0x50 && buf[j + 2] === 0x44 && buf[j + 3] === 0x46) {
+              if (
+                buf[j] === 0x25 &&
+                buf[j + 1] === 0x50 &&
+                buf[j + 2] === 0x44 &&
+                buf[j + 3] === 0x46
+              ) {
                 isPdfHeader = true;
                 break;
               }
@@ -214,7 +219,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       <div className="flex items-center justify-between px-1">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 text-xs font-bold tracking-wide select-none">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>{t('fileUploader.clientSide', { defaultValue: '🔒 Client-Side In-Browser Processing' })}</span>
+          <span>
+            {t('fileUploader.clientSide', { defaultValue: '🔒 Client-Side In-Browser Processing' })}
+          </span>
         </div>
         <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">
           {t('fileUploader.localMemory', { defaultValue: 'Local Browser Memory Only' })}
@@ -264,7 +271,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         <h3 className="font-semibold text-slate-800 text-base md:text-lg mb-1">{displayTitle}</h3>
         <p className="text-slate-500 text-sm mb-2">{displaySubtitle}</p>
         <span className="inline-flex py-1 px-3 rounded-md bg-white border border-slate-200 text-xs text-slate-500 font-medium group-hover:border-emerald-200 group-hover:text-emerald-700">
-          {t('fileUploader.maxSize', { size: maxSizeMB, defaultValue: `Max file size: ${maxSizeMB}MB` })}
+          {t('fileUploader.maxSize', {
+            size: maxSizeMB,
+            defaultValue: `Max file size: ${maxSizeMB}MB`,
+          })}
         </span>
       </div>
 

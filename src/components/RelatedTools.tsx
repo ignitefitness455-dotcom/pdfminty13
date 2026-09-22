@@ -12,9 +12,12 @@ export const RelatedTools: React.FC = () => {
   const { toolsList = [] } = useLayout() || {};
 
   const related = useMemo(() => {
-    if (!pathname || pathname === '/' || !Array.isArray(toolsList) || toolsList.length === 0) return [];
+    if (!pathname || pathname === '/' || !Array.isArray(toolsList) || toolsList.length === 0)
+      return [];
     const segments = pathname.toLowerCase().split('/').filter(Boolean);
-    const activeTool = toolsList.find((t) => t && t.slug && segments.includes(t.slug.toLowerCase()));
+    const activeTool = toolsList.find(
+      (t) => t && t.slug && segments.includes(t.slug.toLowerCase())
+    );
 
     if (!activeTool) return [];
 
@@ -23,9 +26,9 @@ export const RelatedTools: React.FC = () => {
     if (curatedSlugs) {
       // Filter existing tools matching the curated slugs in order
       const curatedList = curatedSlugs
-        .map(slug => toolsList.find(t => t.slug === slug))
-        .filter((t): t is typeof toolsList[number] => !!t && t.slug !== activeTool.slug);
-      
+        .map((slug) => toolsList.find((t) => t.slug === slug))
+        .filter((t): t is (typeof toolsList)[number] => !!t && t.slug !== activeTool.slug);
+
       if (curatedList.length >= 3) {
         return curatedList.slice(0, 5);
       }
@@ -41,7 +44,10 @@ export const RelatedTools: React.FC = () => {
   if (pathname === '/' || related.length === 0) return null;
 
   return (
-    <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800" id="related_tools_box">
+    <div
+      className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800"
+      id="related_tools_box"
+    >
       <h3 className="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-4">
         {t('relatedTools.title', { defaultValue: 'Related PDF Tools' })}
       </h3>
@@ -57,7 +63,7 @@ export const RelatedTools: React.FC = () => {
                 {t(`tools.${tool.slug}.name`, { defaultValue: tool.name })}
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400 block line-clamp-2 mt-1">
-                {t(`tools.${tool.slug}.desc`, { defaultValue: tool.shortDescription || tool.description })}
+                {t(`tools.${tool.slug}.desc`, { defaultValue: tool.description })}
               </span>
             </div>
           </Link>
@@ -66,4 +72,3 @@ export const RelatedTools: React.FC = () => {
     </div>
   );
 };
-

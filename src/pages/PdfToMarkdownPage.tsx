@@ -66,9 +66,18 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
   return parts;
 }
 
-function renderMarkdownToJsx(markdown: string): React.ReactNode {
+function renderMarkdownToJsx(
+  markdown: string,
+  t?: (key: string, options?: { defaultValue?: string }) => string
+): React.ReactNode {
   if (!markdown.trim()) {
-    return <p className="text-slate-400 italic">{t('pdfToMarkdown.noContent', { defaultValue: 'No content to display.' })}</p>;
+    return (
+      <p className="text-slate-400 italic">
+        {t
+          ? t('pdfToMarkdown.noContent', { defaultValue: 'No content to display.' })
+          : 'No content to display.'}
+      </p>
+    );
   }
 
   const blocks = markdown.split(/\n{2,}/);
@@ -83,7 +92,12 @@ function renderMarkdownToJsx(markdown: string): React.ReactNode {
 
         if (trimmed.startsWith('# ')) {
           return (
-            <div key={idx} role="heading" aria-level={2} className="text-xl md:text-2xl font-black text-slate-900 border-b border-slate-200 pb-2">
+            <div
+              key={idx}
+              role="heading"
+              aria-level={2}
+              className="text-xl md:text-2xl font-black text-slate-900 border-b border-slate-200 pb-2"
+            >
               {renderInlineFormatting(trimmed.substring(2))}
             </div>
           );
@@ -106,7 +120,10 @@ function renderMarkdownToJsx(markdown: string): React.ReactNode {
         if (trimmed.startsWith('![') && trimmed.includes('](')) {
           const altMatch = /!\[([^\]]*)\]\(([^)]+)\)/.exec(trimmed);
           return (
-            <div key={idx} className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-600 flex items-center gap-2.5 my-2">
+            <div
+              key={idx}
+              className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-600 flex items-center gap-2.5 my-2"
+            >
               <ImageIcon className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>Embedded Figure: {altMatch ? altMatch[2] : 'Image'}</span>
             </div>
@@ -115,11 +132,20 @@ function renderMarkdownToJsx(markdown: string): React.ReactNode {
 
         // Table block
         if (trimmed.includes('|') && trimmed.includes('---')) {
-          const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+          const lines = trimmed
+            .split('\n')
+            .map((l) => l.trim())
+            .filter(Boolean);
           if (lines.length >= 2) {
-            const headerCells = lines[0].split('|').map((c) => c.trim()).filter(Boolean);
+            const headerCells = lines[0]
+              .split('|')
+              .map((c) => c.trim())
+              .filter(Boolean);
             const dataRows = lines.slice(2).map((row) =>
-              row.split('|').map((c) => c.trim()).filter(Boolean)
+              row
+                .split('|')
+                .map((c) => c.trim())
+                .filter(Boolean)
             );
             return (
               <div key={idx} className="overflow-x-auto my-3 border border-slate-200 rounded-xl">
@@ -230,17 +256,14 @@ export const PdfToMarkdownPage: React.FC = () => {
 
       const rendered = await WorkerManager.getInstance().runOperation<
         { page: number; imageBytes: Uint8Array }[]
-      >(
-        'pdfToImage',
-        {
-          bytes: fileBytes,
-          originalName: selectedFile.name,
-          scale: 1.5,
-          maxPages: 6,
-          format: 'image/jpeg',
-          startPage: 1,
-        }
-      );
+      >('pdfToImage', {
+        bytes: fileBytes,
+        originalName: selectedFile.name,
+        scale: 1.5,
+        maxPages: 6,
+        format: 'image/jpeg',
+        startPage: 1,
+      });
 
       if (myToken !== operationTokenRef.current) return;
       if (!rendered || rendered.length === 0) {
@@ -271,7 +294,9 @@ export const PdfToMarkdownPage: React.FC = () => {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error((errData as { error?: string }).error || `AI OCR request failed (${res.status})`);
+        throw new Error(
+          (errData as { error?: string }).error || `AI OCR request failed (${res.status})`
+        );
       }
 
       const data = (await res.json()) as { success: boolean; result: string };
@@ -327,7 +352,10 @@ export const PdfToMarkdownPage: React.FC = () => {
       setImages(result.images || []);
       setPageCount(result.pageCount || 1);
       setIsScannedResult(!!result.isScannedOrImageOnly);
-      showToast('Successfully converted PDF to Markdown Free — Convert PDF to Editable MD!', 'success');
+      showToast(
+        'Successfully converted PDF to Markdown Free — Convert PDF to Editable MD!',
+        'success'
+      );
     } catch (err: unknown) {
       if (myToken !== operationTokenRef.current) return;
       logger.error('PDF to Markdown error:', err);
@@ -402,7 +430,9 @@ export const PdfToMarkdownPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center space-x-2 font-bold text-slate-800">
                 <FileCode2 className="w-5 h-5 text-emerald-600" />
-                <span>{t('pdfToMarkdown.sourceDocument', { defaultValue: 'Source Document' })}</span>
+                <span>
+                  {t('pdfToMarkdown.sourceDocument', { defaultValue: 'Source Document' })}
+                </span>
               </span>
             </div>
 
@@ -440,7 +470,11 @@ export const PdfToMarkdownPage: React.FC = () => {
             {loading && progress && (
               <div className="space-y-2 pt-2">
                 <div className="flex justify-between text-xs font-bold text-slate-600">
-                  <span>{t('pdfToMarkdown.extractingText', { defaultValue: 'Extracting text structure...' })}</span>
+                  <span>
+                    {t('pdfToMarkdown.extractingText', {
+                      defaultValue: 'Extracting text structure...',
+                    })}
+                  </span>
                   <span>
                     Page {progress.current} of {progress.total} (
                     {Math.round((progress.current / progress.total) * 100)}%)
@@ -459,7 +493,9 @@ export const PdfToMarkdownPage: React.FC = () => {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">{t('pdfToMarkdown.conversionOptions', { defaultValue: 'Conversion Options' })}</h3>
+            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+              {t('pdfToMarkdown.conversionOptions', { defaultValue: 'Conversion Options' })}
+            </h3>
 
             <label
               htmlFor="extract_images_opt"
@@ -475,21 +511,43 @@ export const PdfToMarkdownPage: React.FC = () => {
                 className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 w-4 h-4"
               />
               <div className="text-xs">
-                <span className="font-bold text-slate-800 block">{t('pdfToMarkdown.extractImagesToo', { defaultValue: 'Extract images too' })}</span>
-                <span className="text-slate-500 block mt-0.5">{t('pdfToMarkdown.extractImagesDesc', { defaultValue: 'Package embedded figures alongside Markdown links into a downloadable .zip archive.' })}</span>
+                <span className="font-bold text-slate-800 block">
+                  {t('pdfToMarkdown.extractImagesToo', { defaultValue: 'Extract images too' })}
+                </span>
+                <span className="text-slate-500 block mt-0.5">
+                  {t('pdfToMarkdown.extractImagesDesc', {
+                    defaultValue:
+                      'Package embedded figures alongside Markdown links into a downloadable .zip archive.',
+                  })}
+                </span>
               </div>
             </label>
 
-            {error && (
-              isQuotaError ? (
+            {error &&
+              (isQuotaError ? (
                 <div className="flex items-start gap-3 text-xs text-amber-800 bg-amber-50/50 border border-amber-200 p-4 rounded-xl shadow-sm flex-col w-full">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                    <p className="font-extrabold text-amber-900">{t("pdfToMarkdown.busyMessage")}</p>
+                    <p className="font-extrabold text-amber-900">
+                      {t('pdfToMarkdown.busyMessage')}
+                    </p>
                   </div>
                   <div className="pl-6 space-y-1 text-slate-600 font-medium leading-relaxed">
-                    <p>{t("pdfToMarkdown.orUseOffline")} <Link to={ROUTES.HOME} className="underline text-emerald-700 hover:text-emerald-800 font-bold">{t("tools.mergePdf")} &amp; {t("tools.splitPdf")}</Link></p>
-                    <p>{t('pdfToMarkdown.rateLimitReached', { defaultValue: 'Rate limit reached. Please wait a few minutes before trying again.' })}</p>
+                    <p>
+                      {t('pdfToMarkdown.orUseOffline')}{' '}
+                      <Link
+                        to={ROUTES.HOME}
+                        className="underline text-emerald-700 hover:text-emerald-800 font-bold"
+                      >
+                        {t('tools.mergePdf')} &amp; {t('tools.splitPdf')}
+                      </Link>
+                    </p>
+                    <p>
+                      {t('pdfToMarkdown.rateLimitReached', {
+                        defaultValue:
+                          'Rate limit reached. Please wait a few minutes before trying again.',
+                      })}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -507,8 +565,7 @@ export const PdfToMarkdownPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-              )
-            )}
+              ))}
           </div>
 
           <div className="space-y-3">
@@ -529,7 +586,9 @@ export const PdfToMarkdownPage: React.FC = () => {
               ) : (
                 <>
                   <FileCode2 className="w-4 h-4" />
-                  <span>{t('toolCommon.process', { defaultValue: 'Smart Layout Convert (Fast)' })}</span>
+                  <span>
+                    {t('toolCommon.process', { defaultValue: 'Smart Layout Convert (Fast)' })}
+                  </span>
                 </>
               )}
             </button>
@@ -544,7 +603,7 @@ export const PdfToMarkdownPage: React.FC = () => {
               }`}
             >
               <Sparkles className="w-4 h-4 text-amber-600" />
-              <span>{t("pdfToMarkdown.aiVisionMode")}</span>
+              <span>{t('pdfToMarkdown.aiVisionMode')}</span>
             </button>
           </div>
         </div>
@@ -555,9 +614,13 @@ export const PdfToMarkdownPage: React.FC = () => {
           <div className="flex items-start space-x-3.5">
             <Sparkles className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="space-y-1 text-xs md:text-sm text-amber-900">
-              <p className="font-extrabold text-base text-amber-950">{t("pdfToMarkdown.scannedDetected")}</p>
+              <p className="font-extrabold text-base text-amber-950">
+                {t('pdfToMarkdown.scannedDetected')}
+              </p>
               <p>
-                Standard text-layer extraction yielded minimal text because this PDF is composed of scanned images. Use our Multimodal AI Vision OCR engine to transcribe pages and tables directly into clean Markdown.
+                Standard text-layer extraction yielded minimal text because this PDF is composed of
+                scanned images. Use our Multimodal AI Vision OCR engine to transcribe pages and
+                tables directly into clean Markdown.
               </p>
             </div>
           </div>
@@ -567,7 +630,11 @@ export const PdfToMarkdownPage: React.FC = () => {
             className="py-2.5 px-5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center space-x-2 transition-all shadow-sm flex-shrink-0 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
-            <span>{t('pdfToMarkdown.transcribeWithAI', { defaultValue: 'Transcribe with AI Vision OCR' })}</span>
+            <span>
+              {t('pdfToMarkdown.transcribeWithAI', {
+                defaultValue: 'Transcribe with AI Vision OCR',
+              })}
+            </span>
           </button>
         </div>
       )}
@@ -576,7 +643,9 @@ export const PdfToMarkdownPage: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-slate-900 text-base">{t('pdfToMarkdown.conversionOutput', { defaultValue: 'Conversion Output' })}</span>
+              <span className="font-extrabold text-slate-900 text-base">
+                {t('pdfToMarkdown.conversionOutput', { defaultValue: 'Conversion Output' })}
+              </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
                 {pageCount} {pageCount === 1 ? 'Page' : 'Pages'}
               </span>
@@ -592,7 +661,11 @@ export const PdfToMarkdownPage: React.FC = () => {
                 onClick={handleCopy}
                 className="py-2 px-3.5 rounded-xl font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center space-x-1.5 transition-colors border border-slate-200"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
                 <span>{copied ? 'Copied' : 'Copy Markdown'}</span>
               </button>
 
@@ -602,7 +675,9 @@ export const PdfToMarkdownPage: React.FC = () => {
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>
-                  {extractImages && images.length > 0 ? 'Download .zip (MD + Images)' : 'Download .md'}
+                  {extractImages && images.length > 0
+                    ? 'Download .zip (MD + Images)'
+                    : 'Download .md'}
                 </span>
               </button>
             </div>
@@ -612,17 +687,19 @@ export const PdfToMarkdownPage: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
                 <Eye className="w-4 h-4 text-emerald-600" />
-                <span>{t('pdfToMarkdown.renderedPreview', { defaultValue: 'Rendered Preview' })}</span>
+                <span>
+                  {t('pdfToMarkdown.renderedPreview', { defaultValue: 'Rendered Preview' })}
+                </span>
               </div>
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-inner max-h-[500px] overflow-y-auto">
-                {renderMarkdownToJsx(markdownText)}
+                {renderMarkdownToJsx(markdownText, t)}
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
                 <Code2 className="w-4 h-4 text-emerald-600" />
-                <label htmlFor="raw_markdown_editor">{t("pdfToMarkdown.rawEditor")}</label>
+                <label htmlFor="raw_markdown_editor">{t('pdfToMarkdown.rawEditor')}</label>
               </div>
               <textarea
                 id="raw_markdown_editor"

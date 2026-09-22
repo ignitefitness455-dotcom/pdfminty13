@@ -41,16 +41,16 @@ export default function SanitizePdfPage() {
         URL.revokeObjectURL(downloadUrl);
         setDownloadUrl(null);
       }
-      
+
       const bytes = new Uint8Array(await file.arrayBuffer());
-      const result = await WorkerManager.getInstance().runOperation<{ bytes: Uint8Array; warnings: string[] }>(
-        'sanitizePDF',
-        { bytes }
-      );
+      const result = await WorkerManager.getInstance().runOperation<{
+        bytes: Uint8Array;
+        warnings: string[];
+      }>('sanitizePDF', { bytes });
 
       setWarnings(result.warnings);
 
-      const blob = new Blob([result.bytes], { type: 'application/pdf' });
+      const blob = new Blob([result.bytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = file.name.replace(/\.pdf$/i, '') + '-sanitized.pdf';
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
@@ -97,7 +97,10 @@ export default function SanitizePdfPage() {
                 id="sanitize_pdf_uploader"
               />
             ) : (
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between" id="loaded_sanitize_file">
+              <div
+                className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                id="loaded_sanitize_file"
+              >
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{file.name}</p>
                   <p className="text-xs text-slate-400">
@@ -123,12 +126,24 @@ export default function SanitizePdfPage() {
             )}
 
             {isSuccess && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="sanitize_success_banner">
+              <div
+                className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+                id="sanitize_success_banner"
+              >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                  <span>{t('sanitizePdf.successTitle', { defaultValue: 'Sanitization Completed Successfully! Your clean PDF is ready.' })}</span>
+                  <span>
+                    {t('sanitizePdf.successTitle', {
+                      defaultValue: 'Sanitization Completed Successfully! Your clean PDF is ready.',
+                    })}
+                  </span>
                 </div>
-                <p className="text-slate-500 text-[11px] font-semibold leading-normal">{t('sanitizePdf.successDesc', { defaultValue: 'All scripts, hidden actions, and metadata have been purged from the file.' })}</p>
+                <p className="text-slate-500 text-[11px] font-semibold leading-normal">
+                  {t('sanitizePdf.successDesc', {
+                    defaultValue:
+                      'All scripts, hidden actions, and metadata have been purged from the file.',
+                  })}
+                </p>
                 {downloadUrl && (
                   <div className="pt-2">
                     <a
@@ -138,7 +153,11 @@ export default function SanitizePdfPage() {
                       className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                       <Download className="w-4 h-4 animate-bounce" />
-                      <span>{t('sanitizePdf.downloadSanitized', { defaultValue: 'Download Sanitized PDF' })}</span>
+                      <span>
+                        {t('sanitizePdf.downloadSanitized', {
+                          defaultValue: 'Download Sanitized PDF',
+                        })}
+                      </span>
                     </a>
                   </div>
                 )}
@@ -147,7 +166,9 @@ export default function SanitizePdfPage() {
 
             {warnings.length > 0 && (
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2">{t("sanitizePdf.resultsTitle")}</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2">
+                  {t('sanitizePdf.resultsTitle')}
+                </h4>
                 <ul className="list-disc pl-5 space-y-1 text-xs text-emerald-700 font-medium">
                   {warnings.map((w, i) => (
                     <li key={i}>{w}</li>
@@ -160,10 +181,10 @@ export default function SanitizePdfPage() {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">{t('sanitizePdf.actionsTitle', { defaultValue: 'Sanitize Actions' })}</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              {t("sanitizePdf.actionsDesc")}
-            </p>
+            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+              {t('sanitizePdf.actionsTitle', { defaultValue: 'Sanitize Actions' })}
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed">{t('sanitizePdf.actionsDesc')}</p>
           </div>
 
           <div className="space-y-3 pt-4 border-t border-slate-100">
@@ -186,12 +207,16 @@ export default function SanitizePdfPage() {
               {isProcessing ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('sanitizePdf.processingButton', { defaultValue: 'Sanitizing...' })}</span>
+                  <span>
+                    {t('sanitizePdf.processingButton', { defaultValue: 'Sanitizing...' })}
+                  </span>
                 </span>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{t('sanitizePdf.processButton', { defaultValue: 'Sanitize & Download' })}</span>
+                  <span>
+                    {t('sanitizePdf.processButton', { defaultValue: 'Sanitize & Download' })}
+                  </span>
                 </>
               )}
             </button>
@@ -200,57 +225,60 @@ export default function SanitizePdfPage() {
       </div>
 
       {/* Deep Content & Comprehensive Guide Section */}
-      <section className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed" id="sanitize_guide_section">
+      <section
+        className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed"
+        id="sanitize_guide_section"
+      >
         <div className="space-y-3">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            {t("sanitizePdf.guideTitle")}
+            {t('sanitizePdf.guideTitle')}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600">
-            {t("sanitizePdf.guideDesc")}
-          </p>
+          <p className="text-sm sm:text-base text-slate-600">{t('sanitizePdf.guideDesc')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t("sanitizePdf.whatRemoved")}
+              {t('sanitizePdf.whatRemoved')}
             </h3>
             <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
-              <li>{t("sanitizePdf.liJs")}</li>
-              <li>{t("sanitizePdf.liMeta")}</li>
-              <li>{t("sanitizePdf.liLaunch")}</li>
-              <li>{t("sanitizePdf.liForm")}</li>
+              <li>{t('sanitizePdf.liJs')}</li>
+              <li>{t('sanitizePdf.liMeta')}</li>
+              <li>{t('sanitizePdf.liLaunch')}</li>
+              <li>{t('sanitizePdf.liForm')}</li>
             </ul>
           </div>
 
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t("sanitizePdf.whoNeeds")}
+              {t('sanitizePdf.whoNeeds')}
             </h3>
             <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
-              <li>{t("sanitizePdf.liLegal")}</li>
-              <li>{t("sanitizePdf.liGov")}</li>
-              <li>{t("sanitizePdf.liSec")}</li>
+              <li>{t('sanitizePdf.liLegal')}</li>
+              <li>{t('sanitizePdf.liGov')}</li>
+              <li>{t('sanitizePdf.liSec')}</li>
             </ul>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-900">{t('sanitizePdf.howToSanitize', { defaultValue: 'How to Sanitize PDFs Securely in Your Browser' })}</h3>
+          <h3 className="text-lg font-bold text-slate-900">
+            {t('sanitizePdf.howToSanitize', {
+              defaultValue: 'How to Sanitize PDFs Securely in Your Browser',
+            })}
+          </h3>
           <ol className="list-decimal pl-5 space-y-2 text-sm text-slate-600">
-            <li>{t("sanitizePdf.step1")}</li>
-            <li>{t("sanitizePdf.step2")}</li>
-            <li>{t("sanitizePdf.step3")}</li>
+            <li>{t('sanitizePdf.step1')}</li>
+            <li>{t('sanitizePdf.step2')}</li>
+            <li>{t('sanitizePdf.step3')}</li>
           </ol>
         </div>
 
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900">
-          <p className="font-bold">{t("sanitizePdf.offlineProtection")}</p>
-          <p className="leading-normal text-slate-600">
-            {t("sanitizePdf.offlineNotice")}
-          </p>
+          <p className="font-bold">{t('sanitizePdf.offlineProtection')}</p>
+          <p className="leading-normal text-slate-600">{t('sanitizePdf.offlineNotice')}</p>
         </div>
       </section>
     </div>

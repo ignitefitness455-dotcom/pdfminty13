@@ -81,13 +81,28 @@ export function sanitizeErrorCategory(errorMessage: string): string {
   if (msg.includes('password') || msg.includes('decrypt') || msg.includes('encrypted')) {
     return 'PASSWORD_REQUIRED_OR_INVALID';
   }
-  if (msg.includes('corrupt') || msg.includes('invalid pdf') || msg.includes('xref') || msg.includes('header')) {
+  if (
+    msg.includes('corrupt') ||
+    msg.includes('invalid pdf') ||
+    msg.includes('xref') ||
+    msg.includes('header')
+  ) {
     return 'CORRUPT_OR_INVALID_PDF';
   }
-  if (msg.includes('memory') || msg.includes('allocation') || msg.includes('out of memory') || msg.includes('wasm')) {
+  if (
+    msg.includes('memory') ||
+    msg.includes('allocation') ||
+    msg.includes('out of memory') ||
+    msg.includes('wasm')
+  ) {
     return 'WASM_OUT_OF_MEMORY';
   }
-  if (msg.includes('network') || msg.includes('fetch') || msg.includes('failed to fetch') || msg.includes('timeout')) {
+  if (
+    msg.includes('network') ||
+    msg.includes('fetch') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('timeout')
+  ) {
     return 'NETWORK_OR_TIMEOUT';
   }
   if (msg.includes('quota') || msg.includes('rate limit') || msg.includes('429')) {
@@ -118,7 +133,7 @@ export function trackAnalyticsEvent(
     for (const [key, value] of Object.entries(params)) {
       // Strictly ignore forbidden properties if accidentally passed
       if (
-        key.toLowerCase().includes('name') && key !== 'tool_name' && key !== 'cta_name' ||
+        (key.toLowerCase().includes('name') && key !== 'tool_name' && key !== 'cta_name') ||
         key.toLowerCase().includes('filename') ||
         key.toLowerCase().includes('text') ||
         key.toLowerCase().includes('path') ||
@@ -149,8 +164,6 @@ export function trackAnalyticsEvent(
     }
 
     // 2. Dispatch custom DOM event for internal monitoring or testing
-    window.dispatchEvent(
-      new CustomEvent('pdfminty_analytics_event', { detail: payload })
-    );
+    window.dispatchEvent(new CustomEvent('pdfminty_analytics_event', { detail: payload }));
   }
 }

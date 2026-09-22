@@ -28,7 +28,10 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
 
   const currentToolIndex = TOOLS.findIndex((t) => t.slug === baseSlug);
   const prevTool = currentToolIndex > 0 ? TOOLS[currentToolIndex - 1] : null;
-  const nextTool = currentToolIndex >= 0 && currentToolIndex < TOOLS.length - 1 ? TOOLS[currentToolIndex + 1] : null;
+  const nextTool =
+    currentToolIndex >= 0 && currentToolIndex < TOOLS.length - 1
+      ? TOOLS[currentToolIndex + 1]
+      : null;
 
   // Localized SEO strings for pages with translations available when not default locale
   let localizedTitle: string | undefined;
@@ -67,11 +70,7 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
   }
 
   // Default values for homepage or custom non-tool pathways.
-  const title =
-    titleOverride ||
-    localizedTitle ||
-    item?.metaTitle ||
-    HOMEPAGE_META.title;
+  const title = titleOverride || localizedTitle || item?.metaTitle || HOMEPAGE_META.title;
   const description =
     descriptionOverride ||
     localizedDescription ||
@@ -83,7 +82,9 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
   // Per-tool og:image if declared in seo-data, else generic.
   const ogImage = item?.ogImage ? `${SITE_URL}${item.ogImage}` : `${SITE_URL}/og-image.png`;
   const keywords = item?.keywords
-    ? (Array.isArray(item.keywords) ? item.keywords.join(', ') : item.keywords)
+    ? Array.isArray(item.keywords)
+      ? item.keywords.join(', ')
+      : item.keywords
     : item?.name
       ? `${item.name.toLowerCase()}, ${item.slug.replace(/-/g, ' ')}, pdf tools`
       : 'pdf toolkit, client-side pdf editor, privacy pdf tools, local pdf tools, free browser pdf tools';
@@ -94,7 +95,10 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta
+        name="robots"
+        content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      />
       <meta name="author" content="PDFMinty" />
       <meta name="publisher" content="PDFMinty" />
       <meta name="language" content="English" />
@@ -103,12 +107,7 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
 
       {/* Reciprocal hreflang tags for multi-locale pages */}
       {hreflangs.map((entry) => (
-        <link
-          key={entry.hreflang}
-          rel="alternate"
-          hrefLang={entry.hreflang}
-          href={entry.href}
-        />
+        <link key={entry.hreflang} rel="alternate" hrefLang={entry.hreflang} href={entry.href} />
       ))}
 
       {prevTool && <link rel="prev" href={`${SITE_URL}/${prevTool.slug}/`} />}

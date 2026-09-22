@@ -26,7 +26,10 @@ export const WhyChooseSection: React.FC = () => {
             className="bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-lg shadow-black/5 text-center flex flex-col items-center hover:border-emerald-500/50 transition-all duration-300"
           >
             <div className="w-16 h-16 rounded-full bg-white/60 dark:bg-white/5 border border-white/60 dark:border-white/10 flex items-center justify-center mb-5 shadow-inner">
-              <Shield className="w-6 h-6 text-security-green fill-security-green/10" aria-hidden="true" />
+              <Shield
+                className="w-6 h-6 text-security-green fill-security-green/10"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base sm:text-lg font-bold text-primary mb-2.5">
               {t('home.whyChoose.privacyTitle', { defaultValue: 'Privacy First' })}
@@ -44,7 +47,10 @@ export const WhyChooseSection: React.FC = () => {
             className="bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-lg shadow-black/5 text-center flex flex-col items-center hover:border-emerald-500/50 transition-all duration-300"
           >
             <div className="w-16 h-16 rounded-full bg-white/60 dark:bg-white/5 border border-white/60 dark:border-white/10 flex items-center justify-center mb-5 shadow-inner">
-              <UserX className="w-6 h-6 text-critical-red fill-critical-red/10" aria-hidden="true" />
+              <UserX
+                className="w-6 h-6 text-critical-red fill-critical-red/10"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base sm:text-lg font-bold text-primary mb-2.5">
               {t('home.whyChoose.noAccountTitle', { defaultValue: 'No Account Required' })}
@@ -62,7 +68,10 @@ export const WhyChooseSection: React.FC = () => {
             className="bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-lg shadow-black/5 text-center flex flex-col items-center hover:border-emerald-500/50 transition-all duration-300"
           >
             <div className="w-16 h-16 rounded-full bg-white/60 dark:bg-white/5 border border-white/60 dark:border-white/10 flex items-center justify-center mb-5 shadow-inner">
-              <Gift className="w-6 h-6 text-warning-amber fill-warning-amber/10" aria-hidden="true" />
+              <Gift
+                className="w-6 h-6 text-warning-amber fill-warning-amber/10"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base sm:text-lg font-bold text-primary mb-2.5">
               {t('home.whyChoose.freeTitle', { defaultValue: 'Completely Free' })}
@@ -80,7 +89,10 @@ export const WhyChooseSection: React.FC = () => {
             className="bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-lg shadow-black/5 text-center flex flex-col items-center hover:border-emerald-500/50 transition-all duration-300"
           >
             <div className="w-16 h-16 rounded-full bg-white/60 dark:bg-white/5 border border-white/60 dark:border-white/10 flex items-center justify-center mb-5 shadow-inner">
-              <Layers className="w-6 h-6 text-primary-fixed fill-primary-fixed/10" aria-hidden="true" />
+              <Layers
+                className="w-6 h-6 text-primary-fixed fill-primary-fixed/10"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base sm:text-lg font-bold text-primary mb-2.5">
               {t('home.whyChoose.toolsCountTitle', { defaultValue: `${toolsCount} Tools` })}
@@ -116,7 +128,10 @@ export const WhyChooseSection: React.FC = () => {
             className="bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/50 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-lg shadow-black/5 text-center flex flex-col items-center hover:border-emerald-500/50 transition-all duration-300"
           >
             <div className="w-16 h-16 rounded-full bg-white/60 dark:bg-white/5 border border-white/60 dark:border-white/10 flex items-center justify-center mb-5 shadow-inner">
-              <Zap className="w-6 h-6 text-tertiary-fixed-dim fill-tertiary-fixed-dim/10" aria-hidden="true" />
+              <Zap
+                className="w-6 h-6 text-tertiary-fixed-dim fill-tertiary-fixed-dim/10"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base sm:text-lg font-bold text-primary mb-2.5">
               {t('home.whyChoose.fastTitle', { defaultValue: 'Instant Processing' })}

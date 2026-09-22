@@ -1,11 +1,4 @@
-import {
-  CheckSquare,
-  Square,
-  Download,
-  AlertCircle,
-  Sparkles,
-  Loader2,
-} from 'lucide-react';
+import { CheckSquare, Square, Download, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -91,7 +84,10 @@ export const ExtractPagesPdfPage: React.FC = () => {
         if (myToken !== operationTokenRef.current) return;
         logger.error('Failed to render previews:', err);
         setError(
-          t('extractPages.previewWarning', { defaultValue: 'Previews could not be rendered, but you can still run extraction using standard page parameters.' })
+          t('extractPages.previewWarning', {
+            defaultValue:
+              'Previews could not be rendered, but you can still run extraction using standard page parameters.',
+          })
         );
       } finally {
         if (myToken === operationTokenRef.current) {
@@ -122,7 +118,11 @@ export const ExtractPagesPdfPage: React.FC = () => {
   const handleExtract = async () => {
     if (!selectedFile) return;
     if (selectedPages.length === 0) {
-      setError(t('extractPages.selectOnePage', { defaultValue: 'Please select at least one page to extract.' }));
+      setError(
+        t('extractPages.selectOnePage', {
+          defaultValue: 'Please select at least one page to extract.',
+        })
+      );
       return;
     }
 
@@ -147,7 +147,12 @@ export const ExtractPagesPdfPage: React.FC = () => {
     } catch (err: unknown) {
       logger.error('Extract error:', err);
       const message = err instanceof Error ? err.message : String(err);
-      setError(message || t('extractPages.extractError', { defaultValue: 'Failed to extract selected pages from the document.' }));
+      setError(
+        message ||
+          t('extractPages.extractError', {
+            defaultValue: 'Failed to extract selected pages from the document.',
+          })
+      );
     } finally {
       setLoading(false);
     }
@@ -156,7 +161,10 @@ export const ExtractPagesPdfPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadein" id="extract_pages_page_container">
       <SEO slug="extract-pages-pdf" />
-      <ToolHeader slug="extract-pages-pdf" limitMB={TOOL_SIZE_LIMITS['extract-pages-pdf'].maxSingleMB} />
+      <ToolHeader
+        slug="extract-pages-pdf"
+        limitMB={TOOL_SIZE_LIMITS['extract-pages-pdf'].maxSingleMB}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -204,10 +212,18 @@ export const ExtractPagesPdfPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="extract_pages_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="extract_pages_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>{t('extractPages.successTitle', { defaultValue: 'Pages Extracted Successfully! Your custom PDF has been generated.' })}</span>
+                <span>
+                  {t('extractPages.successTitle', {
+                    defaultValue:
+                      'Pages Extracted Successfully! Your custom PDF has been generated.',
+                  })}
+                </span>
               </div>
               {downloadUrl && (
                 <div className="pt-2">
@@ -218,7 +234,11 @@ export const ExtractPagesPdfPage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('extractPages.downloadExtracted', { defaultValue: 'Download Extracted PDF' })}</span>
+                    <span>
+                      {t('extractPages.downloadExtracted', {
+                        defaultValue: 'Download Extracted PDF',
+                      })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -227,25 +247,38 @@ export const ExtractPagesPdfPage: React.FC = () => {
 
           {!selectedFile && (
             <EmptyState
-              title={t('extractPages.emptyTitle', { defaultValue: 'Upload a PDF to extract pages' })}
-              description={t('extractPages.emptyDesc', { defaultValue: 'Select a document above to view page thumbnails and cherry-pick specific pages to extract.' })}
+              title={t('extractPages.emptyTitle', {
+                defaultValue: 'Upload a PDF to extract pages',
+              })}
+              description={t('extractPages.emptyDesc', {
+                defaultValue:
+                  'Select a document above to view page thumbnails and cherry-pick specific pages to extract.',
+              })}
             />
           )}
 
           {selectedFile && (
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h3 className="text-sm font-extrabold text-slate-700 dark:text-slate-300">{t('extractPages.selectPagesTitle', { defaultValue: 'Select Pages for Extraction' })}</h3>
+                <h3 className="text-sm font-extrabold text-slate-700 dark:text-slate-300">
+                  {t('extractPages.selectPagesTitle', {
+                    defaultValue: 'Select Pages for Extraction',
+                  })}
+                </h3>
                 {thumbnails.length > 0 && (
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={selectAll}
                       className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline bg-slate-50 dark:bg-slate-950/40 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800"
-                    >{t('extractPages.selectAll', { defaultValue: 'Select All' })}</button>
+                    >
+                      {t('extractPages.selectAll', { defaultValue: 'Select All' })}
+                    </button>
                     <button
                       onClick={clearSelection}
                       className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline bg-slate-50 dark:bg-slate-950/40 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800"
-                    >{t('extractPages.clearAll', { defaultValue: 'Clear All' })}</button>
+                    >
+                      {t('extractPages.clearAll', { defaultValue: 'Clear All' })}
+                    </button>
                   </div>
                 )}
               </div>
@@ -256,7 +289,11 @@ export const ExtractPagesPdfPage: React.FC = () => {
                   id="thumbnails_loader"
                 >
                   <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-                  <p className="text-xs font-bold text-slate-400">{t('extractPages.loadingPages', { defaultValue: 'Loading document pages structure...' })}</p>
+                  <p className="text-xs font-bold text-slate-400">
+                    {t('extractPages.loadingPages', {
+                      defaultValue: 'Loading document pages structure...',
+                    })}
+                  </p>
                 </div>
               ) : thumbnails.length > 0 ? (
                 <div
@@ -306,7 +343,12 @@ export const ExtractPagesPdfPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl text-center">
-                  <p className="text-xs text-slate-500">{t('extractPages.couldNotExtract', { defaultValue: 'Could not extract individual page views for this document type.' })}</p>
+                  <p className="text-xs text-slate-500">
+                    {t('extractPages.couldNotExtract', {
+                      defaultValue:
+                        'Could not extract individual page views for this document type.',
+                    })}
+                  </p>
                 </div>
               )}
             </div>
@@ -316,7 +358,9 @@ export const ExtractPagesPdfPage: React.FC = () => {
         {/* Action Column */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">{t('extractPages.configTitle', { defaultValue: 'Extraction Config' })}</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
+              {t('extractPages.configTitle', { defaultValue: 'Extraction Config' })}
+            </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Unlike the standard Split tool, this lets you cherry-pick specific pages in any order
               and combine them into a single, light document.
@@ -367,12 +411,17 @@ export const ExtractPagesPdfPage: React.FC = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>{t('extractPages.extractingButton', { defaultValue: 'Extracting Pages...' })}</span>
+                  <span>
+                    {t('extractPages.extractingButton', { defaultValue: 'Extracting Pages...' })}
+                  </span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{t('extractPages.extractButton', { defaultValue: 'Extract Pages' })} ({selectedPages.length})</span>
+                  <span>
+                    {t('extractPages.extractButton', { defaultValue: 'Extract Pages' })} (
+                    {selectedPages.length})
+                  </span>
                 </>
               )}
             </button>

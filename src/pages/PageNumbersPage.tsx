@@ -66,7 +66,9 @@ export const PageNumbersPage: React.FC = () => {
         if (myToken !== operationTokenRef.current) return;
 
         if (rendered && rendered.length > 0) {
-          const blob = new Blob([rendered[0].imageBytes as unknown as BlobPart], { type: 'image/png' });
+          const blob = new Blob([rendered[0].imageBytes as unknown as BlobPart], {
+            type: 'image/png',
+          });
           const url = URL.createObjectURL(blob);
           setPreviewUrl(url);
         }
@@ -137,7 +139,10 @@ export const PageNumbersPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="page_numbers_container">
       <SEO slug="add-page-numbers" />
-      <ToolHeader slug="add-page-numbers" limitMB={TOOL_SIZE_LIMITS['add-page-numbers'].maxSingleMB} />
+      <ToolHeader
+        slug="add-page-numbers"
+        limitMB={TOOL_SIZE_LIMITS['add-page-numbers'].maxSingleMB}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -180,16 +185,26 @@ export const PageNumbersPage: React.FC = () => {
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <h3 className="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                      <span>{t('pageNumbers.realtimePreview', { defaultValue: 'Real-time Placement Preview' })}</span>
+                      <span>
+                        {t('pageNumbers.realtimePreview', {
+                          defaultValue: 'Real-time Placement Preview',
+                        })}
+                      </span>
                     </h3>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-150">{t('pageNumbers.pageIndicator', { defaultValue: 'Page 1 of 12' })}</span>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-150">
+                      {t('pageNumbers.pageIndicator', { defaultValue: 'Page 1 of 12' })}
+                    </span>
                   </div>
 
                   <div className="relative w-full aspect-[1/1.4] max-w-sm mx-auto bg-slate-50 rounded-xl overflow-hidden shadow-inner border border-slate-200 flex items-center justify-center">
                     {renderingPreview ? (
                       <div className="flex flex-col items-center gap-2.5 text-slate-400">
                         <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-[10px] font-bold tracking-wider uppercase animate-pulse">{t('pageNumbers.loadingDocument', { defaultValue: 'Loading Document...' })}</span>
+                        <span className="text-[10px] font-bold tracking-wider uppercase animate-pulse">
+                          {t('pageNumbers.loadingDocument', {
+                            defaultValue: 'Loading Document...',
+                          })}
+                        </span>
                       </div>
                     ) : (
                       <div className="relative w-full h-full flex items-center justify-center bg-white">
@@ -219,7 +234,9 @@ export const PageNumbersPage: React.FC = () => {
                                 <div className="h-2 w-2/3 bg-slate-800 rounded"></div>
                               </div>
                             </div>
-                            <div className="text-[9px] text-slate-400 font-bold self-center text-center mt-auto bg-slate-50 px-2 py-1 rounded border border-slate-100">{t('pageNumbers.templateView', { defaultValue: 'Template View' })}</div>
+                            <div className="text-[9px] text-slate-400 font-bold self-center text-center mt-auto bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                              {t('pageNumbers.templateView', { defaultValue: 'Template View' })}
+                            </div>
                           </div>
                         )}
 
@@ -228,23 +245,31 @@ export const PageNumbersPage: React.FC = () => {
                           <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[0.5px] flex items-center justify-center p-4">
                             <div className="bg-slate-800/90 text-white text-[10px] font-bold tracking-wide py-1.5 px-3 rounded shadow-lg text-center leading-normal max-w-[200px]">
                               Title Page (Skipped)
-                              <span className="block text-[8px] text-slate-300 font-medium mt-0.5">{t('pageNumbers.paginationStarts', { defaultValue: 'Pagination starts on page 2' })}</span>
+                              <span className="block text-[8px] text-slate-300 font-medium mt-0.5">
+                                {t('pageNumbers.paginationStarts', {
+                                  defaultValue: 'Pagination starts on page 2',
+                                })}
+                              </span>
                             </div>
                           </div>
                         ) : (
                           <div
                             className={`absolute font-mono font-bold text-[10px] md:text-xs text-slate-800 bg-cyan-150 border border-cyan-300/40 px-2 py-0.5 rounded shadow-sm flex items-center justify-center select-none ${
-                              position === 'top-left' ? 'top-3 left-3' :
-                              position === 'top-center' ? 'top-3 left-1/2 -translate-x-1/2' :
-                              position === 'top-right' ? 'top-3 right-3' :
-                              position === 'bottom-left' ? 'bottom-3 left-3' :
-                              position === 'bottom-center' ? 'bottom-3 left-1/2 -translate-x-1/2' :
-                              'bottom-3 right-3'
+                              position === 'top-left'
+                                ? 'top-3 left-3'
+                                : position === 'top-center'
+                                  ? 'top-3 left-1/2 -translate-x-1/2'
+                                  : position === 'top-right'
+                                    ? 'top-3 right-3'
+                                    : position === 'bottom-left'
+                                      ? 'bottom-3 left-3'
+                                      : position === 'bottom-center'
+                                        ? 'bottom-3 left-1/2 -translate-x-1/2'
+                                        : 'bottom-3 right-3'
                             }`}
                           >
-                            {pattern
-                              .replace(/{n}/g, String(startFrom))
-                              .replace(/{total}/g, '12') || `${startFrom}`}
+                            {pattern.replace(/{n}/g, String(startFrom)).replace(/{total}/g, '12') ||
+                              `${startFrom}`}
                           </div>
                         )}
                       </div>
@@ -255,10 +280,18 @@ export const PageNumbersPage: React.FC = () => {
             )}
 
             {isSuccess && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="page_numbers_success_banner">
+              <div
+                className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+                id="page_numbers_success_banner"
+              >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                  <span>{t('toolCommon.success', { defaultValue: 'Page Numbering Completed Successfully! Your numbered PDF has been generated.' })}</span>
+                  <span>
+                    {t('toolCommon.success', {
+                      defaultValue:
+                        'Page Numbering Completed Successfully! Your numbered PDF has been generated.',
+                    })}
+                  </span>
                 </div>
                 {downloadUrl && (
                   <div className="pt-2">
@@ -269,7 +302,9 @@ export const PageNumbersPage: React.FC = () => {
                       className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                       <Download className="w-4 h-4 animate-bounce" />
-                      <span>{t('toolCommon.download', { defaultValue: 'Download Numbered PDF' })}</span>
+                      <span>
+                        {t('toolCommon.download', { defaultValue: 'Download Numbered PDF' })}
+                      </span>
                     </a>
                   </div>
                 )}
@@ -281,7 +316,9 @@ export const PageNumbersPage: React.FC = () => {
         {/* Configurations column */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">{t('pageNumbers.layoutFormat', { defaultValue: 'Layout Format' })}</h3>
+            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+              {t('pageNumbers.layoutFormat', { defaultValue: 'Layout Format' })}
+            </h3>
 
             <div className="space-y-2">
               <label
@@ -298,7 +335,9 @@ export const PageNumbersPage: React.FC = () => {
                   const value = e.target.value;
                   setPattern(value);
                   if (value && !value.includes('{n}')) {
-                    setPatternWarning('Pattern does not include {n}. Every page will show identical text.');
+                    setPatternWarning(
+                      'Pattern does not include {n}. Every page will show identical text.'
+                    );
                   } else {
                     setPatternWarning(null);
                   }
@@ -334,7 +373,10 @@ export const PageNumbersPage: React.FC = () => {
             </div>
 
             {patternWarning && (
-              <div className="flex items-start space-x-1.5 p-2.5 rounded-lg border border-amber-100 bg-amber-50 text-amber-800 text-xs" role="status">
+              <div
+                className="flex items-start space-x-1.5 p-2.5 rounded-lg border border-amber-100 bg-amber-50 text-amber-800 text-xs"
+                role="status"
+              >
                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span>{patternWarning}</span>
               </div>
@@ -366,12 +408,12 @@ export const PageNumbersPage: React.FC = () => {
                 className="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                 disabled={!selectedFile}
               >
-                <option value="bottom-right">{t("pageNumbers.bottomRight")}</option>
-                <option value="bottom-center">{t("pageNumbers.posBottomCenter")}</option>
-                <option value="bottom-left">{t("pageNumbers.posBottomLeft")}</option>
-                <option value="top-right">{t("pageNumbers.posTopRight")}</option>
-                <option value="top-center">{t("pageNumbers.posTopCenter")}</option>
-                <option value="top-left">{t("pageNumbers.posTopLeft")}</option>
+                <option value="bottom-right">{t('pageNumbers.bottomRight')}</option>
+                <option value="bottom-center">{t('pageNumbers.posBottomCenter')}</option>
+                <option value="bottom-left">{t('pageNumbers.posBottomLeft')}</option>
+                <option value="top-right">{t('pageNumbers.posTopRight')}</option>
+                <option value="top-center">{t('pageNumbers.posTopCenter')}</option>
+                <option value="top-left">{t('pageNumbers.posTopLeft')}</option>
               </select>
             </div>
 
@@ -432,7 +474,9 @@ export const PageNumbersPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('toolCommon.processing', { defaultValue: 'Rendering footers...' })}</span>
+                  <span>
+                    {t('toolCommon.processing', { defaultValue: 'Rendering footers...' })}
+                  </span>
                 </span>
               ) : (
                 <>

@@ -61,9 +61,7 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
           </span>
         </div>
         {desc && (
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-            {desc}
-          </p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{desc}</p>
         )}
       </div>
     </div>

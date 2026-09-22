@@ -43,7 +43,11 @@ export const ProtectPage: React.FC = () => {
   const handleProtect = async () => {
     if (!selectedFile) return;
     if (!password.trim()) {
-      setError(t('protectPdf.emptyPasswordError', { defaultValue: 'Please provide a secure lock password.' }));
+      setError(
+        t('protectPdf.emptyPasswordError', {
+          defaultValue: 'Please provide a secure lock password.',
+        })
+      );
       return;
     }
 
@@ -111,7 +115,8 @@ export const ProtectPage: React.FC = () => {
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
                   <p className="text-xs text-slate-400">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • {t('protectPdf.pdfDocument', { defaultValue: 'PDF Document' })}
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {t('protectPdf.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
@@ -132,13 +137,24 @@ export const ProtectPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="protect_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="protect_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>{t('protectPdf.successTitle', { defaultValue: 'Security Applied Successfully! Your locked PDF has been generated.' })}</span>
+                <span>
+                  {t('protectPdf.successTitle', {
+                    defaultValue:
+                      'Security Applied Successfully! Your locked PDF has been generated.',
+                  })}
+                </span>
               </div>
               <p className="text-slate-500 text-[11px] font-semibold leading-normal">
-                {t('protectPdf.successDesc', { defaultValue: 'Your PDF is now protected with the password lock key. Ensure you keep this password safe.' })}
+                {t('protectPdf.successDesc', {
+                  defaultValue:
+                    'Your PDF is now protected with the password lock key. Ensure you keep this password safe.',
+                })}
               </p>
               {downloadUrl && (
                 <div className="pt-2">
@@ -149,7 +165,9 @@ export const ProtectPage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('protectPdf.downloadLocked', { defaultValue: 'Download Locked PDF' })}</span>
+                    <span>
+                      {t('protectPdf.downloadLocked', { defaultValue: 'Download Locked PDF' })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -177,7 +195,9 @@ export const ProtectPage: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('protectPdf.passwordPlaceholder', { defaultValue: 'Secret key...' })}
+                  placeholder={t('protectPdf.passwordPlaceholder', {
+                    defaultValue: 'Secret key...',
+                  })}
                   className="w-full border border-slate-300 rounded-xl py-2 pl-9 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   disabled={!selectedFile}
                 />
@@ -187,7 +207,8 @@ export const ProtectPage: React.FC = () => {
 
             <p className="text-xs text-slate-400">
               {t('protectPdf.passwordHelp', {
-                defaultValue: 'Locked containers prompt users to specify this password when reading details elsewhere.',
+                defaultValue:
+                  'Locked containers prompt users to specify this password when reading details elsewhere.',
               })}
             </p>
           </div>
@@ -212,7 +233,9 @@ export const ProtectPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('protectPdf.encryptingButton', { defaultValue: 'Encrypting container...' })}</span>
+                  <span>
+                    {t('protectPdf.encryptingButton', { defaultValue: 'Encrypting container...' })}
+                  </span>
                 </span>
               ) : (
                 <>

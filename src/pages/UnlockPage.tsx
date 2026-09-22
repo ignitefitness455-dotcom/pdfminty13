@@ -43,7 +43,11 @@ export const UnlockPage: React.FC = () => {
   const handleUnlock = async () => {
     if (!selectedFile) return;
     if (!password.trim()) {
-      setError(t('unlockPdf.emptyKeyError', { defaultValue: 'Please provide the corresponding encryption key.' }));
+      setError(
+        t('unlockPdf.emptyKeyError', {
+          defaultValue: 'Please provide the corresponding encryption key.',
+        })
+      );
       return;
     }
 
@@ -111,7 +115,8 @@ export const UnlockPage: React.FC = () => {
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
                   <p className="text-xs text-slate-400">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • {t('unlockPdf.pdfDocument', { defaultValue: 'PDF Document' })}
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {t('unlockPdf.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
@@ -132,13 +137,23 @@ export const UnlockPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="unlock_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="unlock_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>{t('unlockPdf.successTitle', { defaultValue: 'File Unlocked Successfully! Your clean PDF is ready.' })}</span>
+                <span>
+                  {t('unlockPdf.successTitle', {
+                    defaultValue: 'File Unlocked Successfully! Your clean PDF is ready.',
+                  })}
+                </span>
               </div>
               <p className="text-slate-500 text-[11px] font-semibold leading-normal">
-                {t('unlockPdf.successDesc', { defaultValue: 'All password restrictions and lock properties have been completely removed from this file.' })}
+                {t('unlockPdf.successDesc', {
+                  defaultValue:
+                    'All password restrictions and lock properties have been completely removed from this file.',
+                })}
               </p>
               {downloadUrl && (
                 <div className="pt-2">
@@ -149,7 +164,9 @@ export const UnlockPage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('unlockPdf.downloadUnlocked', { defaultValue: 'Download Unlocked PDF' })}</span>
+                    <span>
+                      {t('unlockPdf.downloadUnlocked', { defaultValue: 'Download Unlocked PDF' })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -177,7 +194,9 @@ export const UnlockPage: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('unlockPdf.passwordPlaceholder', { defaultValue: 'Enter standard password phrase' })}
+                  placeholder={t('unlockPdf.passwordPlaceholder', {
+                    defaultValue: 'Enter standard password phrase',
+                  })}
                   className="w-full border border-slate-300 rounded-xl py-2 pl-9 pr-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   disabled={!selectedFile}
                 />
@@ -187,7 +206,8 @@ export const UnlockPage: React.FC = () => {
 
             <p className="text-xs text-slate-400">
               {t('unlockPdf.passwordHelp', {
-                defaultValue: 'You must already possess editing or viewing credentials to unlock encrypted structures.',
+                defaultValue:
+                  'You must already possess editing or viewing credentials to unlock encrypted structures.',
               })}
             </p>
           </div>
@@ -212,7 +232,9 @@ export const UnlockPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('unlockPdf.unlockingButton', { defaultValue: 'Stripping locks...' })}</span>
+                  <span>
+                    {t('unlockPdf.unlockingButton', { defaultValue: 'Stripping locks...' })}
+                  </span>
                 </span>
               ) : (
                 <>

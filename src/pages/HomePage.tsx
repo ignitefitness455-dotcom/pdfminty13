@@ -26,17 +26,23 @@ const CATEGORIES = [
   { id: 'convert', nameKey: 'home.categories.convert', defaultName: 'Convert PDF' },
   { id: 'edit', nameKey: 'home.categories.edit', defaultName: 'Edit PDF' },
   { id: 'security', nameKey: 'home.categories.security', defaultName: 'PDF Security' },
-  { id: 'intelligence', nameKey: 'home.categories.intelligence', defaultName: 'PDF Intelligence' }
+  { id: 'intelligence', nameKey: 'home.categories.intelligence', defaultName: 'PDF Intelligence' },
 ];
 
 const isToolInCategory = (slug: string, categoryId: string): boolean => {
   if (categoryId === 'all') return true;
-  
+
   switch (categoryId) {
     case 'workflows':
       return ['merge-pdf', 'split-pdf', 'reorder-pdf', 'extract-pages-pdf'].includes(slug);
     case 'organize':
-      return ['reorder-pdf', 'extract-pages-pdf', 'delete-pages-pdf', 'rotate-pdf', 'add-blank-page'].includes(slug);
+      return [
+        'reorder-pdf',
+        'extract-pages-pdf',
+        'delete-pages-pdf',
+        'rotate-pdf',
+        'add-blank-page',
+      ].includes(slug);
     case 'optimize':
       return ['grayscale-pdf', 'repair-pdf', 'sanitize-pdf', 'flatten-pdf'].includes(slug);
     case 'convert':
@@ -75,14 +81,14 @@ export const HomePage: React.FC = () => {
 
   const filteredTools = useMemo(() => {
     const cleanQuery = (debouncedValue || '').toLowerCase().trim();
-    
+
     // First filter by category
     const categoryFiltered = sortedTools.filter((tool) => {
       return tool && tool.slug && isToolInCategory(tool.slug, selectedCategory);
     });
 
     if (!cleanQuery) return categoryFiltered;
-    
+
     return categoryFiltered.filter((tool) => {
       const locName = t(`tools.${tool.slug}.name`, { defaultValue: tool.name });
       const locDesc = t(`tools.${tool.slug}.desc`, { defaultValue: tool.description });
@@ -103,7 +109,8 @@ export const HomePage: React.FC = () => {
       <div
         className="absolute top-[-150px] left-1/2 -translate-x-1/2 -z-10 w-[800px] h-[450px] pointer-events-none opacity-10"
         style={{
-          background: 'radial-gradient(ellipse at center, var(--custom-security-green) 0%, transparent 60%)'
+          background:
+            'radial-gradient(ellipse at center, var(--custom-security-green) 0%, transparent 60%)',
         }}
         aria-hidden="true"
       />
@@ -111,14 +118,12 @@ export const HomePage: React.FC = () => {
       <HeroSection />
 
       <section aria-labelledby="all-tools-heading">
-        <h2 id="all-tools-heading" className="sr-only">{t('homePage.srToolsHeading', { defaultValue: 'Free In-Browser PDF Tools' })}</h2>
+        <h2 id="all-tools-heading" className="sr-only">
+          {t('homePage.srToolsHeading', { defaultValue: 'Free In-Browser PDF Tools' })}
+        </h2>
 
         <div className="mb-8 max-w-lg mx-auto" id="all-tools">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            isDebouncing={isDebouncing}
-          />
+          <SearchBar value={searchQuery} onChange={setSearchQuery} isDebouncing={isDebouncing} />
         </div>
 
         {/* Category Filter Tabs (2 Horizontal Rows) */}

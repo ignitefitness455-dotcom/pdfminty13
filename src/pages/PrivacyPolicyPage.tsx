@@ -20,11 +20,13 @@ export const PrivacyPolicyPage: React.FC = () => {
         <div className="text-center space-y-4 border-b border-border-muted pb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide uppercase">
             <Shield className="w-4 h-4" />
-            <span>{t("privacyPolicy.badge")}</span>
+            <span>{t('privacyPolicy.badge')}</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight">{t('privacyPolicy.title', { defaultValue: 'Privacy Policy' })}</h1>
+          <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight">
+            {t('privacyPolicy.title', { defaultValue: 'Privacy Policy' })}
+          </h1>
           <p className="text-xs sm:text-sm font-semibold text-on-surface-variant max-w-xl mx-auto">
-            {t("privacyPolicy.updated")}
+            {t('privacyPolicy.updated')}
           </p>
         </div>
 
@@ -34,10 +36,12 @@ export const PrivacyPolicyPage: React.FC = () => {
             <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black">
               ✓
             </div>
-            <h2 className="text-lg font-extrabold text-on-surface">{t('privacyPolicy.shortVersion', { defaultValue: 'The Short Version' })}</h2>
+            <h2 className="text-lg font-extrabold text-on-surface">
+              {t('privacyPolicy.shortVersion', { defaultValue: 'The Short Version' })}
+            </h2>
           </div>
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
-            {t("privacyPolicy.summary")}
+            {t('privacyPolicy.summary')}
           </p>
         </div>
 
@@ -46,51 +50,39 @@ export const PrivacyPolicyPage: React.FC = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <HardDrive className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec1Title")}
+              {t('privacyPolicy.sec1Title')}
             </h2>
-            <p>
-              {t("privacyPolicy.sec1Desc")}
-            </p>
+            <p>{t('privacyPolicy.sec1Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Server className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec2Title")}
+              {t('privacyPolicy.sec2Title')}
             </h2>
-            <p>
-              {t("privacyPolicy.sec2Desc")}
-            </p>
+            <p>{t('privacyPolicy.sec2Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Shield className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec3Title")}
+              {t('privacyPolicy.sec3Title')}
             </h2>
-            <p>
-              {t("privacyPolicy.sec3Desc")}
-            </p>
+            <p>{t('privacyPolicy.sec3Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Globe className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec4Title")}
+              {t('privacyPolicy.sec4Title')}
             </h2>
             <div className="space-y-3">
-              <p>
-                {t("privacyPolicy.sec4Intro")}
-              </p>
+              <p>{t('privacyPolicy.sec4Intro')}</p>
               <ul className="list-disc pl-5 space-y-2">
+                <li>{t('privacyPolicy.sec4Li1')}</li>
+                <li>{t('privacyPolicy.sec4Li2')}</li>
                 <li>
-                  {t("privacyPolicy.sec4Li1")}
-                </li>
-                <li>
-                  {t("privacyPolicy.sec4Li2")}
-                </li>
-                <li>
-                  {t("privacyPolicy.sec4OptOut")}{' '}
+                  {t('privacyPolicy.sec4OptOut')}{' '}
                   <a
                     href="https://www.google.com/settings/ads"
                     target="_blank"
@@ -99,7 +91,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                   >
                     Ads Settings
                   </a>{' '}
-                  {t("privacyPolicy.sec4Or")}{' '}
+                  {t('privacyPolicy.sec4Or')}{' '}
                   <a
                     href="https://www.aboutads.info/choices/"
                     target="_blank"
@@ -107,10 +99,11 @@ export const PrivacyPolicyPage: React.FC = () => {
                     className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
                   >
                     www.aboutads.info
-                  </a>.
+                  </a>
+                  .
                 </li>
                 <li>
-                  {t("privacyPolicy.sec4Partner")}{' '}
+                  {t('privacyPolicy.sec4Partner')}{' '}
                   <a
                     href="https://policies.google.com/technologies/partner-sites"
                     target="_blank"
@@ -118,7 +111,8 @@ export const PrivacyPolicyPage: React.FC = () => {
                     className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
                   >
                     How Google uses information from sites or apps that use our services
-                  </a>.
+                  </a>
+                  .
                 </li>
               </ul>
             </div>
@@ -127,26 +121,28 @@ export const PrivacyPolicyPage: React.FC = () => {
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <EyeOff className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec5Title")}
+              {t('privacyPolicy.sec5Title')}
             </h2>
-            <p>
-              {t("privacyPolicy.sec5Desc")}
-            </p>
+            <p>{t('privacyPolicy.sec5Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Database className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec6Title")}
+              {t('privacyPolicy.sec6Title')}
             </h2>
             <div className="space-y-3">
-              <p>
-                {t("privacyPolicy.sec6Intro")}
-              </p>
+              <p>{t('privacyPolicy.sec6Intro')}</p>
               <ul className="list-disc pl-5 space-y-2">
-                <li><strong>{t("privacyPolicy.sec6Li1Title")}</strong> {t("privacyPolicy.sec6Li1")}</li>
-                <li><strong>{t("privacyPolicy.sec6Li2Title")}</strong> {t("privacyPolicy.sec6Li2")}</li>
-                <li><strong>{t("privacyPolicy.sec6Li3Title")}</strong> {t("privacyPolicy.sec6Li3")}</li>
+                <li>
+                  <strong>{t('privacyPolicy.sec6Li1Title')}</strong> {t('privacyPolicy.sec6Li1')}
+                </li>
+                <li>
+                  <strong>{t('privacyPolicy.sec6Li2Title')}</strong> {t('privacyPolicy.sec6Li2')}
+                </li>
+                <li>
+                  <strong>{t('privacyPolicy.sec6Li3Title')}</strong> {t('privacyPolicy.sec6Li3')}
+                </li>
               </ul>
             </div>
           </section>
@@ -154,24 +150,26 @@ export const PrivacyPolicyPage: React.FC = () => {
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec7Title")}
+              {t('privacyPolicy.sec7Title')}
             </h2>
-            <p>
-              {t("privacyPolicy.sec7Desc")}
-            </p>
+            <p>{t('privacyPolicy.sec7Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Lock className="w-5 h-5 text-emerald-500" />
-              {t("privacyPolicy.sec8Title")}
+              {t('privacyPolicy.sec8Title')}
             </h2>
             <p>
-              {t("privacyPolicy.sec8Desc")}{' '}
-              <Link to={ROUTES.CONTACT} className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-                {t("privacyPolicy.contactPage")}
+              {t('privacyPolicy.sec8Desc')}{' '}
+              <Link
+                to={ROUTES.CONTACT}
+                className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+              >
+                {t('privacyPolicy.contactPage')}
               </Link>{' '}
-              {t("privacyPolicy.orEmail")} <span className="font-semibold text-on-surface">support@pdfminty.com</span>.
+              {t('privacyPolicy.orEmail')}{' '}
+              <span className="font-semibold text-on-surface">support@pdfminty.com</span>.
             </p>
           </section>
         </div>

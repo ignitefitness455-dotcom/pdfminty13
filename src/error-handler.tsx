@@ -1,5 +1,13 @@
 import { ShieldAlert, RefreshCw, FileText, AlertTriangle } from 'lucide-react';
-import React, { Component, ErrorInfo, createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, {
+  Component,
+  ErrorInfo,
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from 'react';
 
 import { addRecordedError } from './utils/errorStore';
 import { logger } from './utils/logger';
@@ -30,7 +38,10 @@ export function scrubPII(input: string): string {
     // Authorization: Bearer ...
     [/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED_TOKEN]'],
     // Use capturing group (not non-capturing) so $1 refers to the key name.
-    [/\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|token)\s*[:=]\s*[^\s&]+/gi, '$1=[REDACTED]'],
+    [
+      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|token)\s*[:=]\s*[^\s&]+/gi,
+      '$1=[REDACTED]',
+    ],
     // Email.
     [/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[REDACTED_EMAIL]'],
     // IPv4.
@@ -80,7 +91,9 @@ let activeFileContext: FileProcessingContext | null = null;
 /**
  * Set or replace the global active file processing context.
  */
-export function setFileProcessingContext(ctx: Partial<FileProcessingContext> | null): FileProcessingContext | null {
+export function setFileProcessingContext(
+  ctx: Partial<FileProcessingContext> | null
+): FileProcessingContext | null {
   if (!ctx) {
     activeFileContext = null;
     return null;
@@ -95,7 +108,9 @@ export function setFileProcessingContext(ctx: Partial<FileProcessingContext> | n
 /**
  * Update current file processing context incrementally (e.g. adding step or page count).
  */
-export function updateFileProcessingContext(ctx: Partial<FileProcessingContext>): FileProcessingContext {
+export function updateFileProcessingContext(
+  ctx: Partial<FileProcessingContext>
+): FileProcessingContext {
   activeFileContext = {
     ...(activeFileContext || { timestamp: new Date().toISOString() }),
     ...ctx,
@@ -145,7 +160,7 @@ export async function extractFileProcessingContext(
   let isEncrypted = additional?.isEncrypted;
 
   if (typeof Blob !== 'undefined' && fileOrBuffer instanceof Blob) {
-    fileName = fileName || ((fileOrBuffer as { name?: string }).name);
+    fileName = fileName || (fileOrBuffer as { name?: string }).name;
     fileSize = fileSize || fileOrBuffer.size;
     mimeType = mimeType || fileOrBuffer.type || 'application/pdf';
 
@@ -161,7 +176,10 @@ export async function extractFileProcessingContext(
     } catch {
       // Fallback if slicing fails
     }
-  } else if (fileOrBuffer && (ArrayBuffer.isView(fileOrBuffer) || fileOrBuffer instanceof ArrayBuffer)) {
+  } else if (
+    fileOrBuffer &&
+    (ArrayBuffer.isView(fileOrBuffer) || fileOrBuffer instanceof ArrayBuffer)
+  ) {
     const bytes = ArrayBuffer.isView(fileOrBuffer)
       ? new Uint8Array(fileOrBuffer.buffer, fileOrBuffer.byteOffset, fileOrBuffer.byteLength)
       : new Uint8Array(fileOrBuffer);
@@ -175,7 +193,9 @@ export async function extractFileProcessingContext(
       }
       // Simple scan for /Encrypt dictionary keyword in trailer/body
       if (isEncrypted === undefined) {
-        const fullStr = new TextDecoder('utf-8').decode(bytes.subarray(Math.max(0, bytes.length - 8192)));
+        const fullStr = new TextDecoder('utf-8').decode(
+          bytes.subarray(Math.max(0, bytes.length - 8192))
+        );
         if (fullStr.includes('/Encrypt')) {
           isEncrypted = true;
         }
@@ -212,7 +232,8 @@ export function formatFileContextForLog(ctx?: FileProcessingContext | null): str
   else if (context.fileSize !== undefined) parts.push(`Size: ${context.fileSize} B`);
   if (context.pdfVersion) parts.push(`PDF Version: v${context.pdfVersion}`);
   if (context.pageCount !== undefined) parts.push(`Pages: ${context.pageCount}`);
-  if (context.isEncrypted !== undefined) parts.push(`Encrypted: ${context.isEncrypted ? 'YES' : 'NO'}`);
+  if (context.isEncrypted !== undefined)
+    parts.push(`Encrypted: ${context.isEncrypted ? 'YES' : 'NO'}`);
   if (context.toolName) parts.push(`Tool: ${context.toolName}`);
   if (context.processingStep) parts.push(`Step: ${context.processingStep}`);
   return parts.join(' | ');
@@ -315,7 +336,9 @@ export function setupErrorTelemetry(): () => void {
     const stack = reason instanceof Error ? reason.stack || '' : '';
     const fileContext = getFileProcessingContext();
     if (fileContext) {
-      console.error(`[Unhandled Rejection with File Context] ${formatFileContextForLog(fileContext)}`);
+      console.error(
+        `[Unhandled Rejection with File Context] ${formatFileContextForLog(fileContext)}`
+      );
     }
     reportErrorToTelemetry(`Unhandled promise rejection: ${message}`, stack, fileContext);
   };
@@ -353,7 +376,9 @@ const FileProcessingContextStore = createContext<FileProcessingContextValue>({
 export const useFileProcessingContext = () => useContext(FileProcessingContextStore);
 
 export const FileProcessingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [context, setContextState] = useState<FileProcessingContext | null>(() => getFileProcessingContext());
+  const [context, setContextState] = useState<FileProcessingContext | null>(() =>
+    getFileProcessingContext()
+  );
 
   const setContext = useCallback((ctx: Partial<FileProcessingContext> | null) => {
     const updated = setFileProcessingContext(ctx);
@@ -379,7 +404,9 @@ export const FileProcessingProvider: React.FC<{ children: ReactNode }> = ({ chil
   }, []);
 
   return (
-    <FileProcessingContextStore.Provider value={{ context, setContext, updateContext, clearContext, logError }}>
+    <FileProcessingContextStore.Provider
+      value={{ context, setContext, updateContext, clearContext, logError }}
+    >
       {children}
     </FileProcessingContextStore.Provider>
   );
@@ -454,7 +481,8 @@ export class FileProcessingErrorBoundary extends Component<ErrorBoundaryProps, E
 
   public render() {
     if (this.state.hasError) {
-      const errorMessage = this.state.error?.message || 'Unknown runtime error occurred during file operation.';
+      const errorMessage =
+        this.state.error?.message || 'Unknown runtime error occurred during file operation.';
       const errorStack = this.state.error?.stack || '';
       const fileCtx = this.state.capturedContext || getFileProcessingContext();
 
@@ -467,7 +495,8 @@ export class FileProcessingErrorBoundary extends Component<ErrorBoundaryProps, E
             {this.props.fallbackTitle || 'File Processing Error'}
           </h2>
           <p className="text-sm text-on-surface-variant max-w-md mb-6 leading-relaxed">
-            An unexpected error occurred while processing your document. File properties and error logs have been safely captured for debugging.
+            An unexpected error occurred while processing your document. File properties and error
+            logs have been safely captured for debugging.
           </p>
 
           {fileCtx && (fileCtx.fileName || fileCtx.fileSizeFormatted) && (
@@ -477,12 +506,41 @@ export class FileProcessingErrorBoundary extends Component<ErrorBoundaryProps, E
                 <span>Context for Debugging</span>
               </div>
               <div className="grid grid-cols-2 gap-2 font-mono text-[11px] text-slate-600 dark:text-slate-400 pt-1">
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">File:</span> {fileCtx.fileName || 'N/A'}</div>
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">Size:</span> {fileCtx.fileSizeFormatted || (fileCtx.fileSize ? `${fileCtx.fileSize} B` : 'N/A')}</div>
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">PDF Version:</span> {fileCtx.pdfVersion ? `v${fileCtx.pdfVersion}` : 'Unknown'}</div>
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">Encrypted:</span> {fileCtx.isEncrypted ? 'Yes (Password Protected)' : 'No'}</div>
-                {fileCtx.pageCount !== undefined && <div><span className="font-semibold text-slate-700 dark:text-slate-300">Pages:</span> {fileCtx.pageCount}</div>}
-                {fileCtx.processingStep && <div className="col-span-2"><span className="font-semibold text-slate-700 dark:text-slate-300">Last Step:</span> {fileCtx.processingStep}</div>}
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">File:</span>{' '}
+                  {fileCtx.fileName || 'N/A'}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">Size:</span>{' '}
+                  {fileCtx.fileSizeFormatted ||
+                    (fileCtx.fileSize ? `${fileCtx.fileSize} B` : 'N/A')}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    PDF Version:
+                  </span>{' '}
+                  {fileCtx.pdfVersion ? `v${fileCtx.pdfVersion}` : 'Unknown'}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    Encrypted:
+                  </span>{' '}
+                  {fileCtx.isEncrypted ? 'Yes (Password Protected)' : 'No'}
+                </div>
+                {fileCtx.pageCount !== undefined && (
+                  <div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">Pages:</span>{' '}
+                    {fileCtx.pageCount}
+                  </div>
+                )}
+                {fileCtx.processingStep && (
+                  <div className="col-span-2">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      Last Step:
+                    </span>{' '}
+                    {fileCtx.processingStep}
+                  </div>
+                )}
               </div>
             </div>
           )}

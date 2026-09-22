@@ -1,4 +1,5 @@
 import { getCorsOrigin, getCorsHeaders } from '../utils/cors';
+import { checkRateLimit } from '../utils/rate-limiter';
 import {
   sanitizeForStorage,
   sanitizeForHtml,
@@ -40,47 +41,43 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const MAX_BODY_BYTES = 32 * 1024; // 32 KB (feedback form data is small)
   const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
   if (contentLength > MAX_BODY_BYTES) {
+    return new Response(JSON.stringify({ error: 'Request body too large.' }), {
+      status: 413,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      } as HeadersInit,
+    });
+  }
+
+  // Multi-tier rate limiting: Cloudflare KV (primary) + Signed Edge Cookie Token (fallback) + Burst Guard
+  const rateLimitResult = await checkRateLimit({
+    request,
+    kv: env.RATELIMIT_KV,
+    secret: env.RESEND_API_KEY || 'pdfminty_feedback_salt',
+    scope: 'feedback',
+    limit: 3,
+    windowSec: 3600,
+    burstLimit: 2,
+    burstWindowSec: 10,
+  });
+
+  if (!rateLimitResult.allowed) {
     return new Response(
-      JSON.stringify({ error: 'Request body too large.' }),
+      JSON.stringify({
+        error:
+          rateLimitResult.error ||
+          'Too many feedback requests from this IP. Please wait an hour before trying again.',
+      }),
       {
-        status: 413,
+        status: 429,
         headers: {
           ...corsHeaders,
+          ...rateLimitResult.responseHeaders,
           'Content-Type': 'application/json',
         } as HeadersInit,
       }
     );
-  }
-
-  // Rate Limiting — unique-key-per-request pattern (atomic, race-free).
-  const ip = request.headers.get('cf-connecting-ip') || 'unknown-ip';
-  const hourBlock = Math.floor(Date.now() / 3600000);
-  const prefix = `rate_limit:feedback:${ip}:${hourBlock}:`;
-  const LIMIT_PER_HOUR = 3;
-
-  if (env.RATELIMIT_KV) {
-    try {
-      const listed = await env.RATELIMIT_KV.list({ prefix, limit: LIMIT_PER_HOUR + 1 });
-      if (listed.keys.length >= LIMIT_PER_HOUR) {
-        return new Response(
-          JSON.stringify({
-            error:
-              'Too many feedback requests from this IP. Please wait an hour before trying again.',
-          }),
-          {
-            status: 429,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-            } as HeadersInit,
-          }
-        );
-      }
-      const uniqueKey = prefix + crypto.randomUUID();
-      await env.RATELIMIT_KV.put(uniqueKey, '1', { expirationTtl: 3600 });
-    } catch (kvError) {
-      console.error('KV rate limiting read/write error:', kvError);
-    }
   }
 
   try {
@@ -90,7 +87,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       email?: unknown;
     }
     const rawData = (await request.json()) as FeedbackPayload;
-    const ratingRaw = parseInt(typeof rawData.rating === 'string' || typeof rawData.rating === 'number' ? String(rawData.rating) : '', 10);
+    const ratingRaw = parseInt(
+      typeof rawData.rating === 'string' || typeof rawData.rating === 'number'
+        ? String(rawData.rating)
+        : '',
+      10
+    );
     const comment = sanitizeForStorage(typeof rawData.comment === 'string' ? rawData.comment : '');
     const emailRaw = typeof rawData.email === 'string' ? sanitizeForStorage(rawData.email) : '';
 

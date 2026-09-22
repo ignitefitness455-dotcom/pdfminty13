@@ -13,7 +13,10 @@ export const FaqSection: React.FC = () => {
   };
 
   const rawFaqItems = t('home.faq.items', { returnObjects: true, defaultValue: FAQS });
-  const faqItems = (Array.isArray(rawFaqItems) ? rawFaqItems : FAQS) as Array<{ q: string; a: string }>;
+  const faqItems = (Array.isArray(rawFaqItems) ? rawFaqItems : FAQS) as Array<{
+    q: string;
+    a: string;
+  }>;
 
   return (
     <div className="mt-24 relative z-20 max-w-4xl mx-auto">
@@ -27,7 +30,8 @@ export const FaqSection: React.FC = () => {
         </h2>
         <p className="text-on-surface-variant text-sm md:text-base mt-2 font-normal">
           {t('home.faq.subtitle', {
-            defaultValue: "Everything you need to know about PDFMinty's private, in-browser PDF tools.",
+            defaultValue:
+              "Everything you need to know about PDFMinty's private, in-browser PDF tools.",
           })}
         </p>
       </div>

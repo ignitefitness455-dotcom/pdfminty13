@@ -39,7 +39,10 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
     >
       <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200/60 dark:border-slate-800 p-6 shadow-2xl space-y-4 text-left">
         <div className="flex justify-between items-center">
-          <h3 id="feedback-modal-title" className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3
+            id="feedback-modal-title"
+            className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2"
+          >
             <MessageSquare className="w-5 h-5 text-emerald-500" /> Share Your Feedback
           </h3>
           <button
@@ -53,14 +56,15 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
 
         <div className="space-y-4 py-2">
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-            We would love to hear your experiences, ideas, or feedback. Please reach out to us directly:
+            We would love to hear your experiences, ideas, or feedback. Please reach out to us
+            directly:
           </p>
 
           <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 flex flex-col items-center justify-center space-y-3">
             <span className="text-sm font-bold text-slate-900 dark:text-white select-all">
               feedback@pdfminty.com
             </span>
-            
+
             <div className="flex gap-2 w-full">
               <a
                 href="mailto:feedback@pdfminty.com"

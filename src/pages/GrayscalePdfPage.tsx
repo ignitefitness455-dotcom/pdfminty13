@@ -220,8 +220,12 @@ export const GrayscalePdfPage: React.FC = () => {
                         : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
-                    <span className="text-xs font-extrabold">{t(opt.labelKey, { defaultValue: opt.label })}</span>
-                    <span className="text-[9px] text-slate-400 font-semibold mt-0.5">{t(opt.descKey, { defaultValue: opt.desc })}</span>
+                    <span className="text-xs font-extrabold">
+                      {t(opt.labelKey, { defaultValue: opt.label })}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                      {t(opt.descKey, { defaultValue: opt.desc })}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -241,12 +245,16 @@ export const GrayscalePdfPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>{t('grayscalePdf.convertingButton', { defaultValue: 'Converting Pages...' })}</span>
+                  <span>
+                    {t('grayscalePdf.convertingButton', { defaultValue: 'Converting Pages...' })}
+                  </span>
                 </span>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{t('grayscalePdf.convertAndDownload', { defaultValue: 'Convert & Download' })}</span>
+                  <span>
+                    {t('grayscalePdf.convertAndDownload', { defaultValue: 'Convert & Download' })}
+                  </span>
                 </>
               )}
             </button>
@@ -255,11 +263,15 @@ export const GrayscalePdfPage: React.FC = () => {
       </div>
 
       {/* Deep Content & Comprehensive Guide Section */}
-      <section className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed" id="grayscale_guide_section">
+      <section
+        className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed"
+        id="grayscale_guide_section"
+      >
         <div className="space-y-3">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {t('grayscalePdf.guideTitle', {
-              defaultValue: 'Comprehensive Guide to Converting Color PDFs to Grayscale (Black & White)',
+              defaultValue:
+                'Comprehensive Guide to Converting Color PDFs to Grayscale (Black & White)',
             })}
           </h2>
           <p className="text-sm sm:text-base text-slate-600">
@@ -274,25 +286,36 @@ export const GrayscalePdfPage: React.FC = () => {
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t('grayscalePdf.advTitle', { defaultValue: 'Key Advantages of Grayscale Conversion' })}
+              {t('grayscalePdf.advTitle', {
+                defaultValue: 'Key Advantages of Grayscale Conversion',
+              })}
             </h3>
             <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
               <li>
-                <strong>{t('grayscalePdf.adv1Bold', { defaultValue: 'Major File Size Reduction:' })}</strong>{' '}
+                <strong>
+                  {t('grayscalePdf.adv1Bold', { defaultValue: 'Major File Size Reduction:' })}
+                </strong>{' '}
                 {t('grayscalePdf.adv1Text', {
-                  defaultValue: 'Strips redundant 24-bit RGB and 32-bit CMYK color channels, compressing documents by up to 60-80%.',
+                  defaultValue:
+                    'Strips redundant 24-bit RGB and 32-bit CMYK color channels, compressing documents by up to 60-80%.',
                 })}
               </li>
               <li>
-                <strong>{t('grayscalePdf.adv2Bold', { defaultValue: 'Save Expensive Printer Toner:' })}</strong>{' '}
+                <strong>
+                  {t('grayscalePdf.adv2Bold', { defaultValue: 'Save Expensive Printer Toner:' })}
+                </strong>{' '}
                 {t('grayscalePdf.adv2Text', {
-                  defaultValue: 'Eliminates color cartridge bleeding and prevents accidental color print billing.',
+                  defaultValue:
+                    'Eliminates color cartridge bleeding and prevents accidental color print billing.',
                 })}
               </li>
               <li>
-                <strong>{t('grayscalePdf.adv3Bold', { defaultValue: 'Institutional Compliance:' })}</strong>{' '}
+                <strong>
+                  {t('grayscalePdf.adv3Bold', { defaultValue: 'Institutional Compliance:' })}
+                </strong>{' '}
                 {t('grayscalePdf.adv3Text', {
-                  defaultValue: 'Meets official submission criteria for courts, patent registries, and academic libraries that enforce monochrome requirements.',
+                  defaultValue:
+                    'Meets official submission criteria for courts, patent registries, and academic libraries that enforce monochrome requirements.',
                 })}
               </li>
             </ul>
@@ -301,7 +324,9 @@ export const GrayscalePdfPage: React.FC = () => {
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t('grayscalePdf.algoTitle', { defaultValue: 'Luminance-Preserving Conversion Algorithms' })}
+              {t('grayscalePdf.algoTitle', {
+                defaultValue: 'Luminance-Preserving Conversion Algorithms',
+              })}
             </h3>
             <p className="text-xs text-slate-600 leading-normal">
               {t('grayscalePdf.algoText1', {
@@ -326,26 +351,33 @@ export const GrayscalePdfPage: React.FC = () => {
             <li>
               <strong>{t('grayscalePdf.step1Bold', { defaultValue: 'Select File:' })}</strong>{' '}
               {t('grayscalePdf.step1Text', {
-                defaultValue: 'Upload or drag-and-drop your target color PDF into the converter above.',
+                defaultValue:
+                  'Upload or drag-and-drop your target color PDF into the converter above.',
               })}
             </li>
             <li>
               <strong>{t('grayscalePdf.step2Bold', { defaultValue: 'Select Resolution:' })}</strong>{' '}
               {t('grayscalePdf.step2Text', {
-                defaultValue: 'Choose from Normal (1.0x for web sharing), High (1.5x for crisp text), or Ultra (2.0x for archival print).',
+                defaultValue:
+                  'Choose from Normal (1.0x for web sharing), High (1.5x for crisp text), or Ultra (2.0x for archival print).',
               })}
             </li>
             <li>
-              <strong>{t('grayscalePdf.step3Bold', { defaultValue: 'Process & Download:' })}</strong>{' '}
+              <strong>
+                {t('grayscalePdf.step3Bold', { defaultValue: 'Process & Download:' })}
+              </strong>{' '}
               {t('grayscalePdf.step3Text', {
-                defaultValue: 'Click "Convert & Download" to process each page locally in your browser memory and save your monochrome document.',
+                defaultValue:
+                  'Click "Convert & Download" to process each page locally in your browser memory and save your monochrome document.',
               })}
             </li>
           </ol>
         </div>
 
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900">
-          <p className="font-bold">{t('grayscalePdf.privacyTitle', { defaultValue: '🔒 100% Client-Side Privacy' })}</p>
+          <p className="font-bold">
+            {t('grayscalePdf.privacyTitle', { defaultValue: '🔒 100% Client-Side Privacy' })}
+          </p>
           <p className="leading-normal text-slate-600">
             {t('grayscalePdf.privacyText', {
               defaultValue:

@@ -15,7 +15,10 @@ export const TrustBadgeSection: React.FC = () => {
         {/* Subtle decorative background glow */}
         <div
           className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 pointer-events-none opacity-20 dark:opacity-10 blur-3xl -z-10 rounded-full"
-          style={{ background: 'radial-gradient(circle, var(--custom-security-green, #10b981) 0%, transparent 70%)' }}
+          style={{
+            background:
+              'radial-gradient(circle, var(--custom-security-green, #10b981) 0%, transparent 70%)',
+          }}
           aria-hidden="true"
         />
 
@@ -27,8 +30,13 @@ export const TrustBadgeSection: React.FC = () => {
           </div>
 
           {/* Title */}
-          <h3 id="featured-badge-title" className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-            {t('home.trustBadge.title', { defaultValue: 'Recognized & Featured Across Leading Platforms' })}
+          <h3
+            id="featured-badge-title"
+            className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white"
+          >
+            {t('home.trustBadge.title', {
+              defaultValue: 'Recognized & Featured Across Leading Platforms',
+            })}
           </h3>
 
           {/* Trust Subtext */}
@@ -47,7 +55,9 @@ export const TrustBadgeSection: React.FC = () => {
               href="https://launchbuff.com/products/pdfminty-8g15b8"
               target="_blank"
               rel="noopener noreferrer"
-              title={t('home.trustBadge.launchbuffTitle', { defaultValue: 'Featured on LaunchBuff' })}
+              title={t('home.trustBadge.launchbuffTitle', {
+                defaultValue: 'Featured on LaunchBuff',
+              })}
               className="group inline-block transition-transform duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 rounded-2xl"
             >
               <img
@@ -66,7 +76,9 @@ export const TrustBadgeSection: React.FC = () => {
               href="https://launchstag.com/p/pdfminty"
               target="_blank"
               rel="noopener noreferrer"
-              title={t('home.trustBadge.launchstagTitle', { defaultValue: 'Featured on Launchstag' })}
+              title={t('home.trustBadge.launchstagTitle', {
+                defaultValue: 'Featured on Launchstag',
+              })}
               className="group inline-block transition-transform duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 rounded-2xl"
             >
               <img
@@ -92,15 +104,23 @@ export const TrustBadgeSection: React.FC = () => {
           <div className="pt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
-              <span>{t('home.trustBadge.privacyBadge', { defaultValue: '100% In-Browser Privacy' })}</span>
+              <span>
+                {t('home.trustBadge.privacyBadge', { defaultValue: '100% In-Browser Privacy' })}
+              </span>
             </span>
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
-              <span>{t('home.trustBadge.verifiedBadge', { defaultValue: 'Verified Directory Listings' })}</span>
+              <span>
+                {t('home.trustBadge.verifiedBadge', {
+                  defaultValue: 'Verified Directory Listings',
+                })}
+              </span>
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
-              <span>{t('home.trustBadge.loggingBadge', { defaultValue: 'Zero Data Logging' })}</span>
+              <span>
+                {t('home.trustBadge.loggingBadge', { defaultValue: 'Zero Data Logging' })}
+              </span>
             </span>
           </div>
         </div>

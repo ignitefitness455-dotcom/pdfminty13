@@ -5,13 +5,7 @@ import { FileUploader } from '../FileUploader';
 
 describe('FileUploader', () => {
   it('renders title and subtitle', () => {
-    render(
-      <FileUploader
-        onFilesSelected={() => {}}
-        title="Test Title"
-        subtitle="Test Subtitle"
-      />
-    );
+    render(<FileUploader onFilesSelected={() => {}} title="Test Title" subtitle="Test Subtitle" />);
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Test Subtitle')).toBeInTheDocument();
   });
@@ -23,13 +17,7 @@ describe('FileUploader', () => {
   });
 
   it('shows error when file type is unsupported', () => {
-    render(
-      <FileUploader
-        onFilesSelected={() => {}}
-        accept="application/pdf"
-        title="Upload"
-      />
-    );
+    render(<FileUploader onFilesSelected={() => {}} accept="application/pdf" title="Upload" />);
     const input = document.getElementById('uploader_hidden_input') as HTMLInputElement;
     const fakeFile = new File(['content'], 'test.txt', { type: 'text/plain' });
     fireEvent.change(input, { target: { files: [fakeFile] } });
@@ -57,11 +45,7 @@ describe('FileUploader', () => {
   it('calls onFilesSelected with valid PDF', async () => {
     const onFilesSelected = vi.fn();
     render(
-      <FileUploader
-        onFilesSelected={onFilesSelected}
-        accept="application/pdf"
-        title="Upload"
-      />
+      <FileUploader onFilesSelected={onFilesSelected} accept="application/pdf" title="Upload" />
     );
     const input = document.getElementById('uploader_hidden_input') as HTMLInputElement;
     const fakePdf = new File(['%PDF-1.4 content'], 'test.pdf', { type: 'application/pdf' });
@@ -74,11 +58,7 @@ describe('FileUploader', () => {
   it('resets input value after selection so same file can be re-selected', () => {
     const onFilesSelected = vi.fn();
     render(
-      <FileUploader
-        onFilesSelected={onFilesSelected}
-        accept="application/pdf"
-        title="Upload"
-      />
+      <FileUploader onFilesSelected={onFilesSelected} accept="application/pdf" title="Upload" />
     );
     const input = document.getElementById('uploader_hidden_input') as HTMLInputElement;
     const fakePdf = new File(['%PDF-1.4 content'], 'test.pdf', { type: 'application/pdf' });

@@ -1,11 +1,4 @@
-import {
-  Sparkles,
-  Send,
-  FileText,
-  AlertCircle,
-  RefreshCw,
-  CheckCircle2,
-} from 'lucide-react';
+import { Sparkles, Send, FileText, AlertCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -130,12 +123,13 @@ export const AiAnalyzePage: React.FC = () => {
     }
   };
 
-  const submitQuery = async (mode: 'summary' | 'qa') => {
+  const submitQuery = async (mode: 'summary' | 'qa', customQuery?: string) => {
     if (!extractedText) {
       setError('No extracted text structures found to inspect.');
       return;
     }
-    if (mode === 'qa' && !query.trim()) {
+    const effectiveQuery = customQuery !== undefined ? customQuery : query;
+    if (mode === 'qa' && !effectiveQuery.trim()) {
       setError('Please provide a specific query prompt.');
       return;
     }
@@ -158,7 +152,7 @@ export const AiAnalyzePage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           textContent: extractedText,
-          query: mode === 'qa' ? query : '',
+          query: mode === 'qa' ? effectiveQuery : '',
           mode,
         }),
         signal: controller.signal,
@@ -265,13 +259,21 @@ export const AiAnalyzePage: React.FC = () => {
                     id="extraction_spinner"
                   >
                     <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
-                    <span>{t('aiAnalyze.extractingText', { defaultValue: 'Extracting PDF text locally...' })}</span>
+                    <span>
+                      {t('aiAnalyze.extractingText', {
+                        defaultValue: 'Extracting PDF text locally...',
+                      })}
+                    </span>
                   </div>
                 ) : extractedText ? (
                   <div className="space-y-3">
                     <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center space-x-1.5 text-xs text-emerald-800 font-medium">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span>{t('aiAnalyze.textIndexesLoaded', { defaultValue: 'Text indexes loaded successfully!' })}</span>
+                      <span>
+                        {t('aiAnalyze.textIndexesLoaded', {
+                          defaultValue: 'Text indexes loaded successfully!',
+                        })}
+                      </span>
                     </div>
 
                     {extractedText && totalPages > 12 && (
@@ -281,8 +283,9 @@ export const AiAnalyzePage: React.FC = () => {
                       >
                         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
                         <span>
-                          Analysis is based on the first 12 of {totalPages} pages ({((12 / totalPages) * 100).toFixed(0)}%
-                          of the document). Insights may not reflect the full content.
+                          Analysis is based on the first 12 of {totalPages} pages (
+                          {((12 / totalPages) * 100).toFixed(0)}% of the document). Insights may not
+                          reflect the full content.
                         </span>
                       </div>
                     )}
@@ -293,17 +296,14 @@ export const AiAnalyzePage: React.FC = () => {
           </div>
 
           <div className="bg-slate-100 p-4 rounded-xl space-y-2 border border-slate-200 text-xs text-slate-500 leading-normal">
-            <p className="font-bold text-slate-700">{t("aiAnalyze.privacyInfoTitle")}</p>
+            <p className="font-bold text-slate-700">{t('aiAnalyze.privacyInfoTitle')}</p>
             <p>
-              
-              
-              
-              analysis. If your document contains sensitive personal information (SSNs, passwords, financial
-              data, medical records), that text will be transmitted.
+              analysis. If your document contains sensitive personal information (SSNs, passwords,
+              financial data, medical records), that text will be transmitted.
             </p>
             <p>
-              By checking the box below you consent to this data flow. You can revoke consent at any time by
-              clearing the file.
+              By checking the box below you consent to this data flow. You can revoke consent at any
+              time by clearing the file.
             </p>
             <label className="flex items-start space-x-2 mt-2 cursor-pointer">
               <input
@@ -313,7 +313,12 @@ export const AiAnalyzePage: React.FC = () => {
                 className="mt-0.5"
                 aria-label="Consent to sending extracted text to Google Gemini for analysis"
               />
-              <span className="text-slate-700 font-medium">{t('aiAnalyze.consentCheckbox', { defaultValue: 'I understand the extracted text will be sent to Google Gemini and I consent.' })}</span>
+              <span className="text-slate-700 font-medium">
+                {t('aiAnalyze.consentCheckbox', {
+                  defaultValue:
+                    'I understand the extracted text will be sent to Google Gemini and I consent.',
+                })}
+              </span>
             </label>
           </div>
         </div>
@@ -322,7 +327,9 @@ export const AiAnalyzePage: React.FC = () => {
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[420px] space-y-6">
             <div className="space-y-4 flex-1">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">{t('aiAnalyze.controlCenter', { defaultValue: 'AI Control Center' })}</h3>
+              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+                {t('aiAnalyze.controlCenter', { defaultValue: 'AI Control Center' })}
+              </h3>
 
               <div className="flex flex-wrap gap-2">
                 <button
@@ -338,17 +345,29 @@ export const AiAnalyzePage: React.FC = () => {
                 </button>
 
                 {[
-                  { label: '📌 Key Action Items', q: 'List all action items, decisions, and deadlines mentioned in this document.' },
-                  { label: '📊 Financials & Numbers', q: 'Extract all financial figures, metrics, prices, and statistics mentioned in this text.' },
-                  { label: '⚠️ Risks & Disclaimers', q: 'Highlight any potential risks, disclaimers, obligations, or warnings in this document.' },
-                  { label: '📝 Executive Brief', q: 'Provide a 3-bullet point executive brief of this document for a senior manager.' },
+                  {
+                    label: '📌 Key Action Items',
+                    q: 'List all action items, decisions, and deadlines mentioned in this document.',
+                  },
+                  {
+                    label: '📊 Financials & Numbers',
+                    q: 'Extract all financial figures, metrics, prices, and statistics mentioned in this text.',
+                  },
+                  {
+                    label: '⚠️ Risks & Disclaimers',
+                    q: 'Highlight any potential risks, disclaimers, obligations, or warnings in this document.',
+                  },
+                  {
+                    label: '📝 Executive Brief',
+                    q: 'Provide a 3-bullet point executive brief of this document for a senior manager.',
+                  },
                 ].map((item) => (
                   <button
                     key={item.label}
                     type="button"
                     onClick={() => {
                       setQuery(item.q);
-                      submitQuery(item.q);
+                      submitQuery('qa', item.q);
                     }}
                     disabled={!extractedText || aiLoading || !hasConsented}
                     className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
@@ -402,28 +421,42 @@ export const AiAnalyzePage: React.FC = () => {
                 </div>
               </div>
 
-              {error && (
-                isQuotaError ? (
+              {error &&
+                (isQuotaError ? (
                   <div className="flex items-start gap-3 text-xs text-amber-800 bg-amber-50/50 border border-amber-200 p-4.5 rounded-2xl shadow-sm flex-col w-full">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                      <p className="font-extrabold text-amber-900">{t("aiAnalyze.busyMessage")}</p>
+                      <p className="font-extrabold text-amber-900">{t('aiAnalyze.busyMessage')}</p>
                     </div>
                     <div className="pl-6 space-y-1 text-slate-600 font-medium leading-relaxed">
-                      <p>{t("aiAnalyze.orUseOffline")} <Link to={ROUTES.HOME} className="underline text-emerald-700 hover:text-emerald-800 font-bold">{t("tools.mergePdf")} &amp; {t("tools.splitPdf")}</Link></p>
-                      <p>{t('aiAnalyze.rateLimitReached', { defaultValue: 'Rate limit reached. Please wait a few minutes before trying again.' })}</p>
+                      <p>
+                        {t('aiAnalyze.orUseOffline')}{' '}
+                        <Link
+                          to={ROUTES.HOME}
+                          className="underline text-emerald-700 hover:text-emerald-800 font-bold"
+                        >
+                          {t('tools.mergePdf')} &amp; {t('tools.splitPdf')}
+                        </Link>
+                      </p>
+                      <p>
+                        {t('aiAnalyze.rateLimitReached', {
+                          defaultValue:
+                            'Rate limit reached. Please wait a few minutes before trying again.',
+                        })}
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3.5 rounded-xl shadow-sm">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <div>
-                      <p className="font-bold">{t('aiAnalyze.executionError', { defaultValue: 'Execution Error' })}</p>
+                      <p className="font-bold">
+                        {t('aiAnalyze.executionError', { defaultValue: 'Execution Error' })}
+                      </p>
                       <p className="mt-0.5">{error}</p>
                     </div>
                   </div>
-                )
-              )}
+                ))}
 
               {/* AI response panel */}
               {aiLoading ? (
@@ -432,7 +465,9 @@ export const AiAnalyzePage: React.FC = () => {
                   id="ai_loader"
                 >
                   <span className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
-                  <span className="text-xs font-semibold text-slate-500">{t('aiAnalyze.geminiThinking', { defaultValue: 'Letting Gemini think...' })}</span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {t('aiAnalyze.geminiThinking', { defaultValue: 'Letting Gemini think...' })}
+                  </span>
                 </div>
               ) : aiResult ? (
                 <div
@@ -441,7 +476,9 @@ export const AiAnalyzePage: React.FC = () => {
                 >
                   <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider pb-1.5 border-b border-slate-200">
                     <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>{t('aiAnalyze.geminiInsights', { defaultValue: 'Gemini Core Insights' })}</span>
+                    <span>
+                      {t('aiAnalyze.geminiInsights', { defaultValue: 'Gemini Core Insights' })}
+                    </span>
                   </div>
                   <div className="text-sm text-slate-800 leading-relaxed font-sans whitespace-pre-wrap whitespace-pre-line prose max-w-none">
                     {aiResult}

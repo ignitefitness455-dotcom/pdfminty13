@@ -30,7 +30,11 @@ export function sanitizeForHtml(input: unknown): string {
     str = String(input);
   }
   const map: Record<string, string> = {
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;',
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
   };
   return str.replace(/[&<>"']/g, (char) => map[char]);
 }

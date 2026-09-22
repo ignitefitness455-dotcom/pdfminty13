@@ -6,7 +6,9 @@ class Logger {
       const meta = import.meta as unknown as { env?: { DEV: boolean } };
       return meta && meta.env ? meta.env.DEV : process.env.NODE_ENV !== 'production';
     } catch {
-      return typeof process !== 'undefined' && process.env ? process.env.NODE_ENV !== 'production' : true;
+      return typeof process !== 'undefined' && process.env
+        ? process.env.NODE_ENV !== 'production'
+        : true;
     }
   })();
 
@@ -17,10 +19,18 @@ class Logger {
     else if (level === 'warn') console.warn(prefix, message, ...args);
     else if (this.isDev) console.log(prefix, message, ...args);
   }
-  debug(message: string, ...args: unknown[]) { this.log('debug', message, ...args); }
-  info(message: string, ...args: unknown[]) { this.log('info', message, ...args); }
-  warn(message: string, ...args: unknown[]) { this.log('warn', message, ...args); }
-  error(message: string, ...args: unknown[]) { this.log('error', message, ...args); }
+  debug(message: string, ...args: unknown[]) {
+    this.log('debug', message, ...args);
+  }
+  info(message: string, ...args: unknown[]) {
+    this.log('info', message, ...args);
+  }
+  warn(message: string, ...args: unknown[]) {
+    this.log('warn', message, ...args);
+  }
+  error(message: string, ...args: unknown[]) {
+    this.log('error', message, ...args);
+  }
 }
 
 export const logger = new Logger();

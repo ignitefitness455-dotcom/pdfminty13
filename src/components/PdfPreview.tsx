@@ -32,7 +32,9 @@ export const PdfPreview: React.FC<PdfPreviewProps> = ({
   useEffect(() => {
     return () => {
       if (pdfDocRef.current) {
-        pdfDocRef.current.destroy().catch(() => { /* ignore */ });
+        pdfDocRef.current.destroy().catch(() => {
+          /* ignore */
+        });
         pdfDocRef.current = null;
       }
     };
@@ -68,7 +70,10 @@ export const PdfPreview: React.FC<PdfPreviewProps> = ({
         }
       } catch (err: unknown) {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : t('preview.failedToLoad', { defaultValue: 'Failed to load PDF preview.' });
+          const message =
+            err instanceof Error
+              ? err.message
+              : t('preview.failedToLoad', { defaultValue: 'Failed to load PDF preview.' });
           setError(message);
         }
       } finally {
@@ -76,14 +81,19 @@ export const PdfPreview: React.FC<PdfPreviewProps> = ({
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [file, t]);
 
   if (loading) {
     return (
       <div className="grid grid-cols-4 gap-2 animate-pulse">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="h-24 bg-surface-container-low rounded-xl border border-border-muted" />
+          <div
+            key={i}
+            className="h-24 bg-surface-container-low rounded-xl border border-border-muted"
+          />
         ))}
       </div>
     );

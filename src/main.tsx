@@ -16,11 +16,44 @@ import './index.css';
 // Initialize global error telemetry
 setupErrorTelemetry();
 
+// Handle Vite dynamic chunk preload errors (stale assets after new deployment)
+if (typeof window !== 'undefined') {
+  const PRELOAD_RELOAD_KEY = 'pdfminty-preload-reload';
+  try {
+    sessionStorage.removeItem(PRELOAD_RELOAD_KEY);
+  } catch {
+    // Ignore storage issues
+  }
+
+  window.addEventListener('vite:preloadError', async () => {
+    if (!sessionStorage.getItem(PRELOAD_RELOAD_KEY)) {
+      sessionStorage.setItem(PRELOAD_RELOAD_KEY, '1');
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(
+            keys.filter((k) => k.startsWith('pdfminty-')).map((k) => caches.delete(k))
+          );
+        }
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const reg of regs) {
+            await reg.update();
+          }
+        }
+      } catch {
+        // Non-blocking cleanup
+      }
+      window.location.reload();
+    }
+  });
+}
+
 // Determine basename for React Router based on current URL path prefix
 const getBasename = (): string => {
   const path = window.location.pathname;
   const segments = path.split('/').filter(Boolean);
-  const first = segments[0] as typeof SUPPORTED_LOCALES[number];
+  const first = segments[0] as (typeof SUPPORTED_LOCALES)[number];
 
   if (first && first !== DEFAULT_LOCALE && SUPPORTED_LOCALES.includes(first)) {
     i18n.changeLanguage(first);
@@ -57,4 +90,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </I18nextProvider>
   </React.StrictMode>
 );
-

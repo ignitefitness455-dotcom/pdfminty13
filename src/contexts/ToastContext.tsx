@@ -61,8 +61,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               toast.type === 'error'
                 ? 'bg-rose-600 text-white'
                 : toast.type === 'success'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-800 text-white'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-800 text-white'
             }`}
           >
             {toast.message}

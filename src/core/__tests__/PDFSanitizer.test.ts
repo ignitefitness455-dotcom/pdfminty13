@@ -20,9 +20,7 @@ describe('PDFSanitizer', () => {
     it('warns on missing %%EOF marker', () => {
       const pdfBytes = new TextEncoder().encode('%PDF-1.4\nsome content\n');
       const result = PDFSanitizer.sanitize(pdfBytes);
-      expect(result.warnings).toContainEqual(
-        expect.stringContaining('%%EOF')
-      );
+      expect(result.warnings).toContainEqual(expect.stringContaining('%%EOF'));
     });
 
     it('accepts valid PDF without warnings', async () => {
@@ -47,9 +45,7 @@ describe('PDFSanitizer', () => {
       const result = PDFSanitizer.sanitize(modified);
       const resultStr = new TextDecoder('ascii', { fatal: false }).decode(result.bytes);
       expect(resultStr).not.toContain('/JavaScript');
-      expect(result.warnings).toContainEqual(
-        expect.stringContaining('neutralized')
-      );
+      expect(result.warnings).toContainEqual(expect.stringContaining('neutralized'));
     });
 
     it('neutralizes /Launch actions', async () => {

@@ -41,11 +41,15 @@ export const AddBlankPage: React.FC = () => {
     }
     try {
       const bytes = new Uint8Array(await files[0].arrayBuffer());
-      const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', { bytes });
+      const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
+        bytes,
+      });
       setTotalPages(count);
       if (customIndex > count + 1) setCustomIndex(count + 1);
     } catch {
-      setError(t('addBlankPage.readError', { defaultValue: 'Failed to read PDF. It may be corrupted.' }));
+      setError(
+        t('addBlankPage.readError', { defaultValue: 'Failed to read PDF. It may be corrupted.' })
+      );
     }
   };
 
@@ -62,7 +66,12 @@ export const AddBlankPage: React.FC = () => {
     if (positionType === 'custom') {
       const upperBound = totalPages > 0 ? totalPages + 1 : 1;
       if (customIndex < 1 || customIndex > upperBound) {
-        setError(t('addBlankPage.positionRangeError', { max: upperBound, defaultValue: `Position must be between 1 and ${upperBound}.` }));
+        setError(
+          t('addBlankPage.positionRangeError', {
+            max: upperBound,
+            defaultValue: `Position must be between 1 and ${upperBound}.`,
+          })
+        );
         return;
       }
     }
@@ -87,7 +96,12 @@ export const AddBlankPage: React.FC = () => {
     } catch (err: unknown) {
       logger.error('Add blank page error:', err);
       const message = err instanceof Error ? err.message : String(err);
-      setError(message || t('addBlankPage.unexpectedError', { defaultValue: 'An unexpected error occurred while adding the blank page.' }));
+      setError(
+        message ||
+          t('addBlankPage.unexpectedError', {
+            defaultValue: 'An unexpected error occurred while adding the blank page.',
+          })
+      );
     } finally {
       setLoading(false);
     }
@@ -127,8 +141,8 @@ export const AddBlankPage: React.FC = () => {
                   onClick={() => {
                     setSelectedFile(null);
                     setTotalPages(0);
-                    setCustomIndex(1);  // Reset to default
-                    setPositionType('end');  // Reset position type too
+                    setCustomIndex(1); // Reset to default
+                    setPositionType('end'); // Reset position type too
                     setError(null);
                     setIsSuccess(false);
                     if (downloadUrl) {
@@ -145,13 +159,24 @@ export const AddBlankPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="add_blank_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="add_blank_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>{t('addBlankPage.successTitle', { defaultValue: 'Page Inserted Successfully! Your modified PDF has been generated.' })}</span>
+                <span>
+                  {t('addBlankPage.successTitle', {
+                    defaultValue:
+                      'Page Inserted Successfully! Your modified PDF has been generated.',
+                  })}
+                </span>
               </div>
               <p className="text-slate-500 text-[11px] font-normal leading-normal">
-                {t('addBlankPage.successDesc', { defaultValue: 'A new blank page has been inserted into your document completely offline in your browser.' })}
+                {t('addBlankPage.successDesc', {
+                  defaultValue:
+                    'A new blank page has been inserted into your document completely offline in your browser.',
+                })}
               </p>
               {downloadUrl && (
                 <div className="pt-2">
@@ -162,7 +187,11 @@ export const AddBlankPage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('addBlankPage.downloadModified', { defaultValue: 'Download Modified PDF' })}</span>
+                    <span>
+                      {t('addBlankPage.downloadModified', {
+                        defaultValue: 'Download Modified PDF',
+                      })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -179,9 +208,27 @@ export const AddBlankPage: React.FC = () => {
 
             <div className="space-y-3">
               {[
-                { type: 'start' as const, labelKey: 'addBlankPage.posStart', label: 'Start', descKey: 'addBlankPage.posStartDesc', desc: 'Prepend at very beginning of file' },
-                { type: 'end' as const, labelKey: 'addBlankPage.posEnd', label: 'End', descKey: 'addBlankPage.posEndDesc', desc: 'Append at final trailing page' },
-                { type: 'custom' as const, labelKey: 'addBlankPage.posCustom', label: 'Custom Index', descKey: 'addBlankPage.posCustomDesc', desc: 'Insert at specific page offset' },
+                {
+                  type: 'start' as const,
+                  labelKey: 'addBlankPage.posStart',
+                  label: 'Start',
+                  descKey: 'addBlankPage.posStartDesc',
+                  desc: 'Prepend at very beginning of file',
+                },
+                {
+                  type: 'end' as const,
+                  labelKey: 'addBlankPage.posEnd',
+                  label: 'End',
+                  descKey: 'addBlankPage.posEndDesc',
+                  desc: 'Append at final trailing page',
+                },
+                {
+                  type: 'custom' as const,
+                  labelKey: 'addBlankPage.posCustom',
+                  label: 'Custom Index',
+                  descKey: 'addBlankPage.posCustomDesc',
+                  desc: 'Insert at specific page offset',
+                },
               ].map((pos) => (
                 <button
                   key={pos.type}
@@ -196,7 +243,9 @@ export const AddBlankPage: React.FC = () => {
                   }`}
                   disabled={!selectedFile}
                 >
-                  <span className="font-bold text-sm text-slate-900 block">{t(pos.labelKey, { defaultValue: pos.label })}</span>
+                  <span className="font-bold text-sm text-slate-900 block">
+                    {t(pos.labelKey, { defaultValue: pos.label })}
+                  </span>
                   <span className="text-[11px] text-slate-500 block leading-normal mt-0.5">
                     {t(pos.descKey, { defaultValue: pos.desc })}
                   </span>
@@ -258,7 +307,9 @@ export const AddBlankPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('addBlankPage.threadingButton', { defaultValue: 'Threading sheets...' })}</span>
+                  <span>
+                    {t('addBlankPage.threadingButton', { defaultValue: 'Threading sheets...' })}
+                  </span>
                 </span>
               ) : (
                 <>

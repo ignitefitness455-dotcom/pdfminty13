@@ -642,7 +642,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 <h2>Related PDF Tools</h2>
 <p>Explore logically related, privacy-first PDF tools:</p>
 <ul>
-${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a> — ${t.shortDescription || t.description}</li>`).join('\n')}
+${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a> — ${t.shortDescription}</li>`).join('\n')}
 </ul>
 `;
     };
@@ -911,7 +911,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   const toolsCount = TOOLS.filter((t: ToolSEOInfo) => t.type === 'tool').length;
   const toolsListHtml = TOOLS
     .filter((t: ToolSEOInfo) => t.type === 'tool')
-    .map((t: ToolSEOInfo) => `      <li><a href="/${t.slug}/">${t.name}</a> — ${t.shortDescription || t.description}</li>`)
+    .map((t: ToolSEOInfo) => `      <li><a href="/${t.slug}/">${t.name}</a> — ${t.shortDescription}</li>`)
     .join('\n');
   
   const homepageContent = `

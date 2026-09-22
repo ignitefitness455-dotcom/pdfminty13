@@ -12,9 +12,10 @@ import { logger } from './logger';
  * error, not a stale-chunk 404) doesn't cause an infinite reload loop —
  * after one retry it lets the real error surface normally.
  */
-export function lazyWithRetry<T extends { default: React.ComponentType<unknown> }>(
-  factory: () => Promise<T>
-) {
+export function lazyWithRetry<
+  P = Record<string, unknown>,
+  T extends { default: React.ComponentType<P> } = { default: React.ComponentType<P> },
+>(factory: () => Promise<T>) {
   return React.lazy(async () => {
     try {
       const result = await factory();
@@ -43,9 +44,12 @@ export function lazyWithRetry<T extends { default: React.ComponentType<unknown> 
         // 2. If chunk load still fails (e.g. stale deployment asset 404), trigger single page reload & cache clear
         const key = 'pdfminty-chunk-retry';
         if (typeof window !== 'undefined' && !sessionStorage.getItem(key)) {
-          logger.warn('Lazy chunk load failed after internal retry. Cleaning SW + Cache to force reload...', secondError);
+          logger.warn(
+            'Lazy chunk load failed after internal retry. Cleaning SW + Cache to force reload...',
+            secondError
+          );
           sessionStorage.setItem(key, '1');
-          
+
           try {
             if ('serviceWorker' in navigator) {
               const regs = await navigator.serviceWorker.getRegistrations();
@@ -66,7 +70,7 @@ export function lazyWithRetry<T extends { default: React.ComponentType<unknown> 
           window.location.reload();
           return new Promise<T>(() => {});
         }
-        
+
         try {
           if (typeof window !== 'undefined') {
             sessionStorage.removeItem(key);

@@ -22,7 +22,11 @@ if (typeof Promise.withResolvers === 'undefined') {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('error', (e: ErrorEvent) => {
-    if (e.message && typeof e.message === 'string' && e.message.toLowerCase().includes('resizeobserver')) {
+    if (
+      e.message &&
+      typeof e.message === 'string' &&
+      e.message.toLowerCase().includes('resizeobserver')
+    ) {
       e.stopImmediatePropagation?.();
       e.preventDefault?.();
     }

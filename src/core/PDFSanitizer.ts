@@ -28,10 +28,7 @@ export interface SanitizeResult {
  * byte-scanning, which misses encrypted dicts hidden in compressed object streams).
  */
 export class PDFSanitizer {
-  public static sanitize(
-    bytes: Uint8Array,
-    _options?: SanitizeOptions
-  ): SanitizeResult {
+  public static sanitize(bytes: Uint8Array, _options?: SanitizeOptions): SanitizeResult {
     const warnings: string[] = [];
 
     if (bytes.byteLength > UPLOAD_LIMITS.MAX_SINGLE_FILE) {

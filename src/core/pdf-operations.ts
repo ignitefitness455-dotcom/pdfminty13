@@ -80,7 +80,9 @@ export function formatUserFriendlyErrorMessage(err: unknown, defaultMessage: str
       rawMessage !== 'Error' &&
       rawMessage !== 'Unknown error'
     ) {
-      return rawMessage.startsWith(defaultMessage) ? rawMessage : `${defaultMessage}: ${rawMessage}`;
+      return rawMessage.startsWith(defaultMessage)
+        ? rawMessage
+        : `${defaultMessage}: ${rawMessage}`;
     }
   } else if (typeof err === 'string' && err.trim().length > 0) {
     return err;
@@ -115,7 +117,7 @@ async function loadPlainPDF(bytes: Uint8Array, skipEncryptionCheck = false) {
 
     const pdfDoc = await PlainPDFDocument.load(safeBytes);
     const realFontkit = (fontkit as { default?: unknown }).default || fontkit;
-    pdfDoc.registerFontkit(realFontkit);
+    pdfDoc.registerFontkit(realFontkit as Parameters<PlainPDFDocument['registerFontkit']>[0]);
     return pdfDoc;
   } catch (err: unknown) {
     handlePdfLibError(err, 'Failed to read PDF document. It may be corrupted.');
@@ -149,7 +151,8 @@ async function getFontBytes(): Promise<Uint8Array> {
   // If in browser (or Web Worker) and fetch is available, try fetching the static asset
   if (typeof fetch !== 'undefined') {
     try {
-      const baseUrl = (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL || '/';
+      const baseUrl =
+        (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL || '/';
       const fontUrl = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}fonts/NotoSans-Regular.ttf`;
       const response = await fetch(fontUrl);
       if (response.ok) {
@@ -174,7 +177,9 @@ async function getFontBytes(): Promise<Uint8Array> {
     }
   }
 
-  logger.warn('Font NotoSans-Regular.ttf could not be loaded; Helvetica standard font will be used as a graceful fallback.');
+  logger.warn(
+    'Font NotoSans-Regular.ttf could not be loaded; Helvetica standard font will be used as a graceful fallback.'
+  );
   // Final fallback to a mock/empty if nothing else is available
   fontBytes = new Uint8Array(0);
   return fontBytes;
@@ -473,7 +478,7 @@ export async function addPageNumbersPDF(
       if (skipFirstPage && idx === 0) continue;
 
       const page = pages[idx];
-      
+
       let cropBox;
       try {
         cropBox = page.getCropBox();
@@ -646,10 +651,7 @@ export async function imagesToPDF(
 
     let embeddedImg;
     try {
-      if (
-        normalizedType === 'image/jpeg' ||
-        normalizedType === 'image/jpg'
-      ) {
+      if (normalizedType === 'image/jpeg' || normalizedType === 'image/jpg') {
         embeddedImg = await pdfDoc.embedJpg(file.buf);
       } else if (normalizedType === 'image/png') {
         embeddedImg = await pdfDoc.embedPng(file.buf);
@@ -663,7 +665,9 @@ export async function imagesToPDF(
       ) {
         // Convert to PNG via createImageBitmap + OffscreenCanvas.
         // createImageBitmap accepts Blob and decodes any format the browser supports.
-        const blob = new Blob([file.buf as unknown as BlobPart], { type: file.type || 'image/png' });
+        const blob = new Blob([file.buf as unknown as BlobPart], {
+          type: file.type || 'image/png',
+        });
         let bitmap: ImageBitmap;
         try {
           bitmap = await createImageBitmap(blob);
@@ -739,7 +743,10 @@ export async function imagesToPDF(
 class CustomCanvasFactory {
   constructor(_options?: unknown) {}
 
-  create(width: number, height: number): {
+  create(
+    width: number,
+    height: number
+  ): {
     canvas: OffscreenCanvas | HTMLCanvasElement;
     context: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
   } {
@@ -881,7 +888,9 @@ export async function compressPDF(
                 );
               });
             }
-            throw new Error('Canvas conversion method (toBlob) is not supported in this environment.');
+            throw new Error(
+              'Canvas conversion method (toBlob) is not supported in this environment.'
+            );
           }
         };
 
@@ -916,7 +925,8 @@ export async function compressPDF(
             context.fillStyle = '#ffffff';
             context.fillRect(0, 0, viewport.width, viewport.height);
 
-            await page.render({
+            const renderPage = page.render as (params: unknown) => { promise: Promise<unknown> };
+            await renderPage({
               canvasContext: context as CanvasRenderingContext2D,
               viewport,
               canvasFactory,
@@ -1161,7 +1171,11 @@ export async function pdfToImage(
   format: 'image/png' | 'image/jpeg' = 'image/png',
   startPage: number = 1
 ): Promise<{ page: number; imageBytes: Uint8Array }[]> {
-  let pdf: { getPage: (n: number) => Promise<unknown>; numPages: number; destroy: () => Promise<void> } | null = null;
+  let pdf: {
+    getPage: (n: number) => Promise<unknown>;
+    numPages: number;
+    destroy: () => Promise<void>;
+  } | null = null;
   try {
     const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
     const pdf_js = await getPdfJs();
@@ -1175,7 +1189,10 @@ export async function pdfToImage(
     // When startPage is specified, render `maxPages` pages starting from startPage.
     // Otherwise, render from page 1 (original behavior).
     const effectiveStart = Math.max(1, Math.min(startPage, pdf.numPages));
-    const maxToRender = maxPages !== undefined ? Math.min(maxPages, pdf.numPages - effectiveStart + 1) : pdf.numPages - effectiveStart + 1;
+    const maxToRender =
+      maxPages !== undefined
+        ? Math.min(maxPages, pdf.numPages - effectiveStart + 1)
+        : pdf.numPages - effectiveStart + 1;
     const rendered: { page: number; imageBytes: Uint8Array }[] = [];
 
     for (let offset = 0; offset < maxToRender; offset++) {
@@ -1254,11 +1271,12 @@ export async function getPageCount(bytes: Uint8Array): Promise<number> {
   return pdfDoc.getPageCount();
 }
 
-export async function grayscalePDF(
-  bytes: Uint8Array,
-  scale: number = 1.5
-): Promise<Uint8Array> {
-  let pdf: { getPage: (n: number) => Promise<unknown>; numPages: number; destroy: () => Promise<void> } | null = null;
+export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Promise<Uint8Array> {
+  let pdf: {
+    getPage: (n: number) => Promise<unknown>;
+    numPages: number;
+    destroy: () => Promise<void>;
+  } | null = null;
   try {
     const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
     const pdf_js = await getPdfJs();
@@ -1371,7 +1389,9 @@ export async function flattenPDF(bytes: Uint8Array): Promise<Uint8Array> {
   }
 }
 
-export async function repairPDF(bytes: Uint8Array): Promise<{ bytes: Uint8Array; repairs: string[] }> {
+export async function repairPDF(
+  bytes: Uint8Array
+): Promise<{ bytes: Uint8Array; repairs: string[] }> {
   const repairs: string[] = [];
   try {
     let workingBytes = new Uint8Array(bytes);
@@ -1439,7 +1459,7 @@ export async function repairPDF(bytes: Uint8Array): Promise<{ bytes: Uint8Array;
 
     // 3. Rebuild XREF & Catalog Structure using pdf-lib
     const pdfDoc = await PlainPDFDocument.load(workingBytes, { ignoreEncryption: true });
-    
+
     if (pdfDoc.isEncrypted) {
       repairs.push('Rebuilt cross-reference tables for encrypted PDF structure.');
     } else {
@@ -1495,14 +1515,17 @@ async function extractImagesFromPage(
         argsArray[i] &&
         argsArray[i].length > 0 &&
         typeof argsArray[i][0] === 'string' &&
-        (argsArray[i][0].startsWith('img_') || fn === 85 || fn === 86 || fn === 82)
+        ((argsArray[i][0] as string).startsWith('img_') || fn === 85 || fn === 86 || fn === 82)
       ) {
-        const objId = argsArray[i][0];
+        const objId = argsArray[i][0] as string;
         try {
           const img: unknown = await new Promise((resolve) => {
-            if (p.objs && typeof p.objs.get === 'function') {
+            const objsRecord = p.objs as
+              | { get?: (id: string, cb: (data: unknown) => void) => unknown }
+              | undefined;
+            if (objsRecord && typeof objsRecord.get === 'function') {
               try {
-                const res = p.objs.get(objId, (data: unknown) => resolve(data));
+                const res = objsRecord.get(objId, (data: unknown) => resolve(data));
                 if (res !== undefined) resolve(res);
               } catch {
                 resolve(null);
@@ -1540,7 +1563,7 @@ async function extractImagesFromPage(
                 } else {
                   continue;
                 }
-                const imgData = new ImageData(rgba, width, height);
+                const imgData = new ImageData(rgba as unknown as ImageDataArray, width, height);
                 ctx.putImageData(imgData, 0, 0);
                 const blob = await canvas.convertToBlob({ type: 'image/png' });
                 const buf = new Uint8Array(await blob.arrayBuffer());
@@ -1611,14 +1634,19 @@ export async function pdfToMarkdown(
     for (let pNum = 1; pNum <= numPages; pNum++) {
       const page = await pdf.getPage(pNum);
       const viewport = (
-        page as unknown as { getViewport: (opts: { scale: number }) => { width: number; height: number } }
+        page as unknown as {
+          getViewport: (opts: { scale: number }) => { width: number; height: number };
+        }
       ).getViewport({ scale: 1.0 });
 
       const textContent = await (
         page as unknown as {
           getTextContent: () => Promise<{
             items: unknown[];
-            styles?: Record<string, { fontFamily?: string; name?: string; fontWeight?: unknown; fontStyle?: string }>;
+            styles?: Record<
+              string,
+              { fontFamily?: string; name?: string; fontWeight?: unknown; fontStyle?: string }
+            >;
           }>;
         }
       ).getTextContent();
@@ -1641,7 +1669,8 @@ export async function pdfToMarkdown(
         const transform = r.transform || [1, 0, 0, 1, 0, 0];
         const x = transform[4] || 0;
         const y = transform[5] || 0;
-        const fontSize = Math.hypot(transform[2] || 0, transform[3] || 0) || Math.abs(transform[3] || 10) || 10;
+        const fontSize =
+          Math.hypot(transform[2] || 0, transform[3] || 0) || Math.abs(transform[3] || 10) || 10;
         const width = r.width || str.length * fontSize * 0.55;
         const height = r.height || fontSize;
         const fontName = r.fontName || '';
@@ -1649,7 +1678,12 @@ export async function pdfToMarkdown(
         let bold = false;
         let italic = false;
         const lowerFont = fontName.toLowerCase();
-        if (lowerFont.includes('bold') || lowerFont.includes('heavy') || lowerFont.includes('black')) bold = true;
+        if (
+          lowerFont.includes('bold') ||
+          lowerFont.includes('heavy') ||
+          lowerFont.includes('black')
+        )
+          bold = true;
         if (lowerFont.includes('italic') || lowerFont.includes('oblique')) italic = true;
 
         const styleObj = styles[fontName];
@@ -1798,7 +1832,10 @@ export async function pdfToMarkdown(
       // Find clear zero-density vertical gutters in the middle region (20% to 80% width)
       const gutters: number[] = [];
       for (let b = Math.floor(numBins * 0.2); b <= Math.floor(numBins * 0.8); b++) {
-        if (binDensity[b] === 0 && (b === 0 || binDensity[b - 1] === 0 || b === numBins - 1 || binDensity[b + 1] === 0)) {
+        if (
+          binDensity[b] === 0 &&
+          (b === 0 || binDensity[b - 1] === 0 || b === numBins - 1 || binDensity[b + 1] === 0)
+        ) {
           const gutterX = (b + 0.5) * binWidth;
           if (gutters.length === 0 || gutterX - gutters[gutters.length - 1] > pData.width * 0.15) {
             gutters.push(gutterX);
@@ -1821,7 +1858,9 @@ export async function pdfToMarkdown(
         // Multi-column layout detected! Partition items vertically into horizontal bands, then read columns sequentially
         const topFull = fullWidthItems.filter((i) => i.y > pData.height * 0.65);
         const botFull = fullWidthItems.filter((i) => i.y < pData.height * 0.25);
-        const midFull = fullWidthItems.filter((i) => i.y <= pData.height * 0.65 && i.y >= pData.height * 0.25);
+        const midFull = fullWidthItems.filter(
+          (i) => i.y <= pData.height * 0.65 && i.y >= pData.height * 0.25
+        );
 
         const columns: PageTextItem[][] = new Array(gutters.length + 1).fill(null).map(() => []);
         for (const item of colCandidates) {
@@ -1856,10 +1895,7 @@ export async function pdfToMarkdown(
       const lines: VisualLine[] = [];
       for (const item of orderedItems) {
         const lastLine = lines.length > 0 ? lines[lines.length - 1] : null;
-        if (
-          lastLine &&
-          Math.abs(item.y - lastLine.y) <= Math.max(4, lastLine.fontSize * 0.35)
-        ) {
+        if (lastLine && Math.abs(item.y - lastLine.y) <= Math.max(4, lastLine.fontSize * 0.35)) {
           lastLine.items.push(item);
           lastLine.items.sort((a, b) => a.x - b.x);
           lastLine.fontSize = Math.max(lastLine.fontSize, item.fontSize);
@@ -1932,7 +1968,9 @@ export async function pdfToMarkdown(
 
         // Check List items
         if (/^[•\-*–—▪○●]\s+/.test(lineFormattedText) || /^▪️\s+/.test(lineFormattedText)) {
-          lineFormattedText = lineFormattedText.replace(/^[•\-*–—▪○●]\s+/, '- ').replace(/^▪️\s+/, '- ');
+          lineFormattedText = lineFormattedText
+            .replace(/^[•\-*–—▪○●]\s+/, '- ')
+            .replace(/^▪️\s+/, '- ');
           pageOutput.push(lineFormattedText);
           lIdx++;
           continue;
@@ -1977,13 +2015,15 @@ export async function pdfToMarkdown(
         pageOutput.push('');
       }
 
-      pageMarkdownSections.push(pageOutput.join('\n').replace(/\n{3,}/g, '\n\n').trim());
+      pageMarkdownSections.push(
+        pageOutput
+          .join('\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim()
+      );
     }
 
-    const finalMarkdown = pageMarkdownSections
-      .filter(Boolean)
-      .join('\n\n---\n\n')
-      .trim();
+    const finalMarkdown = pageMarkdownSections.filter(Boolean).join('\n\n---\n\n').trim();
 
     return {
       markdown: finalMarkdown || '# Empty Document',
@@ -1997,4 +2037,3 @@ export async function pdfToMarkdown(
     }
   }
 }
-

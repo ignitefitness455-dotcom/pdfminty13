@@ -5,13 +5,27 @@ export interface Toast {
 }
 
 export type ToolId =
-  | 'merge' | 'split' | 'compress' | 'rotate'
-  | 'delete-pages' | 'extract-pages' | 'reorder'
-  | 'watermark' | 'page-numbers' | 'add-blank'
-  | 'protect' | 'unlock' | 'image-to-pdf'
-  | 'pdf-to-image' | 'intelligence'
-  | 'grayscale-pdf' | 'flatten-pdf' | 'repair-pdf'
-  | 'edit-metadata' | 'sanitize-pdf' | 'pdf-to-markdown';
+  | 'merge'
+  | 'split'
+  | 'compress'
+  | 'rotate'
+  | 'delete-pages'
+  | 'extract-pages'
+  | 'reorder'
+  | 'watermark'
+  | 'page-numbers'
+  | 'add-blank'
+  | 'protect'
+  | 'unlock'
+  | 'image-to-pdf'
+  | 'pdf-to-image'
+  | 'intelligence'
+  | 'grayscale-pdf'
+  | 'flatten-pdf'
+  | 'repair-pdf'
+  | 'edit-metadata'
+  | 'sanitize-pdf'
+  | 'pdf-to-markdown';
 
 export interface PDFPageInfo {
   index: number;

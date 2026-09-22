@@ -19,7 +19,8 @@ export const RecommendedToolsSection: React.FC = () => {
         </h2>
         <p className="text-xs sm:text-sm text-on-surface-variant max-w-xl mx-auto font-medium">
           {t('home.recommended.subtitle', {
-            defaultValue: 'Trusted privacy and security services to safeguard your sensitive documents and digital identity.',
+            defaultValue:
+              'Trusted privacy and security services to safeguard your sensitive documents and digital identity.',
           })}
         </p>
       </div>
@@ -33,11 +34,14 @@ export const RecommendedToolsSection: React.FC = () => {
             </div>
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                {t('home.recommended.nordVpnTitle', { defaultValue: 'Browse Securely with NordVPN' })}
+                {t('home.recommended.nordVpnTitle', {
+                  defaultValue: 'Browse Securely with NordVPN',
+                })}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 {t('home.recommended.nordVpnDesc', {
-                  defaultValue: 'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
+                  defaultValue:
+                    'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
                 })}
               </p>
             </div>
@@ -67,7 +71,8 @@ export const RecommendedToolsSection: React.FC = () => {
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 {t('home.recommended.nordPassDesc', {
-                  defaultValue: 'Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.',
+                  defaultValue:
+                    'Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.',
                 })}
               </p>
             </div>

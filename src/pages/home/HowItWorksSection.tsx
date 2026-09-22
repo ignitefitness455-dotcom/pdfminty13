@@ -41,7 +41,10 @@ export const HowItWorksSection: React.FC = () => {
             </div>
             {/* Workspace body / dropzone representation */}
             <div className="flex-1 border border-dashed border-border-muted rounded-lg flex flex-col items-center justify-center p-2 text-center bg-surface-container-low/10">
-              <Merge className="w-5 h-5 text-security-green mb-1 animate-bounce" aria-hidden="true" />
+              <Merge
+                className="w-5 h-5 text-security-green mb-1 animate-bounce"
+                aria-hidden="true"
+              />
               <span className="text-xs font-bold text-primary">
                 {t('home.howItWorks.dragDrop', { defaultValue: 'Drag & Drop PDF here' })}
               </span>
@@ -92,7 +95,8 @@ export const HowItWorksSection: React.FC = () => {
             </h3>
             <p className="text-on-surface-variant text-sm leading-relaxed max-w-xs font-normal">
               {t('home.howItWorks.step1Desc', {
-                defaultValue: 'Choose from 22+ dedicated PDF tools above for merging, splitting, editing, or securing your files.',
+                defaultValue:
+                  'Choose from 22+ dedicated PDF tools above for merging, splitting, editing, or securing your files.',
               })}
             </p>
           </div>
@@ -108,7 +112,8 @@ export const HowItWorksSection: React.FC = () => {
             </h3>
             <p className="text-on-surface-variant text-sm leading-relaxed max-w-xs font-normal">
               {t('home.howItWorks.step2Desc', {
-                defaultValue: 'Drag and drop your PDF files directly into your browser window. Everything stays local in memory.',
+                defaultValue:
+                  'Drag and drop your PDF files directly into your browser window. Everything stays local in memory.',
               })}
             </p>
           </div>
@@ -124,7 +129,8 @@ export const HowItWorksSection: React.FC = () => {
             </h3>
             <p className="text-on-surface-variant text-sm leading-relaxed max-w-xs font-normal">
               {t('home.howItWorks.step3Desc', {
-                defaultValue: 'Your PDF is processed instantly on your hardware. Click download to save the result immediately.',
+                defaultValue:
+                  'Your PDF is processed instantly on your hardware. Click download to save the result immediately.',
               })}
             </p>
           </div>

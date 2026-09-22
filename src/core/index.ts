@@ -53,13 +53,27 @@ export const getPdfJs = async () => {
 export const getFriendlyErrorMessage = (prefix: string, rawError: unknown): string => {
   const message = rawError instanceof Error ? rawError.message : String(rawError || '');
   const errorStr = message.toLowerCase();
-  if (['secured_locked', '/encrypt', 'no pdf header found', 'failed to parse pdf document', 'invalid pdf', 'formaterror', 'encrypted content'].some(s => errorStr.includes(s))) {
+  if (
+    [
+      'secured_locked',
+      '/encrypt',
+      'no pdf header found',
+      'failed to parse pdf document',
+      'invalid pdf',
+      'formaterror',
+      'encrypted content',
+    ].some((s) => errorStr.includes(s))
+  ) {
     return `${prefix}: The file is encrypted or locked. Please use the "Unlock PDF" tool first to decrypt it.`;
   }
-  if (['pdf header magic', 'missing the standard', 'header signature'].some(s => errorStr.includes(s))) {
+  if (
+    ['pdf header magic', 'missing the standard', 'header signature'].some((s) =>
+      errorStr.includes(s)
+    )
+  ) {
     return `${prefix}: Incompatible file format. The file is missing a standard '%PDF' header signature.`;
   }
-  if (['incorrect password', 'decrypt', 'bad decrypt'].some(s => errorStr.includes(s))) {
+  if (['incorrect password', 'decrypt', 'bad decrypt'].some((s) => errorStr.includes(s))) {
     return `${prefix}: Incorrect password! Please verify and try again.`;
   }
   return `${prefix}: ${message}`;
@@ -69,7 +83,8 @@ export function truncateTextGrapheme(text: string, maxGraphemes: number): string
   const normalized = text.normalize('NFC');
   try {
     const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
-    let count = 0, result = '';
+    let count = 0,
+      result = '';
     for (const segment of segmenter.segment(normalized)) {
       if (count >= maxGraphemes) break;
       result += segment.segment;
@@ -92,18 +107,24 @@ export interface PreprocessOptions {
   customLockMessage?: string;
 }
 
-export async function preprocessAndLoadPdf(file: File, options?: PreprocessOptions): Promise<PreprocessResult> {
+export async function preprocessAndLoadPdf(
+  file: File,
+  options?: PreprocessOptions
+): Promise<PreprocessResult> {
   const arrayBuffer = await file.arrayBuffer();
   let sanitizedBytes: Uint8Array = new Uint8Array(arrayBuffer);
   try {
-    const sanResult = PDFSanitizer.sanitize(sanitizedBytes, { skipEncryptionCheck: options?.skipEncryptionCheck });
+    const sanResult = PDFSanitizer.sanitize(sanitizedBytes, {
+      skipEncryptionCheck: options?.skipEncryptionCheck,
+    });
     sanitizedBytes = sanResult.bytes as Uint8Array;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err || '');
     if (message.includes('SECURED_LOCKED')) {
       options?.onEncrypted?.();
       options?.showToast?.(
-        options?.customLockMessage || '🔒 Secured/locked PDF detected. Please use the Unlock tool first.',
+        options?.customLockMessage ||
+          '🔒 Secured/locked PDF detected. Please use the Unlock tool first.',
         'error'
       );
     }

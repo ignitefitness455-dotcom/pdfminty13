@@ -318,7 +318,9 @@ export const MergePage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('mergeControls.mergingButton', { defaultValue: 'Compiling PDF...' })}</span>
+                  <span>
+                    {t('mergeControls.mergingButton', { defaultValue: 'Compiling PDF...' })}
+                  </span>
                 </span>
               ) : (
                 <>

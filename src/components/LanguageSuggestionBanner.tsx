@@ -53,7 +53,6 @@ const BANNER_MESSAGES: Record<SupportedLocale, BannerContent> = {
   },
 };
 
-
 const STORAGE_KEY = 'pdfminty_lang_suggestion_dismissed';
 
 export const LanguageSuggestionBanner: React.FC = () => {
@@ -148,9 +147,7 @@ export const LanguageSuggestionBanner: React.FC = () => {
           <div className="w-7 h-7 rounded-lg bg-emerald-500/10 backdrop-blur-sm flex items-center justify-center shrink-0 border border-emerald-500/20">
             <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
           </div>
-          <p className="font-semibold leading-snug">
-            {content.prompt}
-          </p>
+          <p className="font-semibold leading-snug">{content.prompt}</p>
         </div>
 
         {/* Right CTA and Dismiss */}

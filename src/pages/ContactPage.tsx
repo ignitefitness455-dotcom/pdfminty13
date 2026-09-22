@@ -1,4 +1,13 @@
-import { Mail, Clock, Send, CheckCircle2, Copy, Shield, Sparkles, MessageSquare } from 'lucide-react';
+import {
+  Mail,
+  Clock,
+  Send,
+  CheckCircle2,
+  Copy,
+  Shield,
+  Sparkles,
+  MessageSquare,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -47,11 +56,13 @@ export const ContactPage: React.FC = () => {
         <div className="text-center space-y-4 border-b border-border-muted pb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide uppercase">
             <Mail className="w-4 h-4" />
-            <span>{t('contact.hereToHelp', { defaultValue: 'We\'re Here to Help' })}</span>
+            <span>{t('contact.hereToHelp', { defaultValue: "We're Here to Help" })}</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight">{t('contact.title', { defaultValue: 'Contact Us' })}</h1>
+          <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight">
+            {t('contact.title', { defaultValue: 'Contact Us' })}
+          </h1>
           <p className="text-base sm:text-lg font-medium text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-            {t("contact.headerSub")}
+            {t('contact.headerSub')}
           </p>
         </div>
 
@@ -62,8 +73,12 @@ export const ContactPage: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
               <Mail className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-bold text-on-surface">{t('contact.directEmail', { defaultValue: 'Direct Email' })}</h2>
-            <p className="text-xs text-on-surface-variant">{t('contact.sendThoughts', { defaultValue: 'Send us your thoughts anytime' })}</p>
+            <h2 className="text-base font-bold text-on-surface">
+              {t('contact.directEmail', { defaultValue: 'Direct Email' })}
+            </h2>
+            <p className="text-xs text-on-surface-variant">
+              {t('contact.sendThoughts', { defaultValue: 'Send us your thoughts anytime' })}
+            </p>
             <div className="pt-2 w-full">
               <div className="flex items-center justify-between gap-2 p-2.5 bg-surface-container-high border border-border-muted rounded-xl text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
                 <span className="truncate">support@pdfminty.com</span>
@@ -84,8 +99,12 @@ export const ContactPage: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
               <Clock className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-bold text-on-surface">{t('contact.responseTime', { defaultValue: 'Response Time' })}</h2>
-            <p className="text-xs text-on-surface-variant">{t('contact.replyFast', { defaultValue: 'We reply as fast as possible' })}</p>
+            <h2 className="text-base font-bold text-on-surface">
+              {t('contact.responseTime', { defaultValue: 'Response Time' })}
+            </h2>
+            <p className="text-xs text-on-surface-variant">
+              {t('contact.replyFast', { defaultValue: 'We reply as fast as possible' })}
+            </p>
             <div className="pt-2">
               <span className="inline-block px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 font-extrabold text-sm">
                 24 - 48 Hours
@@ -98,10 +117,14 @@ export const ContactPage: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
               <Shield className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-bold text-on-surface">{t('contact.privacyGuaranteed', { defaultValue: 'Privacy Guaranteed' })}</h2>
-            <p className="text-xs text-on-surface-variant">{t("contact.localSecure")}</p>
+            <h2 className="text-base font-bold text-on-surface">
+              {t('contact.privacyGuaranteed', { defaultValue: 'Privacy Guaranteed' })}
+            </h2>
+            <p className="text-xs text-on-surface-variant">{t('contact.localSecure')}</p>
             <div className="pt-2">
-              <span className="inline-block px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 font-extrabold text-xs">{t('contact.zeroUploadsBadge', { defaultValue: 'Zero Cloud Uploads' })}</span>
+              <span className="inline-block px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 font-extrabold text-xs">
+                {t('contact.zeroUploadsBadge', { defaultValue: 'Zero Cloud Uploads' })}
+              </span>
             </div>
           </div>
         </div>
@@ -113,10 +136,17 @@ export const ContactPage: React.FC = () => {
             <div className="space-y-1">
               <h2 className="text-xl font-extrabold text-on-surface flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-emerald-500" />
-                {t("contact.sendUsMsg")}
+                {t('contact.sendUsMsg')}
               </h2>
               <p className="text-xs text-on-surface-variant">
-                {t("contact.fillForm")} <a href="mailto:support@pdfminty.com" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">support@pdfminty.com</a>.
+                {t('contact.fillForm')}{' '}
+                <a
+                  href="mailto:support@pdfminty.com"
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  support@pdfminty.com
+                </a>
+                .
               </p>
             </div>
 
@@ -125,9 +155,11 @@ export const ContactPage: React.FC = () => {
                 <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-extrabold text-on-surface">{t('contact.messageReceived', { defaultValue: 'Message Received!' })}</h3>
+                <h3 className="text-lg font-extrabold text-on-surface">
+                  {t('contact.messageReceived', { defaultValue: 'Message Received!' })}
+                </h3>
                 <p className="text-xs sm:text-sm text-on-surface-variant max-w-md mx-auto">
-                  <span dangerouslySetInnerHTML={{ __html: t("contact.successMsg") }} />
+                  <span dangerouslySetInnerHTML={{ __html: t('contact.successMsg') }} />
                 </p>
                 <button
                   onClick={() => {
@@ -136,15 +168,18 @@ export const ContactPage: React.FC = () => {
                   }}
                   className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
                 >
-                  {t("contact.sendAnother")}
+                  {t('contact.sendAnother')}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="contact-name" className="text-xs font-bold text-on-surface uppercase tracking-wider">
-                      {t("contact.yourName")} <span className="text-rose-500">*</span>
+                    <label
+                      htmlFor="contact-name"
+                      className="text-xs font-bold text-on-surface uppercase tracking-wider"
+                    >
+                      {t('contact.yourName')} <span className="text-rose-500">*</span>
                     </label>
                     <input
                       id="contact-name"
@@ -158,8 +193,11 @@ export const ContactPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="contact-email" className="text-xs font-bold text-on-surface uppercase tracking-wider">
-                      {t("contact.yourEmail")} <span className="text-rose-500">*</span>
+                    <label
+                      htmlFor="contact-email"
+                      className="text-xs font-bold text-on-surface uppercase tracking-wider"
+                    >
+                      {t('contact.yourEmail')} <span className="text-rose-500">*</span>
                     </label>
                     <input
                       id="contact-email"
@@ -174,8 +212,11 @@ export const ContactPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="contact-subject" className="text-xs font-bold text-on-surface uppercase tracking-wider">
-                    {t("contact.subject")}
+                  <label
+                    htmlFor="contact-subject"
+                    className="text-xs font-bold text-on-surface uppercase tracking-wider"
+                  >
+                    {t('contact.subject')}
                   </label>
                   <select
                     id="contact-subject"
@@ -183,22 +224,25 @@ export const ContactPage: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-high border border-border-muted text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="General Inquiry">{t("contact.optGeneral")}</option>
-                    <option value="Feature Request">{t("contact.optFeature")}</option>
-                    <option value="Bug Report">{t("contact.optBug")}</option>
-                    <option value="Privacy Question">{t("contact.optPrivacy")}</option>
+                    <option value="General Inquiry">{t('contact.optGeneral')}</option>
+                    <option value="Feature Request">{t('contact.optFeature')}</option>
+                    <option value="Bug Report">{t('contact.optBug')}</option>
+                    <option value="Privacy Question">{t('contact.optPrivacy')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="contact-message" className="text-xs font-bold text-on-surface uppercase tracking-wider">
-                    {t("contact.message")} <span className="text-rose-500">*</span>
+                  <label
+                    htmlFor="contact-message"
+                    className="text-xs font-bold text-on-surface uppercase tracking-wider"
+                  >
+                    {t('contact.message')} <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     id="contact-message"
                     required
                     rows={5}
-                    placeholder={t("contact.helpPlaceholder")}
+                    placeholder={t('contact.helpPlaceholder')}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-high border border-border-muted text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
@@ -228,17 +272,17 @@ export const ContactPage: React.FC = () => {
             <div className="bg-surface-container-low border border-border-muted p-6 rounded-2xl space-y-4 shadow-sm">
               <h3 className="text-base font-extrabold text-on-surface flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-sky-500" />
-                {t("contact.aboutBoxTitle")}
+                {t('contact.aboutBoxTitle')}
               </h3>
               <p className="text-xs text-on-surface-variant leading-relaxed">
-                {t("contact.aboutBoxDesc")}
+                {t('contact.aboutBoxDesc')}
               </p>
               <div className="pt-2 border-t border-border-muted">
                 <Link
                   to={ROUTES.ABOUT_US}
                   className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
                 >
-                  {t("contact.aboutBoxLink")}
+                  {t('contact.aboutBoxLink')}
                 </Link>
               </div>
             </div>

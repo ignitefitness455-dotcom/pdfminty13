@@ -1,4 +1,13 @@
-import { Sparkles, Copy, Download, AlertCircle, RefreshCw, FileText, Check, FileCheck2 } from 'lucide-react';
+import {
+  Sparkles,
+  Copy,
+  Download,
+  AlertCircle,
+  RefreshCw,
+  FileText,
+  Check,
+  FileCheck2,
+} from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -23,7 +32,7 @@ export const OcrPdfPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Page rendering and selection states
   const [pagePreviews, setPagePreviews] = useState<OcrPagePreview[]>([]);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -88,17 +97,21 @@ export const OcrPdfPage: React.FC = () => {
             canvas.width = viewport.width;
             canvas.height = viewport.height;
             await page.render({ canvasContext: context, viewport }).promise;
-            canvas.toBlob((blob) => {
-              if (blob && myToken === operationTokenRef.current) {
-                const url = URL.createObjectURL(blob);
-                loadedPreviews.push({ index: i - 1, dataUrl: url });
-                if (loadedPreviews.length === pagesToRender) {
-                  // Sort to match original order
-                  loadedPreviews.sort((a, b) => a.index - b.index);
-                  setPagePreviews([...loadedPreviews]);
+            canvas.toBlob(
+              (blob) => {
+                if (blob && myToken === operationTokenRef.current) {
+                  const url = URL.createObjectURL(blob);
+                  loadedPreviews.push({ index: i - 1, dataUrl: url });
+                  if (loadedPreviews.length === pagesToRender) {
+                    // Sort to match original order
+                    loadedPreviews.sort((a, b) => a.index - b.index);
+                    setPagePreviews([...loadedPreviews]);
+                  }
                 }
-              }
-            }, 'image/jpeg', 0.85);
+              },
+              'image/jpeg',
+              0.85
+            );
           }
         }
 
@@ -132,7 +145,9 @@ export const OcrPdfPage: React.FC = () => {
     } else {
       // Limit to max 5 pages per run to protect rate limits and timeout budgets
       if (nextSelection.size >= 5) {
-        setError('To ensure high performance and respect rate limits, please select up to 5 pages at a time.');
+        setError(
+          'To ensure high performance and respect rate limits, please select up to 5 pages at a time.'
+        );
         return;
       }
       nextSelection.add(pageIdx);
@@ -216,7 +231,9 @@ export const OcrPdfPage: React.FC = () => {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error((errData as { error?: string }).error || `AI OCR request failed (${res.status})`);
+        throw new Error(
+          (errData as { error?: string }).error || `AI OCR request failed (${res.status})`
+        );
       }
 
       const data = (await res.json()) as { success: boolean; result: string };
@@ -285,7 +302,8 @@ export const OcrPdfPage: React.FC = () => {
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
                   <p className="text-xs text-slate-400">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • {selectedFile.type.startsWith('image/') ? 'Image File' : 'PDF Document'}
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {selectedFile.type.startsWith('image/') ? 'Image File' : 'PDF Document'}
                   </p>
                 </div>
                 <button
@@ -298,11 +316,19 @@ export const OcrPdfPage: React.FC = () => {
 
               {!selectedFile.type.startsWith('image/') && (
                 <div className="space-y-3 pt-2">
-                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('ocrPdf.selectPagesTitle', { defaultValue: 'Select Pages for AI OCR (Max 5)' })}</p>
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    {t('ocrPdf.selectPagesTitle', {
+                      defaultValue: 'Select Pages for AI OCR (Max 5)',
+                    })}
+                  </p>
                   {renderingPreviews ? (
                     <div className="flex justify-center items-center py-8">
                       <RefreshCw className="w-5 h-5 text-slate-400 animate-spin mr-2" />
-                      <span className="text-xs text-slate-400">{t('ocrPdf.preparingThumbnails', { defaultValue: 'Preparing page thumbnails...' })}</span>
+                      <span className="text-xs text-slate-400">
+                        {t('ocrPdf.preparingThumbnails', {
+                          defaultValue: 'Preparing page thumbnails...',
+                        })}
+                      </span>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 xs:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-1.5 bg-slate-50 rounded-xl border border-slate-200">
@@ -311,16 +337,30 @@ export const OcrPdfPage: React.FC = () => {
                           key={p.index}
                           onClick={() => togglePageSelection(p.index)}
                           className={`relative aspect-[3/4] rounded-lg border-2 overflow-hidden transition-all bg-white group ${
-                            selectedPages.has(p.index) ? 'border-emerald-600 shadow-sm' : 'border-slate-200 hover:border-slate-400'
+                            selectedPages.has(p.index)
+                              ? 'border-emerald-600 shadow-sm'
+                              : 'border-slate-200 hover:border-slate-400'
                           }`}
                         >
-                          <img src={p.dataUrl} alt={`Page ${p.index + 1}`} className="w-full h-full object-cover" />
-                          <div className={`absolute inset-0 flex items-center justify-center bg-slate-900/40 transition-opacity ${
-                            selectedPages.has(p.index) ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
-                          }`}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                              selectedPages.has(p.index) ? 'bg-emerald-600 text-white' : 'bg-white text-slate-900'
-                            }`}>
+                          <img
+                            src={p.dataUrl}
+                            alt={`Page ${p.index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <div
+                            className={`absolute inset-0 flex items-center justify-center bg-slate-900/40 transition-opacity ${
+                              selectedPages.has(p.index)
+                                ? 'opacity-100'
+                                : 'opacity-0 group-hover:opacity-40'
+                            }`}
+                          >
+                            <div
+                              className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                                selectedPages.has(p.index)
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-white text-slate-900'
+                              }`}
+                            >
                               {selectedPages.has(p.index) ? '✓' : p.index + 1}
                             </div>
                           </div>
@@ -336,7 +376,10 @@ export const OcrPdfPage: React.FC = () => {
 
               <div className="space-y-3 pt-2">
                 <div className="space-y-1">
-                  <label htmlFor="ocr_language_select" className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
+                  <label
+                    htmlFor="ocr_language_select"
+                    className="text-xs font-bold text-slate-600 uppercase tracking-wider block"
+                  >
                     Document Language:
                   </label>
                   <select
@@ -345,13 +388,23 @@ export const OcrPdfPage: React.FC = () => {
                     onChange={(e) => setOcrLanguage(e.target.value)}
                     className="w-full border border-slate-300 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="auto">{t("ocrPdf.autoDetect")}</option>
-                    <option value="en">{t("ocr.lang.en", { defaultValue: "English" })}</option>
-                    <option value="bn">{t("ocr.lang.bn", { defaultValue: "Bengali (বাংলা)" })}</option>
-                    <option value="es">{t("ocr.lang.es", { defaultValue: "Spanish (Español)" })}</option>
-                    <option value="fr">{t("ocr.lang.fr", { defaultValue: "French (Français)" })}</option>
-                    <option value="de">{t("ocr.lang.de", { defaultValue: "German (Deutsch)" })}</option>
-                    <option value="ar">{t("ocr.lang.ar", { defaultValue: "Arabic (العربية)" })}</option>
+                    <option value="auto">{t('ocrPdf.autoDetect')}</option>
+                    <option value="en">{t('ocr.lang.en', { defaultValue: 'English' })}</option>
+                    <option value="bn">
+                      {t('ocr.lang.bn', { defaultValue: 'Bengali (বাংলা)' })}
+                    </option>
+                    <option value="es">
+                      {t('ocr.lang.es', { defaultValue: 'Spanish (Español)' })}
+                    </option>
+                    <option value="fr">
+                      {t('ocr.lang.fr', { defaultValue: 'French (Français)' })}
+                    </option>
+                    <option value="de">
+                      {t('ocr.lang.de', { defaultValue: 'German (Deutsch)' })}
+                    </option>
+                    <option value="ar">
+                      {t('ocr.lang.ar', { defaultValue: 'Arabic (العربية)' })}
+                    </option>
                   </select>
                 </div>
 
@@ -363,27 +416,46 @@ export const OcrPdfPage: React.FC = () => {
                   {loading ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>{t('ocrPdf.processingButton', { defaultValue: 'Transcribing via AI Vision...' })}</span>
+                      <span>
+                        {t('ocrPdf.processingButton', {
+                          defaultValue: 'Transcribing via AI Vision...',
+                        })}
+                      </span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-amber-400" />
-                      <span>{t('ocrPdf.processButton', { defaultValue: 'Extract Text with AI Vision' })}</span>
+                      <span>
+                        {t('ocrPdf.processButton', { defaultValue: 'Extract Text with AI Vision' })}
+                      </span>
                     </>
                   )}
                 </button>
               </div>
 
-              {error && (
-                isQuotaError ? (
+              {error &&
+                (isQuotaError ? (
                   <div className="flex items-start gap-3 text-xs text-amber-800 bg-amber-50/50 border border-amber-200 p-4 rounded-xl shadow-sm flex-col w-full">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                      <p className="font-extrabold text-amber-900">{t("ocrPdf.busyMessage")}</p>
+                      <p className="font-extrabold text-amber-900">{t('ocrPdf.busyMessage')}</p>
                     </div>
                     <div className="pl-6 space-y-1 text-slate-600 font-medium leading-relaxed">
-                      <p>{t("ocrPdf.orUseOffline")} <Link to={ROUTES.HOME} className="underline text-emerald-700 hover:text-emerald-800 font-bold">{t("tools.mergePdf")} &amp; {t("tools.splitPdf")}</Link></p>
-                      <p>{t('ocrPdf.rateLimitReached', { defaultValue: 'Rate limit reached. Please wait a few minutes before trying again.' })}</p>
+                      <p>
+                        {t('ocrPdf.orUseOffline')}{' '}
+                        <Link
+                          to={ROUTES.HOME}
+                          className="underline text-emerald-700 hover:text-emerald-800 font-bold"
+                        >
+                          {t('tools.mergePdf')} &amp; {t('tools.splitPdf')}
+                        </Link>
+                      </p>
+                      <p>
+                        {t('ocrPdf.rateLimitReached', {
+                          defaultValue:
+                            'Rate limit reached. Please wait a few minutes before trying again.',
+                        })}
+                      </p>
                     </div>
                   </div>
                 ) : (
@@ -391,8 +463,7 @@ export const OcrPdfPage: React.FC = () => {
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{error}</span>
                   </div>
-                )
-              )}
+                ))}
             </div>
           </div>
 
@@ -413,7 +484,11 @@ export const OcrPdfPage: React.FC = () => {
                         className="p-1.5 text-xs font-bold text-slate-600 hover:text-emerald-600 bg-slate-50 border border-slate-200 hover:border-emerald-300 rounded-lg flex items-center gap-1 transition-all"
                         title="Copy to clipboard"
                       >
-                        {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copied ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
                         <span>{copied ? 'Copied' : 'Copy'}</span>
                       </button>
                     </div>
@@ -423,8 +498,17 @@ export const OcrPdfPage: React.FC = () => {
                 {loading ? (
                   <div className="flex-1 flex flex-col items-center justify-center p-12 text-center min-h-[250px]">
                     <RefreshCw className="w-8 h-8 text-emerald-600 animate-spin mb-3" />
-                    <p className="text-xs font-bold text-slate-700">{t('ocrPdf.engineTranscribing', { defaultValue: 'AI OCR Engine Transcribing Pixels...' })}</p>
-                    <p className="text-[10px] text-slate-400 mt-1 max-w-xs">{t('ocrPdf.analyzingStructure', { defaultValue: 'Analyzing page structures, text blocks, and table formats to build clean Markdown.' })}</p>
+                    <p className="text-xs font-bold text-slate-700">
+                      {t('ocrPdf.engineTranscribing', {
+                        defaultValue: 'AI OCR Engine Transcribing Pixels...',
+                      })}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-1 max-w-xs">
+                      {t('ocrPdf.analyzingStructure', {
+                        defaultValue:
+                          'Analyzing page structures, text blocks, and table formats to build clean Markdown.',
+                      })}
+                    </p>
                   </div>
                 ) : ocrResult ? (
                   <div className="flex-1 flex flex-col space-y-2">
@@ -438,8 +522,15 @@ export const OcrPdfPage: React.FC = () => {
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-slate-400 min-h-[250px]">
                     <Sparkles className="w-8 h-8 text-slate-300 mb-3" />
-                    <p className="text-xs font-bold text-slate-600">{t('ocrPdf.noContent', { defaultValue: 'No Extracted Content Yet' })}</p>
-                    <p className="text-[10px] text-slate-400 mt-1 max-w-xs">{t('ocrPdf.selectTargetPages', { defaultValue: 'Select target pages and click the button on the left to transcribe characters.' })}</p>
+                    <p className="text-xs font-bold text-slate-600">
+                      {t('ocrPdf.noContent', { defaultValue: 'No Extracted Content Yet' })}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-1 max-w-xs">
+                      {t('ocrPdf.selectTargetPages', {
+                        defaultValue:
+                          'Select target pages and click the button on the left to transcribe characters.',
+                      })}
+                    </p>
                   </div>
                 )}
               </div>
@@ -458,7 +549,9 @@ export const OcrPdfPage: React.FC = () => {
                     className="flex items-center gap-1.5 py-2 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer"
                   >
                     <FileCheck2 className="w-3.5 h-3.5 text-emerald-200" />
-                    <span>{t('ocrPdf.downloadMd', { defaultValue: 'Download Markdown (MD)' })}</span>
+                    <span>
+                      {t('ocrPdf.downloadMd', { defaultValue: 'Download Markdown (MD)' })}
+                    </span>
                   </button>
                 </div>
               )}

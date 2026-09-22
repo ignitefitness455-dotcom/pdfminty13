@@ -1,4 +1,5 @@
 import { getCorsOrigin, getCorsHeaders } from '../utils/cors';
+import { checkRateLimit } from '../utils/rate-limiter';
 
 interface Env {
   GEMINI_API_KEY?: string;
@@ -32,23 +33,6 @@ function parseApiKeys(...rawStrings: (string | undefined)[]): string[] {
     }
   }
   return keys;
-}
-
-// Ephemeral in-memory fallback rate-limiting store (per-isolate, not a global cluster-wide counter).
-const fallbackStore = new Map<string, { count: number; expiresAt: number }>();
-
-function checkFallbackRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const cell = fallbackStore.get(ip);
-  if (!cell || now > cell.expiresAt) {
-    fallbackStore.set(ip, { count: 1, expiresAt: now + 3600000 });
-    return true;
-  }
-  if (cell.count >= 30) {
-    return false;
-  }
-  cell.count += 1;
-  return true;
 }
 
 function mapGeminiError(err: unknown): string {
@@ -126,47 +110,30 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     );
   }
 
-// Rate limit — uses a unique KV key per request to avoid the read-then-write
-  // TOCTOU race that affects the classic "increment a counter" pattern. We list
-  // all keys with the per-IP-per-hour prefix; if there are already >= LIMIT,
-  // reject. Otherwise we write a new unique key with TTL and proceed.
-  //
-  // Cost: one KV list + one KV put per request. list() is eventually consistent
-  // but the over-count window is ~60s, which is acceptable for an AI proxy.
-  const ip = request.headers.get('cf-connecting-ip') || 'unknown-ip';
-  const hourBlock = Math.floor(Date.now() / 3600000);
-  const prefix = `rate_limit:gemini:${ip}:${hourBlock}:`;
-  const LIMIT_PER_HOUR = 30;
-  let isAllowed = true;
+  // Multi-tier rate limiting: Cloudflare KV (primary) + Signed Edge Cookie Token (secondary fallback) + In-memory Burst Guard
+  const rateLimitResult = await checkRateLimit({
+    request,
+    kv: env.RATELIMIT_KV,
+    secret: env.GEMINI_API_KEY || env.GROQ_API_KEY || 'pdfminty_gemini_salt',
+    scope: 'gemini',
+    limit: 30,
+    windowSec: 3600,
+    burstLimit: 8,
+    burstWindowSec: 10,
+  });
 
-  if (env.RATELIMIT_KV) {
-    try {
-      const listed = await env.RATELIMIT_KV.list({ prefix, limit: LIMIT_PER_HOUR + 1 });
-      if (listed.keys.length >= LIMIT_PER_HOUR) {
-        isAllowed = false;
-      } else {
-        // Write a unique key for this request. crypto.randomUUID() is available
-        // in the Workers runtime.
-        const uniqueKey = prefix + crypto.randomUUID();
-        await env.RATELIMIT_KV.put(uniqueKey, '1', { expirationTtl: 3600 });
-      }
-    } catch (kvErr) {
-      console.error('KV rate limiting failed, reverting to memory map fallback:', kvErr);
-      isAllowed = checkFallbackRateLimit(ip);
-    }
-  } else {
-    isAllowed = checkFallbackRateLimit(ip);
-  }
-
-  if (!isAllowed) {
+  if (!rateLimitResult.allowed) {
     return new Response(
       JSON.stringify({
-        error: 'Too many AI analysis requests from this IP. Limit is 30 per hour.',
+        error:
+          rateLimitResult.error ||
+          'Too many AI analysis requests from this IP. Limit is 30 per hour.',
       }),
       {
         status: 429,
         headers: {
           ...corsHeaders,
+          ...rateLimitResult.responseHeaders,
           'Content-Type': 'application/json',
         } as HeadersInit,
       }
@@ -237,13 +204,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
 
     const truncated = typeof textContent === 'string' ? textContent.slice(0, MAX_TEXT_LENGTH) : '';
-    const apiKeys = parseApiKeys(env.GEMINI_API_KEY, env.GROQ_API_KEY, env.GROK_API_KEY, env.GORK_API_KEY);
+    const apiKeys = parseApiKeys(
+      env.GEMINI_API_KEY,
+      env.GROQ_API_KEY,
+      env.GROK_API_KEY,
+      env.GORK_API_KEY
+    );
 
     if (apiKeys.length === 0) {
-      console.error('Missing GEMINI_API_KEY, GROQ_API_KEY, or GROK_API_KEY secret environment variable');
+      console.error(
+        'Missing GEMINI_API_KEY, GROQ_API_KEY, or GROK_API_KEY secret environment variable'
+      );
       return new Response(
         JSON.stringify({
-          error: 'API proxy authentication failed. Verify GEMINI_API_KEY, GROQ_API_KEY, or GROK_API_KEY secret environment variable is loaded in Cloudflare Settings.',
+          error:
+            'API proxy authentication failed. Verify GEMINI_API_KEY, GROQ_API_KEY, or GROK_API_KEY secret environment variable is loaded in Cloudflare Settings.',
         }),
         {
           status: 500,
@@ -300,17 +275,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         // 1. Try Groq API (console.groq.com)
         if (isGroqKey || (!isGeminiKey && !isExplicitGrokKey)) {
           try {
-            const groqModel = env.GROQ_MODEL || env.GROK_MODEL || env.GORK_MODEL || (mode === 'ocr' ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile');
+            const groqModel =
+              env.GROQ_MODEL ||
+              env.GROK_MODEL ||
+              env.GORK_MODEL ||
+              (mode === 'ocr' ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile');
             let userMessageContent: unknown = '';
 
             if (mode === 'ocr') {
               const contentParts: unknown[] = [
-                { type: 'text', text: 'Transcribe this document image accurately into well-formatted Markdown:' },
+                {
+                  type: 'text',
+                  text: 'Transcribe this document image accurately into well-formatted Markdown:',
+                },
               ];
               if (Array.isArray(imagesBase64)) {
                 for (const imgStr of imagesBase64) {
                   if (typeof imgStr === 'string') {
-                    const cleanBase64 = imgStr.startsWith('data:') ? imgStr : `data:image/jpeg;base64,${imgStr}`;
+                    const cleanBase64 = imgStr.startsWith('data:')
+                      ? imgStr
+                      : `data:image/jpeg;base64,${imgStr}`;
                     contentParts.push({
                       type: 'image_url',
                       image_url: { url: cleanBase64 },
@@ -340,7 +324,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             });
 
             if (groqRes.ok) {
-              const json = (await groqRes.json()) as { choices?: Array<{ message?: { content?: string } }> };
+              const json = (await groqRes.json()) as {
+                choices?: Array<{ message?: { content?: string } }>;
+              };
               const text = json.choices?.[0]?.message?.content;
               if (text) {
                 aiText = text;
@@ -363,12 +349,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
             if (mode === 'ocr') {
               const contentParts: unknown[] = [
-                { type: 'text', text: 'Transcribe this document image accurately into well-formatted Markdown:' },
+                {
+                  type: 'text',
+                  text: 'Transcribe this document image accurately into well-formatted Markdown:',
+                },
               ];
               if (Array.isArray(imagesBase64)) {
                 for (const imgStr of imagesBase64) {
                   if (typeof imgStr === 'string') {
-                    const cleanBase64 = imgStr.startsWith('data:') ? imgStr : `data:image/jpeg;base64,${imgStr}`;
+                    const cleanBase64 = imgStr.startsWith('data:')
+                      ? imgStr
+                      : `data:image/jpeg;base64,${imgStr}`;
                     contentParts.push({
                       type: 'image_url',
                       image_url: { url: cleanBase64 },
@@ -398,7 +389,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             });
 
             if (grokRes.ok) {
-              const json = (await grokRes.json()) as { choices?: Array<{ message?: { content?: string } }> };
+              const json = (await grokRes.json()) as {
+                choices?: Array<{ message?: { content?: string } }>;
+              };
               const text = json.choices?.[0]?.message?.content;
               if (text) {
                 aiText = text;
@@ -490,6 +483,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         status: 200,
         headers: {
           ...corsHeaders,
+          ...rateLimitResult.responseHeaders,
           'Content-Type': 'application/json',
         } as HeadersInit,
       }

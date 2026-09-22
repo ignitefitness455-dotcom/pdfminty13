@@ -26,6 +26,12 @@ dist-ssr
 # Cloudflare Wrangler
 .wrangler
 
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
 # Env files
 .env
 .env.local

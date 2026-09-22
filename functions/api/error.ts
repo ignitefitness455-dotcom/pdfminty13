@@ -1,4 +1,5 @@
 import { getCorsOrigin, getCorsHeaders } from '../utils/cors';
+import { checkRateLimit } from '../utils/rate-limiter';
 import { MAX_STACK_LENGTH } from '../utils/validation';
 
 interface Env {
@@ -28,7 +29,10 @@ function scrubPII(input: string): string {
     // Bearer tokens
     [/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED_TOKEN]'],
     // Generic key=... / token=... / api_key=...
-    [/\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|token)\s*[:=]\s*[^\s&]+/gi, '$1=[REDACTED]'],
+    [
+      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|token)\s*[:=]\s*[^\s&]+/gi,
+      '$1=[REDACTED]',
+    ],
     // Email addresses
     [/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[REDACTED_EMAIL]'],
     // IPv4
@@ -103,22 +107,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return new Response(null, { status: 413, headers: corsHeaders as HeadersInit });
   }
 
-  // Rate limit — unique-key-per-request pattern (atomic, race-free).
-  const ip = request.headers.get('cf-connecting-ip') || 'unknown-ip';
-  const hourBlock = Math.floor(Date.now() / 3600000);
-  const prefix = `rate_limit:error:${ip}:${hourBlock}:`;
+  // Multi-tier rate limiting: Cloudflare KV (primary) + Signed Edge Cookie Token (fallback) + Burst Guard
+  const rateLimitResult = await checkRateLimit({
+    request,
+    kv: env.RATELIMIT_KV,
+    secret: 'pdfminty_error_salt',
+    scope: 'error',
+    limit: RATE_LIMIT_PER_HOUR,
+    windowSec: 3600,
+    burstLimit: 15,
+    burstWindowSec: 10,
+  });
 
-  if (env.RATELIMIT_KV) {
-    try {
-      const listed = await env.RATELIMIT_KV.list({ prefix, limit: RATE_LIMIT_PER_HOUR + 1 });
-      if (listed.keys.length >= RATE_LIMIT_PER_HOUR) {
-        return new Response(null, { status: 429, headers: corsHeaders as HeadersInit });
-      }
-      const uniqueKey = prefix + crypto.randomUUID();
-      await env.RATELIMIT_KV.put(uniqueKey, '1', { expirationTtl: 3600 });
-    } catch (kvErr) {
-      console.error('KV rate limit check failed:', kvErr);
-    }
+  if (!rateLimitResult.allowed) {
+    return new Response(null, {
+      status: 429,
+      headers: {
+        ...corsHeaders,
+        ...rateLimitResult.responseHeaders,
+      } as HeadersInit,
+    });
   }
 
   try {
@@ -137,10 +145,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const cleanMessage = sanitize(data.message, MAX_MESSAGE_LENGTH);
     const cleanStack = sanitize(data.stack, MAX_STACK_LENGTH);
     const cleanUrl = sanitize(data.url, MAX_URL_LENGTH);
-    const cleanTimestamp = sanitize(
-      data.timestamp || new Date().toISOString(),
-      50
-    );
+    const cleanTimestamp = sanitize(data.timestamp || new Date().toISOString(), 50);
 
     console.error(
       JSON.stringify({

@@ -15,10 +15,7 @@ interface HeaderProps {
   setMobileMenuOpen?: (open: boolean) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
-  mobileMenuOpen = false,
-  setMobileMenuOpen,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobileMenuOpen }) => {
   const { t } = useTranslation('common');
   const { isDark, toggleTheme } = useTheme();
   const [logoLoaded, setLogoLoaded] = useState(true);
@@ -63,10 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Link to="/" className="hover:text-emerald-500 transition-colors">
             {t('header.nav.home', { defaultValue: 'Home' })}
           </Link>
-          <a
-            href="#all-tools"
-            className="hover:text-emerald-500 transition-colors"
-          >
+          <a href="#all-tools" className="hover:text-emerald-500 transition-colors">
             {t('header.nav.tools', { defaultValue: 'Tools' })}
           </a>
           <Link to={ROUTES.BLOG} className="hover:text-emerald-500 transition-colors">
@@ -95,7 +89,11 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={toggleTheme}
             className="p-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-border-muted text-on-surface transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
             aria-label={t('header.themeToggle.ariaLabel', { defaultValue: 'Toggle dark mode' })}
-            title={isDark ? t('header.themeToggle.switchToLight', { defaultValue: 'Switch to Light Mode' }) : t('header.themeToggle.switchToDark', { defaultValue: 'Switch to Dark Mode' })}
+            title={
+              isDark
+                ? t('header.themeToggle.switchToLight', { defaultValue: 'Switch to Light Mode' })
+                : t('header.themeToggle.switchToDark', { defaultValue: 'Switch to Dark Mode' })
+            }
           >
             {isDark ? (
               <Sun className="w-4 h-4 text-amber-400" />
@@ -109,8 +107,16 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-border-muted text-on-surface transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
-              aria-label={mobileMenuOpen ? t('header.mobileMenu.close', { defaultValue: 'Close menu' }) : t('header.mobileMenu.open', { defaultValue: 'Open menu' })}
-              title={mobileMenuOpen ? t('header.mobileMenu.close', { defaultValue: 'Close menu' }) : t('header.mobileMenu.open', { defaultValue: 'Open menu' })}
+              aria-label={
+                mobileMenuOpen
+                  ? t('header.mobileMenu.close', { defaultValue: 'Close menu' })
+                  : t('header.mobileMenu.open', { defaultValue: 'Open menu' })
+              }
+              title={
+                mobileMenuOpen
+                  ? t('header.mobileMenu.close', { defaultValue: 'Close menu' })
+                  : t('header.mobileMenu.open', { defaultValue: 'Open menu' })
+              }
               id="menu-toggle-btn"
             >
               {mobileMenuOpen ? (

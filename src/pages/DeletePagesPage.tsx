@@ -1,4 +1,12 @@
-import { Trash2, AlertCircle, AlertTriangle, Loader2, CheckSquare, Square, Download } from 'lucide-react';
+import {
+  Trash2,
+  AlertCircle,
+  AlertTriangle,
+  Loader2,
+  CheckSquare,
+  Square,
+  Download,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -66,16 +74,17 @@ export const DeletePagesPage: React.FC = () => {
         if (myToken !== operationTokenRef.current) return;
         // Get page count independently of thumbnail rendering so manual deletion
         // still works even if pdfToImage fails.
-        const count = await WorkerManager.getInstance().runOperation<number>(
-          'getPageCount',
-          { bytes }
-        );
+        const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
+          bytes,
+        });
         if (myToken !== operationTokenRef.current) return;
         setTotalPages(count);
       } catch (err: unknown) {
         if (myToken !== operationTokenRef.current) return;
         const message = err instanceof Error ? err.message : 'Failed to read PDF.';
-        setError(t('deletePages.readError', { message, defaultValue: `Failed to read PDF: ${message}` }));
+        setError(
+          t('deletePages.readError', { message, defaultValue: `Failed to read PDF: ${message}` })
+        );
         setTotalPages(0);
         return;
       }
@@ -104,7 +113,8 @@ export const DeletePagesPage: React.FC = () => {
         logger.error('Failed to render previews:', err);
         setError(
           t('deletePages.previewWarning', {
-            defaultValue: 'Previews could not be rendered, but you can still delete pages using standard input.',
+            defaultValue:
+              'Previews could not be rendered, but you can still delete pages using standard input.',
           })
         );
       } finally {
@@ -240,7 +250,8 @@ export const DeletePagesPage: React.FC = () => {
       setError(
         message ||
           t('deletePages.unexpectedError', {
-            defaultValue: 'An unexpected failure occurred. Verify indices match document dimensions.',
+            defaultValue:
+              'An unexpected failure occurred. Verify indices match document dimensions.',
           })
       );
     } finally {
@@ -251,7 +262,10 @@ export const DeletePagesPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="delete_pages_container">
       <SEO slug="delete-pages-pdf" />
-      <ToolHeader slug="delete-pages-pdf" limitMB={TOOL_SIZE_LIMITS['delete-pages-pdf'].maxSingleMB} />
+      <ToolHeader
+        slug="delete-pages-pdf"
+        limitMB={TOOL_SIZE_LIMITS['delete-pages-pdf'].maxSingleMB}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -300,18 +314,23 @@ export const DeletePagesPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="delete_pages_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="delete_pages_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
                 <span>
                   {t('deletePages.successTitle', {
-                    defaultValue: 'Pages Deleted Successfully! Your modified PDF has been generated.',
+                    defaultValue:
+                      'Pages Deleted Successfully! Your modified PDF has been generated.',
                   })}
                 </span>
               </div>
               <p className="text-slate-500 text-[11px] font-semibold leading-normal">
                 {t('deletePages.successDesc', {
-                  defaultValue: 'The selected pages have been removed completely offline in your browser.',
+                  defaultValue:
+                    'The selected pages have been removed completely offline in your browser.',
                 })}
               </p>
               {downloadUrl && (
@@ -323,7 +342,9 @@ export const DeletePagesPage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('deletePages.downloadStripped', { defaultValue: 'Download Stripped PDF' })}</span>
+                    <span>
+                      {t('deletePages.downloadStripped', { defaultValue: 'Download Stripped PDF' })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -371,7 +392,9 @@ export const DeletePagesPage: React.FC = () => {
                 >
                   <Loader2 className="w-8 h-8 text-rose-600 animate-spin" />
                   <p className="text-xs font-bold text-slate-400">
-                    {t('deletePages.loadingPages', { defaultValue: 'Loading document pages structure...' })}
+                    {t('deletePages.loadingPages', {
+                      defaultValue: 'Loading document pages structure...',
+                    })}
                   </p>
                 </div>
               ) : thumbnails.length > 0 ? (
@@ -445,7 +468,9 @@ export const DeletePagesPage: React.FC = () => {
           <div className="bg-amber-50 p-4 rounded-xl flex items-start space-x-2 border border-amber-200 text-xs text-amber-800 leading-normal">
             <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold">{t('deletePages.cautionTitle', { defaultValue: 'Cautionary notice:' })}</p>
+              <p className="font-bold">
+                {t('deletePages.cautionTitle', { defaultValue: 'Cautionary notice:' })}
+              </p>
               <p className="mt-0.5">
                 {t('deletePages.cautionDesc', {
                   defaultValue:
@@ -508,7 +533,9 @@ export const DeletePagesPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('deletePages.strippingButton', { defaultValue: 'Stripping pages...' })}</span>
+                  <span>
+                    {t('deletePages.strippingButton', { defaultValue: 'Stripping pages...' })}
+                  </span>
                 </span>
               ) : (
                 <>

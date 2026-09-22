@@ -101,46 +101,53 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [theme]);
 
-  const iconMap = useMemo<Record<string, React.ComponentType<{ className?: string }>>>(() => ({
-    Merge,
-    Scissors,
-    CheckSquare,
-    Move,
-    Minimize2,
-    RotateCw,
-    Trash2,
-    Bookmark,
-    Hash,
-    FilePlus,
-    Shield,
-    Lock,
-    Image,
-    Eye,
-    Sparkles,
-    FileCode2,
-    Printer,
-    FileText,
-    Wrench,
-    FilePenLine,
-    ShieldBan,
-  }), []);
+  const iconMap = useMemo<Record<string, React.ComponentType<{ className?: string }>>>(
+    () => ({
+      Merge,
+      Scissors,
+      CheckSquare,
+      Move,
+      Minimize2,
+      RotateCw,
+      Trash2,
+      Bookmark,
+      Hash,
+      FilePlus,
+      Shield,
+      Lock,
+      Image,
+      Eye,
+      Sparkles,
+      FileCode2,
+      Printer,
+      FileText,
+      Wrench,
+      FilePenLine,
+      ShieldBan,
+    }),
+    []
+  );
 
-  const toolsList = useMemo<ToolInfo[]>(() => TOOLS
-    .filter((toolItem) => toolItem.type === 'tool')
-    .map((toolItem) => ({
-      name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
-      slug: toolItem.slug,
-      description: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
-    })), [t]);
+  const toolsList = useMemo<ToolInfo[]>(
+    () =>
+      TOOLS.filter((toolItem) => toolItem.type === 'tool').map((toolItem) => ({
+        name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
+        slug: toolItem.slug,
+        description: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
+      })),
+    [t]
+  );
 
-  const menuItems = useMemo(() => TOOLS
-    .filter((toolItem) => toolItem.type === 'tool')
-    .map((toolItem) => ({
-      name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
-      path: `/${toolItem.slug}/`,
-      icon: iconMap[toolItem.icon] || HelpCircle,
-      desc: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
-    })), [iconMap, t]);
+  const menuItems = useMemo(
+    () =>
+      TOOLS.filter((toolItem) => toolItem.type === 'tool').map((toolItem) => ({
+        name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
+        path: `/${toolItem.slug}/`,
+        icon: iconMap[toolItem.icon] || HelpCircle,
+        desc: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
+      })),
+    [iconMap, t]
+  );
 
   return (
     <LayoutContext.Provider value={{ toolsList }}>
@@ -182,7 +189,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {(() => {
               let activeSlug = location.pathname.replace(/^\//, '').replace(/\/$/, '');
               for (const loc of SUPPORTED_LOCALES) {
-                if (loc !== DEFAULT_LOCALE && (activeSlug === loc || activeSlug.startsWith(`${loc}/`))) {
+                if (
+                  loc !== DEFAULT_LOCALE &&
+                  (activeSlug === loc || activeSlug.startsWith(`${loc}/`))
+                ) {
                   activeSlug = activeSlug.substring(loc.length + 1);
                   break;
                 }
@@ -198,14 +208,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </main>
 
-        <Footer
-          setShowFeedbackModal={setShowFeedbackModal}
-        />
+        <Footer setShowFeedbackModal={setShowFeedbackModal} />
 
-        <FeedbackModal
-          isOpen={showFeedbackModal}
-          onClose={() => setShowFeedbackModal(false)}
-        />
+        <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
       </div>
     </LayoutContext.Provider>
   );

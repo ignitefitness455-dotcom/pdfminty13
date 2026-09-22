@@ -10,34 +10,43 @@ export const SeoResourcesSection: React.FC = () => {
 
   const resourceCards = [
     {
-      title: t('home.seoResources.cards.pdfToWordTitle', { defaultValue: 'Free PDF to Word Guide' }),
+      title: t('home.seoResources.cards.pdfToWordTitle', {
+        defaultValue: 'Free PDF to Word Guide',
+      }),
       category: 'Guide',
       badge: 'POPULAR',
       badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       description: t('home.seoResources.cards.pdfToWordDesc', {
-        defaultValue: 'Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.',
+        defaultValue:
+          'Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.',
       }),
       link: '/blog/how-to-convert-pdf-to-word-for-free-2026/',
       icon: FileText,
     },
     {
-      title: t('home.seoResources.cards.adobeAltTitle', { defaultValue: 'Adobe Acrobat Alternative' }),
+      title: t('home.seoResources.cards.adobeAltTitle', {
+        defaultValue: 'Adobe Acrobat Alternative',
+      }),
       category: 'Alternative',
       badge: 'TOP FEATURED',
       badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       description: t('home.seoResources.cards.adobeAltDesc', {
-        defaultValue: 'Replace expensive ~$240/year Adobe subscriptions with a 100% private, free client-side PDF utility suite.',
+        defaultValue:
+          'Replace expensive ~$240/year Adobe subscriptions with a 100% private, free client-side PDF utility suite.',
       }),
       link: ROUTES.ADOBE_ALTERNATIVE,
       icon: Sparkles,
     },
     {
-      title: t('home.seoResources.cards.compressGuideTitle', { defaultValue: 'PDF Compression Guide' }),
+      title: t('home.seoResources.cards.compressGuideTitle', {
+        defaultValue: 'PDF Compression Guide',
+      }),
       category: 'Optimization',
       badge: 'GUIDE',
       badgeColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
       description: t('home.seoResources.cards.compressGuideDesc', {
-        defaultValue: 'Understand lossy vs. lossless PDF reduction, image stream optimization, and how to shrink PDFs safely.',
+        defaultValue:
+          'Understand lossy vs. lossless PDF reduction, image stream optimization, and how to shrink PDFs safely.',
       }),
       link: '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
       icon: Cpu,
@@ -48,7 +57,8 @@ export const SeoResourcesSection: React.FC = () => {
       badge: 'PRIVACY FIRST',
       badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       description: t('home.seoResources.cards.smallpdfDesc', {
-        defaultValue: 'Compare zero-upload browser processing against SmallPDF’s cloud server storage model.',
+        defaultValue:
+          'Compare zero-upload browser processing against SmallPDF’s cloud server storage model.',
       }),
       link: ROUTES.COMPARE_SMALLPDF,
       icon: Scale,
@@ -59,18 +69,22 @@ export const SeoResourcesSection: React.FC = () => {
       badge: 'NO ADS',
       badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
       description: t('home.seoResources.cards.ilovepdfDesc', {
-        defaultValue: 'In-depth speed, security, and feature breakdown vs iLovePDF. No file limits or ad trackers.',
+        defaultValue:
+          'In-depth speed, security, and feature breakdown vs iLovePDF. No file limits or ad trackers.',
       }),
       link: ROUTES.COMPARE_ILOVEPDF,
       icon: Scale,
     },
     {
-      title: t('home.seoResources.cards.trustArticleTitle', { defaultValue: 'Is Online PDF Safe?' }),
+      title: t('home.seoResources.cards.trustArticleTitle', {
+        defaultValue: 'Is Online PDF Safe?',
+      }),
       category: 'Security',
       badge: 'MUST READ',
       badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
       description: t('home.seoResources.cards.trustArticleDesc', {
-        defaultValue: 'Crucial security analysis explaining the privacy hazards of sending sensitive PDFs to remote servers.',
+        defaultValue:
+          'Crucial security analysis explaining the privacy hazards of sending sensitive PDFs to remote servers.',
       }),
       link: ROUTES.TRUST_ARTICLE,
       icon: Shield,
@@ -81,18 +95,22 @@ export const SeoResourcesSection: React.FC = () => {
       badge: 'TUTORIAL',
       badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       description: t('home.seoResources.cards.signGuideDesc', {
-        defaultValue: 'How to sign contracts and legal documents locally on your device without third-party server exposure.',
+        defaultValue:
+          'How to sign contracts and legal documents locally on your device without third-party server exposure.',
       }),
       link: '/blog/free-pdf-e-signature-sign-documents-without-uploading/',
       icon: Lock,
     },
     {
-      title: t('home.seoResources.cards.metadataGuideTitle', { defaultValue: 'Remove PDF Metadata' }),
+      title: t('home.seoResources.cards.metadataGuideTitle', {
+        defaultValue: 'Remove PDF Metadata',
+      }),
       category: 'Privacy',
       badge: 'SAFETY',
       badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       description: t('home.seoResources.cards.metadataGuideDesc', {
-        defaultValue: 'Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs.',
+        defaultValue:
+          'Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs.',
       }),
       link: '/blog/how-to-remove-pdf-metadata-for-privacy/',
       icon: Shield,
@@ -131,7 +149,9 @@ export const SeoResourcesSection: React.FC = () => {
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                     <IconComponent className="w-5 h-5" />
                   </div>
-                  <span className={`text-[10px] font-black tracking-wider px-2.5 py-0.5 rounded-full border uppercase ${card.badgeColor}`}>
+                  <span
+                    className={`text-[10px] font-black tracking-wider px-2.5 py-0.5 rounded-full border uppercase ${card.badgeColor}`}
+                  >
                     {card.badge}
                   </span>
                 </div>
@@ -144,7 +164,9 @@ export const SeoResourcesSection: React.FC = () => {
               </div>
 
               <div className="pt-4 mt-4 border-t border-border-muted flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <span>{t('home.seoResources.exploreResource', { defaultValue: 'Explore Resource' })}</span>
+                <span>
+                  {t('home.seoResources.exploreResource', { defaultValue: 'Explore Resource' })}
+                </span>
                 <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -157,7 +179,11 @@ export const SeoResourcesSection: React.FC = () => {
           to={ROUTES.BLOG}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-border-muted font-extrabold text-xs text-slate-800 dark:text-slate-200 hover:text-emerald-600 transition-all shadow-xs"
         >
-          <span>{t('home.seoResources.viewAllHub', { defaultValue: 'View All Articles & Guides in Knowledge Hub' })}</span>
+          <span>
+            {t('home.seoResources.viewAllHub', {
+              defaultValue: 'View All Articles & Guides in Knowledge Hub',
+            })}
+          </span>
           <ArrowRight className="w-4 h-4 text-emerald-500" />
         </Link>
       </div>

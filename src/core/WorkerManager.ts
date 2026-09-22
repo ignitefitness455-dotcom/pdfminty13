@@ -144,21 +144,48 @@ export class WorkerManager {
       case 'extractPages':
         return await ops.extractPages(p.bytes as Uint8Array, p.pageNumbers as number[]);
       case 'rotatePDF':
-        return await ops.rotatePDF(p.bytes as Uint8Array, p.degreesValue as number, p.pageIndices as number[] | undefined);
+        return await ops.rotatePDF(
+          p.bytes as Uint8Array,
+          p.degreesValue as number,
+          p.pageIndices as number[] | undefined
+        );
       case 'deletePagesPDF':
         return await ops.deletePagesPDF(p.bytes as Uint8Array, p.pageIndices as number[]);
       case 'reorderPDF':
         return await ops.reorderPDF(p.bytes as Uint8Array, p.newOrder as number[]);
       case 'watermarkPDF':
-        return await ops.watermarkPDF(p.bytes as Uint8Array, p.text as string, p.options as { opacity?: number; size?: number; rotationDegrees?: number; colorHex?: string } | undefined);
+        return await ops.watermarkPDF(
+          p.bytes as Uint8Array,
+          p.text as string,
+          p.options as
+            | { opacity?: number; size?: number; rotationDegrees?: number; colorHex?: string }
+            | undefined
+        );
       case 'addPageNumbersPDF':
-        return await ops.addPageNumbersPDF(p.bytes as Uint8Array, p.options as { format?: string; position?: string; startFrom?: number; skipFirstPage?: boolean } | undefined);
+        return await ops.addPageNumbersPDF(
+          p.bytes as Uint8Array,
+          p.options as
+            | { format?: string; position?: string; startFrom?: number; skipFirstPage?: boolean }
+            | undefined
+        );
       case 'addBlankPagePDF':
-        return await ops.addBlankPagePDF(p.bytes as Uint8Array, p.position as 'start' | 'end' | number, p.pageSizeKey as keyof typeof import('../config/constants').PDF_PAGE_SIZES | undefined);
+        return await ops.addBlankPagePDF(
+          p.bytes as Uint8Array,
+          p.position as 'start' | 'end' | number,
+          p.pageSizeKey as keyof typeof import('../config/constants').PDF_PAGE_SIZES | undefined
+        );
       case 'imagesToPDF':
-        return await ops.imagesToPDF(p.imageBlobs as { buf: Uint8Array; type: string; name?: string }[], p.options as { pageSize?: keyof typeof import('../config/constants').PDF_PAGE_SIZES } | undefined);
+        return await ops.imagesToPDF(
+          p.imageBlobs as { buf: Uint8Array; type: string; name?: string }[],
+          p.options as
+            | { pageSize?: keyof typeof import('../config/constants').PDF_PAGE_SIZES }
+            | undefined
+        );
       case 'compressPDF':
-        return await ops.compressPDF(p.bytes as Uint8Array, p.level as 'basic' | 'medium' | 'maximum' | undefined);
+        return await ops.compressPDF(
+          p.bytes as Uint8Array,
+          p.level as 'basic' | 'medium' | 'maximum' | undefined
+        );
       case 'protectPDF':
         return await ops.protectPDF(p as { fileBytes: Uint8Array; userPassword: string });
       case 'unlockPDF':

@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 
-export function useDebounce<T>(value: T, delay = 300): { debouncedValue: T; isDebouncing: boolean } {
+export function useDebounce<T>(
+  value: T,
+  delay = 300
+): { debouncedValue: T; isDebouncing: boolean } {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -12,7 +15,9 @@ export function useDebounce<T>(value: T, delay = 300): { debouncedValue: T; isDe
       setDebouncedValue(value);
       setIsDebouncing(false);
     }, delay);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, delay]);
 

@@ -1,4 +1,5 @@
 import { getCorsOrigin, getCorsHeaders } from '../utils/cors';
+import { checkRateLimit } from '../utils/rate-limiter';
 import {
   sanitizeForStorage,
   sanitizeForHtml,
@@ -50,34 +51,34 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
   }
 
-  // Rate limiting (max 5 subscriptions per IP per hour)
-  const ip = request.headers.get('cf-connecting-ip') || 'unknown-ip';
-  const hourBlock = Math.floor(Date.now() / 3600000);
-  const prefix = `rate_limit:subscribe:${ip}:${hourBlock}:`;
-  const LIMIT_PER_HOUR = 5;
+  // Multi-tier rate limiting: Cloudflare KV (primary) + Signed Edge Cookie Token (fallback) + Burst Guard
+  const rateLimitResult = await checkRateLimit({
+    request,
+    kv: env.RATELIMIT_KV,
+    secret: env.RESEND_API_KEY || 'pdfminty_subscribe_salt',
+    scope: 'subscribe',
+    limit: 5,
+    windowSec: 3600,
+    burstLimit: 3,
+    burstWindowSec: 10,
+  });
 
-  if (env.RATELIMIT_KV) {
-    try {
-      const listed = await env.RATELIMIT_KV.list({ prefix, limit: LIMIT_PER_HOUR + 1 });
-      if (listed.keys.length >= LIMIT_PER_HOUR) {
-        return new Response(
-          JSON.stringify({
-            error: 'Too many subscription requests from this IP. Please try again later.',
-          }),
-          {
-            status: 429,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-            } as HeadersInit,
-          }
-        );
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({
+        error:
+          rateLimitResult.error ||
+          'Too many subscription requests from this IP. Please try again later.',
+      }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          ...rateLimitResult.responseHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
       }
-      const uniqueKey = prefix + crypto.randomUUID();
-      await env.RATELIMIT_KV.put(uniqueKey, '1', { expirationTtl: 3600 });
-    } catch (kvErr) {
-      console.error('KV rate limiting error:', kvErr);
-    }
+    );
   }
 
   try {
@@ -91,7 +92,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const name = sanitizeForStorage(
       typeof rawData.name === 'string' ? rawData.name : '',
       MAX_NAME_LENGTH
-    ).replace(/[\r\n]+/g, ' ').trim();
+    )
+      .replace(/[\r\n]+/g, ' ')
+      .trim();
 
     if (!email) {
       return new Response(JSON.stringify({ error: 'Email address is required.' }), {

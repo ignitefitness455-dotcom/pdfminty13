@@ -1,4 +1,13 @@
-import { FileText, CheckCircle2, Shield, Scale, HelpCircle, Bot, AlertTriangle, Mail } from 'lucide-react';
+import {
+  FileText,
+  CheckCircle2,
+  Shield,
+  Scale,
+  HelpCircle,
+  Bot,
+  AlertTriangle,
+  Mail,
+} from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -20,11 +29,13 @@ export const TermsOfServicePage: React.FC = () => {
         <div className="text-center space-y-4 border-b border-border-muted pb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide uppercase">
             <Scale className="w-4 h-4" />
-            <span>{t("termsOfService.badge")}</span>
+            <span>{t('termsOfService.badge')}</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight">{t('termsOfService.title', { defaultValue: 'Terms of Service' })}</h1>
+          <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight">
+            {t('termsOfService.title', { defaultValue: 'Terms of Service' })}
+          </h1>
           <p className="text-xs sm:text-sm font-semibold text-on-surface-variant max-w-xl mx-auto">
-            {t("termsOfService.updated")}
+            {t('termsOfService.updated')}
           </p>
         </div>
 
@@ -33,41 +44,37 @@ export const TermsOfServicePage: React.FC = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec1Title")}
+              {t('termsOfService.sec1Title')}
             </h2>
-            <p>
-              {t("termsOfService.sec1Desc")}
-            </p>
+            <p>{t('termsOfService.sec1Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Shield className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec2Title")}
+              {t('termsOfService.sec2Title')}
             </h2>
-            <p>
-              {t("termsOfService.sec2Desc")}
-            </p>
+            <p>{t('termsOfService.sec2Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Bot className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec3Title")}
+              {t('termsOfService.sec3Title')}
             </h2>
             <div className="space-y-3">
-              <p>
-                {t("termsOfService.sec3Intro")}
-              </p>
+              <p>{t('termsOfService.sec3Intro')}</p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  <strong>{t("termsOfService.sec3Li1Title")}</strong> {t("termsOfService.sec3Li1Desc")}
+                  <strong>{t('termsOfService.sec3Li1Title')}</strong>{' '}
+                  {t('termsOfService.sec3Li1Desc')}
                 </li>
                 <li>
-                  <span dangerouslySetInnerHTML={{ __html: t("tos.aiDocs") }} />
+                  <span dangerouslySetInnerHTML={{ __html: t('tos.aiDocs') }} />
                 </li>
                 <li>
-                  <strong>{t("termsOfService.sec3Li3Title")}</strong> {t("termsOfService.sec3Li3Desc")}
+                  <strong>{t('termsOfService.sec3Li3Title')}</strong>{' '}
+                  {t('termsOfService.sec3Li3Desc')}
                 </li>
               </ul>
             </div>
@@ -76,44 +83,42 @@ export const TermsOfServicePage: React.FC = () => {
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <FileText className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec4Title")}
+              {t('termsOfService.sec4Title')}
             </h2>
-            <p>
-              {t("termsOfService.sec4Desc")}
-            </p>
+            <p>{t('termsOfService.sec4Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec5Title")}
+              {t('termsOfService.sec5Title')}
             </h2>
-            <p>
-              {t("termsOfService.sec5Desc")}
-            </p>
+            <p>{t('termsOfService.sec5Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec6Title")}
+              {t('termsOfService.sec6Title')}
             </h2>
-            <p>
-              {t("termsOfService.sec6Desc")}
-            </p>
+            <p>{t('termsOfService.sec6Desc')}</p>
           </section>
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Mail className="w-5 h-5 text-emerald-500" />
-              {t("termsOfService.sec7Title")}
+              {t('termsOfService.sec7Title')}
             </h2>
             <p>
-              {t("termsOfService.sec7Desc")}{' '}
-              <Link to={ROUTES.CONTACT} className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-                {t("termsOfService.contactPage")}
+              {t('termsOfService.sec7Desc')}{' '}
+              <Link
+                to={ROUTES.CONTACT}
+                className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+              >
+                {t('termsOfService.contactPage')}
               </Link>{' '}
-              {t("termsOfService.orEmail")} <span className="font-semibold text-on-surface">support@pdfminty.com</span>.
+              {t('termsOfService.orEmail')}{' '}
+              <span className="font-semibold text-on-surface">support@pdfminty.com</span>.
             </p>
           </section>
         </div>

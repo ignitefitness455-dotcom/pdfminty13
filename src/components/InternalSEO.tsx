@@ -11,7 +11,7 @@ export const Breadcrumbs: React.FC = () => {
   const { t } = useTranslation('common');
   const homePath = '/';
   const blogPath = ROUTES.BLOG;
-  
+
   const cleanSlug = useMemo(() => {
     if (!pathname || pathname === '/') return '';
     let slug = pathname.toLowerCase().replace(/^\//, '').replace(/\/$/, '');
@@ -38,36 +38,50 @@ export const Breadcrumbs: React.FC = () => {
 
   if (cleanSlug === 'blog') {
     return (
-      <nav aria-label={breadcrumbAria} className="flex text-[11px] sm:text-xs text-slate-400/80 mb-6 gap-2 font-bold font-sans tracking-wide">
-        <Link to={homePath} className="hover:text-emerald-600 transition-colors uppercase font-sans">
+      <nav
+        aria-label={breadcrumbAria}
+        className="flex text-[11px] sm:text-xs text-slate-400/80 mb-6 gap-2 font-bold font-sans tracking-wide"
+      >
+        <Link
+          to={homePath}
+          className="hover:text-emerald-600 transition-colors uppercase font-sans"
+        >
           {homeLabel}
         </Link>
         <span>/</span>
-        <span className="text-slate-600 dark:text-slate-400 uppercase font-sans">
-          {blogLabel}
-        </span>
+        <span className="text-slate-600 dark:text-slate-400 uppercase font-sans">{blogLabel}</span>
       </nav>
     );
   }
 
-  if (cleanSlug === 'about-us' || cleanSlug === 'contact' || cleanSlug === 'privacy-policy' || cleanSlug === 'terms-of-service') {
-    const title = cleanSlug === 'about-us'
-      ? t('header.nav.about', { defaultValue: 'About Us' })
-      : cleanSlug === 'contact'
-      ? t('header.nav.contact', { defaultValue: 'Contact Us' })
-      : cleanSlug === 'privacy-policy'
-      ? t('footer.links.privacyPolicy', { defaultValue: 'Privacy Policy' })
-      : t('footer.links.termsOfService', { defaultValue: 'Terms of Service' });
+  if (
+    cleanSlug === 'about-us' ||
+    cleanSlug === 'contact' ||
+    cleanSlug === 'privacy-policy' ||
+    cleanSlug === 'terms-of-service'
+  ) {
+    const title =
+      cleanSlug === 'about-us'
+        ? t('header.nav.about', { defaultValue: 'About Us' })
+        : cleanSlug === 'contact'
+          ? t('header.nav.contact', { defaultValue: 'Contact Us' })
+          : cleanSlug === 'privacy-policy'
+            ? t('footer.links.privacyPolicy', { defaultValue: 'Privacy Policy' })
+            : t('footer.links.termsOfService', { defaultValue: 'Terms of Service' });
 
     return (
-      <nav aria-label={breadcrumbAria} className="flex text-[11px] sm:text-xs text-slate-400/80 mb-6 gap-2 font-bold font-sans tracking-wide">
-        <Link to={homePath} className="hover:text-emerald-600 transition-colors uppercase font-sans">
+      <nav
+        aria-label={breadcrumbAria}
+        className="flex text-[11px] sm:text-xs text-slate-400/80 mb-6 gap-2 font-bold font-sans tracking-wide"
+      >
+        <Link
+          to={homePath}
+          className="hover:text-emerald-600 transition-colors uppercase font-sans"
+        >
           {homeLabel}
         </Link>
         <span>/</span>
-        <span className="text-slate-600 dark:text-slate-400 uppercase font-sans">
-          {title}
-        </span>
+        <span className="text-slate-600 dark:text-slate-400 uppercase font-sans">{title}</span>
       </nav>
     );
   }
@@ -80,21 +94,30 @@ export const Breadcrumbs: React.FC = () => {
   const itemName = t(`tools.${currentItem.slug}.name`, { defaultValue: currentItem.name });
 
   return (
-    <nav aria-label={breadcrumbAria} className="flex text-[11px] sm:text-xs text-slate-400/80 mb-6 gap-2 font-bold font-sans tracking-wide">
+    <nav
+      aria-label={breadcrumbAria}
+      className="flex text-[11px] sm:text-xs text-slate-400/80 mb-6 gap-2 font-bold font-sans tracking-wide"
+    >
       <Link to={homePath} className="hover:text-emerald-600 transition-colors uppercase font-sans">
         {homeLabel}
       </Link>
       <span>/</span>
       {isArticle ? (
         <>
-          <Link to={blogPath} className="hover:text-emerald-600 transition-colors uppercase font-sans">
+          <Link
+            to={blogPath}
+            className="hover:text-emerald-600 transition-colors uppercase font-sans"
+          >
             {blogLabel}
           </Link>
           <span>/</span>
         </>
       ) : (
         <>
-          <Link to={homePath} className="hover:text-emerald-600 transition-colors uppercase font-sans">
+          <Link
+            to={homePath}
+            className="hover:text-emerald-600 transition-colors uppercase font-sans"
+          >
             {toolsLabel}
           </Link>
           <span>/</span>
@@ -132,7 +155,8 @@ export default function InternalSEO() {
   }
 
   const structuredData: Record<string, unknown>[] = [];
-  const homeUrl = currentLocale === DEFAULT_LOCALE ? `${SITE_URL}/` : `${SITE_URL}/${currentLocale}/`;
+  const homeUrl =
+    currentLocale === DEFAULT_LOCALE ? `${SITE_URL}/` : `${SITE_URL}/${currentLocale}/`;
 
   // 1. Homepage (`/` or `/${currentLocale}/`)
   if (!baseSlug) {
@@ -168,7 +192,8 @@ export default function InternalSEO() {
         '@type': 'CollectionPage',
         name: 'PdfMinty Knowledge Hub',
         url: `${SITE_URL}/blog/`,
-        description: 'Explore expert guides, security tips, and privacy-first PDF tutorials in the PdfMinty Knowledge Hub.',
+        description:
+          'Explore expert guides, security tips, and privacy-first PDF tutorials in the PdfMinty Knowledge Hub.',
         publisher: {
           '@type': 'Organization',
           name: SITE_NAME,
@@ -199,7 +224,10 @@ export default function InternalSEO() {
     const seoInfo = TOOLS.find((t) => t && t.slug === baseSlug);
     if (!seoInfo) return null;
 
-    const pageCanonicalUrl = currentLocale === DEFAULT_LOCALE ? `${SITE_URL}/${seoInfo.slug}/` : `${SITE_URL}/${currentLocale}/${seoInfo.slug}/`;
+    const pageCanonicalUrl =
+      currentLocale === DEFAULT_LOCALE
+        ? `${SITE_URL}/${seoInfo.slug}/`
+        : `${SITE_URL}/${currentLocale}/${seoInfo.slug}/`;
 
     if (seoInfo.type === 'tool') {
       structuredData.push({

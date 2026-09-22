@@ -1,39 +1,40 @@
-import { Lock, Plus, ShieldCheck, Zap } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Lock, Plus, ShieldCheck, Zap } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
+import { cn } from '../../lib/utils';
+import { Button } from '../ui/button';
 
 type Props = {
-  onFile: (file: File) => void
-  error?: string | null
-}
+  onFile: (file: File) => void;
+  error?: string | null;
+};
 
 export function UploadScreen({ onFile, error }: Props) {
-  const { t } = useTranslation('common')
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [dragging, setDragging] = useState(false)
+  const { t } = useTranslation('common');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
-      const file = files?.[0]
-      if (file) onFile(file)
+      const file = files?.[0];
+      if (file) onFile(file);
     },
-    [onFile],
-  )
+    [onFile]
+  );
 
   return (
-    <div className="flex flex-1 flex-col items-center px-4 pb-16 pt-12 md:pt-20 bg-slate-50 dark:bg-slate-950"
+    <div
+      className="flex flex-1 flex-col items-center px-4 pb-16 pt-12 md:pt-20 bg-slate-50 dark:bg-slate-950"
       onDragOver={(e) => {
-        e.preventDefault()
-        setDragging(true)
+        e.preventDefault();
+        setDragging(true);
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={(e) => {
-        e.preventDefault()
-        setDragging(false)
-        handleFiles(e.dataTransfer.files)
+        e.preventDefault();
+        setDragging(false);
+        handleFiles(e.dataTransfer.files);
       }}
     >
       <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
@@ -53,7 +54,7 @@ export function UploadScreen({ onFile, error }: Props) {
           'mt-10 flex w-full max-w-xl flex-col items-center gap-5 rounded-2xl border-2 border-dashed px-6 py-12 transition-colors',
           dragging
             ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-900/10'
-            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
+            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'
         )}
       >
         <input
@@ -63,8 +64,8 @@ export function UploadScreen({ onFile, error }: Props) {
           className="sr-only"
           aria-label={t('signPdf.selectPdf', { defaultValue: 'Select PDF file' })}
           onChange={(e) => {
-            handleFiles(e.target.files)
-            e.target.value = ''
+            handleFiles(e.target.files);
+            e.target.value = '';
           }}
         />
         <Button
@@ -79,7 +80,10 @@ export function UploadScreen({ onFile, error }: Props) {
           {t('signPdf.orDropPdf', { defaultValue: 'or drop a PDF here' })}
         </p>
         {error ? (
-          <p role="alert" className="rounded-md bg-rose-50 dark:bg-rose-900/20 px-3 py-2 text-sm text-rose-600 dark:text-rose-400">
+          <p
+            role="alert"
+            className="rounded-md bg-rose-50 dark:bg-rose-900/20 px-3 py-2 text-sm text-rose-600 dark:text-rose-400"
+          >
             {error}
           </p>
         ) : null}
@@ -90,7 +94,8 @@ export function UploadScreen({ onFile, error }: Props) {
           icon={<Lock className="size-5" aria-hidden="true" />}
           title={t('signPdf.featurePrivateTitle', { defaultValue: 'Private by design' })}
           body={t('signPdf.featurePrivateBody', {
-            defaultValue: 'Your PDF never leaves your browser. Everything is processed on your device.',
+            defaultValue:
+              'Your PDF never leaves your browser. Everything is processed on your device.',
           })}
         />
         <Feature
@@ -104,7 +109,8 @@ export function UploadScreen({ onFile, error }: Props) {
           icon={<ShieldCheck className="size-5" aria-hidden="true" />}
           title={t('signPdf.featureQualityTitle', { defaultValue: 'Vector quality' })}
           body={t('signPdf.featureQualityBody', {
-            defaultValue: 'Signatures and text are embedded at full resolution into the original PDF.',
+            defaultValue:
+              'Signatures and text are embedded at full resolution into the original PDF.',
           })}
         />
       </ul>
@@ -155,7 +161,10 @@ export function UploadScreen({ onFile, error }: Props) {
             </div>
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-4 space-y-2">
               <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                📷 {t('signPdf.methodUploadTitle', { defaultValue: 'Upload Image or Scanned Signature' })}
+                📷{' '}
+                {t('signPdf.methodUploadTitle', {
+                  defaultValue: 'Upload Image or Scanned Signature',
+                })}
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-400">
                 {t('signPdf.methodUploadDesc', {
@@ -182,7 +191,9 @@ export function UploadScreen({ onFile, error }: Props) {
               })}
             </li>
             <li>
-              <strong>{t('signPdf.step2Bold', { defaultValue: 'Create & Place Elements:' })}</strong>{' '}
+              <strong>
+                {t('signPdf.step2Bold', { defaultValue: 'Create & Place Elements:' })}
+              </strong>{' '}
               {t('signPdf.step2Text', {
                 defaultValue:
                   'Create your signature or initials, then click or drag signature, signer name, date, and custom text fields directly onto the page.',
@@ -199,7 +210,11 @@ export function UploadScreen({ onFile, error }: Props) {
         </div>
 
         <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-4 text-xs text-emerald-900 dark:text-emerald-200 space-y-1 text-left">
-          <p className="font-bold">{t('signPdf.privacyTitle', { defaultValue: '🔒 100% Client-Side Privacy & Legal Security' })}</p>
+          <p className="font-bold">
+            {t('signPdf.privacyTitle', {
+              defaultValue: '🔒 100% Client-Side Privacy & Legal Security',
+            })}
+          </p>
           <p className="leading-normal text-slate-600 dark:text-slate-400">
             {t('signPdf.privacyText', {
               defaultValue:
@@ -209,15 +224,17 @@ export function UploadScreen({ onFile, error }: Props) {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
 function Feature({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <li className="flex flex-col gap-2">
-      <span className="flex size-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400">{icon}</span>
+      <span className="flex size-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400">
+        {icon}
+      </span>
       <h2 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
       <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
     </li>
-  )
+  );
 }

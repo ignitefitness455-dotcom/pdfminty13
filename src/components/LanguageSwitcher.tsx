@@ -57,10 +57,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     if (!isOpen) return;
 
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -134,9 +131,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                   <Globe className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   <span className="truncate">{meta.nativeName}</span>
                 </div>
-                {isSelected && (
-                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                )}
+                {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
               </button>
             );
           })}
@@ -198,9 +193,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                       {meta.name}
                     </span>
                   </div>
-                  {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                  )}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
                 </button>
               );
             })}
@@ -227,9 +220,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         id="language-switcher-btn"
       >
         <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
-        <span className="font-semibold text-xs tracking-tight">
-          {currentMetadata.nativeName}
-        </span>
+        <span className="font-semibold text-xs tracking-tight">{currentMetadata.nativeName}</span>
         <ChevronDown
           className={`w-3 h-3 text-on-surface-variant transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
@@ -272,9 +263,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                       ({meta.name})
                     </span>
                   </div>
-                  {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                  )}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
                 </button>
               );
             })}

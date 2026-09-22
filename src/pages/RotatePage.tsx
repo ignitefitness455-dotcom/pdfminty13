@@ -61,7 +61,9 @@ export const RotatePage: React.FC = () => {
         if (myToken !== operationTokenRef.current) return;
 
         if (rendered && rendered.length > 0) {
-          const blob = new Blob([rendered[0].imageBytes as unknown as BlobPart], { type: 'image/png' });
+          const blob = new Blob([rendered[0].imageBytes as unknown as BlobPart], {
+            type: 'image/png',
+          });
           const url = URL.createObjectURL(blob);
           setPreviewUrl(url);
         }
@@ -193,14 +195,17 @@ export const RotatePage: React.FC = () => {
                         </span>
                       </div>
                     ) : (
-                      <div 
+                      <div
                         className="w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-md rounded-lg overflow-hidden bg-white"
                         style={{ transform: `rotate(${degrees}deg)` }}
                       >
                         {previewUrl ? (
                           <img
                             src={previewUrl}
-                            alt={t('rotatePdf.previewAlt', { page: 1, defaultValue: 'PDF Page 1 Preview' })}
+                            alt={t('rotatePdf.previewAlt', {
+                              page: 1,
+                              defaultValue: 'PDF Page 1 Preview',
+                            })}
                             className="w-full h-full object-contain pointer-events-none"
                           />
                         ) : (
@@ -237,18 +242,23 @@ export const RotatePage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="rotate_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="rotate_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
                 <span>
                   {t('rotatePdf.successTitle', {
-                    defaultValue: 'Rotation Completed Successfully! Your rotated PDF has been generated.',
+                    defaultValue:
+                      'Rotation Completed Successfully! Your rotated PDF has been generated.',
                   })}
                 </span>
               </div>
               <p className="text-slate-500 text-[11px] font-semibold leading-normal">
                 {t('rotatePdf.successDesc', {
-                  defaultValue: 'The pages have been rotated and saved completely offline in your browser.',
+                  defaultValue:
+                    'The pages have been rotated and saved completely offline in your browser.',
                 })}
               </p>
               {downloadUrl && (
@@ -260,7 +270,9 @@ export const RotatePage: React.FC = () => {
                     className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4 animate-bounce" />
-                    <span>{t('rotatePdf.downloadRotated', { defaultValue: 'Download Rotated PDF' })}</span>
+                    <span>
+                      {t('rotatePdf.downloadRotated', { defaultValue: 'Download Rotated PDF' })}
+                    </span>
                   </a>
                 </div>
               )}
@@ -282,7 +294,10 @@ export const RotatePage: React.FC = () => {
                   type="button"
                   onClick={() => setDegrees(deg)}
                   aria-pressed={degrees === deg}
-                  aria-label={t('rotatePdf.rotateDegreesAria', { deg, defaultValue: `Rotate ${deg} degrees` })}
+                  aria-label={t('rotatePdf.rotateDegreesAria', {
+                    deg,
+                    defaultValue: `Rotate ${deg} degrees`,
+                  })}
                   className={`py-3.5 rounded-xl border font-bold text-sm transition-all ${
                     degrees === deg
                       ? 'border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-500/15'
@@ -321,7 +336,9 @@ export const RotatePage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>{t('rotatePdf.rotatingButton', { defaultValue: 'Rotating sheets...' })}</span>
+                  <span>
+                    {t('rotatePdf.rotatingButton', { defaultValue: 'Rotating sheets...' })}
+                  </span>
                 </span>
               ) : (
                 <>

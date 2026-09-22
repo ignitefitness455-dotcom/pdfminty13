@@ -1,25 +1,33 @@
-import { CalendarDays, GripVertical, Loader2, Pencil, PenLine, Type, UserRound } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import {
+  CalendarDays,
+  GripVertical,
+  Loader2,
+  Pencil,
+  PenLine,
+  Type,
+  UserRound,
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
-import { Label } from '../ui/label'
+import { cn } from '../../lib/utils';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
-import { FIELD_LABEL, type FieldKind, type SignatureSet } from './types'
+import { FIELD_LABEL, type FieldKind, type SignatureSet } from './types';
 
 type Props = {
-  signatures: SignatureSet
-  dateText: string
-  onDateChange: (v: string) => void
-  onEditSignature: () => void
-  pendingKind: FieldKind | null
-  onPickKind: (kind: FieldKind | null) => void
-  fieldCount: number
-  exporting: boolean
-  onExport: () => void
-  onReset: () => void
-}
+  signatures: SignatureSet;
+  dateText: string;
+  onDateChange: (v: string) => void;
+  onEditSignature: () => void;
+  pendingKind: FieldKind | null;
+  onPickKind: (kind: FieldKind | null) => void;
+  fieldCount: number;
+  exporting: boolean;
+  onExport: () => void;
+  onReset: () => void;
+};
 
 const KINDS: { kind: FieldKind; icon: React.ReactNode }[] = [
   { kind: 'signature', icon: <PenLine className="size-4" aria-hidden="true" /> },
@@ -27,7 +35,7 @@ const KINDS: { kind: FieldKind; icon: React.ReactNode }[] = [
   { kind: 'name', icon: <UserRound className="size-4" aria-hidden="true" /> },
   { kind: 'date', icon: <CalendarDays className="size-4" aria-hidden="true" /> },
   { kind: 'text', icon: <Type className="size-4" aria-hidden="true" /> },
-]
+];
 
 export function SignSidebar({
   signatures,
@@ -41,8 +49,8 @@ export function SignSidebar({
   onExport,
   onReset,
 }: Props) {
-  const { t } = useTranslation('common')
-  const hasSignature = Boolean(signatures.signature)
+  const { t } = useTranslation('common');
+  const hasSignature = Boolean(signatures.signature);
 
   return (
     <aside className="flex h-full flex-col bg-white dark:bg-slate-900 lg:border-l lg:border-slate-200 dark:lg:border-slate-800">
@@ -70,7 +78,11 @@ export function SignSidebar({
             className="flex h-24 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-4 transition-colors hover:border-emerald-600/60"
           >
             {signatures.signature ? (
-              <img src={signatures.signature.dataUrl} alt={t('signPdf.sidebar.sigAlt', { defaultValue: 'Your signature preview' })} className="max-h-16 max-w-full object-contain" />
+              <img
+                src={signatures.signature.dataUrl}
+                alt={t('signPdf.sidebar.sigAlt', { defaultValue: 'Your signature preview' })}
+                className="max-h-16 max-w-full object-contain"
+              />
             ) : (
               <span className="text-sm text-slate-500">
                 {t('signPdf.sidebar.clickToSet', { defaultValue: 'Click to set your signature' })}
@@ -99,8 +111,9 @@ export function SignSidebar({
           </div>
           <ul className="flex flex-col gap-2">
             {KINDS.map(({ kind, icon }) => {
-              const active = pendingKind === kind
-              const needsSig = (kind === 'signature' || kind === 'initials' || kind === 'name') && !hasSignature
+              const active = pendingKind === kind;
+              const needsSig =
+                (kind === 'signature' || kind === 'initials' || kind === 'name') && !hasSignature;
               return (
                 <li key={kind}>
                   <button
@@ -108,25 +121,32 @@ export function SignSidebar({
                     draggable={!needsSig}
                     aria-pressed={active}
                     onDragStart={(e) => {
-                      e.dataTransfer.setData('application/x-sign-field', kind)
-                      e.dataTransfer.effectAllowed = 'copy'
+                      e.dataTransfer.setData('application/x-sign-field', kind);
+                      e.dataTransfer.effectAllowed = 'copy';
                     }}
                     onClick={() => {
                       if (needsSig) {
-                        onEditSignature()
-                        return
+                        onEditSignature();
+                        return;
                       }
-                      onPickKind(active ? null : kind)
+                      onPickKind(active ? null : kind);
                     }}
                     className={cn(
                       'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors',
                       active
                         ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-600/10 text-emerald-700 dark:text-emerald-400'
                         : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-emerald-600/50 hover:bg-slate-50 dark:hover:bg-slate-800',
-                      needsSig && 'cursor-pointer opacity-70',
+                      needsSig && 'cursor-pointer opacity-70'
                     )}
                   >
-                    <span className={cn('flex size-8 items-center justify-center rounded-md', active ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100')}>
+                    <span
+                      className={cn(
+                        'flex size-8 items-center justify-center rounded-md',
+                        active
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
+                      )}
+                    >
                       {icon}
                     </span>
                     <span className="flex-1 font-medium">
@@ -135,7 +155,7 @@ export function SignSidebar({
                     <GripVertical className="size-4 text-slate-400" aria-hidden="true" />
                   </button>
                 </li>
-              )
+              );
             })}
           </ul>
         </div>
@@ -146,7 +166,9 @@ export function SignSidebar({
           </Label>
           <Input id="sign-date" value={dateText} onChange={(e) => onDateChange(e.target.value)} />
           <p className="text-xs text-slate-500">
-            {t('signPdf.sidebar.dateHelp', { defaultValue: 'Used for every Date field you place.' })}
+            {t('signPdf.sidebar.dateHelp', {
+              defaultValue: 'Used for every Date field you place.',
+            })}
           </p>
         </div>
       </div>
@@ -165,15 +187,25 @@ export function SignSidebar({
         </Button>
         <p className="text-center text-xs text-slate-500">
           {fieldCount === 0
-            ? t('signPdf.sidebar.placeFieldPrompt', { defaultValue: 'Place at least one field to continue' })
+            ? t('signPdf.sidebar.placeFieldPrompt', {
+                defaultValue: 'Place at least one field to continue',
+              })
             : fieldCount === 1
-            ? t('signPdf.sidebar.fieldsPlaced', { count: 1, defaultValue: '1 field placed' })
-            : t('signPdf.sidebar.fieldsPlaced_plural', { count: fieldCount, defaultValue: `${fieldCount} fields placed` })}
+              ? t('signPdf.sidebar.fieldsPlaced', { count: 1, defaultValue: '1 field placed' })
+              : t('signPdf.sidebar.fieldsPlaced_plural', {
+                  count: fieldCount,
+                  defaultValue: `${fieldCount} fields placed`,
+                })}
         </p>
-        <Button variant="ghost" size="sm" className="text-slate-500 cursor-pointer" onClick={onReset}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-slate-500 cursor-pointer"
+          onClick={onReset}
+        >
           {t('signPdf.sidebar.chooseAnother', { defaultValue: 'Choose another file' })}
         </Button>
       </div>
     </aside>
-  )
+  );
 }

@@ -148,7 +148,11 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2">
               {t('mobileDrawer.languageLabel', { defaultValue: 'Language' })}
             </p>
-            <LanguageSwitcher variant="mobile" onSelect={() => setMobileMenuOpen(false)} className="px-4 mb-4" />
+            <LanguageSwitcher
+              variant="mobile"
+              onSelect={() => setMobileMenuOpen(false)}
+              className="px-4 mb-4"
+            />
 
             <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 mt-4">
               {t('mobileDrawer.displayThemeLabel', { defaultValue: 'Display Theme' })}

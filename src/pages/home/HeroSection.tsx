@@ -12,14 +12,19 @@ export const HeroSection: React.FC = () => {
       <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide select-none shadow-sm">
           <ShieldCheck className="w-4 h-4 text-emerald-500" aria-hidden="true" />
-          <span>{t('home.hero.badgeClient', { defaultValue: '🔒 Client-Side In-Browser Processing' })}</span>
+          <span>
+            {t('home.hero.badgeClient', { defaultValue: '🔒 Client-Side In-Browser Processing' })}
+          </span>
         </div>
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-surface-container-low border border-border-muted rounded-full text-security-green text-xs font-bold tracking-wide select-none shadow-sm">
           <Sparkles className="w-3.5 h-3.5 animate-pulse text-security-green" aria-hidden="true" />
           <span>{t('home.hero.badgePrivate', { defaultValue: 'Private In-Browser Tools' })}</span>
         </div>
       </div>
-      <h1 className="text-4xl md:text-6xl font-black text-primary tracking-tight leading-none mb-6 font-sans" id="homepage-main-h1">
+      <h1
+        className="text-4xl md:text-6xl font-black text-primary tracking-tight leading-none mb-6 font-sans"
+        id="homepage-main-h1"
+      >
         {t('home.hero.h1Part1', { defaultValue: HOMEPAGE_H1_PART1 })}
         <span className="text-primary-fixed font-black">
           {t('home.hero.h1Part2', { defaultValue: HOMEPAGE_H1_PART2 })}

@@ -15,7 +15,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   placeholder,
 }) => {
   const { t } = useTranslation('common');
-  const effectivePlaceholder = placeholder || t('home.search.placeholder', { defaultValue: 'Search PDF tools...' });
+  const effectivePlaceholder =
+    placeholder || t('home.search.placeholder', { defaultValue: 'Search PDF tools...' });
   const effectiveAriaLabel = t('home.search.ariaLabel', { defaultValue: 'Search PDF tools' });
 
   return (

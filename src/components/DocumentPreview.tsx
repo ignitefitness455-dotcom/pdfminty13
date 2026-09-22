@@ -84,10 +84,20 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-100 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-200/60 shadow-xs">
         <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>{label ?? t('preview.pagesCount', { count: pageCount, defaultValue: `${pageCount} page${pageCount !== 1 ? 's' : ''}` })}</span>
+          <span>
+            {label ??
+              t('preview.pagesCount', {
+                count: pageCount,
+                defaultValue: `${pageCount} page${pageCount !== 1 ? 's' : ''}`,
+              })}
+          </span>
           {currentSelection.size > 0 && (
             <span className="text-emerald-600 dark:text-emerald-400 font-extrabold ml-1">
-              · {t('preview.selectedCount', { count: currentSelection.size, defaultValue: `${currentSelection.size} selected` })}
+              ·{' '}
+              {t('preview.selectedCount', {
+                count: currentSelection.size,
+                defaultValue: `${currentSelection.size} selected`,
+              })}
             </span>
           )}
         </span>
@@ -147,7 +157,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       </div>
 
       {/* Grid Canvas with Auto Fill layout */}
-      <div 
+      <div
         className="grid gap-4 p-4 bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200/60 dark:border-slate-800/40 rounded-2xl overflow-y-auto max-h-[65vh] justify-center"
         style={{
           gridTemplateColumns: `repeat(auto-fill, minmax(${Math.round(480 * zoom)}px, 1fr))`,
@@ -175,7 +185,9 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 
       {currentSelection.size > 0 && (
         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-          {t('preview.shiftTip', { defaultValue: 'Tip: Hold Shift and click to select a range of pages.' })}
+          {t('preview.shiftTip', {
+            defaultValue: 'Tip: Hold Shift and click to select a range of pages.',
+          })}
         </p>
       )}
     </div>

@@ -69,7 +69,12 @@ export const FlattenPdfPage: React.FC = () => {
     } catch (err: unknown) {
       logger.error('Flatten error:', err);
       const message = err instanceof Error ? err.message : String(err);
-      setError(message || t('flattenPdf.unexpectedError', { defaultValue: 'An unexpected error occurred while flattening the PDF.' }));
+      setError(
+        message ||
+          t('flattenPdf.unexpectedError', {
+            defaultValue: 'An unexpected error occurred while flattening the PDF.',
+          })
+      );
     } finally {
       setLoading(false);
     }
@@ -104,7 +109,8 @@ export const FlattenPdfPage: React.FC = () => {
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
                   <p className="text-xs text-slate-400">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • {t('flattenPdf.pdfDocument', { defaultValue: 'PDF Document' })}
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {t('flattenPdf.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
@@ -131,13 +137,24 @@ export const FlattenPdfPage: React.FC = () => {
             )}
 
             {isSuccess && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="flatten_success_banner">
+              <div
+                className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+                id="flatten_success_banner"
+              >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                  <span>{t('flattenPdf.successTitle', { defaultValue: 'Flattening Completed Successfully! Your static PDF has been generated.' })}</span>
+                  <span>
+                    {t('flattenPdf.successTitle', {
+                      defaultValue:
+                        'Flattening Completed Successfully! Your static PDF has been generated.',
+                    })}
+                  </span>
                 </div>
                 <p className="text-slate-500 text-[11px] font-semibold leading-normal">
-                  {t('flattenPdf.successDesc', { defaultValue: 'All active electronic form fields, radio buttons, annotations, and text boxes are now rendered as permanent flat page graphics.' })}
+                  {t('flattenPdf.successDesc', {
+                    defaultValue:
+                      'All active electronic form fields, radio buttons, annotations, and text boxes are now rendered as permanent flat page graphics.',
+                  })}
                 </p>
                 {downloadUrl && (
                   <div className="pt-2">
@@ -148,7 +165,11 @@ export const FlattenPdfPage: React.FC = () => {
                       className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                       <Download className="w-4 h-4 animate-bounce" />
-                      <span>{t('flattenPdf.downloadFlattened', { defaultValue: 'Download Flattened PDF' })}</span>
+                      <span>
+                        {t('flattenPdf.downloadFlattened', {
+                          defaultValue: 'Download Flattened PDF',
+                        })}
+                      </span>
                     </a>
                   </div>
                 )}
@@ -159,9 +180,14 @@ export const FlattenPdfPage: React.FC = () => {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">{t('flattenPdf.optionsTitle', { defaultValue: 'Flatten Options' })}</h3>
+            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+              {t('flattenPdf.optionsTitle', { defaultValue: 'Flatten Options' })}
+            </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              {t('flattenPdf.optionsDesc', { defaultValue: 'Flattening form fields locks the current values, radio options, checkboxes, and signatures, turning them into a permanent vector layer. This protects against unauthorized edits.' })}
+              {t('flattenPdf.optionsDesc', {
+                defaultValue:
+                  'Flattening form fields locks the current values, radio options, checkboxes, and signatures, turning them into a permanent vector layer. This protects against unauthorized edits.',
+              })}
             </p>
           </div>
 
@@ -178,12 +204,16 @@ export const FlattenPdfPage: React.FC = () => {
               {loading ? (
                 <span className="flex items-center space-x-1.5">
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>{t('flattenPdf.processingButton', { defaultValue: 'Flattening Document...' })}</span>
+                  <span>
+                    {t('flattenPdf.processingButton', { defaultValue: 'Flattening Document...' })}
+                  </span>
                 </span>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{t('flattenPdf.flattenButton', { defaultValue: 'Flatten & Download' })}</span>
+                  <span>
+                    {t('flattenPdf.flattenButton', { defaultValue: 'Flatten & Download' })}
+                  </span>
                 </>
               )}
             </button>

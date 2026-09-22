@@ -15,7 +15,10 @@ interface ToolWorkspaceProps<TOptions extends Record<string, unknown>> {
   multiple?: boolean;
   maxSizeMB?: number;
   onProcess: (files: File[], options: TOptions) => Promise<Blob | void>;
-  renderOptions?: (options: TOptions, setOptions: (o: Partial<TOptions>) => void) => React.ReactNode;
+  renderOptions?: (
+    options: TOptions,
+    setOptions: (o: Partial<TOptions>) => void
+  ) => React.ReactNode;
   defaultOptions: TOptions;
   autoDownload?: boolean;
   downloadFilenamePrefix?: string;
@@ -53,7 +56,9 @@ export function ToolWorkspace<TOptions extends Record<string, unknown>>({
 
   const handleProcess = useCallback(async () => {
     if (files.length === 0) {
-      setError(t('toolWorkspace.selectPrompt', { defaultValue: 'Please select at least one file.' }));
+      setError(
+        t('toolWorkspace.selectPrompt', { defaultValue: 'Please select at least one file.' })
+      );
       return;
     }
     setLoading(true);
@@ -66,7 +71,10 @@ export function ToolWorkspace<TOptions extends Record<string, unknown>>({
         if (autoDownload) {
           await downloadBlob(output, `${downloadFilenamePrefix}_${Date.now()}.pdf`);
         }
-        showToast(t('toolCommon.success', { defaultValue: 'Operation completed successfully!' }), 'success');
+        showToast(
+          t('toolCommon.success', { defaultValue: 'Operation completed successfully!' }),
+          'success'
+        );
       } else {
         showToast(t('toolCommon.success', { defaultValue: 'Operation completed.' }), 'success');
       }
@@ -122,8 +130,14 @@ export function ToolWorkspace<TOptions extends Record<string, unknown>>({
         >
           <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
           <div className="flex items-center gap-2">
-            <span className="font-bold">{t('toolWorkspace.processingTitle', { defaultValue: 'Processing PDF...' })}</span>
-            <span className="text-xs text-emerald-700">{t('toolWorkspace.processingDesc', { defaultValue: 'Please wait while your file is being processed.' })}</span>
+            <span className="font-bold">
+              {t('toolWorkspace.processingTitle', { defaultValue: 'Processing PDF...' })}
+            </span>
+            <span className="text-xs text-emerald-700">
+              {t('toolWorkspace.processingDesc', {
+                defaultValue: 'Please wait while your file is being processed.',
+              })}
+            </span>
           </div>
         </div>
       )}
@@ -135,9 +149,16 @@ export function ToolWorkspace<TOptions extends Record<string, unknown>>({
         className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-semibold disabled:bg-slate-300 hover:bg-emerald-700 transition-colors inline-flex items-center space-x-2"
       >
         {loading && (
-          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+          <span
+            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            aria-hidden="true"
+          />
         )}
-        <span>{loading ? t('toolCommon.processing', { defaultValue: 'Processing...' }) : t('toolCommon.process', { defaultValue: 'Process' })}</span>
+        <span>
+          {loading
+            ? t('toolCommon.processing', { defaultValue: 'Processing...' })
+            : t('toolCommon.process', { defaultValue: 'Process' })}
+        </span>
       </button>
 
       {result && !autoDownload && (
@@ -156,8 +177,15 @@ export function ToolWorkspace<TOptions extends Record<string, unknown>>({
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-bold text-on-surface">{t('toolWorkspace.securityTipTitle', { defaultValue: 'Security & Privacy Tip' })}</p>
-              <p className="text-on-surface-variant">{t('toolWorkspace.securityTipDesc', { defaultValue: 'Sharing or uploading sensitive documents online? Keep your connection encrypted with NordVPN.' })}</p>
+              <p className="font-bold text-on-surface">
+                {t('toolWorkspace.securityTipTitle', { defaultValue: 'Security & Privacy Tip' })}
+              </p>
+              <p className="text-on-surface-variant">
+                {t('toolWorkspace.securityTipDesc', {
+                  defaultValue:
+                    'Sharing or uploading sensitive documents online? Keep your connection encrypted with NordVPN.',
+                })}
+              </p>
             </div>
           </div>
           <a

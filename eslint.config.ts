@@ -38,7 +38,15 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react/no-unescaped-entities': 'off',
-      'jsx-a11y/label-has-associated-control': 'warn',
+      'jsx-a11y/label-has-associated-control': [
+        'warn',
+        {
+          labelComponents: ['Label'],
+          labelAttributes: ['htmlFor'],
+          controlComponents: ['Input', 'Switch'],
+          depth: 3,
+        },
+      ],
       'jsx-a11y/no-static-element-interactions': 'off',
       'jsx-a11y/click-events-have-key-events': 'off',
       'no-useless-assignment': 'off',

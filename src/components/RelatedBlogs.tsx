@@ -12,7 +12,10 @@ export const RelatedBlogs: React.FC = () => {
   const { t, i18n } = useTranslation('common');
 
   const relatedBlogs = useMemo(() => {
-    const articles = TOOLS.filter((t) => t.type === 'article' && t.id !== 'blog' && t.id !== 'trust-article' && t.id !== 'about-us');
+    const articles = TOOLS.filter(
+      (t) =>
+        t.type === 'article' && t.id !== 'blog' && t.id !== 'trust-article' && t.id !== 'about-us'
+    );
     let currentSlug = (pathname || '').replace(/^\//, '').replace(/\/$/, '');
     for (const loc of SUPPORTED_LOCALES) {
       if (loc !== DEFAULT_LOCALE && (currentSlug === loc || currentSlug.startsWith(`${loc}/`))) {

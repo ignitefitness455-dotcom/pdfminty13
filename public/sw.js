@@ -44,7 +44,14 @@ self.addEventListener('install', (event) => {
         cache.add('/manifest.json'),
         cache.add('/logo.svg'),
       ]);
-      await self.skipWaiting();
+      // If there are no existing window clients (e.g. first-time install), skip waiting
+      // immediately so offline capabilities are ready right away.
+      // If active tabs are running, wait so we do not disrupt active user tasks (like PDF editing),
+      // allowing the PWA update prompt to politely notify the user.
+      const clientsList = await self.clients.matchAll({ type: 'window' });
+      if (clientsList.length === 0) {
+        await self.skipWaiting();
+      }
     })()
   );
 });

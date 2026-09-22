@@ -74,7 +74,7 @@ export const SplitPage: React.FC = () => {
         };
       });
 
-      setSplitFiles(items.map(item => ({ url: item.url, filename: item.filename })));
+      setSplitFiles(items.map((item) => ({ url: item.url, filename: item.filename })));
 
       await downloadBlobsSequentially(items, 600);
       setIsSuccess(true);
@@ -118,7 +118,8 @@ export const SplitPage: React.FC = () => {
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
                   <p className="text-xs text-slate-400">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • {t('toolCommon.pdfDocument', { defaultValue: 'PDF Document' })}
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {t('toolCommon.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
@@ -135,19 +136,38 @@ export const SplitPage: React.FC = () => {
           </div>
 
           {isSuccess && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="split_success_banner">
+            <div
+              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              id="split_success_banner"
+            >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>{t('splitPdf.successTitle', { defaultValue: 'Split Completed Successfully! Your split document sections have been generated.' })}</span>
+                <span>
+                  {t('splitPdf.successTitle', {
+                    defaultValue:
+                      'Split Completed Successfully! Your split document sections have been generated.',
+                  })}
+                </span>
               </div>
               <p className="text-slate-500 text-[11px] font-semibold leading-normal">
-                {t('splitPdf.manualDownloadPrompt', { defaultValue: 'If the automatic sequence of downloads did not complete, you can download each part manually below:' })}
+                {t('splitPdf.manualDownloadPrompt', {
+                  defaultValue:
+                    'If the automatic sequence of downloads did not complete, you can download each part manually below:',
+                })}
               </p>
               {splitFiles.length > 0 && (
                 <div className="grid grid-cols-1 gap-2 pt-2 border-t border-emerald-200/50">
                   {splitFiles.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-emerald-100 shadow-sm gap-4">
-                      <span className="truncate text-slate-700 font-bold max-w-[250px] shrink-0" title={item.filename}>{item.filename}</span>
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-emerald-100 shadow-sm gap-4"
+                    >
+                      <span
+                        className="truncate text-slate-700 font-bold max-w-[250px] shrink-0"
+                        title={item.filename}
+                      >
+                        {item.filename}
+                      </span>
                       <a
                         href={item.url}
                         download={item.filename}
@@ -168,20 +188,30 @@ export const SplitPage: React.FC = () => {
           <div className="bg-slate-100 p-4 rounded-xl flex items-start space-x-2 border border-slate-200 text-xs text-slate-600 leading-relaxed">
             <Info className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold mb-1">{t('splitPdf.howRangesWork', { defaultValue: 'How ranges work:' })}</p>
+              <p className="font-bold mb-1">
+                {t('splitPdf.howRangesWork', { defaultValue: 'How ranges work:' })}
+              </p>
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>
-                  {t('splitPdf.singleNumbers', { defaultValue: 'Use single numbers to extract single pages:' })}{' '}
+                  {t('splitPdf.singleNumbers', {
+                    defaultValue: 'Use single numbers to extract single pages:',
+                  })}{' '}
                   <code className="bg-white px-1 py-0.5 rounded border">5</code>
                 </li>
                 <li>
-                  {t('splitPdf.spansWithDashes', { defaultValue: 'Use spans with en-dashes to extract page blocks:' })}{' '}
+                  {t('splitPdf.spansWithDashes', {
+                    defaultValue: 'Use spans with en-dashes to extract page blocks:',
+                  })}{' '}
                   <code className="bg-white px-1 py-0.5 rounded border">1-3</code>
                 </li>
                 <li>
-                  {t('splitPdf.separateWithCommas', { defaultValue: 'Separate segments with comma lists:' })}{' '}
+                  {t('splitPdf.separateWithCommas', {
+                    defaultValue: 'Separate segments with comma lists:',
+                  })}{' '}
                   <code className="bg-white px-1 py-0.5 rounded border">1-2, 4, 6-8</code>{' '}
-                  {t('splitPdf.parsesInto', { defaultValue: 'parses into 3 separate file outputs.' })}
+                  {t('splitPdf.parsesInto', {
+                    defaultValue: 'parses into 3 separate file outputs.',
+                  })}
                 </li>
               </ul>
             </div>
@@ -214,7 +244,10 @@ export const SplitPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-400">
-              {t('splitPdf.commaBlockHelp', { defaultValue: 'Each comma block triggers a separate download containing those precise indices.' })}
+              {t('splitPdf.commaBlockHelp', {
+                defaultValue:
+                  'Each comma block triggers a separate download containing those precise indices.',
+              })}
             </p>
           </div>
 

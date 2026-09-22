@@ -14,8 +14,11 @@ export const NotFoundPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{t("notFound.title", { defaultValue: "Page Not Found" })} | PDFMinty</title>
-        <meta name="description" content="The page you are looking for could not be found. Browse our free PDF tools instead." />
+        <title>{t('notFound.title', { defaultValue: 'Page Not Found' })} | PDFMinty</title>
+        <meta
+          name="description"
+          content="The page you are looking for could not be found. Browse our free PDF tools instead."
+        />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -23,8 +26,15 @@ export const NotFoundPage: React.FC = () => {
         <div className="w-20 h-20 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-3xl mb-6">
           404
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-on-surface mb-3">{t('notFound.title', { defaultValue: 'Page Not Found' })}</h1>
-        <p className="text-sm text-on-surface-variant max-w-md mb-8">{t('notFound.description', { defaultValue: 'The page you\'re looking for doesn\'t exist or has been moved. Try one of our popular PDF tools below.' })}</p>
+        <h1 className="text-3xl sm:text-4xl font-black text-on-surface mb-3">
+          {t('notFound.title', { defaultValue: 'Page Not Found' })}
+        </h1>
+        <p className="text-sm text-on-surface-variant max-w-md mb-8">
+          {t('notFound.description', {
+            defaultValue:
+              "The page you're looking for doesn't exist or has been moved. Try one of our popular PDF tools below.",
+          })}
+        </p>
         <Link
           to={ROUTES.HOME}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-emerald-500 transition-all mb-10"

@@ -85,9 +85,7 @@ export const LOCALE_METADATA: Record<SupportedLocale, LocaleMetadata> = {
 };
 
 // Tool slugs configured with localized routing enabled (Option B: only tools with complete 7-locale translations)
-export const I18N_TOOL_SLUGS = [
-  'merge-pdf',
-] as const;
+export const I18N_TOOL_SLUGS = ['merge-pdf'] as const;
 export type I18nToolSlug = (typeof I18N_TOOL_SLUGS)[number];
 
 export function isI18nToolSlug(slug: string): boolean {
@@ -111,7 +109,10 @@ export function getLocalizedPath(baseSlug: string, locale: SupportedLocale): str
  * If the current page is an i18n-enabled route (e.g. merge-pdf), it preserves the page under the new locale.
  * Otherwise, it falls back to that locale's homepage (e.g. /de/ or /).
  */
-export function getSwitchLocalePath(currentPathname: string, targetLocale: SupportedLocale): string {
+export function getSwitchLocalePath(
+  currentPathname: string,
+  targetLocale: SupportedLocale
+): string {
   const [pathOnly] = (currentPathname || '').split(/(?=[?#])/);
   const extra = (currentPathname || '').substring(pathOnly ? pathOnly.length : 0);
   const segments = pathOnly ? pathOnly.split('/').filter(Boolean) : [];
@@ -150,10 +151,7 @@ export interface HreflangEntry {
   href: string;
 }
 
-export function getHreflangs(
-  baseSlug: string,
-  siteUrl = 'https://pdfminty.com'
-): HreflangEntry[] {
+export function getHreflangs(baseSlug: string, siteUrl = 'https://pdfminty.com'): HreflangEntry[] {
   const entries: HreflangEntry[] = [];
   for (const locale of SUPPORTED_LOCALES) {
     entries.push({
@@ -181,24 +179,22 @@ export function getInitialLocale(): SupportedLocale {
 
 const initialLocale = getInitialLocale();
 
-i18n
-  .use(initReactI18next)
-  .init({
-    lng: initialLocale,
-    fallbackLng: DEFAULT_LOCALE,
-    supportedLngs: SUPPORTED_LOCALES as unknown as string[],
-    defaultNS: DEFAULT_NAMESPACE,
-    ns: [DEFAULT_NAMESPACE, 'merge-pdf', 'faq'],
-    resources,
-    interpolation: {
-      escapeValue: false,
-    },
-    react: {
-      useSuspense: false,
-      bindI18n: 'languageChanged loaded',
-      bindI18nStore: 'added removed',
-    },
-  });
+i18n.use(initReactI18next).init({
+  lng: initialLocale,
+  fallbackLng: DEFAULT_LOCALE,
+  supportedLngs: SUPPORTED_LOCALES as unknown as string[],
+  defaultNS: DEFAULT_NAMESPACE,
+  ns: [DEFAULT_NAMESPACE, 'merge-pdf', 'faq'],
+  resources,
+  interpolation: {
+    escapeValue: false,
+  },
+  react: {
+    useSuspense: false,
+    bindI18n: 'languageChanged loaded',
+    bindI18nStore: 'added removed',
+  },
+});
 
 if (typeof document !== 'undefined') {
   document.documentElement.lang = initialLocale;

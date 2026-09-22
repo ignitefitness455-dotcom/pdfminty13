@@ -2,7 +2,11 @@ import i18next from 'i18next';
 import { ShieldAlert, RefreshCw, FileText } from 'lucide-react';
 import React, { Component, ErrorInfo } from 'react';
 
-import { reportErrorToTelemetry, getFileProcessingContext, FileProcessingContext } from '../error-handler';
+import {
+  reportErrorToTelemetry,
+  getFileProcessingContext,
+  FileProcessingContext,
+} from '../error-handler';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -47,10 +51,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
     }
     const currentContext = getFileProcessingContext();
     this.setState({ errorInfo, capturedContext: currentContext });
-    console.error('[ErrorBoundary caught error]', error, errorInfo, currentContext ? { fileContext: currentContext } : '');
+    console.error(
+      '[ErrorBoundary caught error]',
+      error,
+      errorInfo,
+      currentContext ? { fileContext: currentContext } : ''
+    );
     if (import.meta.env.PROD) {
       const err = error as { message?: string; stack?: string } | null;
-      reportErrorToTelemetry(err?.message || String(error), errorInfo?.componentStack || err?.stack || '', currentContext);
+      reportErrorToTelemetry(
+        err?.message || String(error),
+        errorInfo?.componentStack || err?.stack || '',
+        currentContext
+      );
     }
   }
 
@@ -60,7 +73,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
 
   public render() {
     if (this.state.hasError) {
-      const errorMessage = this.state.error?.message || this.state.error?.toString() || 'Unknown runtime error';
+      const errorMessage =
+        this.state.error?.message || this.state.error?.toString() || 'Unknown runtime error';
       const errorStack = this.state.error?.stack || '';
       const fileCtx = this.state.capturedContext || getFileProcessingContext();
       return (
@@ -78,13 +92,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
             className="text-2xl font-bold font-sans text-on-surface mb-2"
             id="error-boundary-title"
           >
-            {i18next.t('errorBoundary.somethingWentWrong', { defaultValue: 'Something went wrong' })}
+            {i18next.t('errorBoundary.somethingWentWrong', {
+              defaultValue: 'Something went wrong',
+            })}
           </h1>
           <p
             className="text-sm text-on-surface-variant max-w-sm mb-4 leading-relaxed"
             id="error-boundary-desc"
           >
-            {i18next.t('errorBoundary.unexpected', { defaultValue: 'An unexpected error occurred in the view interface.' })}
+            {i18next.t('errorBoundary.unexpected', {
+              defaultValue: 'An unexpected error occurred in the view interface.',
+            })}
           </p>
 
           {fileCtx && (fileCtx.fileName || fileCtx.fileSizeFormatted) && (
@@ -94,12 +112,39 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
                 <span>Captured File Context for Debugging</span>
               </div>
               <div className="grid grid-cols-2 gap-2 font-mono text-[11px] text-slate-600 dark:text-slate-400 pt-1">
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">File:</span> {fileCtx.fileName || 'N/A'}</div>
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">Size:</span> {fileCtx.fileSizeFormatted || (fileCtx.fileSize ? `${fileCtx.fileSize} B` : 'N/A')}</div>
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">PDF Version:</span> {fileCtx.pdfVersion ? `v${fileCtx.pdfVersion}` : 'Unknown'}</div>
-                <div><span className="font-semibold text-slate-700 dark:text-slate-300">Encrypted:</span> {fileCtx.isEncrypted ? 'Yes (Password Protected)' : 'No'}</div>
-                {fileCtx.pageCount !== undefined && <div><span className="font-semibold text-slate-700 dark:text-slate-300">Pages:</span> {fileCtx.pageCount}</div>}
-                {fileCtx.processingStep && <div className="col-span-2"><span className="font-semibold text-slate-700 dark:text-slate-300">Step:</span> {fileCtx.processingStep}</div>}
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">File:</span>{' '}
+                  {fileCtx.fileName || 'N/A'}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">Size:</span>{' '}
+                  {fileCtx.fileSizeFormatted ||
+                    (fileCtx.fileSize ? `${fileCtx.fileSize} B` : 'N/A')}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    PDF Version:
+                  </span>{' '}
+                  {fileCtx.pdfVersion ? `v${fileCtx.pdfVersion}` : 'Unknown'}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    Encrypted:
+                  </span>{' '}
+                  {fileCtx.isEncrypted ? 'Yes (Password Protected)' : 'No'}
+                </div>
+                {fileCtx.pageCount !== undefined && (
+                  <div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">Pages:</span>{' '}
+                    {fileCtx.pageCount}
+                  </div>
+                )}
+                {fileCtx.processingStep && (
+                  <div className="col-span-2">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">Step:</span>{' '}
+                    {fileCtx.processingStep}
+                  </div>
+                )}
               </div>
             </div>
           )}

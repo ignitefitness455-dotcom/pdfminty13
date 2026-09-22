@@ -59,22 +59,29 @@ export const BlogPostPage: React.FC = () => {
     return (
       <>
         <Helmet>
-          <title>{t("blogPost.notFound", { defaultValue: "Article Not Found" })} | PDFMinty</title>
+          <title>{t('blogPost.notFound', { defaultValue: 'Article Not Found' })} | PDFMinty</title>
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-2xl mb-4">
-          404
+          <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-2xl mb-4">
+            404
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-on-surface mb-2">
+            {t('blogPost.notFound', { defaultValue: 'Article Not Found' })}
+          </h1>
+          <p className="text-sm text-on-surface-variant max-w-md mb-6">
+            {t('blogPost.notFoundDesc', {
+              defaultValue:
+                'The requested guide or article could not be located in our knowledge hub.',
+            })}
+          </p>
+          <Link
+            to={ROUTES.BLOG}
+            className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-emerald-500 transition-all"
+          >
+            {t('blog.returnToHub', { defaultValue: 'Return to Knowledge Hub' })}
+          </Link>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-on-surface mb-2">{t('blogPost.notFound', { defaultValue: 'Article Not Found' })}</h1>
-        <p className="text-sm text-on-surface-variant max-w-md mb-6">{t('blogPost.notFoundDesc', { defaultValue: 'The requested guide or article could not be located in our knowledge hub.' })}</p>
-        <Link
-          to={ROUTES.BLOG}
-          className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-emerald-500 transition-all"
-        >
-          {t('blog.returnToHub', { defaultValue: 'Return to Knowledge Hub' })}
-        </Link>
-      </div>
       </>
     );
   }
@@ -114,11 +121,15 @@ export const BlogPostPage: React.FC = () => {
   });
 
   const localizedArticleDesc = t(`articles.${article.id}.shortDesc`, {
-    defaultValue: t(`articles.${article.slug}.shortDesc`, { defaultValue: article.shortDescription }),
+    defaultValue: t(`articles.${article.slug}.shortDesc`, {
+      defaultValue: article.shortDescription,
+    }),
   });
 
   const catKey = (article.category || 'guides').toLowerCase();
-  const localizedCategory = t(`blog.categories.${catKey}`, { defaultValue: article.category || 'Guide' });
+  const localizedCategory = t(`blog.categories.${catKey}`, {
+    defaultValue: article.category || 'Guide',
+  });
 
   return (
     <div className="min-h-screen bg-surface py-10 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
@@ -131,11 +142,17 @@ export const BlogPostPage: React.FC = () => {
       <article className="max-w-4xl mx-auto space-y-10" id="blog-post-container">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium overflow-x-auto pb-1">
-          <Link to={ROUTES.HOME} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors shrink-0">
+          <Link
+            to={ROUTES.HOME}
+            className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors shrink-0"
+          >
             {t('nav.home', { defaultValue: 'Home' })}
           </Link>
           <ChevronRight className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-          <Link to={ROUTES.BLOG} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors shrink-0">
+          <Link
+            to={ROUTES.BLOG}
+            className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors shrink-0"
+          >
             {t('blog.knowledgeHub', { defaultValue: 'Knowledge Hub' })}
           </Link>
           <ChevronRight className="w-3.5 h-3.5 shrink-0 text-slate-400" />
@@ -170,7 +187,9 @@ export const BlogPostPage: React.FC = () => {
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-emerald-600 dark:text-emerald-400">{t('blog.linkCopied', { defaultValue: 'Link Copied!' })}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    {t('blog.linkCopied', { defaultValue: 'Link Copied!' })}
+                  </span>
                 </>
               ) : (
                 <>
@@ -197,7 +216,9 @@ export const BlogPostPage: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white">
-                  <span>{t('blog.editorialTeam', { defaultValue: 'PDFMinty Editorial Team' })}</span>
+                  <span>
+                    {t('blog.editorialTeam', { defaultValue: 'PDFMinty Editorial Team' })}
+                  </span>
                   <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -208,7 +229,9 @@ export const BlogPostPage: React.FC = () => {
 
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>{t('blog.privacyBadge', { defaultValue: '100% In-Browser Privacy Guarantee' })}</span>
+              <span>
+                {t('blog.privacyBadge', { defaultValue: '100% In-Browser Privacy Guarantee' })}
+              </span>
             </div>
           </div>
         </header>
@@ -232,7 +255,10 @@ export const BlogPostPage: React.FC = () => {
               {t('blog.ctaTitle', { defaultValue: 'Ready to process your PDFs securely?' })}
             </h2>
             <p className="text-sm sm:text-base font-semibold text-emerald-50 max-w-xl mx-auto leading-relaxed drop-shadow-sm m-0">
-              {t('blog.ctaSubtitle', { defaultValue: "Use PdfMinty's free, 100% private in-browser tools today. No uploads, zero server traces." })}
+              {t('blog.ctaSubtitle', {
+                defaultValue:
+                  "Use PdfMinty's free, 100% private in-browser tools today. No uploads, zero server traces.",
+              })}
             </p>
             <div className="pt-2">
               <Link

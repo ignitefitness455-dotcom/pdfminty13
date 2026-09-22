@@ -17,14 +17,14 @@ export default function EditMetadataPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
-  
+
   const [metadata, setMetadata] = useState({
     title: '',
     author: '',
     subject: '',
     keywords: '',
     creator: '',
-    producer: ''
+    producer: '',
   });
 
   React.useEffect(() => {
@@ -54,7 +54,7 @@ export default function EditMetadataPage() {
         { bytes, metadata }
       );
 
-      const blob = new Blob([resultBytes], { type: 'application/pdf' });
+      const blob = new Blob([resultBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = file.name.replace(/\.pdf$/i, '') + '-metadata.pdf';
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
@@ -70,9 +70,9 @@ export default function EditMetadataPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -107,7 +107,10 @@ export default function EditMetadataPage() {
                 id="edit_metadata_uploader"
               />
             ) : (
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between" id="loaded_metadata_file">
+              <div
+                className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                id="loaded_metadata_file"
+              >
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 truncate">{file.name}</p>
                   <p className="text-xs text-slate-400">
@@ -132,10 +135,18 @@ export default function EditMetadataPage() {
             )}
 
             {isSuccess && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold" id="metadata_success_banner">
+              <div
+                className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+                id="metadata_success_banner"
+              >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                  <span>{t('toolCommon.success', { defaultValue: 'Metadata Updated Successfully! Your modified PDF has been generated.' })}</span>
+                  <span>
+                    {t('toolCommon.success', {
+                      defaultValue:
+                        'Metadata Updated Successfully! Your modified PDF has been generated.',
+                    })}
+                  </span>
                 </div>
                 {downloadUrl && (
                   <div className="pt-2">
@@ -146,7 +157,9 @@ export default function EditMetadataPage() {
                       className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                       <Download className="w-4 h-4 animate-bounce" />
-                      <span>{t('toolCommon.download', { defaultValue: 'Download PDF with Metadata' })}</span>
+                      <span>
+                        {t('toolCommon.download', { defaultValue: 'Download PDF with Metadata' })}
+                      </span>
                     </a>
                   </div>
                 )}
@@ -155,10 +168,14 @@ export default function EditMetadataPage() {
 
             {file && (
               <div className="space-y-4 pt-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">{t('editMetadata.documentProperties', { defaultValue: 'Document Properties' })}</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  {t('editMetadata.documentProperties', { defaultValue: 'Document Properties' })}
+                </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label htmlFor="meta_title" className="text-xs font-bold text-slate-700">{t("editMetadata.lblTitle")}</label>
+                    <label htmlFor="meta_title" className="text-xs font-bold text-slate-700">
+                      {t('editMetadata.lblTitle')}
+                    </label>
                     <input
                       id="meta_title"
                       type="text"
@@ -170,7 +187,9 @@ export default function EditMetadataPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="meta_author" className="text-xs font-bold text-slate-700">{t("editMetadata.lblAuthor")}</label>
+                    <label htmlFor="meta_author" className="text-xs font-bold text-slate-700">
+                      {t('editMetadata.lblAuthor')}
+                    </label>
                     <input
                       id="meta_author"
                       type="text"
@@ -182,7 +201,9 @@ export default function EditMetadataPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="meta_subject" className="text-xs font-bold text-slate-700">{t("editMetadata.lblSubject")}</label>
+                    <label htmlFor="meta_subject" className="text-xs font-bold text-slate-700">
+                      {t('editMetadata.lblSubject')}
+                    </label>
                     <input
                       id="meta_subject"
                       type="text"
@@ -194,7 +215,9 @@ export default function EditMetadataPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="meta_keywords" className="text-xs font-bold text-slate-700">{t("editMetadata.lblKeywords")}</label>
+                    <label htmlFor="meta_keywords" className="text-xs font-bold text-slate-700">
+                      {t('editMetadata.lblKeywords')}
+                    </label>
                     <input
                       id="meta_keywords"
                       type="text"
@@ -206,7 +229,9 @@ export default function EditMetadataPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="meta_creator" className="text-xs font-bold text-slate-700">{t("editMetadata.lblCreator")}</label>
+                    <label htmlFor="meta_creator" className="text-xs font-bold text-slate-700">
+                      {t('editMetadata.lblCreator')}
+                    </label>
                     <input
                       id="meta_creator"
                       type="text"
@@ -218,7 +243,9 @@ export default function EditMetadataPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="meta_producer" className="text-xs font-bold text-slate-700">{t("editMetadata.lblProducer")}</label>
+                    <label htmlFor="meta_producer" className="text-xs font-bold text-slate-700">
+                      {t('editMetadata.lblProducer')}
+                    </label>
                     <input
                       id="meta_producer"
                       type="text"
@@ -237,8 +264,15 @@ export default function EditMetadataPage() {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">{t('editMetadata.metadataUpdate', { defaultValue: 'Metadata Update' })}</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">{t('editMetadata.metadataUpdateDesc', { defaultValue: 'Updates your document info tags without modifying page contents or layout quality.' })}</p>
+            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+              {t('editMetadata.metadataUpdate', { defaultValue: 'Metadata Update' })}
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              {t('editMetadata.metadataUpdateDesc', {
+                defaultValue:
+                  'Updates your document info tags without modifying page contents or layout quality.',
+              })}
+            </p>
           </div>
 
           <div className="space-y-3 pt-4 border-t border-slate-100">
@@ -275,57 +309,60 @@ export default function EditMetadataPage() {
       </div>
 
       {/* Deep Content & Comprehensive Guide Section */}
-      <section className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed" id="metadata_guide_section">
+      <section
+        className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed"
+        id="metadata_guide_section"
+      >
         <div className="space-y-3">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            {t("editMetadata.guideTitle")}
+            {t('editMetadata.guideTitle')}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600">
-            {t("editMetadata.guideDesc")}
-          </p>
+          <p className="text-sm sm:text-base text-slate-600">{t('editMetadata.guideDesc')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t("editMetadata.stdProps")}
+              {t('editMetadata.stdProps')}
             </h3>
             <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
-              <li>{t("editMetadata.liTitle")}</li>
-              <li>{t("editMetadata.liAuthor")}</li>
-              <li>{t("editMetadata.liKeywords")}</li>
-              <li>{t("editMetadata.liCreator")}</li>
+              <li>{t('editMetadata.liTitle')}</li>
+              <li>{t('editMetadata.liAuthor')}</li>
+              <li>{t('editMetadata.liKeywords')}</li>
+              <li>{t('editMetadata.liCreator')}</li>
             </ul>
           </div>
 
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {t("editMetadata.whyEdit")}
+              {t('editMetadata.whyEdit')}
             </h3>
             <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
-              <li>{t("editMetadata.liLeaks")}</li>
-              <li>{t("editMetadata.liPres")}</li>
-              <li>{t("editMetadata.liReg")}</li>
+              <li>{t('editMetadata.liLeaks')}</li>
+              <li>{t('editMetadata.liPres')}</li>
+              <li>{t('editMetadata.liReg')}</li>
             </ul>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-900">{t('editMetadata.howToEdit', { defaultValue: 'How to Edit PDF Properties with PdfMinty in 3 Steps' })}</h3>
+          <h3 className="text-lg font-bold text-slate-900">
+            {t('editMetadata.howToEdit', {
+              defaultValue: 'How to Edit PDF Properties with PdfMinty in 3 Steps',
+            })}
+          </h3>
           <ol className="list-decimal pl-5 space-y-2 text-sm text-slate-600">
-            <li>{t("editMetadata.step1")}</li>
-            <li>{t("editMetadata.step2")}</li>
-            <li>{t("editMetadata.step3")}</li>
+            <li>{t('editMetadata.step1')}</li>
+            <li>{t('editMetadata.step2')}</li>
+            <li>{t('editMetadata.step3')}</li>
           </ol>
         </div>
 
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900">
-          <p className="font-bold">{t("editMetadata.zeroUploadGuarantee")}</p>
-          <p className="leading-normal text-slate-600">
-            {t("editMetadata.offlineNotice")}
-          </p>
+          <p className="font-bold">{t('editMetadata.zeroUploadGuarantee')}</p>
+          <p className="leading-normal text-slate-600">{t('editMetadata.offlineNotice')}</p>
         </div>
       </section>
     </div>

@@ -21,7 +21,13 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   '/page-numbers': '/add-page-numbers/',
   '/add-blank': '/add-blank-page/',
   '/img-to-pdf': '/image-to-pdf/',
+  '/jpg-to-pdf': '/image-to-pdf/',
+  '/jpeg-to-pdf': '/image-to-pdf/',
+  '/png-to-pdf': '/image-to-pdf/',
   '/pdf-to-img': '/pdf-to-image/',
+  '/pdf-to-jpg': '/pdf-to-image/',
+  '/pdf-to-jpeg': '/pdf-to-image/',
+  '/pdf-to-png': '/pdf-to-image/',
   '/grayscale': '/grayscale-pdf/',
   '/flatten': '/flatten-pdf/',
   '/repair': '/repair-pdf/',
@@ -36,16 +42,25 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   '/rotate': '/rotate-pdf/',
   '/pdfminty-vs-smallpdf': '/compare/pdfminty-vs-smallpdf/',
   '/pdfminty-vs-ilovepdf': '/compare/pdfminty-vs-ilovepdf/',
-  '/blog/best-free-pdf-compressor-without-losing-quality': '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
-  '/blog/how-to-compress-pdf-without-losing-quality-locally': '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
-  '/blog/how-to-protect-a-pdf-with-password-in-3-easy-steps': '/blog/how-to-password-protect-a-pdf-offline/',
-  '/blog/how-to-edit-a-pdf-offline-without-uploading-it': '/blog/secure-pdf-editing-without-uploading/',
-  '/blog/why-offline-pdf-editors-are-the-future-of-privacy': '/blog/why-privacy-first-pdf-tools-matter-in-2026/',
+  '/blog/best-free-pdf-compressor-without-losing-quality':
+    '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
+  '/blog/how-to-compress-pdf-without-losing-quality-locally':
+    '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
+  '/blog/how-to-protect-a-pdf-with-password-in-3-easy-steps':
+    '/blog/how-to-password-protect-a-pdf-offline/',
+  '/blog/how-to-edit-a-pdf-offline-without-uploading-it':
+    '/blog/secure-pdf-editing-without-uploading/',
+  '/blog/why-offline-pdf-editors-are-the-future-of-privacy':
+    '/blog/why-privacy-first-pdf-tools-matter-in-2026/',
 };
 
 // Static pages that are always valid
 const STATIC_VALID_ROUTES = new Set([
-  'blog', 'about-us', 'contact', 'privacy-policy', 'terms-of-service',
+  'blog',
+  'about-us',
+  'contact',
+  'privacy-policy',
+  'terms-of-service',
   'adobe-acrobat-alternative',
 ]);
 
@@ -100,7 +115,9 @@ export const onRequest: PagesFunction = async (context) => {
   };
 
   // Determine effective client protocol using x-forwarded-proto header (protect against Cloudflare Flexible SSL loop)
-  const forwardedProto = context.request.headers.get('x-forwarded-proto') || (url.protocol ? url.protocol.replace(':', '') : 'https');
+  const forwardedProto =
+    context.request.headers.get('x-forwarded-proto') ||
+    (url.protocol ? url.protocol.replace(':', '') : 'https');
   const isPlainHttp = forwardedProto === 'http';
 
   // 1. Canonical Hostname (www -> non-www) & Protocol (http -> https) normalization
@@ -133,7 +150,9 @@ export const onRequest: PagesFunction = async (context) => {
     rawPath.startsWith('/assets/') ||
     rawPath.startsWith('/fonts/') ||
     rawPath.startsWith('/icons/') ||
-    /\.(js|css|png|jpe?g|svg|gif|ico|webp|woff2?|ttf|wasm|webmanifest|xml|txt|map|json)$/i.test(rawPath);
+    /\.(js|css|png|jpe?g|svg|gif|ico|webp|woff2?|ttf|wasm|webmanifest|xml|txt|map|json)$/i.test(
+      rawPath
+    );
 
   if (isStaticAsset) {
     return context.next();
@@ -144,7 +163,10 @@ export const onRequest: PagesFunction = async (context) => {
   // Normalize slashes and dot-segments early for non-API routes to avoid multi-hop redirect chains
   const normalizedLower = lowerPath.startsWith('/api')
     ? lowerPath
-    : lowerPath.replace(/\/{2,}/g, '/').replace(/\/\.\//g, '/').replace(/\/\.$/, '/');
+    : lowerPath
+        .replace(/\/{2,}/g, '/')
+        .replace(/\/\.\//g, '/')
+        .replace(/\/\.$/, '/');
 
   // 1. Check legacy redirects first (with or without trailing slash)
   const strippedPath = normalizedLower.replace(/\/+$/, '') || '/';
@@ -153,7 +175,12 @@ export const onRequest: PagesFunction = async (context) => {
     // Prevent self-redirect loops: only redirect if destination is different from normalized path
     if (destination !== normalizedLower && destination !== rawPath) {
       const targetHost = url.hostname === 'www.pdfminty.com' ? 'pdfminty.com' : url.hostname;
-      const targetProtocol = (url.hostname === 'pdfminty.com' || url.hostname === 'www.pdfminty.com') ? 'https:' : (isPlainHttp ? 'https:' : url.protocol);
+      const targetProtocol =
+        url.hostname === 'pdfminty.com' || url.hostname === 'www.pdfminty.com'
+          ? 'https:'
+          : isPlainHttp
+            ? 'https:'
+            : url.protocol;
       const targetUrl = `${targetProtocol}//${targetHost}${destination}${url.search}`;
       const redirect = createRedirectResponse(targetUrl, 301);
       if (redirect) return redirect;
@@ -250,7 +277,12 @@ export const onRequest: PagesFunction = async (context) => {
     }
 
     // 2. Is it a GraphQL path?
-    if (path === '/graphql' || path.startsWith('/graphql/') || path.endsWith('/graphql') || path.includes('/graphql')) {
+    if (
+      path === '/graphql' ||
+      path.startsWith('/graphql/') ||
+      path.endsWith('/graphql') ||
+      path.includes('/graphql')
+    ) {
       return true;
     }
 
@@ -265,7 +297,7 @@ export const onRequest: PagesFunction = async (context) => {
   if (isInvalidEndpoint(pathname)) {
     const origin = getCorsOrigin(context.request);
     const corsHeaders = getCorsHeaders(origin, 'application/json', 'GET, POST, OPTIONS');
-    
+
     if (context.request.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
@@ -346,19 +378,21 @@ export const onRequest: PagesFunction = async (context) => {
   );
   newResponse.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
 
-  // Content-Security-Policy — supports Google AdSense, analytics, and font resources
+  // Content-Security-Policy — supports Google AdSense, GA4/GTM analytics, and font resources
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://*.doubleclick.net",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "img-src 'self' blob: data: https://www.googletagmanager.com https://launchbuff.com https://launchstag.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
-    "connect-src 'self' blob: https://www.google-analytics.com https://stats.g.doubleclick.net https://static.cloudflareinsights.com https://generativelanguage.googleapis.com https://pagead2.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net",
-    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://pagead2.googlesyndication.com",
+    "img-src 'self' blob: data: https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://launchbuff.com https://launchstag.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com",
+    "connect-src 'self' blob: https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://*.doubleclick.net https://static.cloudflareinsights.com https://generativelanguage.googleapis.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://pagead2.googlesyndication.com https://*.googlesyndication.com",
     "worker-src 'self' blob:",
+    "frame-ancestors 'none'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
+    'upgrade-insecure-requests',
   ];
   newResponse.headers.set('Content-Security-Policy', cspDirectives.join('; '));
 

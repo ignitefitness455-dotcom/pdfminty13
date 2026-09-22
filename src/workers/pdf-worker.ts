@@ -120,7 +120,10 @@ self.onmessage = async (e: MessageEvent) => {
         throw new Error(`Unknown operation: ${operation}`);
     }
 
-    (self as unknown as DedicatedWorkerGlobalScope).postMessage({ id, success: true, result }, transferables);
+    (self as unknown as DedicatedWorkerGlobalScope).postMessage(
+      { id, success: true, result },
+      transferables
+    );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Worker processing failed';
     (self as unknown as DedicatedWorkerGlobalScope).postMessage({
