@@ -163,7 +163,7 @@ if (brokenLinks.length > 0) {
 // Check sitemap files
 console.log('\n🗺️ Checking sitemap files in public/ and dist/...');
 const sitemapDir = fs.existsSync('dist') ? 'dist' : 'public';
-const sitemaps = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-blog.xml', 'sitemap-static.xml', 'sitemap-translations.xml'];
+const sitemaps = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-blog.xml', 'sitemap-pages.xml'];
 let totalSitemapUrls = 0;
 sitemaps.forEach((sm) => {
   const filePath = path.join(sitemapDir, sm);
