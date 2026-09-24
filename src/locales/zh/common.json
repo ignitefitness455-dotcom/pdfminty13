@@ -86,182 +86,182 @@
   },
   "home": {
     "hero": {
-      "badgePrivate": "私密浏览器工具",
+      "badgeClient": "🔒 浏览器客户端本地处理",
+      "badgePrivate": "100% 隐私安全浏览器工具",
       "h1Part1": "免费的基于浏览器的 PDF 工具 — 100% 私密，",
       "h1Part2": "零上传",
-      "subtitle": "直接在您的 Web 浏览器中合并、拆分和编辑文档。",
-      "badgeClient": "🔒 Client-Side In-Browser Processing"
+      "subtitle": "直接在 Web 浏览器中合并、拆分和编辑文档。PDFMinty 无需服务器上传即可在您的设备上本地处理所有常规 PDF 任务。无需注册账号——极速、私密、安全。"
     },
     "search": {
-      "placeholder": "Search PDF tools...",
-      "ariaLabel": "Search PDF tools"
+      "placeholder": "搜索 PDF 工具...",
+      "ariaLabel": "搜索 PDF 工具"
     },
     "categories": {
-      "all": "All",
-      "workflows": "Workflows",
-      "organize": "Organize PDF",
-      "optimize": "Optimize PDF",
-      "convert": "Convert PDF",
-      "edit": "Edit PDF",
-      "security": "PDF Security",
-      "intelligence": "PDF Intelligence"
+      "all": "全部",
+      "workflows": "常用工作流",
+      "organize": "整理 PDF",
+      "optimize": "优化 PDF",
+      "convert": "转换 PDF",
+      "edit": "编辑 PDF",
+      "security": "安全与隐私",
+      "intelligence": "智能处理"
     },
     "noToolsFound": {
-      "title": "No tools found",
-      "desc": "We couldn't find any tools matching your search. Try checking your spelling or search for something else.",
-      "clearSearch": "Clear Search"
+      "title": "未找到相关工具",
+      "desc": "未找到与您的搜索相符的工具。请检查拼写或尝试其他关键词。",
+      "clearSearch": "清除搜索"
     },
     "whyChoose": {
-      "title": "Why Choose PDFMinty?",
-      "subtitle": "Professional-grade document tools with zero security compromises.",
-      "privacyTitle": "Privacy First",
-      "privacyDesc": "Your standard documents stay on your device. Local PDF operations run in browser memory for privacy-first handling.",
-      "noAccountTitle": "No Account Required",
-      "noAccountDesc": "Skip signups and passwords. Access fast, direct tools instantly without creating an account or leaving personal data.",
-      "freeTitle": "Completely Free",
-      "freeDesc": "Enjoy file editing and organizing with no paywalls, subscriptions, artificial limits, or watermarks.",
-      "fastTitle": "Instant Processing",
-      "fastDesc": "No waiting for uploads or cloud queues. Your device's processor handles files immediately with zero transfer lag.",
-      "offlineTitle": "Works Offline",
-      "offlineDesc": "Once loaded, core tools process your PDF files locally on your computer even without an active internet connection.",
-      "toolsCountTitle": "22+ Specialized Tools",
-      "toolsCountDesc": "From merging and splitting to encryption, OCR, and compression — complete every PDF workflow right here."
+      "title": "为什么选择 PDFMinty？",
+      "subtitle": "零安全妥协的专业级文档工具。",
+      "privacyTitle": "隐私第一",
+      "privacyDesc": "您的标准文档始终保留在您的设备上。本地 PDF 操作在浏览器内存中运行，确保绝对的隐私安全。",
+      "noAccountTitle": "无需注册账户",
+      "noAccountDesc": "告别繁琐的注册和密码。无需创建账户或提交个人信息，即可直接使用极速工具。",
+      "freeTitle": "完全免费",
+      "freeDesc": "尽情使用文件编辑与整理工具，无付费墙、无订阅费用、无使用限制，亦无任何水印。",
+      "fastTitle": "瞬时处理",
+      "fastDesc": "无需等待文件上传或云端排队。您设备的处理器能够立即完成处理，无网络传输延迟。",
+      "offlineTitle": "支持离线使用",
+      "offlineDesc": "首次加载后，核心工具即便在断开网络连接的情况下也能在您的计算机上本地处理 PDF 文件。",
+      "toolsCountTitle": "22+ 款专业工具",
+      "toolsCountDesc": "从合并与拆分到加密、OCR 与压缩 — 在这里轻松搞定全部 PDF 工作流。"
     },
     "howItWorks": {
-      "badge": "100% In-Browser Privacy",
-      "title": "Fast, Private Document Processing",
-      "desc": "PDFMinty processes your documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, file size limits, or cloud storage risks. Process confidential contracts, tax forms, and financial records with guaranteed zero data leakage.",
-      "dragDrop": "Drag & Drop PDF here",
-      "orBrowse": "or click to browse locally",
-      "stepsHeading": "How It Works in 3 Simple Steps",
-      "step1Title": "Select Your Tool",
-      "step1Desc": "Choose from 22+ dedicated PDF tools above for merging, splitting, editing, or securing your files.",
-      "step2Title": "Add Your Files",
-      "step2Desc": "Drag and drop your PDF files directly into your browser window. Everything stays local in memory.",
-      "step3Title": "Process & Download",
-      "step3Desc": "Your PDF is processed instantly on your hardware. Click download to save the result immediately."
+      "badge": "100% 浏览器内隐私保护",
+      "title": "极速、私密的文档处理体验",
+      "desc": "PDFMinty 直接在您的电脑或手机上处理文档。由于文件始终保存在本地设备上，处理即时完成，没有上传延迟、文件体积上限或云端泄密风险。放心处理保密合同、税务表格与财务凭证，确保零数据泄漏。",
+      "dragDrop": "将 PDF 拖拽至此处",
+      "orBrowse": "或点击浏览本地文件",
+      "stepsHeading": "简单 3 步即可完成处理",
+      "step1Title": "选择工具",
+      "step1Desc": "从上方 22+ 款专属 PDF 工具中选择您所需的合并、拆分、编辑或加密工具。",
+      "step2Title": "添加文件",
+      "step2Desc": "将 PDF 文件直接拖放至浏览器窗口中，所有操作均在本地内存中完成。",
+      "step3Title": "处理并下载",
+      "step3Desc": "您的 PDF 会在您的硬件上极速处理完成。点击下载即可立即保存结果。"
     },
     "faq": {
-      "badge": "Frequently Asked Questions",
-      "title": "Got Questions? We Have Answers.",
-      "subtitle": "Everything you need to know about PDFMinty's private, in-browser PDF tools.",
+      "badge": "常见问题解答",
+      "title": "常见疑问，为您解答",
+      "subtitle": "关于 PDFMinty 纯浏览器端私密 PDF 工具箱的一切信息。",
       "items": [
         {
-          "q": "How does PdfMinty process my PDF files privately?",
-          "a": "PdfMinty executes our standard PDF tools (merging, splitting, compressing, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box."
+          "q": "PDFMinty 如何保障我的 PDF 文件隐私？",
+          "a": "PDFMinty 的标准 PDF 工具（合并、拆分、压缩、编辑、签名等）100% 借助 WebAssembly 和 JavaScript 在您的浏览器内部本地执行，绝不向任何外部服务器上传文件。"
         },
         {
-          "q": "Is PdfMinty completely free to use?",
-          "a": "Yes, 100% free with no hidden fees, subscriptions, usage limits, or account registration required."
+          "q": "PDFMinty 是完全免费的吗？",
+          "a": "是的，100% 免费，没有任何隐藏费用、订阅要求、使用额度限制或强制账户注册。"
         },
         {
-          "q": "Do my files ever leave my computer or mobile device?",
-          "a": "For our standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box."
+          "q": "我的文件会离开我的电脑或移动设备吗？",
+          "a": "对于标准 PDF 工具，绝不离开——所有处理均在您本地浏览器的内存中发生，并完全支持离线操作。"
         },
         {
-          "q": "What file formats and PDF versions are supported?",
-          "a": "PdfMinty supports standard PDF documents across all versions, including password-protected PDFs, scanned document pages, and standard image formats (JPEG, PNG, WebP) for PDF conversion."
+          "q": "支持哪些文件格式和 PDF 版本？",
+          "a": "PDFMinty 支持所有版本的标准 PDF 文档，包括受密码保护的 PDF、扫描页面，以及用于转换的常用图像格式（JPEG、PNG、WebP）。"
         },
         {
-          "q": "How does PdfMinty compare to online converters like iLovePDF or Smallpdf?",
-          "a": "Traditional PDF converters upload your confidential documents to external cloud servers to process them. PdfMinty processes standard tools locally on your own CPU and memory, eliminating privacy risks and server wait times."
+          "q": "PDFMinty 与传统在线转换工具相比有何优势？",
+          "a": "传统在线转换工具会将您的机密文件上传到外部云端服务器。PDFMinty 利用您设备自身的 CPU 与内存本地处理，消除了隐私泄露风险并避免了排队等待。"
         }
       ]
     },
     "cta": {
-      "title": "Ready to manage your PDFs with total privacy?",
-      "subtitle": "Select any tool above to process your documents privately on your device. Fast performance, no subscriptions, and privacy-first client-side processing.",
-      "button": "Explore All Tools"
+      "title": "准备好体验完全私密的 PDF 管理了吗？",
+      "subtitle": "从上方挑选任意工具，直接在您的设备上安全处理文档。极速性能、零订阅费，保障隐私。",
+      "button": "浏览全部工具"
     }
   },
   "tools": {
     "merge-pdf": {
-      "name": "Merge PDF",
-      "desc": "Combine multiple PDF files into one single document in seconds."
+      "name": "合并 PDF",
+      "desc": "将多个 PDF 文件合并为一个有序文档。"
     },
     "split-pdf": {
-      "name": "Split PDF",
-      "desc": "Extract pages or split a PDF into separate files by custom ranges."
+      "name": "拆分 PDF",
+      "desc": "提取页面或按自定义范围拆分 PDF 文档。"
     },
     "rotate-pdf": {
-      "name": "Rotate PDF",
-      "desc": "Rotate specific pages or entire PDF documents clockwise or counter-clockwise."
+      "name": "旋转 PDF",
+      "desc": "顺时针或逆时针旋转特定页面或整个 PDF。"
     },
     "delete-pages-pdf": {
-      "name": "Delete Pages",
-      "desc": "Remove unwanted pages from your PDF file cleanly with a visual selector."
+      "name": "删除页面",
+      "desc": "使用可视化选择器轻松移除 PDF 中的多余页面。"
     },
     "extract-pages-pdf": {
-      "name": "Extract Pages",
-      "desc": "Select and save specific pages as an independent, lightweight PDF."
+      "name": "提取页面",
+      "desc": "选取指定页面并保存为独立的轻量 PDF 文件。"
     },
     "reorder-pdf": {
-      "name": "Reorder PDF Pages",
-      "desc": "Drag and drop page thumbnails to rearrange your document's page order."
+      "name": "重新排序页面",
+      "desc": "通过拖放缩略图自由调整文档的页面顺序。"
     },
     "grayscale-pdf": {
-      "name": "Grayscale PDF",
-      "desc": "Convert color documents into clean black-and-white or grayscale for printer ink saving."
+      "name": "转为黑白灰度",
+      "desc": "将彩色文档转换为黑白灰度，节省打印墨水。"
     },
     "flatten-pdf": {
-      "name": "Flatten PDF",
-      "desc": "Lock form fields, digital layers, and annotations permanently into standard PDF pages."
+      "name": "展平 PDF",
+      "desc": "将表单字段、图层和注释永久锁定到 PDF 页面中。"
     },
     "image-to-pdf": {
-      "name": "Image to PDF",
-      "desc": "Convert JPG, PNG, WEBP, and TIFF images into a single professional PDF."
+      "name": "图片转 PDF",
+      "desc": "将 JPG、PNG、WEBP 等图片合并转换为专业 PDF。"
     },
     "pdf-to-image": {
-      "name": "PDF to Images",
-      "desc": "Export high-resolution JPG or PNG pictures from any page in your PDF document."
+      "name": "PDF 转图片",
+      "desc": "从 PDF 文档中导出高清 JPG 或 PNG 图像。"
     },
     "protect-pdf": {
-      "name": "Protect PDF",
-      "desc": "Encrypt your PDF with AES-256 password protection to restrict unauthorized viewing."
+      "name": "PDF 加密保护",
+      "desc": "使用 AES-256 强密码保护您的敏感文档。"
     },
     "unlock-pdf": {
-      "name": "Unlock PDF",
-      "desc": "Remove owner passwords and printing or editing restrictions from your secured PDF files."
+      "name": "PDF 解密解锁",
+      "desc": "移除受保护 PDF 的打开密码与打印编辑限制。"
     },
     "watermark-pdf": {
-      "name": "Watermark PDF",
-      "desc": "Stamp customized confidential or draft text watermarks across document pages."
+      "name": "添加水印",
+      "desc": "在文档页面添加自定义保密或草稿文字水印。"
     },
     "add-page-numbers": {
-      "name": "Page Numbers",
-      "desc": "Insert formatted numbering in header or footer positions with customizable offsets."
+      "name": "添加页码",
+      "desc": "在页眉或页脚位置插入格式化页码，支持偏移量调整。"
     },
     "add-blank-page": {
-      "name": "Add Blank Page",
-      "desc": "Insert blank document pages before, after, or between existing content."
+      "name": "插入空白页",
+      "desc": "在现有内容之前、之后或中间插入空白页面。"
     },
     "edit-pdf-metadata": {
-      "name": "Edit PDF Metadata",
-      "desc": "View and modify document Title, Author, Subject, Keywords, and Creator properties."
+      "name": "编辑元数据",
+      "desc": "查看并修改文档标题、作者、主题和关键词属性。"
     },
     "sanitize-pdf": {
-      "name": "Sanitize PDF",
-      "desc": "Strip hidden metadata, XML records, JavaScript code, and embedded links completely."
+      "name": "清理敏感信息",
+      "desc": "彻底抹除隐藏元数据、XML 记录、脚本与嵌入链接。"
     },
     "pdf-to-markdown": {
-      "name": "PDF to Markdown",
-      "desc": "Extract clean structural Markdown text, headings, and lists directly from your PDF."
+      "name": "PDF 转 Markdown",
+      "desc": "从 PDF 提取结构清晰的 Markdown 标题与文本。"
     },
     "sign-pdf": {
-      "name": "Sign PDF",
-      "desc": "Draw, type, or upload your handwritten digital signature onto any PDF page securely."
+      "name": "签署 PDF",
+      "desc": "在任何 PDF 页面安全绘制或放置手写电子签名。"
     },
     "ocr-pdf": {
-      "name": "OCR PDF",
-      "desc": "Recognize and extract searchable text from scanned paper documents and photo PDFs."
+      "name": "OCR 文字识别",
+      "desc": "识别扫描纸质文档和图片 PDF 中的可搜索文本。"
     },
     "ai-analyze-pdf": {
-      "name": "AI Analyze PDF",
-      "desc": "Summarize contracts, query data points, and extract insights using browser-safe AI."
+      "name": "AI 分析 PDF",
+      "desc": "利用浏览器安全的 AI 总结合同并提取关键洞察。"
     },
     "repair-pdf": {
-      "name": "Repair PDF",
-      "desc": "Rebuild damaged cross-reference tables and recover readable text from corrupted files."
+      "name": "修复 PDF",
+      "desc": "重建损坏的交叉引用表并恢复可读的文档内容。"
     }
   },
   "auto": {},

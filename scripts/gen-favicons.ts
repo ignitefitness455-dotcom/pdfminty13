@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import pngToIco from 'png-to-ico';
 import sharp from 'sharp';
 
 import { logger } from '../src/utils/logger';
@@ -42,11 +43,12 @@ async function generateFavicons(): Promise<void> {
       .png()
       .toFile(path.join(publicDir, 'apple-touch-icon.png'));
 
-    // favicon.ico (32x32)
-    await sharp(iconSource)
-      .resize(32, 32)
-      .png()
-      .toFile(path.join(publicDir, 'favicon.ico'));
+    // favicon.ico (True ICO binary with 16x16 & 32x32 frames) & favicon.png
+    const png16 = await sharp(iconSource).resize(16, 16).png().toBuffer();
+    const png32 = await sharp(iconSource).resize(32, 32).png().toBuffer();
+    const icoBuffer = await pngToIco([png16, png32]);
+    await fs.promises.writeFile(path.join(publicDir, 'favicon.ico'), icoBuffer);
+    await fs.promises.writeFile(path.join(publicDir, 'favicon.png'), png32);
 
     logger.info('Favicon generation complete.');
   } catch (error: unknown) {

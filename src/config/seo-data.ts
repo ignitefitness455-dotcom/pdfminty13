@@ -5,6 +5,12 @@ export const SITE_URL = (
 ).replace(/\/+$/, '');
 export const SITE_NAME = 'PDFMinty';
 
+export const HOMEPAGE_META = {
+  title: 'PDFMinty — Free Privacy-First PDF Toolkit',
+  description:
+    'Free privacy-first PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.',
+};
+
 export const FAQS = [
   {
     q: 'How does PdfMinty process my PDF files privately?',
@@ -3898,28 +3904,66 @@ export const TOOLS: ToolSEOInfo[] = [
       'Get in touch with the PdfMinty team. Send your questions, feedback, or feature requests to support@pdfminty.com. Response within 24-48 hours.',
     metaTitle: 'Contact Us | PDFMinty — Free & Private PDF Toolkit',
     metaDescription:
-      'Have questions, feature requests, or feedback about PdfMinty? Get in touch with us at support@pdfminty.com. We usually respond within 24-48 hours.',
-    h1: 'Contact Us | PdfMinty',
+      'Contact PdfMinty support and security teams. Have questions about 100% client-side PDF processing, bug reports, or feature requests? We respond within 24-48 hours.',
+    h1: 'Contact PDFMinty',
     icon: 'Mail',
     category: 'info',
     priority: 0.6,
     changefreq: 'monthly',
     type: 'article',
     datePublished: '2026-07-28',
-    dateModified: '2026-07-28',
+    dateModified: '2026-09-24',
+    faqs: [
+      {
+        q: 'Are my PDF files uploaded or stored on PdfMinty servers when using the tools?',
+        a: 'No. PdfMinty is strictly built as a client-side application using WebAssembly and HTML5 APIs. Your confidential files never leave your computer or browser tab, guaranteeing total privacy without cloud storage.',
+      },
+      {
+        q: 'How can I submit a bug report, suggest a feature, or request a new PDF tool?',
+        a: 'You can submit feedback directly using the interactive contact form on this page or email support@pdfminty.com with details about your browser, operating system, and the desired functionality.',
+      },
+      {
+        q: 'How do I reach out for security disclosures or business and educational partnerships?',
+        a: 'For security advisories and responsible disclosure, contact security@pdfminty.com. For commercial licensing, educational use, or media inquiries, email partnerships@pdfminty.com or support@pdfminty.com.',
+      },
+    ],
     longFormBody: `
-      <h2>Contact Us | PdfMinty</h2>
-      <p>Have questions, feature requests, or feedback about PdfMinty? We're here to help! Get in touch with us at <strong>support@pdfminty.com</strong>. We usually respond within 24 to 48 hours.</p>
+      <h2>Contact PDFMinty Support & Engineering</h2>
+      <p>Welcome to the PdfMinty support and contact desk. PdfMinty is an ultra-fast, privacy-first PDF utility suite engineered to process, compress, convert, merge, and sign your documents 100% locally inside your browser with zero remote server uploads. Whether you have questions regarding file privacy, encounter a technical issue with a PDF tool, or wish to suggest new capabilities, our dedicated engineering and support team typically replies within 24 to 48 hours.</p>
 
-      <h2>Direct Contact Details</h2>
+      <h2>Official Contact Channels</h2>
+      <p>Please use the appropriate email channel below so that your request reaches the relevant team as quickly as possible:</p>
       <ul>
-        <li><strong>Email:</strong> <a href="mailto:support@pdfminty.com">support@pdfminty.com</a></li>
-        <li><strong>Response Time:</strong> 24 - 48 hours</li>
-        <li><strong>Website:</strong> <a href="https://pdfminty.com">https://pdfminty.com</a></li>
+        <li><strong>General Support & User Inquiries:</strong> <a href="mailto:support@pdfminty.com">support@pdfminty.com</a> (for everyday help, bug reports, and user feedback)</li>
+        <li><strong>Security & Privacy Audits:</strong> <a href="mailto:security@pdfminty.com">security@pdfminty.com</a> (for vulnerability disclosures, data privacy audits, and responsible security inquiries)</li>
+        <li><strong>Business & Educational Partnerships:</strong> <a href="mailto:support@pdfminty.com">support@pdfminty.com</a> (for API integrations, bulk workstation use, and press inquiries)</li>
+        <li><strong>Typical Response Time:</strong> Within 24 to 48 hours (Monday through Friday)</li>
       </ul>
 
-      <h2>About PdfMinty</h2>
-      <p>PdfMinty is a fast, 100% client-side PDF utility suite built for absolute privacy, speed, and simplicity. All file processing happens locally inside your browser memory without uploading your documents to remote cloud servers.</p>
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>1. Are my PDF files ever uploaded to or stored on your servers?</h3>
+        <p>No, never. All standard PDF editing, merging, splitting, converting, compressing, and signing operations happen entirely on your device using WebAssembly (Wasm) and local JavaScript sandboxing. Your files are processed inside your computer's RAM and are never transmitted over the internet to remote servers.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>2. How can I submit a bug report or suggest a new PDF tool feature?</h3>
+        <p>If you encounter an unexpected issue with a specific PDF file or have an idea for a tool we should add, please email us at <a href="mailto:support@pdfminty.com">support@pdfminty.com</a>. Please include your browser version, operating system, and a brief description of the issue so our engineering team can reproduce and resolve it promptly.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>3. What is the process for institutional partnerships or high-volume deployment?</h3>
+        <p>PdfMinty is free for individual and commercial use. If your school, law firm, healthcare facility, or enterprise needs customized offline deployments, integration guidance, or localized training, contact us with the subject line <em>[Partnership Inquiry]</em> and our team will schedule a consultation.</p>
+      </div>
+
+      <h2>Interactive Contact Form</h2>
+      <p>If JavaScript is enabled in your browser, the interactive contact form will load directly below, allowing you to send messages directly from this page without opening an external mail client.</p>
+
+      <noscript>
+        <div style="padding: 1rem; margin-top: 1rem; border-radius: 0.75rem; border: 1px solid rgba(245, 158, 11, 0.3); background-color: rgba(245, 158, 11, 0.1);">
+          <p><strong>Note for Non-JavaScript Browsers:</strong> The interactive contact form requires client-side JavaScript to submit. Since JavaScript is currently disabled, please send your message directly via email to <a href="mailto:support@pdfminty.com">support@pdfminty.com</a>.</p>
+        </div>
+      </noscript>
     `,
   },
   {

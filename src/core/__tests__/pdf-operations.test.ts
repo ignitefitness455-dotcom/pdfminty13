@@ -1,4 +1,4 @@
-import { PDFDocument as PlainPDFDocument } from 'pdf-lib';
+import { PDFDocument as PlainPDFDocument } from '@cantoo/pdf-lib';
 import { describe, it, expect } from 'vitest';
 
 import {

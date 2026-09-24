@@ -4,6 +4,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://pdfminty.com/edit-pdf-metadata/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -14,6 +15,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/sanitize-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -32,6 +34,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -50,6 +53,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -68,6 +72,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -86,6 +91,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -104,6 +110,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -122,6 +129,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -140,6 +148,7 @@
     <xhtml:link rel="alternate" hreflang="hi" href="https://pdfminty.com/hi/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://pdfminty.com/zh/merge-pdf/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdfminty.com/merge-pdf/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -150,6 +159,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/split-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -160,6 +170,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/rotate-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -170,6 +181,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/delete-pages-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -180,6 +192,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/extract-pages-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -190,6 +203,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/reorder-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -200,6 +214,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/watermark-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -210,6 +225,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/add-page-numbers/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -220,6 +236,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/add-blank-page/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -230,6 +247,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/protect-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -240,6 +258,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/unlock-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -250,6 +269,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/image-to-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -260,6 +280,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/pdf-to-image/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -270,6 +291,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/pdf-to-markdown/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -280,6 +302,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/ai-analyze-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -290,6 +313,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/grayscale-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -300,6 +324,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/flatten-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -310,6 +335,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/repair-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -320,6 +346,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/sign-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -330,6 +357,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/ocr-pdf/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>

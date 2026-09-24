@@ -173,7 +173,7 @@ export function generateSitemapXml(): SitemapGenerationResult {
 
     const priority = isBlogOrCompare ? '0.8' : '0.9';
     const changefreq = 'weekly';
-    const lastmod = item.dateModified || item.datePublished;
+    const lastmod = item.dateModified || item.datePublished || today;
     const ogImage = item.ogImage
       ? (item.ogImage.startsWith('http') ? item.ogImage : `${baseUrl}${item.ogImage.startsWith('/') ? item.ogImage : `/${item.ogImage}`}`)
       : `${baseUrl}/og-image.png`;

@@ -70,12 +70,18 @@ const NON_DEFAULT_LOCALES = new Set<SupportedLocale>(
   SUPPORTED_LOCALES.filter((loc): loc is Exclude<SupportedLocale, 'en'> => loc !== 'en')
 );
 
+// Localized subpaths that actually exist as pre-rendered pages or valid routes
+// Currently, only 'merge-pdf' has dedicated localized pages across supported non-default locales
+const LOCALIZED_VALID_SUBROUTES = new Set([
+  'merge-pdf',
+]);
+
 function checkValidRoute(cleanPath: string): boolean {
   if (cleanPath === '' || STATIC_VALID_ROUTES.has(cleanPath)) {
     return true;
   }
 
-  // Check localized routes (e.g. "de", "de/merge-pdf", "fr/split-pdf", "bn/merge-pdf")
+  // Check localized routes (e.g. "de", "de/merge-pdf", "fr/merge-pdf", "bn/merge-pdf")
   const segments = cleanPath.split('/');
   const firstSegment = segments[0] as SupportedLocale;
 
@@ -84,9 +90,9 @@ function checkValidRoute(cleanPath: string): boolean {
     if (segments.length === 1) {
       return true;
     }
-    // Localized tool pages or subpages
+    // Only pre-rendered / supported localized subpaths (e.g. "de/merge-pdf")
     const subPath = segments.slice(1).join('/');
-    return STATIC_VALID_ROUTES.has(subPath) || TOOLS.some((item) => item.slug === subPath);
+    return LOCALIZED_VALID_SUBROUTES.has(subPath);
   }
 
   // Default English tool pages, blog articles, compare pages (e.g. "merge-pdf", "blog/...", "compare/...")
@@ -94,25 +100,39 @@ function checkValidRoute(cleanPath: string): boolean {
 }
 
 export const onRequest: PagesFunction = async (context) => {
-  const url = new URL(context.request.url);
-  const rawPath = url.pathname;
+  try {
+    const url = new URL(context.request.url);
+    const rawPath = url.pathname;
 
-  // Safe redirect helper that strictly prevents self-redirect loops and CDN cache-poisoning
-  const createRedirectResponse = (targetUrl: string, status: 301 | 302 = 301): Response | null => {
-    // Strictly prevent redirecting to the exact same URL (infinite loop guard)
-    const currentCanonical = `${url.origin}${url.pathname}${url.search}`;
-    if (
-      targetUrl === url.href ||
-      targetUrl === context.request.url ||
-      targetUrl === currentCanonical
-    ) {
-      return null;
-    }
-    const redirectRes = Response.redirect(targetUrl, status);
-    // Never allow CDN/browser to cache a redirect loop or stale redirect indefinitely
-    redirectRes.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    return redirectRes;
-  };
+    // Safe redirect helper that strictly prevents self-redirect loops and CDN cache-poisoning
+    const createRedirectResponse = (targetUrl: string, status: 301 | 302 = 301): Response | null => {
+      try {
+        // Strictly prevent redirecting to the exact same URL (infinite loop guard)
+        const currentCanonical = `${url.origin}${url.pathname}${url.search}`;
+        if (
+          targetUrl === url.href ||
+          targetUrl === context.request.url ||
+          targetUrl === currentCanonical
+        ) {
+          return null;
+        }
+
+        // Note: Response.redirect(url, status) creates a Response with immutable headers (guard = "immutable"),
+        // which throws a fatal TypeError ("Headers are immutable") in Cloudflare Workers / workerd runtime
+        // when attempting headers.set().
+        // Constructing directly via new Response ensures full header mutability and zero runtime exceptions.
+        return new Response(null, {
+          status,
+          headers: {
+            Location: targetUrl,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+          },
+        });
+      } catch (redirectErr) {
+        console.error('[Middleware] Error creating redirect response:', redirectErr);
+        return null;
+      }
+    };
 
   // Determine effective client protocol using x-forwarded-proto header (protect against Cloudflare Flexible SSL loop)
   const forwardedProto =
@@ -335,14 +355,17 @@ export const onRequest: PagesFunction = async (context) => {
   newResponse.headers.set('X-Content-Type-Options', 'nosniff');
   newResponse.headers.set('X-Frame-Options', 'DENY');
 
-  // Explicitly tell search engines to index and follow links on all HTML pages.
-  // For non-HTML responses (API, assets), use noindex to prevent indexing of internal endpoints.
+  // Explicitly tell search engines to index and follow links on all valid 200 OK HTML pages.
+  // For non-HTML responses (API, assets) or non-200 responses (404, 410, 5xx), use noindex to prevent indexing.
+  const isHtml = contentType.includes('text/html');
+  const isOkStatus = response.status >= 200 && response.status < 300;
+
   if (url.pathname === '/sw.js' || url.pathname.endsWith('/sw.js')) {
     newResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  } else if (contentType.includes('text/html')) {
+  } else if (isHtml) {
     newResponse.headers.set('Cache-Control', 'no-cache, must-revalidate');
 
-    // General 404 check for ALL HTML routes (including localized and blog/compare routes)
+    // General route check for ALL HTML routes (including localized and blog/compare routes)
     const cleanPath = pathname.replace(/^\//, '').replace(/\/$/, '');
 
     // Set correct Content-Language header based on route prefix
@@ -353,18 +376,28 @@ export const onRequest: PagesFunction = async (context) => {
 
     const isValidRoute = checkValidRoute(cleanPath);
 
-    if (!isValidRoute) {
-      // Return 404 status so crawlers don't index unknown paths
+    // CRITICAL SEO FIX:
+    // If route is NOT valid OR upstream response status is not 2xx OK (e.g. 404, 410, 500, 502):
+    // X-Robots-Tag MUST ALWAYS be 'noindex, nofollow' (NEVER index, follow on 404 or error pages)
+    if (!isValidRoute || !isOkStatus) {
       newResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
-      return new Response(hasNoBody ? null : response.body, {
-        status: 404,
-        statusText: 'Not Found',
-        headers: newResponse.headers,
-      });
+      // If the route was invalid and Cloudflare Pages returned a 200 status (e.g. SPA fallback), force 404
+      if (!isValidRoute && isOkStatus) {
+        return new Response(hasNoBody ? null : response.body, {
+          status: 404,
+          statusText: 'Not Found',
+          headers: newResponse.headers,
+        });
+      }
+      return newResponse;
     }
 
+    // Only valid routes with 2xx status codes get index, follow
     newResponse.headers.set('X-Robots-Tag', 'index, follow');
   } else if (contentType.includes('application/json') || url.pathname.startsWith('/api/')) {
+    newResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  } else if (!isOkStatus) {
+    // Non-200 responses on any other resource must also have noindex, nofollow
     newResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
   newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -397,4 +430,8 @@ export const onRequest: PagesFunction = async (context) => {
   newResponse.headers.set('Content-Security-Policy', cspDirectives.join('; '));
 
   return newResponse;
+  } catch (fatalErr) {
+    console.error('[Middleware] Unhandled exception in middleware, falling back to context.next():', fatalErr);
+    return context.next();
+  }
 };

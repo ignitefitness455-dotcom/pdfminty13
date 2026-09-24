@@ -86,182 +86,182 @@
   },
   "home": {
     "hero": {
-      "badgePrivate": "निजी ब्राउज़र उपकरण",
+      "badgeClient": "🔒 क्लाइंट-साइड इन-ब्राउज़र प्रोसेसिंग",
+      "badgePrivate": "प्राइवेसी-फर्स्ट ब्राउज़र टूल्स",
       "h1Part1": "मुफ़्त ब्राउज़र-आधारित पीडीएफ उपकरण — 100% निजी, ",
       "h1Part2": "कोई अपलोड नहीं",
-      "subtitle": "अपने वेब ब्राउज़र में सीधे अपने दस्तावेज़ों को मर्ज करें, विभाजित करें और संपादित करें।",
-      "badgeClient": "🔒 Client-Side In-Browser Processing"
+      "subtitle": "सीधे अपने वेब ब्राउज़र में दस्तावेज़ों को मर्ज, स्प्लिट और एडिट करें। PDFMinty सर्वर अपलोड के बिना आपके डिवाइस पर स्थानीय रूप से सभी मानक पीडीएफ कार्यों को प्रोसेस करता है। बिना किसी खाते के—तेज़, सुरक्षित और निजी पीडीएफ उपकरण।"
     },
     "search": {
-      "placeholder": "Search PDF tools...",
-      "ariaLabel": "Search PDF tools"
+      "placeholder": "पीडीएफ उपकरण खोजें...",
+      "ariaLabel": "पीडीएफ उपकरण खोजें"
     },
     "categories": {
-      "all": "All",
-      "workflows": "Workflows",
-      "organize": "Organize PDF",
-      "optimize": "Optimize PDF",
-      "convert": "Convert PDF",
-      "edit": "Edit PDF",
-      "security": "PDF Security",
-      "intelligence": "PDF Intelligence"
+      "all": "सभी",
+      "workflows": "वर्कफ़्लो",
+      "organize": "पीडीएफ व्यवस्थित करें",
+      "optimize": "पीडीएफ ऑप्टिमाइज़ करें",
+      "convert": "पीडीएफ बदलें",
+      "edit": "पीडीएफ संपादित करें",
+      "security": "पीडीएफ सुरक्षा",
+      "intelligence": "पीडीएफ इंटेलिजेंस"
     },
     "noToolsFound": {
-      "title": "No tools found",
-      "desc": "We couldn't find any tools matching your search. Try checking your spelling or search for something else.",
-      "clearSearch": "Clear Search"
+      "title": "कोई उपकरण नहीं मिला",
+      "desc": "आपकी खोज से मेल खाने वाला कोई उपकरण हमें नहीं मिला। वर्तनी की जाँच करें या कुछ और खोजें।",
+      "clearSearch": "खोज साफ़ करें"
     },
     "whyChoose": {
-      "title": "Why Choose PDFMinty?",
-      "subtitle": "Professional-grade document tools with zero security compromises.",
-      "privacyTitle": "Privacy First",
-      "privacyDesc": "Your standard documents stay on your device. Local PDF operations run in browser memory for privacy-first handling.",
-      "noAccountTitle": "No Account Required",
-      "noAccountDesc": "Skip signups and passwords. Access fast, direct tools instantly without creating an account or leaving personal data.",
-      "freeTitle": "Completely Free",
-      "freeDesc": "Enjoy file editing and organizing with no paywalls, subscriptions, artificial limits, or watermarks.",
-      "fastTitle": "Instant Processing",
-      "fastDesc": "No waiting for uploads or cloud queues. Your device's processor handles files immediately with zero transfer lag.",
-      "offlineTitle": "Works Offline",
-      "offlineDesc": "Once loaded, core tools process your PDF files locally on your computer even without an active internet connection.",
-      "toolsCountTitle": "22+ Specialized Tools",
-      "toolsCountDesc": "From merging and splitting to encryption, OCR, and compression — complete every PDF workflow right here."
+      "title": "PDFMinty क्यों चुनें?",
+      "subtitle": "शून्य सुरक्षा समझौते के साथ पेशेवर-श्रेणी के दस्तावेज़ उपकरण।",
+      "privacyTitle": "गोपनीयता पहले",
+      "privacyDesc": "आपके मानक दस्तावेज़ आपके डिवाइस पर ही रहते हैं। अधिकतम गोपनीयता के लिए स्थानीय पीडीएफ कार्य ब्राउज़र मेमोरी में निष्पादित होते हैं।",
+      "noAccountTitle": "किसी खाते की आवश्यकता नहीं",
+      "noAccountDesc": "साइनअप और पासवर्ड छोड़ें। कोई खाता बनाए बिना या व्यक्तिगत डेटा दिए बिना सीधे तेज़ टूल एक्सेस करें।",
+      "freeTitle": "पूरी तरह से मुफ़्त",
+      "freeDesc": "बिना पेवॉल, सदस्यता, कृत्रिम सीमाओं या वॉटरमार्क के फ़ाइल संपादन और संगठन का आनंद लें।",
+      "fastTitle": "त्वरित प्रसंस्करण",
+      "fastDesc": "अपलोड या क्लाउड कतारों के लिए कोई प्रतीक्षा नहीं। आपका डिवाइस बिना स्थानांतरण अंतराल के फ़ाइलों को तुरंत संभालता है।",
+      "offlineTitle": "ऑफ़लाइन काम करता है",
+      "offlineDesc": "एक बार लोड होने के बाद, कोर टूल सक्रिय इंटरनेट कनेक्शन के बिना भी आपके कंप्यूटर पर स्थानीय रूप से पीडीएफ फाइलों को प्रोसेस करते हैं।",
+      "toolsCountTitle": "22+ विशेष उपकरण",
+      "toolsCountDesc": "मर्ज और स्प्लिट से लेकर एन्क्रिप्शन, ओसीआर और संपीड़न तक — हर पीडीएफ वर्कफ़्लो यहीं पूरा करें।"
     },
     "howItWorks": {
-      "badge": "100% In-Browser Privacy",
-      "title": "Fast, Private Document Processing",
-      "desc": "PDFMinty processes your documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, file size limits, or cloud storage risks. Process confidential contracts, tax forms, and financial records with guaranteed zero data leakage.",
-      "dragDrop": "Drag & Drop PDF here",
-      "orBrowse": "or click to browse locally",
-      "stepsHeading": "How It Works in 3 Simple Steps",
-      "step1Title": "Select Your Tool",
-      "step1Desc": "Choose from 22+ dedicated PDF tools above for merging, splitting, editing, or securing your files.",
-      "step2Title": "Add Your Files",
-      "step2Desc": "Drag and drop your PDF files directly into your browser window. Everything stays local in memory.",
-      "step3Title": "Process & Download",
-      "step3Desc": "Your PDF is processed instantly on your hardware. Click download to save the result immediately."
+      "badge": "100% इन-ब्राउज़र गोपनीयता",
+      "title": "तेज़, निजी दस्तावेज़ प्रसंस्करण",
+      "desc": "PDFMinty आपके दस्तावेज़ों को सीधे आपके कंप्यूटर या फ़ोन पर प्रोसेस करता है। चूँकि आपकी फ़ाइलें आपके डिवाइस पर ही रहती हैं, इसलिए बिना किसी अपलोड देरी, फ़ाइल आकार सीमा या क्लाउड स्टोरेज जोखिम के प्रसंस्करण तुरंत होता है। शून्य डेटा रिसाव गारंटी के साथ गोपनीय अनुबंधों, टैक्स फॉर्म और वित्तीय रिकॉर्ड को प्रोसेस करें।",
+      "dragDrop": "पीडीएफ यहाँ खींचें और छोड़ें",
+      "orBrowse": "या स्थानीय फ़ाइलें ब्राउज़ करने के लिए क्लिक करें",
+      "stepsHeading": "यह 3 सरल चरणों में कैसे काम करता है",
+      "step1Title": "उपकरण चुनें",
+      "step1Desc": "अपनी फ़ाइलों को मर्ज करने, विभाजित करने, संपादित करने या सुरक्षित करने के लिए ऊपर दिए गए 22+ समर्पित पीडीएफ टूल्स में से चुनें।",
+      "step2Title": "फ़ाइलें जोड़ें",
+      "step2Desc": "अपनी पीडीएफ फाइलों को सीधे अपने ब्राउज़र विंडो में खींचें और छोड़ें। सब कुछ मेमोरी में स्थानीय रहता है।",
+      "step3Title": "प्रोसेस और डाउनलोड",
+      "step3Desc": "आपकी पीडीएफ आपके हार्डवेयर पर तुरंत प्रोसेस हो जाती है। परिणाम तुरंत सहेजने के लिए डाउनलोड पर क्लिक करें।"
     },
     "faq": {
-      "badge": "Frequently Asked Questions",
-      "title": "Got Questions? We Have Answers.",
-      "subtitle": "Everything you need to know about PDFMinty's private, in-browser PDF tools.",
+      "badge": "अक्सर पूछे जाने वाले प्रश्न",
+      "title": "क्या आपके कोई प्रश्न हैं? हमारे पास उत्तर हैं।",
+      "subtitle": "PDFMinty के निजी, इन-ब्राउज़र पीडीएफ टूल्स के बारे में आपको जो कुछ भी जानना आवश्यक है।",
       "items": [
         {
-          "q": "How does PdfMinty process my PDF files privately?",
-          "a": "PdfMinty executes our standard PDF tools (merging, splitting, compressing, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box."
+          "q": "PDFMinty मेरी पीडीएफ फाइलों को निजी तौर पर कैसे प्रोसेस करता है?",
+          "a": "PDFMinty हमारे मानक पीडीएफ टूल्स को WebAssembly और जावास्क्रिप्ट का उपयोग करके पूरी तरह से आपके वेब ब्राउज़र के भीतर स्थानीय रूप से निष्पादित करता है, बिना किसी सर्वर पर फाइल अपलोड किए।"
         },
         {
-          "q": "Is PdfMinty completely free to use?",
-          "a": "Yes, 100% free with no hidden fees, subscriptions, usage limits, or account registration required."
+          "q": "क्या PDFMinty का उपयोग पूरी तरह से मुफ़्त है?",
+          "a": "हाँ, बिना किसी छिपी हुई फीस, सदस्यता, उपयोग सीमा या खाता पंजीकरण आवश्यकता के 100% मुफ़्त है।"
         },
         {
-          "q": "Do my files ever leave my computer or mobile device?",
-          "a": "For our standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box."
+          "q": "क्या मेरी फ़ाइलें कभी मेरे कंप्यूटर या मोबाइल डिवाइस से बाहर जाती हैं?",
+          "a": "हमारे मानक पीडीएफ टूल्स के लिए, नहीं — प्रसंस्करण पूरी तरह से आपकी स्थानीय ब्राउज़र मेमोरी में होता है और ऑफ़लाइन भी काम करता है।"
         },
         {
-          "q": "What file formats and PDF versions are supported?",
-          "a": "PdfMinty supports standard PDF documents across all versions, including password-protected PDFs, scanned document pages, and standard image formats (JPEG, PNG, WebP) for PDF conversion."
+          "q": "कौन से फ़ाइल प्रारूप और पीडीएफ संस्करण समर्थित हैं?",
+          "a": "PDFMinty सभी संस्करणों के मानक पीडीएफ दस्तावेज़ों का समर्थन करता है, जिसमें पासवर्ड से सुरक्षित पीडीएफ, स्कैन किए गए पेज और रूपांतरण के लिए मानक छवियां शामिल हैं।"
         },
         {
-          "q": "How does PdfMinty compare to online converters like iLovePDF or Smallpdf?",
-          "a": "Traditional PDF converters upload your confidential documents to external cloud servers to process them. PdfMinty processes standard tools locally on your own CPU and memory, eliminating privacy risks and server wait times."
+          "q": "ऑनलाइन कन्वर्टर्स की तुलना में PDFMinty कैसे बेहतर है?",
+          "a": "पारंपरिक कन्वर्टर्स आपके गोपनीय दस्तावेज़ों को क्लाउड सर्वर पर अपलोड करते हैं। PDFMinty आपके अपने सीपीयू और मेमोरी पर फाइलों को स्थानीय रूप से प्रोसेस करता है, जिससे गोपनीयता का कोई जोखिम नहीं रहता।"
         }
       ]
     },
     "cta": {
-      "title": "Ready to manage your PDFs with total privacy?",
-      "subtitle": "Select any tool above to process your documents privately on your device. Fast performance, no subscriptions, and privacy-first client-side processing.",
-      "button": "Explore All Tools"
+      "title": "पूर्ण गोपनीयता के साथ अपनी पीडीएफ प्रबंधित करने के लिए तैयार हैं?",
+      "subtitle": "अपने डिवाइस पर व्यक्तिगत रूप से दस्तावेज़ों को प्रोसेस करने के लिए ऊपर से कोई भी उपकरण चुनें। तेज़ गति, कोई सदस्यता नहीं और गोपनीयता की गारंटी।",
+      "button": "सभी उपकरण देखें"
     }
   },
   "tools": {
     "merge-pdf": {
-      "name": "Merge PDF",
-      "desc": "Combine multiple PDF files into one single document in seconds."
+      "name": "पीडीएफ मर्ज करें",
+      "desc": "एकाधिक पीडीएफ फाइलों को एक एकल दस्तावेज़ में आसानी से जोड़ें।"
     },
     "split-pdf": {
-      "name": "Split PDF",
-      "desc": "Extract pages or split a PDF into separate files by custom ranges."
+      "name": "पीडीएफ स्प्लिट करें",
+      "desc": "पेज अलग करें या कस्टम रेंज के अनुसार पीडीएफ को कई फाइलों में बांटें।"
     },
     "rotate-pdf": {
-      "name": "Rotate PDF",
-      "desc": "Rotate specific pages or entire PDF documents clockwise or counter-clockwise."
+      "name": "पीडीएफ घुमाएं",
+      "desc": "विशिष्ट पेजों या पूरे दस्तावेज़ को दक्षिणावर्त या वामावर्त रोटेट करें।"
     },
     "delete-pages-pdf": {
-      "name": "Delete Pages",
-      "desc": "Remove unwanted pages from your PDF file cleanly with a visual selector."
+      "name": "पेज हटाएं",
+      "desc": "विज़ुअल चयनकर्ता के साथ अपनी पीडीएफ से अवांछित पेजों को साफ़-सुथरा हटाएं।"
     },
     "extract-pages-pdf": {
-      "name": "Extract Pages",
-      "desc": "Select and save specific pages as an independent, lightweight PDF."
+      "name": "पेज निकालें",
+      "desc": "विशिष्ट पेजों को चुनकर एक स्वतंत्र, हल्के पीडीएफ के रूप में सहेजें।"
     },
     "reorder-pdf": {
-      "name": "Reorder PDF Pages",
-      "desc": "Drag and drop page thumbnails to rearrange your document's page order."
+      "name": "पेज क्रम बदलें",
+      "desc": "पेज थंबनेल को ड्रैग एंड ड्रॉप करके दस्तावेज़ के पेजों का क्रम पुनर्व्यवस्थित करें।"
     },
     "grayscale-pdf": {
-      "name": "Grayscale PDF",
-      "desc": "Convert color documents into clean black-and-white or grayscale for printer ink saving."
+      "name": "ग्रेस्केल पीडीएफ",
+      "desc": "प्रिंटर स्याही बचाने के लिए रंगीन दस्तावेज़ों को ब्लैक-एंड-व्हाइट में बदलें।"
     },
     "flatten-pdf": {
-      "name": "Flatten PDF",
-      "desc": "Lock form fields, digital layers, and annotations permanently into standard PDF pages."
+      "name": "पीडीएफ फ्लैटन करें",
+      "desc": "फॉर्म फ़ील्ड, डिजिटल लेयर्स और एनोटेशन को पीडीएफ पेजों में स्थायी रूप से लॉक करें।"
     },
     "image-to-pdf": {
-      "name": "Image to PDF",
-      "desc": "Convert JPG, PNG, WEBP, and TIFF images into a single professional PDF."
+      "name": "इमेज से पीडीएफ",
+      "desc": "JPG, PNG, WEBP तस्वीरों को एक पेशेवर पीडीएफ में बदलें।"
     },
     "pdf-to-image": {
-      "name": "PDF to Images",
-      "desc": "Export high-resolution JPG or PNG pictures from any page in your PDF document."
+      "name": "पीडीएफ से इमेज",
+      "desc": "पीडीएफ पेजों से उच्च-रिज़ॉल्यूशन JPG या PNG चित्र निर्यात करें।"
     },
     "protect-pdf": {
-      "name": "Protect PDF",
-      "desc": "Encrypt your PDF with AES-256 password protection to restrict unauthorized viewing."
+      "name": "पीडीएफ सुरक्षित करें",
+      "desc": "अनधिकृत देखने से रोकने के लिए AES-256 पासवर्ड सुरक्षा के साथ एन्क्रिप्ट करें।"
     },
     "unlock-pdf": {
-      "name": "Unlock PDF",
-      "desc": "Remove owner passwords and printing or editing restrictions from your secured PDF files."
+      "name": "पीडीएफ अनलॉक करें",
+      "desc": "सुरक्षित पीडीएफ फाइलों से पासवर्ड और संपादन प्रतिबंध हटाएं।"
     },
     "watermark-pdf": {
-      "name": "Watermark PDF",
-      "desc": "Stamp customized confidential or draft text watermarks across document pages."
+      "name": "पीडीएफ वॉटरमार्क",
+      "desc": "दस्तावेज़ पेजों पर कस्टम गोपनीय या ड्राफ्ट टेक्स्ट वॉटरमार्क लगाएं।"
     },
     "add-page-numbers": {
-      "name": "Page Numbers",
-      "desc": "Insert formatted numbering in header or footer positions with customizable offsets."
+      "name": "पेज नंबर जोड़ें",
+      "desc": "कस्टमाइज़ेबल ऑफसेट के साथ हेडर या फूटर में स्वरूपित क्रमांकन डालें।"
     },
     "add-blank-page": {
-      "name": "Add Blank Page",
-      "desc": "Insert blank document pages before, after, or between existing content."
+      "name": "खाली पेज जोड़ें",
+      "desc": "मौजूदा सामग्री से पहले, बाद में या बीच में खाली दस्तावेज़ पेज डालें।"
     },
     "edit-pdf-metadata": {
-      "name": "Edit PDF Metadata",
-      "desc": "View and modify document Title, Author, Subject, Keywords, and Creator properties."
+      "name": "मेटाडेटा संपादित करें",
+      "desc": "दस्तावेज़ का शीर्षक, लेखक, विषय, कीवर्ड और निर्माता गुण संशोधित करें।"
     },
     "sanitize-pdf": {
-      "name": "Sanitize PDF",
-      "desc": "Strip hidden metadata, XML records, JavaScript code, and embedded links completely."
+      "name": "पीडीएफ सेनिटाइज करें",
+      "desc": "छिपे हुए मेटाडेटा, एक्सएमएल रिकॉर्ड, जावास्क्रिप्ट कोड और लिंक पूरी तरह हटाएं।"
     },
     "pdf-to-markdown": {
-      "name": "PDF to Markdown",
-      "desc": "Extract clean structural Markdown text, headings, and lists directly from your PDF."
+      "name": "पीडीएफ से मार्कडाउन",
+      "desc": "पीडीएफ से साफ संरचनात्मक मार्कडाउन टेक्स्ट, शीर्षक और सूचियां निकालें।"
     },
     "sign-pdf": {
-      "name": "Sign PDF",
-      "desc": "Draw, type, or upload your handwritten digital signature onto any PDF page securely."
+      "name": "पीडीएफ साइन करें",
+      "desc": "किसी भी पीडीएफ पेज पर अपना डिजिटल हस्ताक्षर सुरक्षित रूप से जोड़ें।"
     },
     "ocr-pdf": {
-      "name": "OCR PDF",
-      "desc": "Recognize and extract searchable text from scanned paper documents and photo PDFs."
+      "name": "ओसीआर पीडीएफ",
+      "desc": "स्कैन किए गए दस्तावेज़ों और फोटो पीडीएफ से खोजने योग्य टेक्स्ट पहचानें।"
     },
     "ai-analyze-pdf": {
-      "name": "AI Analyze PDF",
-      "desc": "Summarize contracts, query data points, and extract insights using browser-safe AI."
+      "name": "एआई विश्लेषण",
+      "desc": "एआई की मदद से अनुबंधों का सारांश बनाएं और इनसाइट्स निकालें।"
     },
     "repair-pdf": {
-      "name": "Repair PDF",
-      "desc": "Rebuild damaged cross-reference tables and recover readable text from corrupted files."
+      "name": "पीडीएफ रिपेयर करें",
+      "desc": "क्षतिग्रस्त पीडीएफ फाइलों को ठीक करें और पठनीय टेक्स्ट पुनर्प्राप्त करें।"
     }
   },
   "auto": {},

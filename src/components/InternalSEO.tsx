@@ -154,166 +154,51 @@ export default function InternalSEO() {
     }
   }
 
-  const structuredData: Record<string, unknown>[] = [];
-  const homeUrl =
-    currentLocale === DEFAULT_LOCALE ? `${SITE_URL}/` : `${SITE_URL}/${currentLocale}/`;
+  const structuredData = React.useMemo<Record<string, unknown>[]>(() => {
+    const list: Record<string, unknown>[] = [];
+    const homeUrl =
+      currentLocale === DEFAULT_LOCALE ? `${SITE_URL}/` : `${SITE_URL}/${currentLocale}/`;
 
-  // 1. Homepage (`/` or `/${currentLocale}/`)
-  if (!baseSlug) {
-    structuredData.push(
-      {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        '@id': `${SITE_URL}/#website`,
-        name: SITE_NAME,
-        url: homeUrl,
-        publisher: { '@id': `${SITE_URL}/#organization` },
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        '@id': `${SITE_URL}/#organization`,
-        name: SITE_NAME,
-        url: `${SITE_URL}/`,
-        logo: `${SITE_URL}/logo-192.png`,
-        contactPoint: {
-          '@type': 'ContactPoint',
-          email: 'support@pdfminty.com',
-          contactType: 'customer support',
-        },
-      }
-      // FAQPage is provided in static HTML by homepageFaqSchema
-    );
-  } else if (baseSlug === 'blog') {
-    // 2. Blog Index (`/blog/`)
-    structuredData.push(
-      {
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'PdfMinty Knowledge Hub',
-        url: `${SITE_URL}/blog/`,
-        description:
-          'Explore expert guides, security tips, and privacy-first PDF tutorials in the PdfMinty Knowledge Hub.',
-        publisher: {
-          '@type': 'Organization',
+    // 1. Homepage (`/` or `/${currentLocale}/`)
+    if (!baseSlug) {
+      list.push(
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          '@id': `${SITE_URL}/#website`,
           name: SITE_NAME,
+          url: homeUrl,
+          publisher: { '@id': `${SITE_URL}/#organization` },
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          '@id': `${SITE_URL}/#organization`,
+          name: SITE_NAME,
+          url: `${SITE_URL}/`,
           logo: `${SITE_URL}/logo-192.png`,
-        },
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: `${SITE_URL}/`,
+          contactPoint: {
+            '@type': 'ContactPoint',
+            email: 'support@pdfminty.com',
+            contactType: 'customer support',
           },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: 'Knowledge Hub',
-            item: `${SITE_URL}/blog/`,
-          },
-        ],
-      }
-    );
-  } else {
-    // 3. Tool, Article, or Static Page
-    const seoInfo = TOOLS.find((t) => t && t.slug === baseSlug);
-    if (!seoInfo) return null;
-
-    const pageCanonicalUrl =
-      currentLocale === DEFAULT_LOCALE
-        ? `${SITE_URL}/${seoInfo.slug}/`
-        : `${SITE_URL}/${currentLocale}/${seoInfo.slug}/`;
-
-    if (seoInfo.type === 'tool') {
-      structuredData.push({
-        '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: `PdfMinty - ${seoInfo.name}`,
-        description: seoInfo.shortDescription || seoInfo.metaDescription,
-        url: pageCanonicalUrl,
-        applicationCategory: 'UtilitiesApplication',
-        operatingSystem: 'All',
-        browserRequirements: 'Requires HTML5, WebAssembly',
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'USD',
-          availability: 'https://schema.org/InStock',
-        },
-        featureList: [
-          '100% client-side processing for standard tools',
-          'Zero file uploads for our standard PDF tools',
-          'The AI Analyze tool only sends extracted text to Google Gemini after you explicitly check a consent box',
-          'Free to use',
-          'No registration required',
-        ],
-      });
-
-      if (seoInfo.howTo) {
-        structuredData.push({
-          '@context': 'https://schema.org',
-          '@type': 'HowTo',
-          name: seoInfo.howTo.name,
-          totalTime: seoInfo.howTo.totalTime,
-          step: seoInfo.howTo.steps.map((stepText, index) => ({
-            '@type': 'HowToStep',
-            url: `${pageCanonicalUrl}#step${index + 1}`,
-            name: stepText,
-            itemListElement: [{ '@type': 'HowToDirection', text: stepText }],
-          })),
-        });
-      }
-
-      structuredData.push({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: homeUrl,
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: seoInfo.name,
-            item: pageCanonicalUrl,
-          },
-        ],
-      });
-
-      if (seoInfo.faqs && seoInfo.faqs.length > 0) {
-        structuredData.push({
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          mainEntity: seoInfo.faqs.map((f) => ({
-            '@type': 'Question',
-            name: f.q,
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: f.a,
-            },
-          })),
-        });
-      }
-    } else if (baseSlug === 'about-us') {
-      structuredData.push(
+        }
+        // FAQPage is provided in static HTML by homepageFaqSchema
+      );
+    } else if (baseSlug === 'blog') {
+      // 2. Blog Index (`/blog/`)
+      list.push(
         {
           '@context': 'https://schema.org',
-          '@type': 'AboutPage',
-          name: seoInfo.metaTitle,
-          description: seoInfo.metaDescription,
-          url: `${SITE_URL}/about-us/`,
+          '@type': 'CollectionPage',
+          name: 'PdfMinty Knowledge Hub',
+          url: `${SITE_URL}/blog/`,
+          description:
+            'Explore expert guides, security tips, and privacy-first PDF tutorials in the PdfMinty Knowledge Hub.',
           publisher: {
             '@type': 'Organization',
             name: SITE_NAME,
-            url: `${SITE_URL}/`,
+            logo: `${SITE_URL}/logo-192.png`,
           },
         },
         {
@@ -329,55 +214,63 @@ export default function InternalSEO() {
             {
               '@type': 'ListItem',
               position: 2,
-              name: 'About Us',
-              item: `${SITE_URL}/about-us/`,
+              name: 'Knowledge Hub',
+              item: `${SITE_URL}/blog/`,
             },
           ],
         }
       );
-    } else if (baseSlug === 'contact') {
-      structuredData.push(
-        {
+    } else {
+      // 3. Tool, Article, or Static Page
+      const seoInfo = TOOLS.find((t) => t && t.slug === baseSlug);
+      if (!seoInfo) return list;
+
+      const pageCanonicalUrl =
+        currentLocale === DEFAULT_LOCALE
+          ? `${SITE_URL}/${seoInfo.slug}/`
+          : `${SITE_URL}/${currentLocale}/${seoInfo.slug}/`;
+
+      if (seoInfo.type === 'tool') {
+        list.push({
           '@context': 'https://schema.org',
-          '@type': 'ContactPage',
-          name: seoInfo.metaTitle,
-          description: seoInfo.metaDescription,
-          url: `${SITE_URL}/contact/`,
-          publisher: {
-            '@type': 'Organization',
-            name: SITE_NAME,
-            url: `${SITE_URL}/`,
+          '@type': 'WebApplication',
+          name: `PdfMinty - ${seoInfo.name}`,
+          description: seoInfo.shortDescription || seoInfo.metaDescription,
+          url: pageCanonicalUrl,
+          applicationCategory: 'UtilitiesApplication',
+          operatingSystem: 'All',
+          browserRequirements: 'Requires HTML5, WebAssembly',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
           },
-        },
-        {
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          itemListElement: [
-            {
-              '@type': 'ListItem',
-              position: 1,
-              name: 'Home',
-              item: `${SITE_URL}/`,
-            },
-            {
-              '@type': 'ListItem',
-              position: 2,
-              name: 'Contact Us',
-              item: `${SITE_URL}/contact/`,
-            },
+          featureList: [
+            '100% client-side processing for standard tools',
+            'Zero file uploads for our standard PDF tools',
+            'The AI Analyze tool only sends extracted text to Google Gemini after you explicitly check a consent box',
+            'Free to use',
+            'No registration required',
           ],
+        });
+
+        if (seoInfo.howTo) {
+          list.push({
+            '@context': 'https://schema.org',
+            '@type': 'HowTo',
+            name: seoInfo.howTo.name,
+            totalTime: seoInfo.howTo.totalTime,
+            step: seoInfo.howTo.steps.map((stepText, index) => ({
+              '@type': 'HowToStep',
+              url: `${pageCanonicalUrl}#step${index + 1}`,
+              name: stepText,
+              itemListElement: [{ '@type': 'HowToDirection', text: stepText }],
+            })),
+          });
         }
-      );
-    } else if (baseSlug === 'privacy-policy' || baseSlug === 'terms-of-service') {
-      structuredData.push(
-        {
-          '@context': 'https://schema.org',
-          '@type': 'WebPage',
-          name: seoInfo.metaTitle,
-          description: seoInfo.metaDescription,
-          url: `${SITE_URL}/${baseSlug}/`,
-        },
-        {
+
+        list.push({
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
           itemListElement: [
@@ -385,100 +278,270 @@ export default function InternalSEO() {
               '@type': 'ListItem',
               position: 1,
               name: 'Home',
-              item: `${SITE_URL}/`,
+              item: homeUrl,
             },
             {
               '@type': 'ListItem',
               position: 2,
               name: seoInfo.name,
-              item: `${SITE_URL}/${baseSlug}/`,
+              item: pageCanonicalUrl,
             },
           ],
-        }
-      );
-    } else if (seoInfo.type === 'article') {
-      structuredData.push({
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: seoInfo.h1 || seoInfo.name,
-        description: seoInfo.metaDescription,
-        url: `${SITE_URL}/${seoInfo.slug}/`,
-        datePublished: seoInfo.datePublished || '2026-07-16',
-        dateModified: seoInfo.dateModified || seoInfo.datePublished || '2026-08-08',
-        author: {
-          '@type': 'Organization',
-          name: 'PdfMinty Editorial Team',
-          url: `${SITE_URL}/`,
-        },
-        publisher: {
-          '@type': 'Organization',
-          name: SITE_NAME,
-          logo: {
-            '@type': 'ImageObject',
-            url: `${SITE_URL}/logo-192.png`,
-          },
-        },
-        image: {
-          '@type': 'ImageObject',
-          url: seoInfo.ogImage ? `${SITE_URL}${seoInfo.ogImage}` : `${SITE_URL}/og-image.png`,
-          width: 1200,
-          height: 630,
-        },
-        mainEntityOfPage: {
-          '@type': 'WebPage',
-          '@id': `${SITE_URL}/${seoInfo.slug}/`,
-        },
-      });
-
-      structuredData.push({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: `${SITE_URL}/`,
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: 'Knowledge Hub',
-            item: `${SITE_URL}/blog/`,
-          },
-          {
-            '@type': 'ListItem',
-            position: 3,
-            name: seoInfo.name,
-            item: `${SITE_URL}/${seoInfo.slug}/`,
-          },
-        ],
-      });
-
-      if (seoInfo.faqs && seoInfo.faqs.length > 0) {
-        structuredData.push({
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          mainEntity: seoInfo.faqs.map((f) => ({
-            '@type': 'Question',
-            name: f.q,
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: f.a,
-            },
-          })),
         });
+
+        if (seoInfo.faqs && seoInfo.faqs.length > 0) {
+          list.push({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: seoInfo.faqs.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: f.a,
+              },
+            })),
+          });
+        }
+      } else if (baseSlug === 'about-us') {
+        list.push(
+          {
+            '@context': 'https://schema.org',
+            '@type': 'AboutPage',
+            name: seoInfo.metaTitle,
+            description: seoInfo.metaDescription,
+            url: `${SITE_URL}/about-us/`,
+            publisher: {
+              '@type': 'Organization',
+              name: SITE_NAME,
+              url: `${SITE_URL}/`,
+            },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: `${SITE_URL}/`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'About Us',
+                item: `${SITE_URL}/about-us/`,
+              },
+            ],
+          }
+        );
+      } else if (baseSlug === 'contact') {
+        list.push(
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ContactPage',
+            name: seoInfo.metaTitle,
+            description: seoInfo.metaDescription,
+            url: `${SITE_URL}/contact/`,
+            publisher: {
+              '@type': 'Organization',
+              name: SITE_NAME,
+              url: `${SITE_URL}/`,
+            },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: `${SITE_URL}/`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Contact Us',
+                item: `${SITE_URL}/contact/`,
+              },
+            ],
+          }
+        );
+      } else if (baseSlug === 'privacy-policy' || baseSlug === 'terms-of-service') {
+        list.push(
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: seoInfo.metaTitle,
+            description: seoInfo.metaDescription,
+            url: `${SITE_URL}/${baseSlug}/`,
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: `${SITE_URL}/`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: seoInfo.name,
+                item: `${SITE_URL}/${baseSlug}/`,
+              },
+            ],
+          }
+        );
+      } else if (seoInfo.type === 'article') {
+        list.push({
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: seoInfo.h1 || seoInfo.name,
+          description: seoInfo.metaDescription,
+          url: `${SITE_URL}/${seoInfo.slug}/`,
+          datePublished: seoInfo.datePublished || '2026-07-16',
+          dateModified: seoInfo.dateModified || seoInfo.datePublished || '2026-08-08',
+          author: {
+            '@type': 'Organization',
+            name: 'PdfMinty Editorial Team',
+            url: `${SITE_URL}/`,
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: SITE_NAME,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${SITE_URL}/logo-192.png`,
+            },
+          },
+          image: {
+            '@type': 'ImageObject',
+            url: seoInfo.ogImage ? `${SITE_URL}${seoInfo.ogImage}` : `${SITE_URL}/og-image.png`,
+            width: 1200,
+            height: 630,
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${SITE_URL}/${seoInfo.slug}/`,
+          },
+        });
+
+        list.push({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: `${SITE_URL}/`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Knowledge Hub',
+              item: `${SITE_URL}/blog/`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: seoInfo.name,
+              item: `${SITE_URL}/${seoInfo.slug}/`,
+            },
+          ],
+        });
+
+        if (seoInfo.faqs && seoInfo.faqs.length > 0) {
+          list.push({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: seoInfo.faqs.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: f.a,
+              },
+            })),
+          });
+        }
       }
     }
-  }
 
-  if (structuredData.length === 0) return null;
+    return list;
+  }, [baseSlug, currentLocale]);
 
-  return (
-    <script
-      type="application/ld+json"
-      nonce={nonce}
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-    />
-  );
+  // DUPLICATION GUARD:
+  // Check if static HTML already contains JSON-LD blocks with the same @type
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    // Scan for existing static JSON-LD types currently in the document
+    const existingTypes = new Set<string>();
+    const staticScripts = document.querySelectorAll(
+      'script[type="application/ld+json"]:not([data-dynamic-seo="true"])'
+    );
+
+    staticScripts.forEach((script) => {
+      try {
+        const content = script.textContent || '';
+        if (!content.trim()) return;
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item) => {
+            if (item && typeof item === 'object' && item['@type']) {
+              existingTypes.add(String(item['@type']));
+            }
+          });
+        } else if (parsed && typeof parsed === 'object' && parsed['@type']) {
+          existingTypes.add(String(parsed['@type']));
+        }
+      } catch {
+        // Ignore parse errors from malformed scripts
+      }
+    });
+
+    // Only inject schema blocks whose @type is NOT already present in the document
+    const missingSchemas = structuredData.filter((item) => {
+      const type = item['@type'];
+      if (!type) return true;
+      return !existingTypes.has(String(type));
+    });
+
+    let dynamicScript =
+      document.querySelector<HTMLScriptElement>('script[data-dynamic-seo="true"]');
+
+    if (missingSchemas.length === 0) {
+      if (dynamicScript) {
+        dynamicScript.remove();
+      }
+      return;
+    }
+
+    if (!dynamicScript) {
+      dynamicScript = document.createElement('script');
+      dynamicScript.type = 'application/ld+json';
+      dynamicScript.setAttribute('data-dynamic-seo', 'true');
+      if (nonce) {
+        dynamicScript.setAttribute('nonce', nonce);
+      }
+      document.head.appendChild(dynamicScript);
+    }
+
+    dynamicScript.textContent = JSON.stringify(missingSchemas);
+
+    return () => {
+      const el = document.querySelector('script[data-dynamic-seo="true"]');
+      if (el) {
+        el.remove();
+      }
+    };
+  }, [structuredData, nonce]);
+
+  return null;
 }

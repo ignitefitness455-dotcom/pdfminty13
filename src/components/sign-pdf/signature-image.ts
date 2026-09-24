@@ -56,10 +56,24 @@ export async function typedTextToAsset(
   const value = text.trim();
   if (!value) return null;
 
+  let resolvedFamily = fontFamily;
+  if (fontFamily.startsWith('var(')) {
+    const varName = fontFamily.slice(4, -1).trim();
+    if (typeof window !== 'undefined') {
+      const computed = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      if (computed) resolvedFamily = computed;
+    }
+  }
+
   const fontSize = 160;
-  const fontSpec = `${fontSize}px ${fontFamily}`;
+  const fontSpec = `${fontSize}px ${resolvedFamily}`;
   try {
-    await document.fonts.load(fontSpec, value);
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      await Promise.race([
+        document.fonts.load(fontSpec, value),
+        new Promise((resolve) => setTimeout(resolve, 1500)),
+      ]);
+    }
   } catch {
     // fall through and render with whatever is available
   }

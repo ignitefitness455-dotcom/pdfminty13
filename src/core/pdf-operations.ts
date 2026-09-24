@@ -1,6 +1,5 @@
-import { PDFDocument as PDFDocumentEncrypt } from '@cantoo/pdf-lib';
+import { PDFDocument, rgb, degrees, StandardFonts } from '@cantoo/pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import { PDFDocument as PlainPDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 
 import notoSansRegularBytes from '../../public/fonts/NotoSans-Regular.ttf?arraybuffer';
 import { PDF_PAGE_SIZES, WATERMARK_DEFAULTS, PAGE_NUMBER_DEFAULTS } from '../config/constants';
@@ -115,9 +114,9 @@ async function loadPlainPDF(bytes: Uint8Array, skipEncryptionCheck = false) {
       }
     }
 
-    const pdfDoc = await PlainPDFDocument.load(safeBytes);
+    const pdfDoc = await PDFDocument.load(safeBytes);
     const realFontkit = (fontkit as { default?: unknown }).default || fontkit;
-    pdfDoc.registerFontkit(realFontkit as Parameters<PlainPDFDocument['registerFontkit']>[0]);
+    pdfDoc.registerFontkit(realFontkit as Parameters<PDFDocument['registerFontkit']>[0]);
     return pdfDoc;
   } catch (err: unknown) {
     handlePdfLibError(err, 'Failed to read PDF document. It may be corrupted.');
@@ -187,7 +186,7 @@ async function getFontBytes(): Promise<Uint8Array> {
 
 export async function mergePDFs(filesBytes: Uint8Array[]): Promise<Uint8Array> {
   try {
-    const mergedPdf = await PlainPDFDocument.create();
+    const mergedPdf = await PDFDocument.create();
     for (const b of filesBytes) {
       const pdf = await loadPlainPDF(b);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
@@ -236,7 +235,7 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
     }
 
     const actualEnd = Math.min(endPage, totalPages);
-    const subPdf = await PlainPDFDocument.create();
+    const subPdf = await PDFDocument.create();
 
     const indicesToCopy: number[] = [];
     for (let p = startPage - 1; p < actualEnd; p++) {
@@ -258,7 +257,7 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
 
 export async function extractPages(bytes: Uint8Array, pageNumbers: number[]): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
-  const extractedPdf = await PlainPDFDocument.create();
+  const extractedPdf = await PDFDocument.create();
 
   const indices = pageNumbers
     .map((p) => p - 1)
@@ -330,7 +329,7 @@ export async function deletePagesPDF(
 
 export async function reorderPDF(bytes: Uint8Array, newOrder: number[]): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
-  const reorderedPdf = await PlainPDFDocument.create();
+  const reorderedPdf = await PDFDocument.create();
 
   const indices = newOrder.map((p) => p - 1);
   if (indices.length === 0) {
@@ -643,7 +642,7 @@ export async function imagesToPDF(
   imageBlobs: { buf: Uint8Array; type: string; name?: string }[],
   options?: { pageSize?: keyof typeof PDF_PAGE_SIZES }
 ): Promise<Uint8Array> {
-  const pdfDoc = await PlainPDFDocument.create();
+  const pdfDoc = await PDFDocument.create();
   const selectedPageSize = options?.pageSize ? PDF_PAGE_SIZES[options.pageSize] : null;
 
   for (const file of imageBlobs) {
@@ -818,7 +817,7 @@ export async function compressPDF(
   // handlePdfLibError() completely instead of getting the friendly message
   // every other tool gives).
   const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
-  let pdfDoc: PlainPDFDocument;
+  let pdfDoc: PDFDocument;
   try {
     const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
     if (encrypted) {
@@ -826,7 +825,7 @@ export async function compressPDF(
         'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
       );
     }
-    pdfDoc = await PlainPDFDocument.load(safeBytes);
+    pdfDoc = await PDFDocument.load(safeBytes);
   } catch (err) {
     handlePdfLibError(err, 'Failed to read PDF document. It may be corrupted.');
   }
@@ -862,7 +861,7 @@ export async function compressPDF(
 
       try {
         const totalPages = srcPdf.numPages;
-        const newPdf = await PlainPDFDocument.create();
+        const newPdf = await PDFDocument.create();
 
         interface HTMLCanvasLike {
           toBlob(callback: (blob: Blob | null) => void, type?: string, quality?: number): void;
@@ -1064,7 +1063,7 @@ export async function protectPDF(payload: {
   });
 
   try {
-    const pdfDoc = await PDFDocumentEncrypt.load(safeBytes);
+    const pdfDoc = await PDFDocument.load(safeBytes);
     pdfDoc.encrypt({
       userPassword: payload.userPassword,
       ownerPassword: payload.userPassword, // Same password — see docstring.
@@ -1108,7 +1107,7 @@ export async function unlockPDF(payload: {
   let pdfDoc;
   try {
     // Password-only load. The library will throw on wrong password.
-    pdfDoc = await PDFDocumentEncrypt.load(safeBytes, {
+    pdfDoc = await PDFDocument.load(safeBytes, {
       password: payload.password,
     });
   } catch (err) {
@@ -1287,7 +1286,7 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
     } as unknown as Parameters<typeof pdf_js.getDocument>[0]);
     pdf = await loadingTask.promise;
 
-    const outPdfDoc = await PlainPDFDocument.create();
+    const outPdfDoc = await PDFDocument.create();
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = (await pdf.getPage(i)) as {
@@ -1458,7 +1457,7 @@ export async function repairPDF(
     }
 
     // 3. Rebuild XREF & Catalog Structure using pdf-lib
-    const pdfDoc = await PlainPDFDocument.load(workingBytes, { ignoreEncryption: true });
+    const pdfDoc = await PDFDocument.load(workingBytes, { ignoreEncryption: true });
 
     if (pdfDoc.isEncrypted) {
       repairs.push('Rebuilt cross-reference tables for encrypted PDF structure.');

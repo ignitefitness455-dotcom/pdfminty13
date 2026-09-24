@@ -1,4 +1,4 @@
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument } from '@cantoo/pdf-lib';
 import { describe, it, expect } from 'vitest';
 
 import { PDFSanitizer } from '../PDFSanitizer';

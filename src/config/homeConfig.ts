@@ -25,6 +25,8 @@ import React from 'react';
 
 import { logger } from '../utils/logger';
 
+import { HOMEPAGE_META } from './seo-data';
+
 export const prefetchMap: Record<string, () => Promise<unknown>> = {
   'merge-pdf': () => import('../pages/MergePage'),
   'split-pdf': () => import('../pages/SplitPage'),
@@ -114,8 +116,4 @@ export const HOMEPAGE_H1_PART1 = 'Free Browser-Based PDF Tools — 100% Private,
 export const HOMEPAGE_H1_PART2 = 'Zero Uploads';
 export const HOMEPAGE_H1 = `${HOMEPAGE_H1_PART1}${HOMEPAGE_H1_PART2}`;
 
-export const HOMEPAGE_META = {
-  title: 'PDFMinty — Free Browser-Based PDF Tools & Privacy Toolkit',
-  description:
-    'Free browser-based PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.',
-};
+export { HOMEPAGE_META };

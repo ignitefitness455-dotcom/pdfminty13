@@ -1,6 +1,6 @@
 {
   "returnDashboard": "Zurück zur Übersicht",
-  "pageTitle": "PDF zusammenfügen — Kostenlos online PDF-Dateien kombinieren",
+  "pageTitle": "PDF zusammenfügen — Kostenlos PDFs kombinieren",
   "pageSubtitle": "Kombinieren Sie mehrere PDF-Dateien zu einem strukturierten Dokument. Schnell, privat und ohne Uploads.",
   "limitBadge": "Limit: {{limit}}MB pro Datei",
   "privacyBadge": "100% Privat — Lokale Browser-Verarbeitung",
@@ -66,7 +66,7 @@
     "description": "Ihre Dateien werden vollständig mit WebAssembly in Ihrer lokalen Browser-Sandbox zusammengeführt. Es werden niemals Dokumente oder sensible Daten an externe Server übertragen."
   },
   "seo": {
-    "metaTitle": "PDF zusammenfügen — Kostenlos online PDF-Dateien kombinieren | PDFMinty",
+    "metaTitle": "PDF zusammenfügen — Kostenlos PDFs kombinieren | PDFMinty",
     "metaDescription": "Fügen Sie mehrere PDF-Dateien kostenlos und sicher direkt im Browser zusammen. 100% clientseitige Verarbeitung — keine Server-Uploads, maximale Privatsphäre."
   }
 }
