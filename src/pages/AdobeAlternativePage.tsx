@@ -154,7 +154,7 @@ export const AdobeAlternativePage: React.FC = () => {
       <SEO
         slug="adobe-acrobat-alternative"
         titleOverride="Free Adobe Acrobat Alternative — No Signup, No Upload"
-        descriptionOverride="Adobe Acrobat costs ~$240/year. PDFMinty does merge, compress, split, protect, and more — 100% free, no account, no file uploads, ever."
+        descriptionOverride="Adobe Acrobat costs ~$240/year. PDFMinty does merge, grayscale, split, protect, and more — 100% free, no account, no file uploads, ever."
       />
 
       <div className="max-w-4xl mx-auto space-y-16" id="adobe_alternative_container">
@@ -185,7 +185,7 @@ export const AdobeAlternativePage: React.FC = () => {
           </h1>
 
           <p className="text-base sm:text-xl font-medium text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-            Merge, split, compress, protect, and convert PDFs without an Adobe account, without a
+            Merge, split, protect, sign, and convert PDFs without an Adobe account, without a
             subscription, and without your files ever leaving your device.
           </p>
 

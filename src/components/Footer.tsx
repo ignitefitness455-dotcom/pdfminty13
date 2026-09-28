@@ -174,6 +174,27 @@ export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
                   {t('footer.links.termsOfService', { defaultValue: 'Terms of Service' })}
                 </Link>
               </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const win = window as unknown as {
+                      googlefc?: { showRevocationMessage?: () => void };
+                      __tcfapi?: (command: string, version: number, callback: () => void) => void;
+                    };
+                    if (win.googlefc && typeof win.googlefc.showRevocationMessage === 'function') {
+                      win.googlefc.showRevocationMessage();
+                    } else if (win.__tcfapi) {
+                      win.__tcfapi('displayConsentUi', 2, () => {});
+                    } else {
+                      window.location.href = ROUTES.PRIVACY_POLICY;
+                    }
+                  }}
+                  className="hover:text-emerald-500 transition-colors cursor-pointer text-left"
+                >
+                  {t('footer.links.cookieSettings', { defaultValue: 'Cookie & Privacy Preferences' })}
+                </button>
+              </li>
             </ul>
           </div>
         </div>

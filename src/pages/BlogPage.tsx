@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { SEO } from '../components/SEO';
+import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
 import { TOOLS, ToolSEOInfo } from '../config/seo-data';
 
@@ -322,15 +323,11 @@ export const BlogPage: React.FC = () => {
             <div className="pt-2 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 text-xs text-slate-300 font-medium">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 p-0.5 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                    <img
-                      src="/logo.svg"
-                      alt="PDFMinty Logo"
-                      className="w-full h-full object-contain"
-                    />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 p-0.5 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                    <span className="text-[10px] font-black text-white">TM</span>
                   </div>
                   <span className="text-emerald-300 font-bold">
-                    {t('blog.editorialTeam', { defaultValue: 'PDFMinty Editorial Team' })}
+                    {PRIMARY_AUTHOR.name}
                   </span>
                 </div>
                 <span className="flex items-center gap-1 font-mono text-[11px] text-slate-400">
@@ -402,15 +399,11 @@ export const BlogPage: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-5 mt-5 border-t border-border-muted text-xs font-semibold">
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 p-0.5 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                      <img
-                        src="/logo.svg"
-                        alt="PDFMinty Logo"
-                        className="w-full h-full object-contain"
-                      />
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 p-0.5 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                      <span className="text-[10px] font-black text-white">TM</span>
                     </div>
-                    <span className="text-[11px] font-bold">
-                      {t('blog.editorialTeam', { defaultValue: 'PDFMinty Team' })}
+                    <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                      {PRIMARY_AUTHOR.name}
                     </span>
                     <span className="text-slate-300 dark:text-slate-700">•</span>
                     <span className="flex items-center gap-1 font-mono text-[11px]">

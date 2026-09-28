@@ -29,6 +29,6 @@ export const DE_ARTICLES: Record<string, { name: string; shortDesc: string; body
     name: 'PDF verkleinern ohne Qualitätsverlust (2026 Anleitung)',
     shortDesc: 'Effektive Methoden zur Dateigrößenreduzierung bei gestochen scharfem Text.',
     body: `<h2>Dateigröße optimieren</h2>
-<p>Mit unserem <a href="/compress-pdf/">Compress PDF Tool</a> reduzieren Sie die Dateigröße blitzschnell und lokal.</p>`
+<p>Mit unserem <a href="/grayscale-pdf/">Grayscale PDF Tool</a> oder <a href="/split-pdf/">Split PDF Tool</a> reduzieren Sie die Dateigröße blitzschnell und lokal.</p>`
   }
 };

@@ -6,7 +6,7 @@ PDFMinty is a high-speed, 100% client-side, offline-first PDF management suite. 
 
 - **Merge PDF**: Combine multiple PDF files into an atomic ordered document (Up to 150MB total limits).
 - **Split PDF / Extract Pages**: Extract custom page index blocks into fresh, self-contained files.
-- **Compress PDF**: Shrink layout structures and reduce graphical stream footprints (Up to 75MB files).
+- **Grayscale PDF**: Convert color PDFs to clean black-and-white monochrome documents.
 - **Rotate Pages**: Re-align skewed layout pages or rotate full documents.
 - **Delete Pages**: Select and discard unwanted pages interactively.
 - **Watermark PDF**: Stamp custom multi-line text overlays diagonally with custom opacity, sizing, and colors.
@@ -23,7 +23,6 @@ PDFMinty is a high-speed, 100% client-side, offline-first PDF management suite. 
 To preserve browser memory safety, individual file size boundaries are set based on operational complexity:
 
 - **Protect / Unlock PDF**: 100 MB per file
-- **Compress PDF**: 75 MB per file
 - **Merge PDF**: 50 MB per file (150 MB combined total)
 - **PDF to Image**: 35 MB per file
 - **Image to PDF**: 20 MB per image (100 MB combined total)

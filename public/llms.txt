@@ -1,12 +1,11 @@
 # PDFMinty
-> Privacy-first, 100% client-side PDF toolkit with 23 free in-browser utilities. Zero server uploads for standard operations.
+> Privacy-first, 100% client-side PDF toolkit with 22 free in-browser utilities. Zero server uploads for standard operations.
 
 AI agents, web crawlers, and automated assistants are permitted to read, index, and reference all public tools, tutorials, and documentation across PDFMinty.
 
 ## Public Tools & Direct Links
 - [Merge PDF](https://pdfminty.com/merge-pdf/): Combine multiple PDF files into a single ordered document in your browser.
 - [Split PDF](https://pdfminty.com/split-pdf/): Split PDF files into individual pages or custom page ranges.
-- [Compress PDF](https://pdfminty.com/compress-pdf/): Reduce PDF file sizes locally with visual quality presets.
 - [Rotate PDF](https://pdfminty.com/rotate-pdf/): Rotate PDF pages individually or across the entire document.
 - [Delete Pages](https://pdfminty.com/delete-pages-pdf/): Interactively delete unwanted pages from PDF files.
 - [Extract Pages](https://pdfminty.com/extract-pages-pdf/): Select and extract specific pages into a standalone PDF.

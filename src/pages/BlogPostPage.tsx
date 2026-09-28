@@ -1,11 +1,13 @@
-import { ShieldCheck, Calendar, Clock, Share2, Check, UserCheck, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Calendar, Clock, Share2, Check, UserCheck, ChevronRight, MapPin } from 'lucide-react';
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useParams, useLocation, Link } from 'react-router-dom';
 
+import AuthorBio from '../components/AuthorBio';
 import RelatedBlogs from '../components/RelatedBlogs';
 import SEO from '../components/SEO';
+import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
 import { TOOLS } from '../config/seo-data';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
@@ -211,18 +213,25 @@ export const BlogPostPage: React.FC = () => {
           {/* Author Badge & In-Browser Guarantee */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-surface-container-low border border-border-muted">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 p-1 flex items-center justify-center overflow-hidden shrink-0 shadow-md shadow-emerald-500/20">
-                <img src="/logo.svg" alt="PDFMinty Logo" className="w-full h-full object-contain" />
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 p-0.5 flex items-center justify-center overflow-hidden shrink-0 shadow-md shadow-emerald-500/20">
+                <div className="w-full h-full rounded-[10px] bg-slate-900 flex items-center justify-center text-white font-black text-xs tracking-wider">
+                  <span>TM</span>
+                </div>
               </div>
               <div>
-                <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white">
-                  <span>
-                    {t('blog.editorialTeam', { defaultValue: 'PDFMinty Editorial Team' })}
-                  </span>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
+                  <span>{PRIMARY_AUTHOR.name}</span>
                   <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-0.5">
+                    <MapPin className="w-3 h-3 text-rose-500 inline" />
+                    <span>{PRIMARY_AUTHOR.city}, {PRIMARY_AUTHOR.country}</span>
+                  </span>
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {t('blog.teamSubtitle', { defaultValue: 'Document Privacy & Security Analysis' })}
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <span>{PRIMARY_AUTHOR.jobTitle}</span>
+                  <span>•</span>
+                  <span>{t('blog.teamSubtitle', { defaultValue: 'Reviewed by Security Team' })}</span>
                 </div>
               </div>
             </div>
@@ -241,6 +250,11 @@ export const BlogPostPage: React.FC = () => {
           className="blog-prose prose dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{ __html: cleanArticleBody }}
         />
+
+        {/* Real Author Bio Box - Fix for AdSense E-E-A-T */}
+        <div className="my-10">
+          <AuthorBio />
+        </div>
 
         {/* Closing CTA Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 text-white p-8 sm:p-12 text-center space-y-6 shadow-2xl shadow-emerald-950/40 border-2 border-emerald-400/40 my-12">

@@ -157,7 +157,7 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
     body: `<h2>পিডিএফ কম্প্রেস করার সঠিক পদ্ধতি</h2>
 <p>ইমেইলে বা সরকারি পোর্টালে ফাইল আপলোডের সময় প্রায়ই সাইজ লিমিট (যেমন ২MB বা ৫MB) থাকে। সাধারণ সফটওয়্যার দিয়ে সাইজ কমালে লেখা অস্পষ্ট হয়ে যায়।</p>
 <h3>পিডিএফমিন্টি কীভাবে কোয়ালিটি বজায় রাখে?</h3>
-<p>আমাদের স্মার্ট কম্প্রেশন ইঞ্জিন অপ্রয়োজনীয় ফন্ট ডুপ্লিকেশন, মেটাডেটা ও অতিরিক্ত স্ট্রিম স্ট্রাকচার সরিয়ে ফেলে এবং ছবির ডিপিআই অপ্টিমাইজ করে, যাতে টেক্সট ক্রিস্প ও স্পষ্ট থাকে। ব্যবহার করুন আমাদের <a href="/compress-pdf/">Compress PDF</a> টুল।</p>`
+<p>ডকুমেন্টের ভারী স্ক্যান অপ্টিমাইজ করতে এবং ফাইলের আকার কমাতে ব্যবহার করুন আমাদের <a href="/grayscale-pdf/">Grayscale PDF</a> ও <a href="/split-pdf/">Split PDF</a> টুল।</p>`
   },
   'blog-how-to-convert-pdf-to-word-for-free-2026': {
     name: 'বিনামূল্যে পিডিএফ থেকে ওয়ার্ডে রূপান্তর করার সহজ পদ্ধতি',
@@ -229,7 +229,7 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
     name: 'ইমেইল ও পোর্টালে "PDF Size Too Large" সমস্যা সমাধানের উপায়',
     shortDesc: '২৫MB জিমেইল সীমা বা সরকারি পোর্টালে সহজে ফাইল আপলোড করার ট্রিকস।',
     body: `<h2>ফাইল সাইজ লিমিট অতিক্রম করার উপায়</h2>
-<p>ইমেইল এটাচমেন্ট সীমা পার হলে আমাদের <a href="/compress-pdf/">Compress PDF</a> এবং <a href="/split-pdf/">Split PDF</a> ব্যবহার করে সাইজ নিমিষেই কমিয়ে নিন।</p>`
+<p>ইমেইল এটাচমেন্ট সীমা পার হলে আমাদের <a href="/grayscale-pdf/">Grayscale PDF</a> এবং <a href="/split-pdf/">Split PDF</a> ব্যবহার করে সাইজ নিমিষেই কমিয়ে নিন।</p>`
   },
   'blog-electronic-vs-digital-signature': {
     name: 'ইলেকট্রনিক স্বাক্ষর বনাম ডিজিটাল স্বাক্ষর: আইনি পার্থক্য (২০২৬)',
@@ -252,7 +252,7 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
   <li>ডুপ্লিকেট ফন্ট ফাইল সংযুক্ত থাকা।</li>
   <li>লুকানো মেটাডেটা ও ড্রাফট হিস্ট্রি থাকা।</li>
 </ul>
-<p>সমাধানের জন্য ব্যবহার করুন আমাদের <a href="/compress-pdf/">Compress PDF</a> এবং <a href="/flatten-pdf/">Flatten PDF</a> টুল।</p>`
+<p>সমাধানের জন্য ব্যবহার করুন আমাদের <a href="/grayscale-pdf/">Grayscale PDF</a> এবং <a href="/flatten-pdf/">Flatten PDF</a> টুল।</p>`
   },
   'blog-how-to-combine-scanned-documents-into-one-pdf': {
     name: 'স্ক্যান করা একাধিক ডকুমেন্ট ক্র্যাশ ছাড়াই এক পিডিএফে একত্র করার উপায়',

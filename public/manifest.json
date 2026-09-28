@@ -1,7 +1,7 @@
 {
   "name": "PDFMinty — Privacy-First PDF Toolkit",
   "short_name": "PDFMinty",
-  "description": "Completely offline and secure browser-based PDF suite. Merge, split, compress, protect, and convert PDFs 100% locally in your browser.",
+  "description": "Completely offline and secure browser-based PDF suite. Merge, split, protect, sign, and convert PDFs 100% locally in your browser.",
   "id": "/",
   "start_url": "/?source=pwa",
   "scope": "/",

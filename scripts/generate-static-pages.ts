@@ -6,6 +6,7 @@ import pngToIco from 'png-to-ico';
 import sharp from 'sharp';
 
 import { HOMEPAGE_H1 } from '../src/config/homeConfig';
+import { PRIMARY_AUTHOR } from '../src/config/author';
 import { SITE_URL, SITE_NAME, TOOLS, ToolSEOInfo, RELATED_TOOL_MAPPING } from '../src/config/seo-data';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, I18N_TOOL_SLUGS, isI18nToolSlug, getHreflangs, getCanonicalUrl } from '../src/i18n/config';
 import { logger } from '../src/utils/logger';
@@ -371,7 +372,6 @@ async function run(): Promise<void> {
   const STATIC_FOOTER_TOOL_LINKS = [
     { slug: 'merge-pdf', name: 'Merge PDF' },
     { slug: 'split-pdf', name: 'Split PDF' },
-    { slug: 'compress-pdf', name: 'Compress PDF' },
     { slug: 'rotate-pdf', name: 'Rotate PDF' },
     { slug: 'delete-pages-pdf', name: 'Delete PDF Pages' },
     { slug: 'extract-pages-pdf', name: 'Extract PDF Pages' },
@@ -561,6 +561,20 @@ ${footerHtml}
           "name": item.metaTitle,
           "description": item.metaDescription,
           "url": `${SITE_URL}/about-us/`,
+          "mainEntity": {
+            "@type": "Person",
+            "name": PRIMARY_AUTHOR.name,
+            "jobTitle": PRIMARY_AUTHOR.jobTitle,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": PRIMARY_AUTHOR.city,
+              "addressCountry": PRIMARY_AUTHOR.country
+            },
+            "url": `${SITE_URL}/about-us/#creator`,
+            "sameAs": [
+              PRIMARY_AUTHOR.github
+            ]
+          },
           "publisher": {
             "@type": "Organization",
             "name": SITE_NAME,
@@ -665,9 +679,18 @@ ${footerHtml}
         "datePublished": item.datePublished || "2026-07-16",
         "dateModified": item.dateModified || item.datePublished || "2026-08-08",
         "author": {
-          "@type": "Organization",
-          "name": "PdfMinty Editorial Team",
-          "url": `${SITE_URL}/`
+          "@type": "Person",
+          "name": PRIMARY_AUTHOR.name,
+          "jobTitle": PRIMARY_AUTHOR.jobTitle,
+          "url": `${SITE_URL}/about-us/#creator`,
+          "sameAs": [
+            PRIMARY_AUTHOR.github
+          ],
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": PRIMARY_AUTHOR.city,
+            "addressCountry": PRIMARY_AUTHOR.country
+          }
         },
         "publisher": {
           "@type": "Organization",
@@ -787,6 +810,28 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
 
     if (item.type !== 'article') {
       finalBody += getRelatedToolsHtml(item.slug);
+    } else {
+      // Append Rich Author Bio box in pre-rendered static HTML for AdSense and search engine crawlers
+      finalBody += `
+<div class="not-prose my-10 p-6 sm:p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+  <div class="flex items-center gap-4 mb-4">
+    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center text-white font-black text-lg shadow-md shrink-0">
+      TM
+    </div>
+    <div>
+      <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Article Author & Founder</div>
+      <div class="text-lg font-black text-slate-900 dark:text-white">${PRIMARY_AUTHOR.name}</div>
+      <div class="text-xs text-slate-500 dark:text-slate-400">${PRIMARY_AUTHOR.jobTitle} • ${PRIMARY_AUTHOR.location} 🇧🇩</div>
+    </div>
+  </div>
+  <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">${PRIMARY_AUTHOR.bio}</p>
+  <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs flex flex-wrap items-center gap-4">
+    <a href="/about-us/#creator" class="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Meet the Creator →</a>
+    <a href="mailto:${PRIMARY_AUTHOR.email}" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Contact Author</a>
+    <a href="${PRIMARY_AUTHOR.github}" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">GitHub Profile</a>
+  </div>
+</div>
+`;
     }
 
     // Pre-inject longFormBody directly inside the React root element (#root) with semantic header and footer
@@ -1133,23 +1178,23 @@ ${toolsListHtml}
 
   const homepageHead = `
   <title>PDFMinty — Free Privacy-First PDF Toolkit</title>
-  <meta name="description" content="Free privacy-first PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
+  <meta name="description" content="Free privacy-first PDF toolkit. Merge, split, protect, sign, OCR, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
   <link rel="canonical" href="${SITE_URL}/">
 ${homepageHreflangs}
   <meta property="og:type" content="website">
   <meta property="og:url" content="${SITE_URL}/">
   <meta property="og:title" content="PDFMinty — Free Privacy-First PDF Toolkit">
-  <meta property="og:description" content="Free privacy-first PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
+  <meta property="og:description" content="Free privacy-first PDF toolkit. Merge, split, protect, sign, OCR, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
   <meta property="og:image" content="${SITE_URL}/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="${SITE_URL}/">
   <meta name="twitter:title" content="PDFMinty — Free Privacy-First PDF Toolkit">
-  <meta name="twitter:description" content="Free privacy-first PDF toolkit. Merge, split, compress, protect, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
+  <meta name="twitter:description" content="Free privacy-first PDF toolkit. Merge, split, protect, sign, OCR, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
   <meta name="twitter:image" content="${SITE_URL}/og-image.png">
   <script type="application/ld+json">
   { "@context": "https://schema.org", "@type": "WebApplication",
     "name": "PDFMinty", "url": "${SITE_URL}/",
-    "description": "Free, privacy-first online PDF toolkit. Merge, split, compress, rotate, watermark, and analyze PDFs entirely in your browser.",
+    "description": "Free, privacy-first online PDF toolkit. Merge, split, protect, sign, rotate, watermark, and OCR PDFs entirely in your browser.",
     "applicationCategory": "UtilitiesApplication",
     "applicationSubCategory": "PDF Software",
     "operatingSystem": "Any",
@@ -1160,7 +1205,7 @@ ${homepageHreflangs}
     "publisher": { "@type": "Organization", "name": "PDFMinty", "logo": { "@type": "ImageObject", "url": "${SITE_URL}/logo-512.png", "width": 512, "height": 512 } },
     "image": { "@type": "ImageObject", "url": "${SITE_URL}/og-image.png", "width": 1200, "height": 630 },
     "featureList": [
-      "Merge multiple PDF files", "Split PDF into separate pages", "Compress PDF file size",
+      "Merge multiple PDF files", "Split PDF into separate pages", "Grayscale PDF for smaller size",
       "Rotate PDF pages", "Delete pages from PDF", "Add watermarks to PDF", "Add page numbers",
       "Insert blank pages", "Password protect PDF", "Unlock password-protected PDF",
       "Convert images to PDF", "Convert PDF to images", "AI-powered PDF analysis"
@@ -1173,7 +1218,7 @@ ${homepageHreflangs}
     "name": "PDFMinty", "url": "${SITE_URL}/",
     "logo": { "@type": "ImageObject", "url": "${SITE_URL}/logo-512.png", "width": 512, "height": 512 },
     "image": "${SITE_URL}/og-image.png",
-    "description": "Privacy-first, client-side PDF toolkit with 23 free tools.",
+    "description": "Privacy-first, client-side PDF toolkit with 22 free tools.",
     "foundingDate": "2025",
     "contactPoint": {
       "@type": "ContactPoint", "contactType": "customer support",
@@ -1246,7 +1291,7 @@ ${homepageHreflangs}
       code: 'de',
       langName: 'German',
       title: 'Kostenlose PDF-Tools — 100% privat im Browser | PDFMinty',
-      desc: 'Kostenlose PDF-Tools direkt im Browser. PDF zusammenfügen, teilen, komprimieren und schützen. Keine Uploads, keine Registrierung, 100% Datenschutz.',
+      desc: 'Kostenlose PDF-Tools direkt im Browser. PDF zusammenfügen, teilen, schützen und bearbeiten. Keine Uploads, keine Registrierung, 100% Datenschutz.',
       h1: 'Kostenlose browserbasierte PDF-Werkzeuge — 100% privat, ohne Uploads',
       lead: `PDFMinty ist ein kostenloses, datenschutzorientiertes PDF-Toolkit mit ${toolsCount} leistungsstarken Werkzeugen direkt in Ihrem Browser. Ihre Dateien verlassen niemals Ihr Gerät — keine Server-Uploads, keine Registrierung, keine täglichen Limits. Fügen Sie PDFs zusammen, teilen, schützen, konvertieren und bearbeiten Sie sie mit voller Vertraulichkeit.`,
       toolsTitle: 'Alle PDF-Werkzeuge',
@@ -1272,13 +1317,13 @@ ${homepageHreflangs}
       ctaTitle: 'Starten Sie jetzt mit der Bearbeitung Ihrer PDFs',
       ctaDesc: 'Entdecken Sie oben unsere vollständige Sammlung an PDF-Tools. Alle Werkzeuge sind kostenlos, privat und funktionieren sofort im Browser.',
       featuredOn: 'Vorgestellt & anerkannt auf',
-      webAppDesc: 'Kostenloses, datenschutzorientiertes Online-PDF-Toolkit. PDFs zusammenfügen, teilen, komprimieren, drehen, schützen und bearbeiten — 100% lokal in Ihrem Browser ohne Server-Uploads.',
-      orgDesc: 'Datenschutzorientiertes, clientseitiges PDF-Toolkit mit 23 kostenlosen Werkzeugen ohne Server-Uploads.',
+      webAppDesc: 'Kostenloses, datenschutzorientiertes Online-PDF-Toolkit. PDFs zusammenfügen, teilen, drehen, schützen und bearbeiten — 100% lokal in Ihrem Browser ohne Server-Uploads.',
+      orgDesc: 'Datenschutzorientiertes, clientseitiges PDF-Toolkit mit 22 kostenlosen Werkzeugen ohne Server-Uploads.',
       websiteDesc: 'Kostenlose browserbasierte PDF-Tools — 100% privat, ohne Uploads und ohne Registrierung.',
       features: [
         'Mehrere PDF-Dateien zusammenfügen',
         'PDF in einzelne Seiten teilen',
-        'PDF-Dateigröße komprimieren',
+        'In Graustufen konvertieren',
         'PDF-Seiten drehen',
         'Seiten aus PDF löschen',
         'Wasserzeichen hinzufügen',
@@ -1295,7 +1340,7 @@ ${homepageHreflangs}
       code: 'fr',
       langName: 'French',
       title: 'Outils PDF gratuits et confidentiels en ligne | PDFMinty',
-      desc: 'Suite d’outils PDF gratuits dans votre navigateur. Fusionnez, divisez, compressez et protégez vos fichiers PDF sans téléversement et en toute confidentialité.',
+      desc: 'Suite d’outils PDF gratuits dans votre navigateur. Fusionnez, divisez, protégez et éditez vos fichiers PDF sans téléversement et en toute confidentialité.',
       h1: 'Outils PDF gratuits dans le navigateur — 100% confidentiels, zéro téléversement',
       lead: `PDFMinty est une boîte à outils PDF gratuite et confidentielle comprenant ${toolsCount} outils puissants qui s'exécutent directement dans votre navigateur. Vos fichiers ne quittent jamais votre appareil — aucun téléversement, aucune inscription, aucun quota quotidien. Fusionnez, divisez, protégez, convertissez et modifiez des PDF en toute confidentialité.`,
       toolsTitle: 'Tous les outils PDF',
@@ -1321,13 +1366,13 @@ ${homepageHreflangs}
       ctaTitle: 'Commencez à traiter vos fichiers PDF dès maintenant',
       ctaDesc: 'Parcourez notre collection complète d’outils PDF ci-dessus. Tous les outils sont gratuits, confidentiels et fonctionnent instantanément dans votre navigateur.',
       featuredOn: 'Reconnu et présenté sur',
-      webAppDesc: 'Boîte à outils PDF en ligne gratuite et confidentielle. Fusionnez, divisez, compressez, faites pivoter, protégez et éditez vos PDF à 100% dans votre navigateur sans téléversement.',
-      orgDesc: 'Boîte à outils PDF côté client, axée sur la confidentialité, comprenant 23 outils gratuits sans serveur distant.',
+      webAppDesc: 'Boîte à outils PDF en ligne gratuite et confidentielle. Fusionnez, divisez, faites pivoter, protégez et éditez vos PDF à 100% dans votre navigateur sans téléversement.',
+      orgDesc: 'Boîte à outils PDF côté client, axée sur la confidentialité, comprenant 22 outils gratuits sans serveur distant.',
       websiteDesc: 'Outils PDF gratuits dans le navigateur — 100% confidentiels, zéro téléversement et sans inscription.',
       features: [
         'Fusionner plusieurs fichiers PDF',
         'Diviser un PDF en pages individuelles',
-        'Compresser la taille d’un PDF',
+        'Convertir en niveaux de gris',
         'Faire pivoter des pages PDF',
         'Supprimer des pages d’un PDF',
         'Ajouter un filigrane',
@@ -1344,7 +1389,7 @@ ${homepageHreflangs}
       code: 'es',
       langName: 'Spanish',
       title: 'PdfMinty — Herramientas PDF gratis y privadas (100% en el navegador)',
-      desc: 'Herramientas PDF gratuitas en tu navegador. Une, divide, comprime y protege PDFs sin subir archivos a servidores. 100% privado y seguro.',
+      desc: 'Herramientas PDF gratuitas en tu navegador. Une, divide, protege y edita PDFs sin subir archivos a servidores. 100% privado y seguro.',
       h1: 'Herramientas PDF gratuitas en el navegador — 100% privadas, sin subidas',
       lead: `PDFMinty es un conjunto de herramientas PDF gratuito y centrado en la privacidad con ${toolsCount} potentes herramientas que se ejecutan directamente en tu navegador. Tus archivos nunca salen de tu dispositivo: sin subidas a servidores, sin registros ni cuotas diarias. Une, divide, protege, convierte y edita PDFs con total confidencialidad.`,
       toolsTitle: 'Todas las herramientas PDF',
@@ -1370,13 +1415,13 @@ ${homepageHreflangs}
       ctaTitle: 'Comienza a procesar tus archivos PDF ahora',
       ctaDesc: 'Explora nuestra colección completa de herramientas PDF arriba. Todas las herramientas son gratuitas, privadas y funcionan al instante en tu navegador.',
       featuredOn: 'Reconocido y destacado en',
-      webAppDesc: 'Herramientas PDF en línea gratuitas y privadas. Une, divide, comprime, rota, protege y edita documentos PDF directamente en tu navegador sin subir archivos a servidores.',
-      orgDesc: 'Kit de herramientas PDF del lado del cliente, con privacidad garantizada y 23 utilidades gratuitas.',
+      webAppDesc: 'Herramientas PDF en línea gratuitas y privadas. Une, divide, rota, protege y edita documentos PDF directamente en tu navegador sin subir archivos a servidores.',
+      orgDesc: 'Kit de herramientas PDF del lado del cliente, con privacidad garantizada y 22 utilidades gratuitas.',
       websiteDesc: 'Herramientas PDF gratuitas en el navegador — 100% privadas, sin subidas de archivos ni registros.',
       features: [
         'Unir varios archivos PDF',
         'Dividir PDF en páginas individuales',
-        'Comprimir tamaño de archivo PDF',
+        'Convertir a escala de grises',
         'Rotar páginas PDF',
         'Eliminar páginas de un PDF',
         'Añadir marcas de agua',
@@ -1419,13 +1464,13 @@ ${homepageHreflangs}
       ctaTitle: 'এখনই আপনার PDF প্রসেসিং শুরু করুন',
       ctaDesc: 'উপরে আমাদের সম্পূর্ণ পিডিএফ টুলসের তালিকা দেখুন। সব টুল বিনামূল্যে, ব্যক্তিগত এবং ব্রাউজারে তাৎক্ষণিকভাবে কাজ করে।',
       featuredOn: 'স্বীকৃত ও ফিচার্ড হয়েছে',
-      webAppDesc: 'সম্পূর্ণ বিনামূল্যে ও গোপনীয়তাবান্ধব অনলাইন পিডিএফ টুলকিট। ব্রাউজারের ভেতর সরাসরি পিডিএফ মার্জ, স্প্লিট, কম্প্রেস, রোটেট, প্রটেক্ট এবং এডিট করুন কোনো সার্ভার আপলোড ছাড়াই।',
-      orgDesc: 'প্রাইভেসি-ফার্স্ট ক্লায়েন্ট-সাইড পিডিএফ টুলকিট যাতে রয়েছে ২৩টি সম্পূর্ণ ফ্রি টুল।',
+      webAppDesc: 'সম্পূর্ণ বিনামূল্যে ও গোপনীয়তাবান্ধব অনলাইন পিডিএফ টুলকিট। ব্রাউজারের ভেতর সরাসরি পিডিএফ মার্জ, স্প্লিট, রোটেট, প্রটেক্ট এবং এডিট করুন কোনো সার্ভার আপলোড ছাড়াই।',
+      orgDesc: 'প্রাইভেসি-ফার্স্ট ক্লায়েন্ট-সাইড পিডিএফ টুলকিট যাতে রয়েছে ২২টি সম্পূর্ণ ফ্রি টুল।',
       websiteDesc: 'ব্রাউজার-ভিত্তিক ফ্রি পিডিএফ টুলস — ১০০% ব্যক্তিগত, জিরো ফাইল আপলোড এবং কোনো সাইন-আপ ছাড়াই।',
       features: [
         'একাধিক পিডিএফ ফাইল মার্জ বা একত্রিত করা',
         'পিডিএফ পৃথক পেজে স্প্লিট করা',
-        'পিডিএফ ফাইলের আকার কম্প্রেস করা',
+        'গ্রেস্কেল রূপান্তর করা',
         'পিডিএফ পেজ রোটেট করা',
         'পিডিএফ থেকে পেজ ডিলিট করা',
         'ওয়াটারমার্ক যোগ করা',
@@ -1442,7 +1487,7 @@ ${homepageHreflangs}
       code: 'hi',
       langName: 'Hindi',
       title: 'PdfMinty — मुफ्त प्राइवेसी-फर्स्ट पीडीएफ टूल्स (100% ब्राउज़र में)',
-      desc: 'आपके ब्राउज़र में मुफ्त पीडीएफ टूल्स। सर्वर अपलोड या रजिस्ट्रेशन के बिना पीडीएफ मर्ज, स्प्लिट, कंप्रेस और प्रोटेक्ट करें। 100% प्राइवेसी।',
+      desc: 'आपके ब्राउज़र में मुफ्त पीडीएफ टूल्स। सर्वर अपलोड या रजिस्ट्रेशन के बिना पीडीएफ मर्ज, स्प्लिट और प्रोटेक्ट करें। 100% प्राइवेसी।',
       h1: 'मुफ़्त ब्राउज़र-आधारित पीडीएफ उपकरण — 100% निजी, कोई अपलोड नहीं',
       lead: `PDFMinty एक मुफ़्त, प्राइवेसी-फर्स्ट पीडीएफ टूलकिट है जिसमें ${toolsCount} शक्तिशाली उपकरण हैं जो पूरी तरह से आपके ब्राउज़र में चलते हैं। आपकी फ़ाइलें कभी भी आपके डिवाइस से बाहर नहीं जाती हैं — कोई सर्वर अपलोड नहीं, कोई साइन-अप नहीं, कोई दैनिक सीमा नहीं। पूर्ण गोपनीयता के साथ पीडीएफ मर्ज, स्प्लिट, प्रोटेक्ट, कन्वर्ट और एडिट करें।`,
       toolsTitle: 'सभी पीडीएफ उपकरण',
@@ -1468,13 +1513,13 @@ ${homepageHreflangs}
       ctaTitle: 'अभी अपनी पीडीएफ प्रोसेस करना शुरू करें',
       ctaDesc: 'ऊपर हमारे पीडीएफ उपकरणों का पूरा संग्रह देखें। सभी उपकरण मुफ़्त, सुरक्षित और आपके ब्राउज़र में तुरंत काम करते हैं।',
       featuredOn: 'इन मंचों पर प्रदर्शित',
-      webAppDesc: 'मुफ़्त और प्राइवेसी-फर्स्ट ऑनलाइन पीडीएफ टूलकिट। अपने ब्राउज़र में सीधे पीडीएफ मर्ज, स्प्लिट, कंप्रेस, रोटेट, प्रोटेक्ट और एडिट करें — बिना किसी सर्वर अपलोड के।',
-      orgDesc: 'प्राइवेसी-फर्स्ट, क्लाइंट-साइड पीडीएफ टूलकिट जिसमें 23 मुफ़्त और सुरक्षित टूल्स उपलब्ध हैं।',
+      webAppDesc: 'मुफ़्त और प्राइवेसी-फर्स्ट ऑनलाइन पीडीएफ टूलकिट। अपने ब्राउज़र में सीधे पीडीएफ मर्ज, स्प्लिट, रोटेट, प्रोटेक्ट और एडिट करें — बिना किसी सर्वर अपलोड के।',
+      orgDesc: 'प्राइवेसी-फर्स्ट, क्लाइंट-साइड पीडीएफ टूलकिट जिसमें 22 मुफ़्त और सुरक्षित टूल्स उपलब्ध हैं।',
       websiteDesc: 'मुफ़्त ब्राउज़र-आधारित पीडीएफ उपकरण — 100% निजी, कोई सर्वर अपलोड नहीं, कोई पंजीकरण नहीं।',
       features: [
         'कई पीडीएफ फाइलों को एक साथ जोड़ें',
         'पीडीएफ को अलग-अलग पेजों में विभाजित करें',
-        'पीडीएफ फाइल का आकार कंप्रेस करें',
+        'ग्रेस्केल में बदलें',
         'पीडीएफ पेजों को घुमाएं',
         'पीडीएफ से पेज हटाएं',
         'वॉटरमार्क जोड़ें',
@@ -1491,7 +1536,7 @@ ${homepageHreflangs}
       code: 'zh',
       langName: 'Chinese',
       title: 'PdfMinty — 免费的隐私优先PDF工具（100%在浏览器中运行）',
-      desc: '直接在浏览器中使用的免费PDF工具。无需服务器上传或注册，即可合并、拆分、压缩和保护PDF。100%隐私安全。',
+      desc: '直接在浏览器中使用的免费PDF工具。无需服务器上传或注册，即可合并、拆分和保护PDF。100%隐私安全。',
       h1: '免费的基于浏览器的 PDF 工具 — 100% 私密，零上传',
       lead: `PDFMinty 是一套免费、注重隐私的 PDF 工具箱，拥有 ${toolsCount} 款完全在浏览器中运行的强大工具。您的文件绝不会离开您的设备——无服务器上传、无需注册、无每日限额。完全私密地合并、拆分、保护、转换和编辑 PDF。`,
       toolsTitle: '所有 PDF 工具',
@@ -1517,13 +1562,13 @@ ${homepageHreflangs}
       ctaTitle: '立即开始处理您的 PDF',
       ctaDesc: '浏览上方我们完整的 PDF 工具合集。所有工具均免费、私密，并在您的浏览器中即刻运行。',
       featuredOn: '精选收录平台',
-      webAppDesc: '免费、注重隐私的在线 PDF 工具箱。完全在浏览器中合并、拆分、压缩、旋转、加密和编辑 PDF，零服务器上传，保护您的数据安全。',
-      orgDesc: '隐私优先的纯客户端 PDF 工具箱，提供 23 款无需服务器上传的免费工具。',
+      webAppDesc: '免费、注重隐私的在线 PDF 工具箱。完全在浏览器中合并、拆分、旋转、加密和编辑 PDF，零服务器上传，保护您的数据安全。',
+      orgDesc: '隐私优先的纯客户端 PDF 工具箱，提供 22 款无需服务器上传的免费工具。',
       websiteDesc: '免费基于浏览器的 PDF 工具 — 100% 私密，零文件上传，无需注册账户。',
       features: [
         '合并多个 PDF 文件',
         '将 PDF 拆分为单个页面',
-        '压缩 PDF 文件大小',
+        '转换为灰度文档',
         '旋转 PDF 页面',
         '删除 PDF 中的指定页面',
         '添加水印',
@@ -1772,7 +1817,6 @@ ${hreflangLinks}
     { alias: 'pdf-to-jpg', target: 'pdf-to-image', title: 'PDF to JPG — Convert PDF to High Quality JPG Images Free | PDFMinty' },
     { alias: 'pdf-to-jpeg', target: 'pdf-to-image', title: 'PDF to JPG — Convert PDF to High Quality JPG Images Free | PDFMinty' },
     { alias: 'pdf-to-png', target: 'pdf-to-image', title: 'PDF to PNG — Convert PDF to High Quality PNG Images Free | PDFMinty' },
-    { alias: 'compress-pdf', target: 'blog/how-to-compress-a-pdf-without-losing-quality-2026', title: 'Compress PDF Without Losing Quality — Free Guide | PDFMinty' },
   ];
 
   for (const { alias, target, title } of aliasRoutes) {

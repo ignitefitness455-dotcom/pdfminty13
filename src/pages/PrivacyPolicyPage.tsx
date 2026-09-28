@@ -120,6 +120,32 @@ export const PrivacyPolicyPage: React.FC = () => {
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
+              <Shield className="w-5 h-5 text-emerald-500" />
+              {t('privacyPolicy.secCmpTitle', { defaultValue: 'Consent Management Platform & Cookie Preferences (EEA & UK)' })}
+            </h2>
+            <div className="space-y-3">
+              <p>
+                {t('privacyPolicy.secCmpIntro', {
+                  defaultValue:
+                    'For visitors located in the European Economic Area (EEA), the United Kingdom, and Switzerland, PdfMinty deploys a Google-Certified Consent Management Platform (CMP) that adheres to the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.',
+                })}
+              </p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>
+                  <strong>Consent Signals:</strong> Technical signals (<code>ad_storage</code>, <code>analytics_storage</code>, <code>ad_user_data</code>, and <code>ad_personalization</code>) are default-restricted until you provide affirmative consent via the consent dialog.
+                </li>
+                <li>
+                  <strong>Withdrawing or Modifying Consent:</strong> You may adjust or revoke your consent preferences at any time by clicking the <em>Cookie &amp; Privacy Preferences</em> link in our website footer or by clearing your browser cache.
+                </li>
+                <li>
+                  <strong>Non-Personalized Ads:</strong> If you decline consent, only non-personalized contextual ads are served, and cookies are restricted solely to fraud prevention and frequency capping.
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section className="space-y-3 pt-6 border-t border-border-muted">
+            <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <EyeOff className="w-5 h-5 text-emerald-500" />
               {t('privacyPolicy.sec5Title')}
             </h2>

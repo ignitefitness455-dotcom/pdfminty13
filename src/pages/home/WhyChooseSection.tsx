@@ -100,7 +100,7 @@ export const WhyChooseSection: React.FC = () => {
             <p className="text-on-surface-variant text-sm leading-relaxed font-normal">
               {t('home.whyChoose.toolsCountDesc', {
                 defaultValue:
-                  'From merging and splitting to encryption, OCR, and compression — complete every PDF workflow right here.',
+                  'From merging and splitting to encryption, OCR, and document signing — complete every PDF workflow right here.',
               })}
             </p>
           </div>

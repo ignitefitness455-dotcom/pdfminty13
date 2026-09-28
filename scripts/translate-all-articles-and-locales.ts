@@ -179,7 +179,7 @@ TRANSLATION INSTRUCTIONS:
 1. Translate the Title, Summary, and the entire HTML Content Body into fluent, natural, grammatically pristine ${LOCALE_NAMES[lang]}.
 2. CRITICAL: Preserve all HTML tags (<h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <div>, etc.) and class attributes EXACTLY.
 3. Keep the brand name "PDFMinty" or "PdfMinty" as is.
-4. Keep internal links (e.g. href="/merge-pdf/", href="/compress-pdf/", href="/blog/...") intact without altering URLs.
+4. Keep internal links (e.g. href="/merge-pdf/", href="/grayscale-pdf/", href="/blog/...") intact without altering URLs.
 5. Translate table headings and bullet points thoroughly.
 6. Return output in valid JSON matching this schema:
 \`\`\`json

@@ -12,8 +12,6 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   '/edit-metadata': '/edit-pdf-metadata/',
   '/protect': '/protect-pdf/',
   '/unlock': '/unlock-pdf/',
-  '/compress': '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
-  '/compress-pdf': '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
   '/delete-pages': '/delete-pages-pdf/',
   '/extract-pages': '/extract-pages-pdf/',
   '/reorder': '/reorder-pdf/',

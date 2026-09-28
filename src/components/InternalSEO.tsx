@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
+import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
 import { SITE_URL, SITE_NAME, TOOLS } from '../config/seo-data';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
@@ -407,9 +408,11 @@ export default function InternalSEO() {
           datePublished: seoInfo.datePublished || '2026-07-16',
           dateModified: seoInfo.dateModified || seoInfo.datePublished || '2026-08-08',
           author: {
-            '@type': 'Organization',
-            name: 'PdfMinty Editorial Team',
-            url: `${SITE_URL}/`,
+            '@type': 'Person',
+            name: PRIMARY_AUTHOR.name,
+            jobTitle: PRIMARY_AUTHOR.jobTitle,
+            url: `${SITE_URL}/about-us/#creator`,
+            sameAs: [PRIMARY_AUTHOR.github],
           },
           publisher: {
             '@type': 'Organization',

@@ -1,9 +1,10 @@
-import { Heart, Lock, Zap, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Heart, Lock, Zap, CheckCircle, ArrowRight, Sparkles, MapPin, Github, Mail, UserCheck, ShieldCheck, Code2 } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import SEO from '../components/SEO';
+import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
 
 export const AboutUsPage: React.FC = () => {
@@ -154,6 +155,124 @@ export const AboutUsPage: React.FC = () => {
               <span>
                 {t('aboutUs.skipLinks', { defaultValue: 'Skip Navigation Links for Efficiency' })}
               </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Meet the Creator & Engineering Team (AdSense E-E-A-T & Transparency) */}
+        <section
+          id="creator"
+          className="space-y-8 bg-surface-container-low border border-border-muted p-8 sm:p-10 rounded-3xl shadow-sm"
+        >
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+              <UserCheck className="w-4 h-4" />
+              <span>{t('aboutUs.creatorBadge', { defaultValue: 'Founder & Engineering Accountability' })}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight">
+              {t('aboutUs.creatorTitle', { defaultValue: 'Who Builds & Maintains PdfMinty' })}
+            </h2>
+            <p className="text-xs sm:text-sm text-on-surface-variant font-medium">
+              {t('aboutUs.creatorSubtitle', {
+                defaultValue:
+                  'Behind every line of code at PdfMinty is human dedication to open web security, transparency, and personal data sovereignty.',
+              })}
+            </p>
+          </div>
+
+          <div className="p-6 sm:p-8 rounded-2xl bg-surface-container-high/60 border border-border-muted space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-border-muted/70">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 p-0.5 shadow-lg shadow-emerald-500/20 shrink-0">
+                  <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center text-white font-black text-xl sm:text-2xl tracking-wider">
+                    <span>TM</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl sm:text-2xl font-black text-on-surface">
+                      {PRIMARY_AUTHOR.name}
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                      {t('aboutUs.founderBadge', { defaultValue: 'Founder & Lead Engineer' })}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-on-surface-variant">
+                    {PRIMARY_AUTHOR.jobTitle}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs text-rose-500 font-medium">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                    <span>{PRIMARY_AUTHOR.city}, {PRIMARY_AUTHOR.country} 🇧🇩</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Direct Social & Contact Channels */}
+              <div className="flex items-center gap-3">
+                <a
+                  href={PRIMARY_AUTHOR.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub Repository & Profile"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border-muted text-xs font-bold text-on-surface transition-all"
+                >
+                  <Github className="w-4 h-4" />
+                  <span>GitHub</span>
+                </a>
+                <a
+                  href={`mailto:${PRIMARY_AUTHOR.email}`}
+                  aria-label="Contact Founder directly"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-sm"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Email Developer</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Backstory & Philosophy */}
+            <div className="space-y-4 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              <p>
+                {t('aboutUs.creatorBioP1', {
+                  defaultValue:
+                    'PdfMinty was engineered and founded by Mohammed Tanveer Munshi, a full-stack software engineer and open-web security researcher based in Dhaka, Bangladesh. With over 6 years of expertise building browser-native architectures and high-performance WebAssembly applications, Tanveer created PdfMinty after witnessing countless online conversion sites silently store private contracts, tax records, and medical files on third-party cloud servers.',
+                })}
+              </p>
+              <p>
+                {t('aboutUs.creatorBioP2', {
+                  defaultValue:
+                    'Rather than building another subscription-gated cloud service, PdfMinty was architected with a strict zero-upload mandate. All core operations execute directly inside the user’s browser memory via compiled WebAssembly and Web Workers. We believe software developers have a responsibility to design tools that respect user autonomy and privacy by default.',
+                })}
+              </p>
+            </div>
+
+            {/* Technical Verification Highlights */}
+            <div className="pt-4 border-t border-border-muted/60 grid sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-surface-container/60 border border-border-muted/50 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-on-surface">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span>{t('aboutUs.humanAccountability', { defaultValue: 'Human Accountability & E-E-A-T' })}</span>
+                </div>
+                <p className="text-[11px] text-on-surface-variant leading-normal">
+                  {t('aboutUs.humanDesc', {
+                    defaultValue:
+                      'All algorithms, blog tutorials, and tools are actively maintained and code-reviewed by real software engineers. We maintain transparent contact channels for security audits and bug reports.',
+                  })}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-surface-container/60 border border-border-muted/50 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-on-surface">
+                  <Code2 className="w-4 h-4 text-emerald-500" />
+                  <span>{t('aboutUs.coreTechStack', { defaultValue: 'Core Technology Stack' })}</span>
+                </div>
+                <p className="text-[11px] text-on-surface-variant leading-normal">
+                  {t('aboutUs.techDesc', {
+                    defaultValue:
+                      'Built using TypeScript, React 18, WebAssembly (Wasm), Web Workers, and the Web Cryptography API (AES-GCM) with zero persistent server-side file buffers.',
+                  })}
+                </p>
+              </div>
             </div>
           </div>
         </section>

@@ -4,7 +4,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://pdfminty.com/blog/is-it-safe-to-upload-pdf-to-online-tools/</loc>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-08-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -15,18 +15,18 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/the-complete-guide-to-pdf-metadata-and-how-to-remove-it/</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>The Forensic Guide to PDF Metadata &amp; Privacy Risks | PDFMinty</image:title>
-      <image:caption>Discover the hidden metadata stored inside your PDFs and learn how to scrub personal information before sharing.</image:caption>
+      <image:title>The Complete Guide to PDF Metadata &amp; How to Remove It | PDFMinty</image:title>
+      <image:caption>Discover hidden metadata stored inside PDF headers and XMP packets, understand legal exposure risks, and learn how to scrub forensic data locally.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/why-privacy-first-pdf-tools-matter-in-2026/</loc>
-    <lastmod>2026-07-18</lastmod>
+    <lastmod>2026-08-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -37,7 +37,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-batch-process-50-pdfs-in-under-2-minutes/</loc>
-    <lastmod>2026-07-19</lastmod>
+    <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -48,7 +48,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/free-pdf-e-signature-sign-documents-without-uploading/</loc>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-08-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -59,7 +59,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-remove-pdf-metadata-for-privacy/</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -70,7 +70,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-merge-pdf-files-online-for-free-2026-guide/</loc>
-    <lastmod>2026-07-25</lastmod>
+    <lastmod>2026-08-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -81,7 +81,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/adobe-security-vulnerabilities-offline-pdf-tools/</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -92,7 +92,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/ilovepdf-vs-smallpdf-vs-pdfminty-2026/</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -103,7 +103,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-compress-a-pdf-without-losing-quality-2026/</loc>
-    <lastmod>2026-07-30</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -114,18 +114,18 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-convert-pdf-to-word-for-free-2026/</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>How to Convert PDF to Word for Free (Text Method) | PdfMinty</image:title>
+      <image:title>How to Convert PDF to Word for Free | PDFMinty Guide</image:title>
       <image:caption>Tired of broken formatting when converting PDF to Word? Learn how to extract clean Markdown text and paste it safely into Word without using risky cloud converters.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/compare/pdfminty-vs-smallpdf/</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -136,7 +136,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/compare/pdfminty-vs-ilovepdf/</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -147,7 +147,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/best-offline-pdf-tools-for-sensitive-documents-2026/</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -158,7 +158,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-make-a-pdf-online-free/</loc>
-    <lastmod>2026-08-09</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -169,7 +169,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/secure-pdf-editing-without-uploading/</loc>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -180,7 +180,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-add-page-numbers-to-a-pdf-for-free/</loc>
-    <lastmod>2026-08-15</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -191,18 +191,18 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-make-a-scanned-pdf-searchable/</loc>
-    <lastmod>2026-08-21</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>How to Extract Text from a Scanned PDF Image (OCR Guide) | PdfMinty</image:title>
+      <image:title>How to Extract Text from a Scanned PDF Offline (OCR Guide) | PDFMinty</image:title>
       <image:caption>Learn how to use offline OCR to extract readable, copyable text or Markdown from scanned and image-only PDFs without uploading them.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-split-pdf-by-page-range-and-extract-pages/</loc>
-    <lastmod>2026-08-23</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -213,7 +213,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-password-protect-a-pdf-offline/</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -224,7 +224,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-repair-a-corrupted-pdf/</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -235,7 +235,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/</loc>
-    <lastmod>2026-08-29</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -246,7 +246,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/electronic-signature-vs-digital-signature/</loc>
-    <lastmod>2026-08-13</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -257,7 +257,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-sign-pdf-without-adobe-or-docusign/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -268,7 +268,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/why-is-my-pdf-so-large/</loc>
-    <lastmod>2026-08-31</lastmod>
+    <lastmod>2026-09-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -279,40 +279,40 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-combine-scanned-documents-into-one-pdf/</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>How to Combine Scanned Documents into One PDF | PdfMinty</image:title>
+      <image:title>Combine Scanned Documents into One PDF (Without Crashing) | PDFMinty</image:title>
       <image:caption>Learn how to merge heavy scanned PDFs, reduce their file size using Grayscale conversion, and create a single clean document offline.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-rearrange-pdf-pages-offline/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>How to Rearrange Pages in a PDF Offline | PdfMinty</image:title>
+      <image:title>How to Rearrange Pages in a PDF Offline | PDFMinty</image:title>
       <image:caption>Learn how to visually rearrange, swap, and reorder PDF pages securely offline without using Adobe Acrobat.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/how-to-convert-pdf-to-jpg-high-resolution/</loc>
-    <lastmod>2026-09-05</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>How to Convert PDF to JPG High Resolution | PdfMinty</image:title>
+      <image:title>How to Convert PDF to JPG High Resolution | PDFMinty</image:title>
       <image:caption>Stop getting blurry images when converting PDFs. Learn how to extract high-resolution, 300 DPI quality JPGs and PNGs from your PDF documents.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/pdf-privacy-benchmark-2026/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -323,62 +323,62 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/client-side-pdf-processing-explained/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>Client-Side PDF Processing Explained: WASM &amp; Security | PdfMinty</image:title>
+      <image:title>Client-Side PDF Processing Explained (WASM &amp; Blobs) | PDFMinty</image:title>
       <image:caption>Technical breakdown of how modern browsers parse, edit, and render PDF binaries locally without server interaction.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/hipaa-compliant-pdf-tools-healthcare/</loc>
-    <lastmod>2026-09-09</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>HIPAA Compliant PDF Tools for US Healthcare | PdfMinty</image:title>
+      <image:title>HIPAA-Compliant PDF Tools &amp; Workflows for Healthcare | PDFMinty</image:title>
       <image:caption>Why uploading patient records to free online PDF editors violates HIPAA, and how client-side WebAssembly tools mitigate ePHI data transit risks.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/us-tax-w9-nda-secure-pdf-signing/</loc>
-    <lastmod>2026-09-10</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>Securely Sign W-9 &amp; Tax Forms Offline | PdfMinty</image:title>
+      <image:title>How to Securely Sign US Tax Forms (W-9) &amp; NDAs Offline | PDFMinty</image:title>
       <image:caption>Freelancers and contractors: Learn how to fill out and sign sensitive US tax forms (W-9, 1099) and NDAs without uploading your Social Security Number to the cloud.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/gdpr-compliant-pdf-processing-europe/</loc>
-    <lastmod>2026-09-11</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>GDPR Compliant PDF Tools for EU Businesses | PdfMinty</image:title>
+      <image:title>GDPR-Compliant PDF Workflows for European Businesses | PDFMinty</image:title>
       <image:caption>Uploading European employee or customer data to cloud PDF tools can trigger severe GDPR fines. Learn how client-side WebAssembly solves this compliance nightmare.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/eidas-compliant-pdf-signatures-uk-eu/</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pdfminty.com/og-image.png</image:loc>
-      <image:title>eIDAS &amp; UK Law: Are PDF Signatures Legally Binding? | PdfMinty</image:title>
+      <image:title>Are Online PDF Signatures Legally Binding in UK &amp; EU? | PDFMinty</image:title>
       <image:caption>Understand the legal weight of electronic signatures under the EU eIDAS Regulation and UK law. Learn how to securely sign PDFs offline.</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://pdfminty.com/blog/pdf-wont-open/</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -389,7 +389,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/cant-copy-text-from-pdf/</loc>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -400,7 +400,7 @@
   </url>
   <url>
     <loc>https://pdfminty.com/blog/pdf-form-wont-let-me-type/</loc>
-    <lastmod>2026-09-16</lastmod>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>

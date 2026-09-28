@@ -462,18 +462,6 @@ export const App: React.FC = () => {
             <Route path="/intelligence" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
             <Route path="/protect" element={<Navigate to={ROUTES.PROTECT} replace />} />
             <Route path="/unlock" element={<Navigate to={ROUTES.UNLOCK} replace />} />
-            <Route
-              path="/compress"
-              element={
-                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
-              }
-            />
-            <Route
-              path="/compress-pdf"
-              element={
-                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
-              }
-            />
             <Route path="/delete-pages" element={<Navigate to={ROUTES.DELETE_PAGES} replace />} />
             <Route path="/extract-pages" element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />} />
             <Route path="/reorder" element={<Navigate to={ROUTES.REORDER} replace />} />

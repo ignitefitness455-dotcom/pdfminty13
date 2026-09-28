@@ -52,7 +52,7 @@ const legacyRedirects = [
   '/about', '/about/', '/contact-us', '/contact-us/', '/privacy', '/privacy/',
   '/terms', '/terms/', '/tos', '/tos/', '/edit-metadata', '/edit-metadata/',
   '/intelligence', '/intelligence/', '/protect', '/protect/', '/unlock', '/unlock/',
-  '/compress', '/compress/', '/compress-pdf', '/compress-pdf/', '/delete-pages', '/delete-pages/',
+  '/delete-pages', '/delete-pages/',
   '/extract-pages', '/extract-pages/', '/reorder', '/reorder/', '/watermark', '/watermark/',
   '/page-numbers', '/page-numbers/', '/add-blank', '/add-blank/', '/img-to-pdf', '/img-to-pdf/',
   '/pdf-to-img', '/pdf-to-img/', '/grayscale', '/grayscale/', '/flatten', '/flatten/',

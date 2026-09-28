@@ -167,6 +167,11 @@ export function generateSitemapXml(): SitemapGenerationResult {
       continue;
     }
 
+    // Skip drafts or in-review articles (human editorial gate)
+    if (item.status === 'draft' || item.status === 'in-review') {
+      continue;
+    }
+
     const slashedSlug = rawSlug.endsWith('/') ? rawSlug : `${rawSlug}/`;
     const loc = `${baseUrl}${slashedSlug}`;
     const isBlogOrCompare = cleanSlug.startsWith('blog/') || cleanSlug.startsWith('compare/') || item.category === 'blog' || item.category === 'compare';

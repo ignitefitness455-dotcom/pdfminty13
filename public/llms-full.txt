@@ -15,30 +15,29 @@ Traditional online PDF editors require users to upload sensitive contracts, tax 
 - Requires explicit user checkbox consent prior to transmission.
 - Binary files are never stored.
 
-## All 23 Tools Directory
+## All 22 Tools Directory
 1. Merge PDF: https://pdfminty.com/merge-pdf/
 2. Split PDF: https://pdfminty.com/split-pdf/
-3. Compress PDF: https://pdfminty.com/compress-pdf/
-4. Rotate PDF: https://pdfminty.com/rotate-pdf/
-5. Delete Pages: https://pdfminty.com/delete-pages-pdf/
-6. Extract Pages: https://pdfminty.com/extract-pages-pdf/
-7. Reorder PDF: https://pdfminty.com/reorder-pdf/
-8. Watermark PDF: https://pdfminty.com/watermark-pdf/
-9. Add Page Numbers: https://pdfminty.com/add-page-numbers/
-10. Add Blank Page: https://pdfminty.com/add-blank-page/
-11. Protect PDF: https://pdfminty.com/protect-pdf/
-12. Unlock PDF: https://pdfminty.com/unlock-pdf/
-13. Image to PDF: https://pdfminty.com/image-to-pdf/
-14. PDF to Image: https://pdfminty.com/pdf-to-image/
-15. PDF to Markdown: https://pdfminty.com/pdf-to-markdown/
-16. AI PDF Assistant: https://pdfminty.com/ai-analyze-pdf/
-17. Grayscale PDF: https://pdfminty.com/grayscale-pdf/
-18. Flatten PDF: https://pdfminty.com/flatten-pdf/
-19. Repair PDF: https://pdfminty.com/repair-pdf/
-20. Edit PDF Metadata: https://pdfminty.com/edit-pdf-metadata/
-21. Sanitize PDF: https://pdfminty.com/sanitize-pdf/
-22. Sign PDF: https://pdfminty.com/sign-pdf/
-23. OCR PDF: https://pdfminty.com/ocr-pdf/
+3. Rotate PDF: https://pdfminty.com/rotate-pdf/
+4. Delete Pages: https://pdfminty.com/delete-pages-pdf/
+5. Extract Pages: https://pdfminty.com/extract-pages-pdf/
+6. Reorder PDF: https://pdfminty.com/reorder-pdf/
+7. Watermark PDF: https://pdfminty.com/watermark-pdf/
+8. Add Page Numbers: https://pdfminty.com/add-page-numbers/
+9. Add Blank Page: https://pdfminty.com/add-blank-page/
+10. Protect PDF: https://pdfminty.com/protect-pdf/
+11. Unlock PDF: https://pdfminty.com/unlock-pdf/
+12. Image to PDF: https://pdfminty.com/image-to-pdf/
+13. PDF to Image: https://pdfminty.com/pdf-to-image/
+14. PDF to Markdown: https://pdfminty.com/pdf-to-markdown/
+15. AI PDF Assistant: https://pdfminty.com/ai-analyze-pdf/
+16. Grayscale PDF: https://pdfminty.com/grayscale-pdf/
+17. Flatten PDF: https://pdfminty.com/flatten-pdf/
+18. Repair PDF: https://pdfminty.com/repair-pdf/
+19. Edit PDF Metadata: https://pdfminty.com/edit-pdf-metadata/
+20. Sanitize PDF: https://pdfminty.com/sanitize-pdf/
+21. Sign PDF: https://pdfminty.com/sign-pdf/
+22. OCR PDF: https://pdfminty.com/ocr-pdf/
 
 ## Legal & Compliance Links
 - Privacy Policy: https://pdfminty.com/privacy-policy/
