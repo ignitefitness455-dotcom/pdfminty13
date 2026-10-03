@@ -394,7 +394,7 @@ const rearrangePagesBody = `
         When reorganizing pages, keep the following structural behaviors in mind:
       </p>
       <ul>
-        <li><strong>Printed Header/Footer Page Numbers:</strong> If your original document has static page numbers printed onto the visual canvas (e.g., "Page 3 of 10"), reordering pages will not change that printed text. To apply clean sequential numbering after reordering, use our <a href="/add-page-numbers-to-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Add Page Numbers Tool</a>.</li>
+        <li><strong>Printed Header/Footer Page Numbers:</strong> If your original document has static page numbers printed onto the visual canvas (e.g., "Page 3 of 10"), reordering pages will not change that printed text. To apply clean sequential numbering after reordering, use our <a href="/add-page-numbers/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Add Page Numbers Tool</a>.</li>
         <li><strong>Outlines and Bookmarks:</strong> If a document has an interactive Table of Contents (<code>/Outlines</code>), bookmarks pointing to explicit page object IDs will continue to follow their target page, whereas bookmarks pointing to static indices may need review.</li>
         <li><strong>Annotation Layers:</strong> Form fields, digital signatures, and sticky notes are bound directly to their respective <code>/Page</code> object. Moving a page moves all associated form annotations with it seamlessly.</li>
       </ul>

@@ -14,6 +14,7 @@ console.log('🔍 Starting Comprehensive Production Technical SEO & Canonical Va
 // 1. Validate _redirects for chains, loops, non-trailing slashes, status codes, and valid destinations
 import { TOOLS } from '../src/config/seo-data';
 import { SUPPORTED_LOCALES, I18N_TOOL_SLUGS, DEFAULT_LOCALE } from '../src/i18n/config';
+import { validateLocaleParity } from './validate-locale-parity';
 
 const validCanonicalRoutes = new Set<string>([
   '/',
@@ -117,30 +118,98 @@ try {
   hasError = true;
 }
 
-// 2. Validate seo-data.ts for non-canonical internal links, slugs, and relatedLinks
+// 2. Validate seo-data.ts for broken internal links, non-canonical formatting, and invalid targets
 try {
-  const seoDataPath = path.join(srcDir, 'config', 'seo-data.ts');
-  const content = fs.readFileSync(seoDataPath, 'utf-8');
-  // Match href="/..." but exclude files like .png, .xml, #anchors
-  const hrefRegex = /href="(\/[^"]+?[^/])"/g;
-  let match;
-  while ((match = hrefRegex.exec(content)) !== null) {
-    if (!match[1].includes('.') && !match[1].includes('#')) {
-      console.error(`❌ Non-canonical Internal Link Found in html: ${match[1]}`);
-      hasError = true;
-    }
-  }
+  let totalHrefsScanned = 0;
+  let brokenHrefsCount = 0;
+  let nonCanonicalHrefsCount = 0;
+
+  const hrefRegex = /href=["']([^"']+)["']/gi;
+
+  // Validate every tool and article body in structured data
+  TOOLS.forEach((item) => {
+    const fieldsToScan: Array<{ fieldName: string; text: string }> = [
+      { fieldName: 'longFormBody', text: item.longFormBody || '' },
+      { fieldName: 'shortDescription', text: item.shortDescription || '' },
+    ];
+
+    fieldsToScan.forEach(({ fieldName, text }) => {
+      let match: RegExpExecArray | null;
+      while ((match = hrefRegex.exec(text)) !== null) {
+        const rawHref = match[1].trim();
+        totalHrefsScanned++;
+
+        // Rule 3: Skip anchors (#section), mailto:, tel:, protocol-relative (//), and absolute external URLs (http://, https://)
+        if (
+          rawHref.startsWith('#') ||
+          rawHref.startsWith('mailto:') ||
+          rawHref.startsWith('tel:') ||
+          rawHref.startsWith('//') ||
+          rawHref.startsWith('http://') ||
+          rawHref.startsWith('https://')
+        ) {
+          continue;
+        }
+
+        // Skip static file assets (images, fonts, sitemaps, data files)
+        if (/\.(png|jpe?g|svg|webp|gif|ico|xml|txt|json|pdf|ttf|woff2?)$/i.test(rawHref)) {
+          continue;
+        }
+
+        const [pathOnly] = rawHref.split(/[?#]/);
+        const normalizedLeading = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+
+        // Check canonical trailing slash rule
+        if (
+          normalizedLeading !== '/' &&
+          !normalizedLeading.endsWith('/') &&
+          !normalizedLeading.includes('.')
+        ) {
+          console.error(
+            `❌ Non-canonical Internal Link Found (missing trailing slash):\n` +
+            `   Containing Item: "${item.name}" [slug: ${item.slug}, id: ${item.id}, field: ${fieldName}]\n` +
+            `   Offending href:  "${rawHref}"\n` +
+            `   Expected:        "${normalizedLeading}/"`
+          );
+          hasError = true;
+          nonCanonicalHrefsCount++;
+        }
+
+        const canonicalTarget = normalizedLeading.endsWith('/') ? normalizedLeading : `${normalizedLeading}/`;
+
+        // Check if destination resolves to (a) TOOLS slug, (b) blog slug, (c) static route, or (d) localized route
+        if (!validCanonicalRoutes.has(canonicalTarget)) {
+          console.error(
+            `❌ Broken Internal Link (404 / Unregistered Route):\n` +
+            `   Containing Item: "${item.name}" [slug: ${item.slug}, id: ${item.id}, field: ${fieldName}]\n` +
+            `   Offending href:  "${rawHref}"\n` +
+            `   Resolved target: "${canonicalTarget}" is not in valid canonical route table.`
+          );
+          hasError = true;
+          brokenHrefsCount++;
+        }
+      }
+    });
+  });
 
   // Check relatedLinks "url": "/..."
+  const seoDataPath = path.join(srcDir, 'config', 'seo-data.ts');
+  const rawSeoDataContent = fs.readFileSync(seoDataPath, 'utf-8');
   const relatedUrlRegex = /"url":\s*"(\/[^"]+?)"/g;
-  while ((match = relatedUrlRegex.exec(content)) !== null) {
+  let match: RegExpExecArray | null;
+  while ((match = relatedUrlRegex.exec(rawSeoDataContent)) !== null) {
     const u = match[1];
     if (!u.endsWith('/') && !u.includes('.') && !u.includes('#') && u !== '/') {
       console.error(`❌ Non-canonical relatedLinks URL (missing trailing slash): ${u}`);
       hasError = true;
+      nonCanonicalHrefsCount++;
     }
   }
-  console.log('✅ seo-data.ts validated: all internal links and relatedLinks point to canonical trailing slashes.');
+
+  console.log(
+    `✅ seo-data.ts internal link guard audited: ${totalHrefsScanned} links checked across ${TOOLS.length} items.\n` +
+    `   Broken: ${brokenHrefsCount}, Non-canonical: ${nonCanonicalHrefsCount}`
+  );
 } catch (e) {
   console.error('Error checking seo-data.ts:', e);
   hasError = true;
@@ -364,6 +433,17 @@ try {
   console.log('✅ Trailing-slash normalization validated across all simulated edge cases (casing, slashes, protocol, www, legacy).');
 } catch (e) {
   console.error('Error during normalization test:', e);
+  hasError = true;
+}
+
+// 7. Validate Multilingual Content Parity (CONT-002)
+try {
+  const parityResult = validateLocaleParity({ exitOnError: false });
+  if (parityResult.hasFailure) {
+    hasError = true;
+  }
+} catch (e) {
+  console.error('Error during locale parity validation:', e);
   hasError = true;
 }
 

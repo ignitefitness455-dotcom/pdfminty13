@@ -628,8 +628,10 @@ textarea {
 }
 
 :root {
-  --font-sig-dancing: 'Dancing Script', 'Segoe Script', 'Apple Chancery', 'Brush Script MT', cursive;
-  --font-sig-great-vibes: 'Great Vibes', 'Edwardian Script ITC', 'Apple Chancery', 'Brush Script MT', cursive;
+  --font-sig-dancing:
+    'Dancing Script', 'Segoe Script', 'Apple Chancery', 'Brush Script MT', cursive;
+  --font-sig-great-vibes:
+    'Great Vibes', 'Edwardian Script ITC', 'Apple Chancery', 'Brush Script MT', cursive;
   --font-sig-pacifico: 'Pacifico', 'Comic Sans MS', 'Segoe Print', cursive;
   --font-sig-caveat: 'Caveat', 'Bradley Hand', 'Segoe Print', cursive;
   --font-sig-satisfy: 'Satisfy', 'Apple Chancery', 'Brush Script MT', cursive;

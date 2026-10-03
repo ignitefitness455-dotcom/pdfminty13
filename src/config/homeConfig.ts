@@ -28,6 +28,7 @@ import { logger } from '../utils/logger';
 import { HOMEPAGE_META } from './seo-data';
 
 export const prefetchMap: Record<string, () => Promise<unknown>> = {
+  'compress-pdf': () => import('../pages/CompressPdfPage'),
   'merge-pdf': () => import('../pages/MergePage'),
   'split-pdf': () => import('../pages/SplitPage'),
   'rotate-pdf': () => import('../pages/RotatePage'),

@@ -52,7 +52,7 @@ self.onmessage = async (e: MessageEvent) => {
         transferables = [(result as Uint8Array).buffer];
         break;
       case 'compressPDF':
-        result = await ops.compressPDF(payload.bytes, payload.level);
+        result = await ops.compressPDF(payload.bytes, payload.options ?? payload.level ?? 'basic');
         transferables = [(result as Uint8Array).buffer];
         break;
       case 'protectPDF':

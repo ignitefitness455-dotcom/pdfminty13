@@ -1,4 +1,3 @@
-import JSZip from 'jszip';
 import { Eye, Download, AlertCircle, Sparkles } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -145,6 +144,7 @@ export const PdfToImgPage: React.FC = () => {
         finalBlob = zipEntries[0].blob;
         finalFilename = zipEntries[0].filename;
       } else {
+        const { default: JSZip } = await import('jszip');
         const zip = new JSZip();
         for (const entry of zipEntries) {
           zip.file(entry.filename, entry.blob);

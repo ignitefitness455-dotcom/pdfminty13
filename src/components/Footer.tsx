@@ -179,20 +179,31 @@ export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
                   type="button"
                   onClick={() => {
                     const win = window as unknown as {
+                      openCookiePreferences?: () => void;
+                      Cookiebot?: { renew?: () => void; show?: () => void };
                       googlefc?: { showRevocationMessage?: () => void };
                       __tcfapi?: (command: string, version: number, callback: () => void) => void;
                     };
-                    if (win.googlefc && typeof win.googlefc.showRevocationMessage === 'function') {
+                    if (typeof win.openCookiePreferences === 'function') {
+                      win.openCookiePreferences();
+                    } else if (win.Cookiebot && typeof win.Cookiebot.renew === 'function') {
+                      win.Cookiebot.renew();
+                    } else if (
+                      win.googlefc &&
+                      typeof win.googlefc.showRevocationMessage === 'function'
+                    ) {
                       win.googlefc.showRevocationMessage();
-                    } else if (win.__tcfapi) {
+                    } else if (typeof win.__tcfapi === 'function') {
                       win.__tcfapi('displayConsentUi', 2, () => {});
                     } else {
-                      window.location.href = ROUTES.PRIVACY_POLICY;
+                      window.dispatchEvent(new CustomEvent('open-cmp-preferences'));
                     }
                   }}
                   className="hover:text-emerald-500 transition-colors cursor-pointer text-left"
                 >
-                  {t('footer.links.cookieSettings', { defaultValue: 'Cookie & Privacy Preferences' })}
+                  {t('footer.links.cookieSettings', {
+                    defaultValue: 'Cookie & Privacy Preferences',
+                  })}
                 </button>
               </li>
             </ul>

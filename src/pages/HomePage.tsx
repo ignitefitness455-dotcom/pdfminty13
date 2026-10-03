@@ -34,7 +34,14 @@ const isToolInCategory = (slug: string, categoryId: string): boolean => {
 
   switch (categoryId) {
     case 'workflows':
-      return ['merge-pdf', 'split-pdf', 'reorder-pdf', 'extract-pages-pdf'].includes(slug);
+      return [
+        'compress-pdf',
+        'merge-pdf',
+        'split-pdf',
+        'sign-pdf',
+        'reorder-pdf',
+        'extract-pages-pdf',
+      ].includes(slug);
     case 'organize':
       return [
         'reorder-pdf',
@@ -44,7 +51,13 @@ const isToolInCategory = (slug: string, categoryId: string): boolean => {
         'add-blank-page',
       ].includes(slug);
     case 'optimize':
-      return ['grayscale-pdf', 'repair-pdf', 'sanitize-pdf', 'flatten-pdf'].includes(slug);
+      return [
+        'compress-pdf',
+        'grayscale-pdf',
+        'repair-pdf',
+        'sanitize-pdf',
+        'flatten-pdf',
+      ].includes(slug);
     case 'convert':
       return ['image-to-pdf', 'pdf-to-image', 'pdf-to-markdown'].includes(slug);
     case 'edit':

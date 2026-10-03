@@ -9,16 +9,29 @@ import { PWAController } from './components/PWAController';
 import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
 import { ROUTES } from './config/routes';
-import { AboutUsPage } from './pages/AboutUsPage';
-import { ContactPage } from './pages/ContactPage';
 import { HomePage } from './pages/HomePage';
-import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
-import { TermsOfServicePage } from './pages/TermsOfServicePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+
+// Lazy-loaded static pages
+const AboutUsPage = lazyWithRetry(() =>
+  import('./pages/AboutUsPage').then((m) => ({ default: m.AboutUsPage }))
+);
+const ContactPage = lazyWithRetry(() =>
+  import('./pages/ContactPage').then((m) => ({ default: m.ContactPage }))
+);
+const PrivacyPolicyPage = lazyWithRetry(() =>
+  import('./pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
+);
+const TermsOfServicePage = lazyWithRetry(() =>
+  import('./pages/TermsOfServicePage').then((m) => ({ default: m.TermsOfServicePage }))
+);
 
 // Lazy: all interactive heavy tools — splits each tool's code out of the initial bundle.
 const MergePage = lazyWithRetry(() =>
   import('./pages/MergePage').then((m) => ({ default: m.MergePage }))
+);
+const CompressPdfPage = lazyWithRetry(() =>
+  import('./pages/CompressPdfPage').then((m) => ({ default: m.CompressPdfPage }))
 );
 const SplitPage = lazyWithRetry(() =>
   import('./pages/SplitPage').then((m) => ({ default: m.SplitPage }))
@@ -167,6 +180,15 @@ export const App: React.FC = () => {
                 </ErrorBoundary>
               }
             />
+            <Route
+              path={ROUTES.COMPRESS}
+              element={
+                <ErrorBoundary resetKey="compress">
+                  <CompressPdfPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route path="/compress-pdf" element={<Navigate to={ROUTES.COMPRESS} replace />} />
             <Route
               path={ROUTES.SPLIT}
               element={
@@ -472,6 +494,8 @@ export const App: React.FC = () => {
             <Route path="/pdf-to-img" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
             <Route path="/grayscale" element={<Navigate to={ROUTES.GRAYSCALE} replace />} />
             <Route path="/flatten" element={<Navigate to={ROUTES.FLATTEN} replace />} />
+            <Route path="/compress" element={<Navigate to={ROUTES.COMPRESS} replace />} />
+            <Route path="/compress/" element={<Navigate to={ROUTES.COMPRESS} replace />} />
             <Route path="/repair" element={<Navigate to={ROUTES.REPAIR} replace />} />
             <Route path="/sign" element={<Navigate to={ROUTES.SIGN_PDF} replace />} />
             <Route path="/ocr" element={<Navigate to={ROUTES.OCR_PDF} replace />} />

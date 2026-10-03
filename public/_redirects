@@ -55,6 +55,8 @@
 /grayscale/ /grayscale-pdf/ 301
 /flatten /flatten-pdf/ 301
 /flatten/ /flatten-pdf/ 301
+/compress /compress-pdf/ 301
+/compress/ /compress-pdf/ 301
 /repair /repair-pdf/ 301
 /repair/ /repair-pdf/ 301
 /sign /sign-pdf/ 301

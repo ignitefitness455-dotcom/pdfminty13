@@ -16,65 +16,47 @@
  *    cleanup if they really want to.
  */
 
-interface FileSystemFileHandle {
-  createWritable: () => Promise<{
-    write: (data: Blob) => Promise<void>;
-    close: () => Promise<void>;
-  }>;
-}
-
-interface WindowWithSavePicker extends Window {
-  showSaveFilePicker?: (opts: {
-    suggestedName?: string;
-    types?: Array<{ description?: string; accept: Record<string, string[]> }>;
-  }) => Promise<FileSystemFileHandle>;
-}
-
 const REVOKE_DELAY_MS = 60_000;
+
+export function sanitizeDownloadFilename(filename: string, defaultName = 'document.pdf'): string {
+  if (!filename || typeof filename !== 'string') return defaultName;
+  // Strip control characters, quotes, and invalid path separators that cause browser download rejections
+  const cleaned = filename
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned || defaultName;
+}
 
 export async function downloadBlob(
   blob: Blob,
   filename: string,
-  options?: { fallbackOnly?: boolean }
+  _options?: { fallbackOnly?: boolean }
 ): Promise<void> {
-  const w = window as WindowWithSavePicker;
-
-  // File System Access API path (Chromium desktop only).
-  if (!options?.fallbackOnly && typeof w.showSaveFilePicker === 'function') {
-    try {
-      const handle = await w.showSaveFilePicker({
-        suggestedName: filename,
-        types: [
-          {
-            description: 'File',
-            accept: { [blob.type || 'application/octet-stream']: [getExt(filename)] },
-          },
-        ],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      return;
-    } catch (err) {
-      // User cancelled, or permission denied. Fall through to anchor method.
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      // Otherwise continue to fallback.
-    }
-  }
-
-  // Fallback: blob URL + anchor click + delayed revoke.
+  // Reliable universal download using Blob URL and hidden anchor tag.
+  // Works cleanly in all browsers, mobile devices, and sandboxed iframes.
+  const safeFilename = sanitizeDownloadFilename(filename);
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename;
+  link.download = safeFilename;
   link.rel = 'noopener';
-  // For Safari support we set the download attribute but also need to
-  // dispatch a real mouse event.
+  link.target = '_blank';
   link.style.display = 'none';
   document.body.appendChild(link);
-  link.click();
 
-  // Delay revoke so the browser has time to fetch the blob.
+  try {
+    link.click();
+  } catch {
+    // If programmatic click was disallowed by sandboxing or security policy, open in new tab
+    try {
+      window.open(url, '_blank');
+    } catch {
+      // Best-effort fallback
+    }
+  }
+
+  // Generous delay before revoke to ensure browser download manager has completed reading the stream.
   window.setTimeout(() => {
     if (link.parentNode) link.parentNode.removeChild(link);
     URL.revokeObjectURL(url);
@@ -94,9 +76,4 @@ export async function downloadBlobsSequentially(
     await downloadBlob(item.blob, item.filename, { fallbackOnly: true });
     if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
   }
-}
-
-function getExt(filename: string): string {
-  const m = filename.match(/\.([a-zA-Z0-9]+)$/);
-  return m ? `.${m[1].toLowerCase()}` : '';
 }

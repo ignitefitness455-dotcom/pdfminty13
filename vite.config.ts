@@ -1,3 +1,4 @@
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -184,6 +185,12 @@ export default defineConfig({
     injectSwVersion(),
     devApiPlugin(),
     generateSitemapPlugin(),
+    visualizer({
+      filename: 'dist/stats.html',
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
   ],
   build: {
     outDir: 'dist',
@@ -199,33 +206,49 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('pdf-lib') || id.includes('@cantoo/pdf-lib')) {
-              return 'vendor-pdflib';
-            }
-            if (id.includes('pdfjs-dist')) {
-              return 'vendor-pdfjs';
+            // Group all PDF processing engines into vendor-pdf (loaded only when tool accessed)
+            if (
+              id.includes('pdfjs-dist') ||
+              id.includes('pdf-lib') ||
+              id.includes('@cantoo/pdf-lib') ||
+              id.includes('fabric') ||
+              id.includes('jszip')
+            ) {
+              return 'vendor-pdf';
             }
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'vendor-react';
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('jszip')) {
-              return 'vendor-jszip';
-            }
-            if (id.includes('@google/genai')) {
-              return 'vendor-genai';
-            }
             if (id.includes('i18next') || id.includes('react-i18next')) {
               return 'vendor-i18n';
             }
-            if (id.includes('fabric')) {
-              return 'vendor-fabric';
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
             }
             if (id.includes('signature_pad')) {
               return 'vendor-sigpad';
             }
+            if (id.includes('@google/genai')) {
+              return 'vendor-genai';
+            }
+          }
+
+          // Content & Locales chunking
+          if (
+            id.includes('/locales/de/') ||
+            id.includes('/locales/fr/') ||
+            id.includes('/locales/es/') ||
+            id.includes('/locales/bn/') ||
+            id.includes('/locales/hi/') ||
+            id.includes('/locales/zh/')
+          ) {
+            return 'locales-multilingual';
+          }
+          if (id.includes('/locales/en/')) {
+            return 'locales-en';
+          }
+          if (id.includes('/src/config/seo-data')) {
+            return 'app-seo-data';
           }
           return undefined;
         },

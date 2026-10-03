@@ -1,4 +1,13 @@
-import { ShieldCheck, Calendar, Clock, Share2, Check, UserCheck, ChevronRight, MapPin } from 'lucide-react';
+import {
+  ShieldCheck,
+  Calendar,
+  Clock,
+  Share2,
+  Check,
+  UserCheck,
+  ChevronRight,
+  MapPin,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
@@ -225,13 +234,17 @@ export const BlogPostPage: React.FC = () => {
                   <span className="text-slate-300 dark:text-slate-700">•</span>
                   <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-0.5">
                     <MapPin className="w-3 h-3 text-rose-500 inline" />
-                    <span>{PRIMARY_AUTHOR.city}, {PRIMARY_AUTHOR.country}</span>
+                    <span>
+                      {PRIMARY_AUTHOR.city}, {PRIMARY_AUTHOR.country}
+                    </span>
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   <span>{PRIMARY_AUTHOR.jobTitle}</span>
                   <span>•</span>
-                  <span>{t('blog.teamSubtitle', { defaultValue: 'Reviewed by Security Team' })}</span>
+                  <span>
+                    {t('blog.teamSubtitle', { defaultValue: 'Reviewed by Security Team' })}
+                  </span>
                 </div>
               </div>
             </div>

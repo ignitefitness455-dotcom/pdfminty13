@@ -121,26 +121,72 @@ export const PrivacyPolicyPage: React.FC = () => {
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Shield className="w-5 h-5 text-emerald-500" />
-              {t('privacyPolicy.secCmpTitle', { defaultValue: 'Consent Management Platform & Cookie Preferences (EEA & UK)' })}
+              {t('privacyPolicy.secCmpTitle', {
+                defaultValue: 'Consent Management Platform & Cookie Preferences (EEA & UK)',
+              })}
             </h2>
             <div className="space-y-3">
               <p>
                 {t('privacyPolicy.secCmpIntro', {
                   defaultValue:
-                    'For visitors located in the European Economic Area (EEA), the United Kingdom, and Switzerland, PdfMinty deploys a Google-Certified Consent Management Platform (CMP) that adheres to the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.',
+                    'For visitors located in the European Economic Area (EEA), the United Kingdom, and Switzerland, PdfMinty deploys a Google-Certified Consent Management Platform (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — in strict adherence to the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.',
                 })}
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  <strong>Consent Signals:</strong> Technical signals (<code>ad_storage</code>, <code>analytics_storage</code>, <code>ad_user_data</code>, and <code>ad_personalization</code>) are default-restricted until you provide affirmative consent via the consent dialog.
+                  <strong>CMP Provider &amp; Certification:</strong> Our consent management
+                  infrastructure is provided by{' '}
+                  <a
+                    href="https://www.cookiebot.com/en/privacy-policy/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                  >
+                    Cookiebot by Usercentrics
+                  </a>{' '}
+                  (IAB TCF ID: 134), certified under Google&apos;s Consent Management Requirements
+                  for publishers serving ads in the EEA and UK.
                 </li>
                 <li>
-                  <strong>Withdrawing or Modifying Consent:</strong> You may adjust or revoke your consent preferences at any time by clicking the <em>Cookie &amp; Privacy Preferences</em> link in our website footer or by clearing your browser cache.
+                  <strong>Default Privacy Protection:</strong> Under Google Consent Mode v2, all
+                  advertising signals (<code>ad_storage</code>, <code>ad_user_data</code>, and{' '}
+                  <code>ad_personalization</code>) remain denied by default until you grant
+                  affirmative consent. Core PDF processing runs 100% locally in your browser and
+                  requires no cookies.
                 </li>
                 <li>
-                  <strong>Non-Personalized Ads:</strong> If you decline consent, only non-personalized contextual ads are served, and cookies are restricted solely to fraud prevention and frequency capping.
+                  <strong>Granular Controls:</strong> You can independently control permissions for
+                  advertising cookies, user identifiers, and anonymous analytics storage (
+                  <code>analytics_storage</code>).
+                </li>
+                <li>
+                  <strong>Revisiting or Revoking Consent:</strong> You have the right to modify or
+                  revoke your consent at any time. You can click the button below, use the
+                  &ldquo;Cookie &amp; Privacy Preferences&rdquo; link in our footer, or clear your
+                  browser cache.
                 </li>
               </ul>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const win = window as unknown as { openCookiePreferences?: () => void };
+                    if (typeof win.openCookiePreferences === 'function') {
+                      win.openCookiePreferences();
+                    } else {
+                      window.dispatchEvent(new CustomEvent('open-cmp-preferences'));
+                    }
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>
+                    {t('consentBanner.managePreferences', {
+                      defaultValue: 'Manage Cookie & Privacy Preferences',
+                    })}
+                  </span>
+                </button>
+              </div>
             </div>
           </section>
 

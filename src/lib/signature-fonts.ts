@@ -81,7 +81,10 @@ export function loadSingleSignatureFont(fontName: string): void {
  * Checks and waits until a specific font is loaded and ready in document.fonts.
  * Fallback to resolve after timeout if network is slow or offline.
  */
-export async function ensureFontLoaded(fontFamily: string, sampleText = 'Signature'): Promise<boolean> {
+export async function ensureFontLoaded(
+  fontFamily: string,
+  sampleText = 'Signature'
+): Promise<boolean> {
   if (typeof document === 'undefined' || !('fonts' in document)) {
     return true;
   }
@@ -93,7 +96,9 @@ export async function ensureFontLoaded(fontFamily: string, sampleText = 'Signatu
 
   try {
     const loadPromise = document.fonts.load(fontSpec, sampleText);
-    const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2000));
+    const timeoutPromise = new Promise<boolean>((resolve) =>
+      setTimeout(() => resolve(false), 2000)
+    );
     await Promise.race([loadPromise, timeoutPromise]);
     return document.fonts.check(fontSpec, sampleText);
   } catch {
@@ -111,9 +116,7 @@ export function useSignatureFonts(): { isLoaded: boolean } {
     loadSignatureFonts();
 
     if (typeof document !== 'undefined' && 'fonts' in document) {
-      document.fonts.ready
-        .then(() => setIsLoaded(true))
-        .catch(() => setIsLoaded(true));
+      document.fonts.ready.then(() => setIsLoaded(true)).catch(() => setIsLoaded(true));
     } else {
       setIsLoaded(true);
     }

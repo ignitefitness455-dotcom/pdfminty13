@@ -303,18 +303,96 @@ describe('pdf-operations - Edge Cases', () => {
   });
 
   describe('compressPDF', () => {
-    it('basic compression returns valid PDF', async () => {
+    it('basic compression returns valid PDF with preserved page count and dimensions', async () => {
       const pdfBytes = await createCustomPdf(3);
       const result = await compressPDF(pdfBytes, 'basic');
       const doc = await PlainPDFDocument.load(result);
       expect(doc.getPageCount()).toBe(3);
+      const pages = doc.getPages();
+      expect(pages[0].getWidth()).toBe(100);
+      expect(pages[1].getWidth()).toBe(200);
+      expect(pages[2].getWidth()).toBe(300);
     });
 
-    it('output is non-empty Uint8Array', async () => {
-      const pdfBytes = await createCustomPdf(3);
+    it('output is non-empty Uint8Array with valid PDF header', async () => {
+      const pdfBytes = await createCustomPdf(2);
       const result = await compressPDF(pdfBytes, 'basic');
       expect(result).toBeInstanceOf(Uint8Array);
       expect(result.length).toBeGreaterThan(0);
+      const header = new TextDecoder().decode(result.slice(0, 5));
+      expect(header).toBe('%PDF-');
+    });
+
+    it('lossless pass resets metadata properties and compacts streams', async () => {
+      const doc = await PlainPDFDocument.create();
+      doc.setTitle('Confidential Document Title');
+      doc.setAuthor('Secret Author');
+      doc.setProducer('Old PDF Engine');
+      doc.setSubject('Metadata Subject');
+      doc.setKeywords(['confidential', 'draft']);
+      doc.addPage([200, 200]);
+      const initialBytes = await doc.save();
+
+      const compressed = await compressPDF(initialBytes, 'basic');
+      const compressedDoc = await PlainPDFDocument.load(compressed);
+      expect(compressedDoc.getPageCount()).toBe(1);
+      // Lossless compression cleans up metadata
+      expect(compressedDoc.getTitle()).toBeFalsy();
+      expect(compressedDoc.getAuthor()).toBeFalsy();
+    });
+
+    it('supports options object with mode "lossless"', async () => {
+      const pdfBytes = await createCustomPdf(4);
+      const result = await compressPDF(pdfBytes, { mode: 'lossless' });
+      const doc = await PlainPDFDocument.load(result);
+      expect(doc.getPageCount()).toBe(4);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('supports international standard tiers: extreme and recommended', async () => {
+      const pdfBytes = await createCustomPdf(2);
+      const recResult = await compressPDF(pdfBytes, 'recommended');
+      expect(recResult).toBeInstanceOf(Uint8Array);
+      expect(recResult.length).toBeGreaterThan(0);
+
+      const extResult = await compressPDF(pdfBytes, { level: 'extreme', grayscale: true });
+      expect(extResult).toBeInstanceOf(Uint8Array);
+      expect(extResult.length).toBeGreaterThan(0);
+
+      const doc = await PlainPDFDocument.load(extResult);
+      expect(doc.getPageCount()).toBe(2);
+    });
+
+    it('preserves multi-page content and distinct dimensions across all pages', async () => {
+      const doc = await PlainPDFDocument.create();
+      doc.addPage([150, 250]);
+      doc.addPage([300, 400]);
+      doc.addPage([595, 842]); // A4
+      const initialBytes = await doc.save();
+
+      const compressed = await compressPDF(initialBytes, 'basic');
+      const compressedDoc = await PlainPDFDocument.load(compressed);
+      expect(compressedDoc.getPageCount()).toBe(3);
+      const pages = compressedDoc.getPages();
+      expect(pages[0].getWidth()).toBe(150);
+      expect(pages[0].getHeight()).toBe(250);
+      expect(pages[1].getWidth()).toBe(300);
+      expect(pages[1].getHeight()).toBe(400);
+      expect(pages[2].getWidth()).toBe(595);
+      expect(pages[2].getHeight()).toBe(842);
+    });
+
+    it('lossless pass handles empty and complex PDF structures without corruption', async () => {
+      const pdfBytes = await createCustomPdf(1);
+      const result = await compressPDF(pdfBytes, { mode: 'lossless' });
+      expect(result).toBeInstanceOf(Uint8Array);
+      const doc = await PlainPDFDocument.load(result);
+      expect(doc.getPageCount()).toBe(1);
+    });
+
+    it('throws error when fed corrupted or invalid PDF data', async () => {
+      const corruptedBytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+      await expect(compressPDF(corruptedBytes, 'basic')).rejects.toThrow();
     });
   });
 

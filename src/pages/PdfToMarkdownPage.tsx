@@ -1,4 +1,3 @@
-import JSZip from 'jszip';
 import {
   FileCode2,
   AlertCircle,
@@ -393,6 +392,7 @@ export const PdfToMarkdownPage: React.FC = () => {
     const baseName = selectedFile.name.replace(/\.pdf$/i, '');
 
     if (extractImages && images.length > 0) {
+      const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
       zip.file(`${baseName}.md`, markdownText);
       for (const img of images) {

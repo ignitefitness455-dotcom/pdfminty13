@@ -29,6 +29,7 @@ import { useLocation } from 'react-router-dom';
 import { TOOLS } from '../config/seo-data';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
 
+import { ConsentManager } from './ConsentManager';
 import { FeedbackModal } from './FeedbackModal';
 import { Footer } from './Footer';
 import { Header } from './Header';
@@ -211,6 +212,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Footer setShowFeedbackModal={setShowFeedbackModal} />
 
         <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
+        <ConsentManager />
       </div>
     </LayoutContext.Provider>
   );

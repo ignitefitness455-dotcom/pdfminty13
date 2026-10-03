@@ -101,11 +101,11 @@ export function generateSitemapXml(): SitemapGenerationResult {
   const staticRoutes: Array<{ path: string; priority: string; changefreq: string; lastmod?: string; isI18n?: boolean }> = [
     { path: '/', priority: '1.0', changefreq: 'daily', isI18n: true, lastmod: today },
     { path: '/blog/', priority: '0.9', changefreq: 'daily', lastmod: today },
-    { path: '/adobe-acrobat-alternative/', priority: '0.8', changefreq: 'weekly', lastmod: '2026-08-08' },
-    { path: '/about-us/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-08-08' },
-    { path: '/contact/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-08-08' },
-    { path: '/privacy-policy/', priority: '0.3', changefreq: 'monthly', lastmod: '2026-08-08' },
-    { path: '/terms-of-service/', priority: '0.3', changefreq: 'monthly', lastmod: '2026-08-08' },
+    { path: '/adobe-acrobat-alternative/', priority: '0.8', changefreq: 'weekly', lastmod: '2026-09-28' },
+    { path: '/about-us/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-09-28' },
+    { path: '/contact/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-09-28' },
+    { path: '/privacy-policy/', priority: '0.3', changefreq: 'monthly', lastmod: '2026-09-28' },
+    { path: '/terms-of-service/', priority: '0.3', changefreq: 'monthly', lastmod: '2026-09-28' },
   ];
 
   const homepageHreflangs = getHreflangs('', baseUrl);
@@ -178,7 +178,10 @@ export function generateSitemapXml(): SitemapGenerationResult {
 
     const priority = isBlogOrCompare ? '0.8' : '0.9';
     const changefreq = 'weekly';
-    const lastmod = item.dateModified || item.datePublished || today;
+    // For blog and comparison articles, strictly use the article's actual content modification date (or published date), NEVER a build-time timestamp
+    const lastmod = isBlogOrCompare
+      ? (item.dateModified || item.datePublished)
+      : (item.dateModified || item.datePublished || today);
     const ogImage = item.ogImage
       ? (item.ogImage.startsWith('http') ? item.ogImage : `${baseUrl}${item.ogImage.startsWith('/') ? item.ogImage : `/${item.ogImage}`}`)
       : `${baseUrl}/og-image.png`;

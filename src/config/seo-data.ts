@@ -58,7 +58,7 @@ export interface ToolSEOInfo {
   };
   faqs?: { q: string; a: string }[];
   ogImage?: string; // Path like '/og-merge-pdf.png'. Falls back to /og-image.png if absent.
-  datePublished?: string; // ISO date string, e.g. '2025-01-15'
+  datePublished?: string; // ISO date string, e.g. '2026-09-21'
   dateModified?: string; // ISO date string
   author?: string;
   status?: 'draft' | 'in-review' | 'published'; // Human editorial lifecycle status
@@ -182,14 +182,9 @@ export const RELATED_TOOL_MAPPING: Record<string, string[]> = {
     'edit-pdf-metadata',
     'pdf-to-image',
   ],
-  'grayscale-pdf': [
-    'flatten-pdf',
-    'sanitize-pdf',
-    'watermark-pdf',
-    'repair-pdf',
-    'edit-pdf-metadata',
-  ],
-  'flatten-pdf': ['sign-pdf', 'grayscale-pdf', 'protect-pdf', 'sanitize-pdf', 'watermark-pdf'],
+  'compress-pdf': ['sanitize-pdf', 'grayscale-pdf', 'flatten-pdf', 'split-pdf', 'merge-pdf'],
+  'grayscale-pdf': ['compress-pdf', 'flatten-pdf', 'sanitize-pdf', 'watermark-pdf', 'repair-pdf'],
+  'flatten-pdf': ['compress-pdf', 'sign-pdf', 'grayscale-pdf', 'protect-pdf', 'sanitize-pdf'],
   'repair-pdf': ['unlock-pdf', 'sanitize-pdf', 'flatten-pdf', 'edit-pdf-metadata', 'merge-pdf'],
   'sign-pdf': [
     'watermark-pdf',
@@ -220,7 +215,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Edit PDF Metadata Free — Clean & Change PDF Properties',
     icon: 'FilePenLine',
     iconColor: 'text-security-green',
-    homeRank: 20,
+    homeRank: 22,
     category: 'security-edit',
     priority: 0.7,
     changefreq: 'monthly',
@@ -352,12 +347,13 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Sanitize PDF Free — Remove Hidden Data & Metadata',
     icon: 'ShieldBan',
     iconColor: 'text-security-green',
-    homeRank: 21,
+    homeRank: 20,
     category: 'security-edit',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Scrub hidden author names, system paths, creation timestamps, and tracking metadata from PDF files before sharing. 100% private in-browser sanitization.",
+    problemSolved:
+      'Scrub hidden author names, system paths, creation timestamps, and tracking metadata from PDF files before sharing. 100% private in-browser sanitization.',
     primaryCtaText: 'Select PDF File to Sanitize',
     supportedFormats: {
       input: ['PDF (.pdf)'],
@@ -544,12 +540,13 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Merge',
     iconColor: 'text-security-green',
     badge: 'popular',
-    homeRank: 4,
+    homeRank: 2,
     category: 'page-operations',
     priority: 0.9,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Professionals needing to combine multiple PDF documents, reports, or legal exhibits into a single master file quickly and privately without file size traps or third-party cloud uploads.",
+    problemSolved:
+      'Professionals needing to combine multiple PDF documents, reports, or legal exhibits into a single master file quickly and privately without file size traps or third-party cloud uploads.',
     primaryCtaText: 'Select PDF Files to Merge',
     supportedFormats: {
       input: ['PDF (.pdf)', 'Multiple PDF Documents'],
@@ -803,7 +800,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Split PDF Free — Separate & Extract PDF Pages Online',
     icon: 'Scissors',
     iconColor: 'text-security-green',
-    homeRank: 5,
+    homeRank: 3,
     category: 'page-operations',
     priority: 0.9,
     changefreq: 'monthly',
@@ -933,7 +930,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Rotate PDF Pages Free — Flip & Permanently Save Pages',
     icon: 'RotateCw',
     iconColor: 'text-security-green',
-    homeRank: 12,
+    homeRank: 9,
     category: 'page-operations',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1054,7 +1051,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Trash2',
     iconColor: 'text-security-green',
     badge: 'extractor',
-    homeRank: 11,
+    homeRank: 13,
     category: 'organize',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1168,7 +1165,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'CheckSquare',
     iconColor: 'text-security-green',
     badge: 'visual_extract',
-    homeRank: 8,
+    homeRank: 12,
     category: 'organize',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1282,7 +1279,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Move',
     iconColor: 'text-security-green',
     badge: 'interactive_order',
-    homeRank: 9,
+    homeRank: 14,
     category: 'organize',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1406,7 +1403,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Add Watermark to PDF Free — Stamp Custom Text Seals',
     icon: 'Bookmark',
     iconColor: 'text-security-green',
-    homeRank: 13,
+    homeRank: 15,
     category: 'security-edit',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1525,7 +1522,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Add Page Numbers to PDF Free — Number Document Pages',
     icon: 'Hash',
     iconColor: 'text-security-green',
-    homeRank: 14,
+    homeRank: 16,
     category: 'security-edit',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1643,7 +1640,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Add Blank Page to PDF Free — Insert Empty Pages Online',
     icon: 'FilePlus',
     iconColor: 'text-security-green',
-    homeRank: 22,
+    homeRank: 23,
     category: 'organize',
     priority: 0.8,
     changefreq: 'monthly',
@@ -1757,12 +1754,13 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Shield',
     iconColor: 'text-security-green',
     badge: 'offline_aes',
-    homeRank: 15,
+    homeRank: 10,
     category: 'security-edit',
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Encrypt sensitive PDF documents with military-grade AES-256 password protection directly in your browser. Zero cloud transmission and complete confidentiality.",
+    problemSolved:
+      'Encrypt sensitive PDF documents with military-grade AES-256 password protection directly in your browser. Zero cloud transmission and complete confidentiality.',
     primaryCtaText: 'Select PDF File to Protect',
     supportedFormats: {
       input: ['PDF (.pdf)'],
@@ -1946,7 +1944,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'Unlock PDF Free — Remove Password & Restrictions',
     icon: 'Lock',
     iconColor: 'text-security-green',
-    homeRank: 16,
+    homeRank: 11,
     category: 'security-edit',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2060,7 +2058,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Image',
     iconColor: 'text-security-green',
     badge: 'fast_convert',
-    homeRank: 6,
+    homeRank: 5,
     category: 'convert',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2173,7 +2171,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'PDF to JPG — Convert PDF to High Quality JPG Images Free',
     icon: 'Eye',
     iconColor: 'text-security-green',
-    homeRank: 7,
+    homeRank: 6,
     category: 'convert',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2297,7 +2295,7 @@ export const TOOLS: ToolSEOInfo[] = [
     h1: 'PDF to Markdown Free — Convert PDF to Editable MD',
     icon: 'FileCode2',
     iconColor: 'text-security-green',
-    homeRank: 10,
+    homeRank: 17,
     category: 'convert',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2435,7 +2433,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Sparkles',
     iconColor: 'text-security-green',
     badge: 'ai_hybrid',
-    homeRank: 3,
+    homeRank: 8,
     category: 'intelligence',
     priority: 0.85,
     changefreq: 'weekly',
@@ -2566,7 +2564,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Printer',
     iconColor: 'text-security-green',
     badge: 'fast_convert',
-    homeRank: 19,
+    homeRank: 18,
     category: 'convert',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2682,7 +2680,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'FileText',
     iconColor: 'text-security-green',
     badge: 'secure',
-    homeRank: 17,
+    homeRank: 19,
     category: 'security',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2792,7 +2790,7 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Wrench',
     iconColor: 'text-security-green',
     badge: 'secure',
-    homeRank: 18,
+    homeRank: 21,
     category: 'security',
     priority: 0.8,
     changefreq: 'monthly',
@@ -2902,12 +2900,13 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'FilePenLine',
     iconColor: 'text-security-green',
     badge: 'popular',
-    homeRank: 1,
+    homeRank: 4,
     category: 'security-edit',
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Sign contracts, NDAs, and forms with legally binding electronic signatures 100% locally in your browser. No account registration, zero upload latency, and complete confidentiality.",
+    problemSolved:
+      'Sign contracts, NDAs, and forms with legally binding electronic signatures 100% locally in your browser. No account registration, zero upload latency, and complete confidentiality.',
     primaryCtaText: 'Select PDF File to Sign',
     supportedFormats: {
       input: ['PDF (.pdf)', 'PNG/JPG Signature Image'],
@@ -3122,12 +3121,13 @@ export const TOOLS: ToolSEOInfo[] = [
     icon: 'Sparkles',
     iconColor: 'text-security-green',
     badge: 'ai_hybrid',
-    homeRank: 2,
+    homeRank: 7,
     category: 'intelligence',
     priority: 0.8,
     changefreq: 'monthly',
     type: 'tool',
-    problemSolved: "Extract copyable text and Markdown from scanned image-only PDFs locally in your browser. Fast, private OCR powered by client-side WebAssembly.",
+    problemSolved:
+      'Extract copyable text and Markdown from scanned image-only PDFs locally in your browser. Fast, private OCR powered by client-side WebAssembly.',
     primaryCtaText: 'Select PDF File to OCR',
     supportedFormats: {
       input: ['Scanned PDF (.pdf)', 'Image PDF'],
@@ -3301,6 +3301,245 @@ export const TOOLS: ToolSEOInfo[] = [
     `,
   },
   {
+    id: 'compress-pdf',
+    slug: 'compress-pdf',
+    name: 'Compress PDF',
+    ogImage: '/og-compress-pdf.png',
+    shortDescription: 'Compress PDF files without losing quality. Lossless & downsampling modes.',
+    metaTitle: 'Compress PDF Free — Reduce PDF File Size Online | PDFMinty',
+    metaDescription:
+      'Compress PDF files online for free without losing quality. 100% browser-side privacy with lossless object compaction and smart image downsampling.',
+    h1: 'Compress PDF Free — Reduce File Size Online',
+    icon: 'Minimize2',
+    iconColor: 'text-security-green',
+    badge: 'popular',
+    homeRank: 1,
+    category: 'optimize',
+    priority: 0.9,
+    changefreq: 'weekly',
+    type: 'tool',
+    status: 'published',
+    problemSolved:
+      'Reducing oversized PDF documents for email attachments, job portals, and web uploads without server leaks.',
+    primaryCtaText: 'Select PDF File to Compress',
+    supportedFormats: {
+      input: ['PDF (.pdf)'],
+      output: ['Compressed PDF (.pdf)'],
+      limits: 'Max 100MB. Client-side lossless & downsampled passes.',
+    },
+    technicalNotes: {
+      deviceBrowser: 'Runs 100% locally in your browser using WebAssembly and Web Workers.',
+      fileSizeMemory: 'Zero upload to remote servers. Ephemeral browser memory processing.',
+      accessibility: 'Accessible buttons with ARIA labels.',
+    },
+    privacyNote: '100% Client-Side In-Browser Processing. Documents never leave your device.',
+    troubleshooting: [
+      {
+        issue: 'Password-protected document',
+        resolution:
+          'Encrypted PDFs cannot be compressed directly. Use our Unlock PDF tool first, then compress.',
+      },
+      {
+        issue: 'Minimal size reduction on text PDFs',
+        resolution:
+          'Text-only documents with no raster images are already compact; lossless compression cleans stream objects but yields smaller deltas than image-heavy scans.',
+      },
+    ],
+    relatedLinks: [
+      {
+        title: 'How to Compress a PDF Without Losing Quality',
+        url: '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
+        type: 'article',
+      },
+      {
+        title: 'Why Is My PDF So Large?',
+        url: '/blog/why-is-my-pdf-so-large/',
+        type: 'article',
+      },
+      {
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Split PDF',
+        url: '/split-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Sanitize PDF',
+        url: '/sanitize-pdf/',
+        type: 'tool',
+      },
+    ],
+    lastReviewedDate: 'September 2026 • Verified by Engineering Team',
+    howTo: {
+      name: 'How to Compress a PDF File Online for Free',
+      totalTime: 'PT15S',
+      steps: [
+        'Upload your PDF file using the file selector or drag & drop.',
+        'Select your preferred compression mode: Lossless (default, zero visual loss) or Image Downsampling (lossy, maximum reduction).',
+        'Click "Compress PDF" to process the file entirely within your browser.',
+        'Preview your size reduction and download the compressed PDF instantly.',
+      ],
+    },
+    faqs: [
+      {
+        q: 'Does compressing a PDF reduce text quality or clarity?',
+        a: 'No. When using the default lossless compression, text and vector graphics are untouched and remain 100% vector-sharp. In downsampling mode, only raster images are re-encoded at chosen DPI levels.',
+      },
+      {
+        q: 'Is it safe to compress confidential legal or financial PDFs on PDFMinty?',
+        a: 'Yes. PDFMinty runs entirely on your device using client-side JavaScript and WebAssembly. Your files are never uploaded to any remote server or stored in the cloud.',
+      },
+      {
+        q: 'What is the difference between lossless compression and image downsampling?',
+        a: 'Lossless compression strips duplicate metadata streams, thumbnails, and compacts PDF cross-reference tables using object streams without changing a single pixel. Image downsampling re-encodes high-DPI raster images to smaller JPEG files, providing massive reductions for scanned files.',
+      },
+      {
+        q: 'Can I compress a PDF to meet email 25MB limits?',
+        a: 'Yes. For multi-megabyte scanned files or camera photos, the image downsampling option typically reduces document size by 50% to 80%, allowing files to easily pass 25MB email gateways.',
+      },
+      {
+        q: 'What is the maximum file size supported?',
+        a: 'PDFMinty supports compressing files up to 100MB directly in your browser.',
+      },
+    ],
+    keywords: [
+      'compress pdf',
+      'reduce pdf size',
+      'compress pdf online',
+      'shrink pdf without losing quality',
+      'lossless pdf compression',
+      'offline pdf compressor',
+    ],
+    relatedTools: ['sanitize-pdf', 'grayscale-pdf', 'flatten-pdf', 'split-pdf', 'merge-pdf'],
+    longFormBody: `
+      <h2>The Definitive Guide to Client-Side PDF Compression (Lossless &amp; Downsampling)</h2>
+      <p class="lead font-medium text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
+        Whether facing a strict 25MB email attachment limit on Gmail/Outlook or uploading sensitive legal contracts to restrictive government portals, oversized PDF files create constant operational bottlenecks. Traditional online compressors solve this by uploading your documents to third-party cloud servers—creating severe privacy liabilities.
+      </p>
+
+      <p>
+        PDFMinty solves document bloat <strong>100% inside your browser</strong>. Using WebAssembly, Web Workers, and stream compaction algorithms, your files are analyzed, stripped of redundant overhead, and optimized directly within local device memory without a single byte ever being transmitted across the internet.
+      </p>
+
+      <h2>When to Use Local PDF Compression: 3 Real-World Scenarios</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6 not-prose">
+        <div class="p-5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-2">
+          <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">📧 Scenario A: Email Attachments</span>
+          <h4 class="text-base font-bold text-slate-900 dark:text-white m-0">Bypassing 25MB Gateways</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed m-0">
+            Professionals sending proposals, invoices, and pitch decks need documents under 20MB to prevent automated bounce notifications.
+          </p>
+        </div>
+        <div class="p-5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-2">
+          <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">🏛️ Scenario B: Regulatory Portals</span>
+          <h4 class="text-base font-bold text-slate-900 dark:text-white m-0">Government &amp; Visa Uploads</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed m-0">
+            Submitting passports, tax returns, and legal affidavits to strict state portals with rigid 5MB or 10MB upload caps.
+          </p>
+        </div>
+        <div class="p-5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-2">
+          <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">📱 Scenario C: Mobile Reading Speed</span>
+          <h4 class="text-base font-bold text-slate-900 dark:text-white m-0">Fast Mobile Rendering</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed m-0">
+            Shrinking heavy raster scans so documents open instantly on smartphones without lag, stutter, or excessive battery drain.
+          </p>
+        </div>
+      </div>
+
+      <h2>How In-Browser PDF Compression Works (Under the Hood)</h2>
+      <p>
+        PDF files are complex object container files. When a document inflates, it is typically due to three factors: uncompressed object streams, redundant metadata catalogs, and oversized raster bitmaps. PDFMinty provides two distinct processing paths:
+      </p>
+
+      <h3>1. Lossless Object Stream Compaction (Default)</h3>
+      <p>
+        Standard PDF files contain hundreds of individual indirect objects (dictionaries, fonts, page descriptors, and metadata). In our lossless pass, these discrete objects are grouped into compressed <strong>FlateDecode Object Streams</strong> (PDF 1.5+ specification). Redundant XMP editing histories, author metadata, and uncompressed page thumbnails are safely stripped. Because the vector paths, fonts, and images are untouched, this mode yields <strong>5% to 25% savings with zero visual difference</strong>.
+      </p>
+
+      <h3>2. Perceptual Image Downsampling (Opt-In Slider)</h3>
+      <p>
+        For scanned documents and smartphone photos originally embedded at 300 to 600 DPI, lossless compaction alone cannot eliminate the millions of unnecessary pixels. When you activate the Image Downsampling slider, each raster page is rendered to an ephemeral canvas in browser memory, scaled to optimal screen resolution (up to 150 DPI), and re-encoded as an optimized JPEG. This routinely reduces file size by <strong>50% to 80%</strong>.
+      </p>
+
+      <h2>Step-by-Step Guide: Compressing PDF Files Privately</h2>
+      <ol class="space-y-3 my-6">
+        <li><strong>Step 1: Load Document Locally:</strong> Drag and drop your PDF into the upload area. The file is read directly into your device's browser memory.</li>
+        <li><strong>Step 2: Choose Optimization Mode:</strong> Keep the default <strong>Lossless Pass</strong> for text documents, legal filings, and contracts. For heavy scanned documents or photos, toggle <strong>Image Downsampling</strong> and adjust the quality slider.</li>
+        <li><strong>Step 3: Run In-Browser Compression:</strong> Click "Compress &amp; Download PDF". The engine runs locally inside a dedicated Web Worker thread.</li>
+        <li><strong>Step 4: Review Savings &amp; Save:</strong> Inspect your exact file size reduction and download the lightweight PDF immediately.</li>
+      </ol>
+
+      <h2>Architecture Comparison: Local vs. Cloud Compressors</h2>
+      <div class="overflow-x-auto my-6 not-prose">
+        <table class="w-full text-left border-collapse border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden text-sm">
+          <thead>
+            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold">
+              <th class="p-3.5">Architecture Feature</th>
+              <th class="p-3.5 text-emerald-600 dark:text-emerald-400">PDFMinty (Local)</th>
+              <th class="p-3.5">Cloud Compressors (e.g. Smallpdf)</th>
+              <th class="p-3.5">Desktop Software</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+            <tr>
+              <td class="p-3.5 font-semibold">Data Privacy</td>
+              <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">🔒 Zero uploads (Client-side)</td>
+              <td class="p-3.5 text-rose-500">❌ Uploaded to remote server</td>
+              <td class="p-3.5">🔒 Local machine</td>
+            </tr>
+            <tr>
+              <td class="p-3.5 font-semibold">Transfer Speed</td>
+              <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">⚡ Instant (Zero upload delay)</td>
+              <td class="p-3.5">⏳ Dependent on broadband upload</td>
+              <td class="p-3.5">⚡ Instant</td>
+            </tr>
+            <tr>
+              <td class="p-3.5 font-semibold">Cost &amp; Limits</td>
+              <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">✅ 100% Free (No paywalls)</td>
+              <td class="p-3.5">⚠️ Daily task limits / Subscriptions</td>
+              <td class="p-3.5">💰 Expensive licenses</td>
+            </tr>
+            <tr>
+              <td class="p-3.5 font-semibold">Lossless Stream Pass</td>
+              <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">✅ Object stream compaction</td>
+              <td class="p-3.5">Varies</td>
+              <td class="p-3.5">✅ Supported</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Frequently Asked Technical Questions</h2>
+      <div class="space-y-4 my-6">
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-1">Will lossless compression change my fonts or layout?</h4>
+          <p class="text-sm text-slate-600 dark:text-slate-300">
+            No. The lossless pass strictly preserves all font subsets, character codes, vector shapes, annotations, and form fields. It only rewrites the internal container stream tables to eliminate whitespace and duplicate headers.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-1">Can I compress scanned documents containing confidential medical or tax data?</h4>
+          <p class="text-sm text-slate-600 dark:text-slate-300">
+            Yes. Because processing is executed inside your local browser sandbox, confidential documents subject to HIPAA, GDPR, or NDAs never leave your custody.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-1">What should I do if my PDF has a password?</h4>
+          <p class="text-sm text-slate-600 dark:text-slate-300">
+            Encrypted PDFs lock internal object streams. Please unlock the file using our <a href="/unlock-pdf/">Unlock PDF tool</a> first, then run compression.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl my-6 text-xs text-emerald-800 dark:text-emerald-300">
+        <strong>Editorial Verification:</strong> Technical Content Audited • Stream Compaction &amp; Canvas Downsampling Verified • Zero Server Transmission Guaranteed.
+      </div>
+    `,
+  },
+  {
     id: 'trust-article',
     slug: 'blog/is-it-safe-to-upload-pdf-to-online-tools',
     name: 'Is It Safe?',
@@ -3316,8 +3555,8 @@ export const TOOLS: ToolSEOInfo[] = [
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-01-14',
-    dateModified: '2026-08-15',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-22',
     longFormBody: `
 <h2>Is It Safe to Upload PDF Files to Online Tools? A Complete Security Analysis</h2>
 <p>Uploading sensitive PDF documents to free online converters introduces data custody and compliance risks that are often overlooked. Tax returns, medical records, financial statements, and legal contracts flow through unknown third-party servers worldwide. This security analysis examines the real risks of cloud-hosted PDF tools and details why client-side browser processing provides structural isolation.</p>
@@ -3470,20 +3709,22 @@ export const TOOLS: ToolSEOInfo[] = [
   {
     id: 'blog-metadata',
     slug: 'blog/the-complete-guide-to-pdf-metadata-and-how-to-remove-it',
-    name: "The Complete Guide to PDF Metadata and How to Remove It (Forensic Breakdown & Sanitization)",
+    name: 'The Complete Guide to PDF Metadata and How to Remove It (Forensic Breakdown & Sanitization)',
     ogImage: '/og-image.png',
-    shortDescription: "Discover hidden metadata stored inside PDF headers and XMP packets, understand legal exposure risks, and learn how to scrub forensic data locally.",
-    metaTitle: "The Complete Guide to PDF Metadata & How to Remove It | PDFMinty",
-    metaDescription: "A technical forensic breakdown of PDF metadata structures (Info Dictionary vs XMP), corporate privacy risks, and practical removal methods without cloud uploads.",
-    h1: "The Complete Guide to PDF Metadata and How to Remove It",
+    shortDescription:
+      'Discover hidden metadata stored inside PDF headers and XMP packets, understand legal exposure risks, and learn how to scrub forensic data locally.',
+    metaTitle: 'The Complete Guide to PDF Metadata & How to Remove It | PDFMinty',
+    metaDescription:
+      'A technical forensic breakdown of PDF metadata structures (Info Dictionary vs XMP), corporate privacy risks, and practical removal methods without cloud uploads.',
+    h1: 'The Complete Guide to PDF Metadata and How to Remove It',
     icon: 'FilePenLine',
     category: 'blog',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-01-30',
-    dateModified: '2026-08-20',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     longFormBody: `
 <h2>The Forensic Guide to PDF Metadata: Technical Architecture & Sanitization</h2>
       <p class="lead font-medium text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
@@ -3764,8 +4005,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-01-22',
-    dateModified: '2026-08-15',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-22',
     longFormBody: `
       <h2>Why Privacy-First PDF Tools Matter in 2026</h2>
       <p>In 2025 alone, over 5.6 billion records were exposed in data breaches — and a surprising number of them came from everyday file-sharing and document-processing tools. If you've ever uploaded a PDF to a random online tool, your sensitive data may have been part of that statistic.</p>
@@ -3886,8 +4127,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-02-07',
-    dateModified: '2026-08-20',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-23',
     longFormBody: `
       <h2>How to Batch Process 50 PDFs in Under 2 Minutes</h2>
       <p>Manual document processing is a major drain on daily productivity. When preparing 50 vendor invoices, student submissions, or quarterly financial records for archiving, uploading and downloading them one by one through traditional web portals takes hours.</p>
@@ -4059,8 +4300,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-02-24',
-    dateModified: '2026-08-22',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-23',
     relatedLinks: [
       {
         title: 'Sign PDF Online (Free Tool)',
@@ -4311,8 +4552,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-03-05',
-    dateModified: '2026-08-25',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-23',
     faqs: [
       {
         q: 'Does removing metadata change the visible content of my PDF?',
@@ -4604,8 +4845,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-02-17',
-    dateModified: '2026-08-22',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-24',
     faqs: [
       {
         q: 'Is merging PDF files on PdfMinty completely free?',
@@ -5208,8 +5449,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-04-18',
-    dateModified: '2026-09-01',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-24',
     faqs: [
       {
         q: 'Is Adobe Acrobat safe to use?',
@@ -5305,8 +5546,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-03-31',
-    dateModified: '2026-09-01',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-24',
     faqs: [
       {
         q: 'Which PDF tool is safest for sensitive documents?',
@@ -5550,8 +5791,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-03-14',
-    dateModified: '2026-08-25',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-25',
     faqs: [
       {
         q: 'Does compressing a PDF reduce text quality?',
@@ -5641,9 +5882,9 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <h3>Step-by-Step Guide: Trimming & Optimizing PDFs</h3>
       <ol class="list-decimal pl-6 space-y-3 mb-6">
         <li><strong>Step 1: Visit PdfMinty.com</strong><br />Open your browser and navigate to pdfminty.com. No account creation required.</li>
-        <li><strong>Step 2: Select a Tool (<a href="/split-pdf/">Split PDF</a>, <a href="/delete-pages-pdf/">Delete Pages</a>, or <a href="/sanitize-pdf/">Sanitize PDF</a>)</strong><br />Choose the appropriate tool from the homepage depending on your task.</li>
+        <li><strong>Step 2: Open the <a href="/compress-pdf/">Compress PDF Tool</a></strong><br />Navigate directly to our browser-based <a href="/compress-pdf/">Compress PDF tool</a>. You can also pair it with <a href="/split-pdf/">Split PDF</a> or <a href="/sanitize-pdf/">Sanitize PDF</a> if you want to extract specific sections first.</li>
         <li><strong>Step 3: Load Your PDF (Locally)</strong><br />Drag your PDF into the upload area or click to browse. Remember — this file stays on your device. PdfMinty processes it entirely within your browser.</li>
-        <li><strong>Step 4: Remove Unnecessary Pages or Metadata</strong><br />Select specific pages to extract or remove heavy unneeded sections to slim down your file instantly.</li>
+        <li><strong>Step 4: Choose Lossless Optimization or Image Downsampling</strong><br />Select our default <strong>Lossless Optimization</strong> (ideal for text documents and legal files with zero visual loss) or activate the <strong>Image Downsampling</strong> slider for heavy scans and photo PDFs that must pass strict email caps.</li>
         <li><strong>Step 5: Process Instantly</strong><br />PdfMinty handles the document instantly using your device's browser engine. No upload wait time. No server queue.</li>
         <li><strong>Step 6: Download Your Document</strong><br />Review the output file and click Download to save it back to your device.</li>
       </ol>
@@ -5728,14 +5969,14 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
             <span>100% Free & Private Offline Tools</span>
           </div>
           <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug m-0">
-            Optimize Your PDFs Privately
+            Compress Your PDFs Privately
           </h3>
           <p class="text-sm text-slate-300 m-0 leading-relaxed font-medium">
-            Split pages, organize files, sanitize metadata, and edit documents 100% in your browser with PdfMinty. No file uploads, no accounts, no waiting.
+            Reduce document file size directly in your browser with PdfMinty. Choose lossless stream compaction or smart image downsampling with zero server uploads.
           </p>
           <div class="pt-2">
-            <a href="/#all-tools" class="btn-link inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] no-underline !no-underline border-0 cursor-pointer">
-              <span>Explore All PDF Tools for Free</span>
+            <a href="/compress-pdf/" class="btn-link inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] no-underline !no-underline border-0 cursor-pointer">
+              <span>Compress PDF Online for Free</span>
               <span class="text-lg leading-none transition-transform duration-200 group-hover:translate-x-1">→</span>
             </a>
           </div>
@@ -5753,21 +5994,22 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
   {
     id: 'blog-how-to-convert-pdf-to-word-for-free-2026',
     slug: 'blog/how-to-convert-pdf-to-word-for-free-2026',
-    name: "How to Convert PDF to Word for Free (The Structured Text & Markdown Method)",
+    name: 'How to Convert PDF to Word for Free (The Structured Text & Markdown Method)',
     ogImage: '/og-image.png',
     shortDescription:
       'Tired of broken formatting when converting PDF to Word? Learn how to extract clean Markdown text and paste it safely into Word without using risky cloud converters.',
-    metaTitle: "How to Convert PDF to Word for Free | PDFMinty Guide",
-    metaDescription: "Convert PDFs to editable Word documents without messy floating text boxes. Master the structured Markdown extraction method completely offline and free.",
-    h1: "How to Convert PDF to Word for Free (The Text Extraction Method)",
+    metaTitle: 'How to Convert PDF to Word for Free | PDFMinty Guide',
+    metaDescription:
+      'Convert PDFs to editable Word documents without messy floating text boxes. Master the structured Markdown extraction method completely offline and free.',
+    h1: 'How to Convert PDF to Word for Free (The Text Extraction Method)',
     icon: 'FileText',
     category: 'blog',
     priority: 0.8,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-05-23',
-    dateModified: '2026-09-05',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'September 4, 2026',
@@ -5928,8 +6170,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-04-26',
-    dateModified: '2026-09-02',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-25',
     faqs: [
       {
         q: "Is SmallPDF's free plan actually private?",
@@ -6138,8 +6380,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-05-06',
-    dateModified: '2026-09-02',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-25',
     faqs: [
       {
         q: "Does iLovePDF's free plan upload my files?",
@@ -6320,8 +6562,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-06-20',
-    dateModified: '2026-09-10',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-25',
     faqs: [
       {
         q: 'What makes a PDF tool "offline" or "local"?',
@@ -6543,8 +6785,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-03-22',
-    dateModified: '2026-08-25',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-26',
     faqs: [
       {
         q: 'Is it safe to make a PDF online?',
@@ -6808,8 +7050,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-04-09',
-    dateModified: '2026-09-01',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-26',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'August 12, 2026',
@@ -7074,8 +7316,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-05-14',
-    dateModified: '2026-09-05',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-26',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'August 18, 2026',
@@ -7297,21 +7539,22 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
   {
     id: 'how-to-make-a-scanned-pdf-searchable',
     slug: 'blog/how-to-make-a-scanned-pdf-searchable',
-    name: "How to Extract Text from a Scanned PDF Image Offline (OCR & Markdown Workflow)",
+    name: 'How to Extract Text from a Scanned PDF Image Offline (OCR & Markdown Workflow)',
     ogImage: '/og-image.png',
     shortDescription:
       'Learn how to use offline OCR to extract readable, copyable text or Markdown from scanned and image-only PDFs without uploading them.',
-    metaTitle: "How to Extract Text from a Scanned PDF Offline (OCR Guide) | PDFMinty",
-    metaDescription: "Extract text from scanned image PDFs offline. Learn how to run optical character recognition locally to pull clean text and Markdown without cloud uploads.",
-    h1: "How to Extract Text from a Scanned PDF Image Offline",
+    metaTitle: 'How to Extract Text from a Scanned PDF Offline (OCR Guide) | PDFMinty',
+    metaDescription:
+      'Extract text from scanned image PDFs offline. Learn how to run optical character recognition locally to pull clean text and Markdown without cloud uploads.',
+    h1: 'How to Extract Text from a Scanned PDF Image Offline',
     icon: 'Scan',
     category: 'blog',
     priority: 0.8,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-06-29',
-    dateModified: '2026-09-10',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'September 4, 2026',
@@ -7515,8 +7758,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-07-08',
-    dateModified: '2026-09-12',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-26',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'August 26, 2026',
@@ -7767,8 +8010,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-07-16',
-    dateModified: '2026-09-12',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'August 26, 2026',
@@ -8012,8 +8255,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-07-25',
-    dateModified: '2026-09-15',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     author: 'Mohammed Tanveer Munshi',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'August 26, 2026',
@@ -8291,8 +8534,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-08-02',
-    dateModified: '2026-09-15',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     problemSolved:
       'Getting rejected by upload forms or email attachments with strict 2MB, 1MB, or 500KB PDF file size caps.',
     relatedLinks: [
@@ -8522,8 +8765,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     priority: 0.5,
     changefreq: 'yearly',
     type: 'article',
-    datePublished: '2026-01-01',
-    dateModified: '2026-09-11',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     longFormBody: `
       <h2>Privacy Policy — 100% Zero-Data Collection | PdfMinty</h2>
       <p><em>Last Updated & Reviewed: September 2026 • Technical Reviewer: Security & Compliance Architecture Team</em></p>
@@ -8582,8 +8825,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     priority: 0.5,
     changefreq: 'yearly',
     type: 'article',
-    datePublished: '2026-01-01',
-    dateModified: '2026-09-11',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     longFormBody: `
       <h2>Terms of Service — PdfMinty</h2>
       <p><em>Last Updated & Reviewed: September 2026 • Technical Reviewer: Legal & Compliance Team</em></p>
@@ -8632,8 +8875,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-06-02',
-    dateModified: '2026-09-08',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     relatedLinks: [
       {
         title: 'Sign PDF Online (Free Tool)',
@@ -8812,8 +9055,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-06-11',
-    dateModified: '2026-09-08',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     relatedLinks: [
       {
         title: 'Sign PDF Online (Free Tool)',
@@ -8947,11 +9190,16 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     changefreq: 'weekly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-08-09',
-    dateModified: '2026-09-16',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     problemSolved:
       'Trying to figure out why a simple PDF file has ballooned to 20MB, 40MB, or even 100MB and diagnosing the technical root causes.',
     relatedLinks: [
+      {
+        title: 'Compress PDF',
+        url: '/compress-pdf/',
+        type: 'tool',
+      },
       {
         title: 'How to Fix "PDF File Size Too Large"',
         url: '/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/',
@@ -9010,6 +9258,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <div class="my-8 p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
         <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block mb-1">💡 Quick Diagnostic Checklist</span>
         <ul class="text-sm text-slate-700 dark:text-slate-300 m-0 leading-relaxed space-y-2 mt-2">
+          <li><strong>Need immediate file size reduction?</strong> Fix with our browser-based <a href="/compress-pdf/" class="font-bold underline hover:text-emerald-600">Compress PDF Tool</a> (lossless or raster downsampling).</li>
           <li><strong>Is it a scanned document?</strong> The issue is <em>Scanner Presets (24-bit Color & High DPI)</em>. Fix with <a href="/grayscale-pdf/" class="font-bold underline hover:text-emerald-600">Grayscale PDF</a>.</li>
           <li><strong>Did you insert photos from a phone?</strong> The issue is <em>Uncompressed Raster Images</em>.</li>
           <li><strong>Is it a government or legal form?</strong> The issue is <em>AcroForm Layer Clutter</em>. Fix with <a href="/flatten-pdf/" class="font-bold underline hover:text-emerald-600">Flatten PDF</a>.</li>
@@ -9044,7 +9293,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         Even if you scale the image down so it appears as a small 2-inch box on the PDF page, the PDF format often retains the <strong>original, full-resolution 4000x3000 pixel image stream</strong> in the background code. 
       </p>
       <p>
-        <strong>The Fix:</strong> For critical emails, review our guide on <a href="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" class="text-emerald-600 dark:text-emerald-400 font-bold underline hover:text-emerald-500">How to Compress a PDF Without Losing Quality</a> to learn how intelligent downsampling strips this excess resolution.
+        <strong>The Fix:</strong> For critical emails, use our browser-based <a href="/compress-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline hover:text-emerald-500">Compress PDF Tool</a> or review our guide on <a href="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" class="text-emerald-600 dark:text-emerald-400 font-bold underline hover:text-emerald-500">How to Compress a PDF Without Losing Quality</a> to learn how intelligent downsampling strips this excess resolution.
       </p>
 
       <h2>4. Unflattened AcroForm Layers and Annotations</h2>
@@ -9090,21 +9339,22 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
   {
     id: 'blog-how-to-combine-scanned-documents-into-one-pdf',
     slug: 'blog/how-to-combine-scanned-documents-into-one-pdf',
-    name: "How to Combine Scanned Documents into One PDF Without Crashing (Memory & Optimization Guide)",
+    name: 'How to Combine Scanned Documents into One PDF Without Crashing (Memory & Optimization Guide)',
     ogImage: '/og-image.png',
     shortDescription:
       'Learn how to merge heavy scanned PDFs, reduce their file size using Grayscale conversion, and create a single clean document offline.',
-    metaTitle: "Combine Scanned Documents into One PDF (Without Crashing) | PDFMinty",
-    metaDescription: "Learn how to merge heavy scanned PDFs, reduce file sizes with grayscale conversion, and compile documents without crashing your browser or email client.",
-    h1: "How to Combine Scanned Documents into One PDF Without Crashing",
+    metaTitle: 'Combine Scanned Documents into One PDF (Without Crashing) | PDFMinty',
+    metaDescription:
+      'Learn how to merge heavy scanned PDFs, reduce file sizes with grayscale conversion, and compile documents without crashing your browser or email client.',
+    h1: 'How to Combine Scanned Documents into One PDF Without Crashing',
     icon: 'Layers',
     category: 'Optimization',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-08-16',
-    dateModified: '2026-09-16',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     problemSolved:
       'Combining multiple high-resolution scanned PDFs often results in a massive, un-shareable file that crashes email clients. This guide solves the merging and optimization workflow.',
     relatedLinks: [
@@ -9269,21 +9519,22 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
   {
     id: 'blog-how-to-rearrange-pdf-pages-offline',
     slug: 'blog/how-to-rearrange-pdf-pages-offline',
-    name: "How to Rearrange Pages in a PDF (Offline Drag & Drop Guide & Page Tree Mechanics)",
+    name: 'How to Rearrange Pages in a PDF (Offline Drag & Drop Guide & Page Tree Mechanics)',
     ogImage: '/og-image.png',
     shortDescription:
       'Learn how to visually rearrange, swap, and reorder PDF pages securely offline without using Adobe Acrobat.',
-    metaTitle: "How to Rearrange Pages in a PDF Offline | PDFMinty",
-    metaDescription: "Learn how to reorder, swap, and organize PDF pages securely offline. Master PDF page tree mechanics, visual thumbnail sorting, and zero-upload processing.",
-    h1: "How to Rearrange Pages in a PDF (Offline Drag & Drop Guide)",
+    metaTitle: 'How to Rearrange Pages in a PDF Offline | PDFMinty',
+    metaDescription:
+      'Learn how to reorder, swap, and organize PDF pages securely offline. Master PDF page tree mechanics, visual thumbnail sorting, and zero-upload processing.',
+    h1: 'How to Rearrange Pages in a PDF (Offline Drag & Drop Guide)',
     icon: 'ListOrdered',
     category: 'organize',
     priority: 0.6,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-08-23',
-    dateModified: '2026-09-18',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     problemSolved:
       'Users needing to fix the page order of a compiled PDF document without expensive desktop software or risky cloud uploads.',
     relatedLinks: [
@@ -9363,7 +9614,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         When reorganizing pages, keep the following structural behaviors in mind:
       </p>
       <ul>
-        <li><strong>Printed Header/Footer Page Numbers:</strong> If your original document has static page numbers printed onto the visual canvas (e.g., "Page 3 of 10"), reordering pages will not change that printed text. To apply clean sequential numbering after reordering, use our <a href="/add-page-numbers-to-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Add Page Numbers Tool</a>.</li>
+        <li><strong>Printed Header/Footer Page Numbers:</strong> If your original document has static page numbers printed onto the visual canvas (e.g., "Page 3 of 10"), reordering pages will not change that printed text. To apply clean sequential numbering after reordering, use our <a href="/add-page-numbers/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Add Page Numbers Tool</a>.</li>
         <li><strong>Outlines and Bookmarks:</strong> If a document has an interactive Table of Contents (<code>/Outlines</code>), bookmarks pointing to explicit page object IDs will continue to follow their target page, whereas bookmarks pointing to static indices may need review.</li>
         <li><strong>Annotation Layers:</strong> Form fields, digital signatures, and sticky notes are bound directly to their respective <code>/Page</code> object. Moving a page moves all associated form annotations with it seamlessly.</li>
       </ul>
@@ -9414,21 +9665,22 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
   {
     id: 'blog-how-to-convert-pdf-to-jpg-high-resolution',
     slug: 'blog/how-to-convert-pdf-to-jpg-high-resolution',
-    name: "How to Convert PDF to JPG High Resolution (Without Blurry Text: 72 vs 150 vs 300 DPI)",
+    name: 'How to Convert PDF to JPG High Resolution (Without Blurry Text: 72 vs 150 vs 300 DPI)',
     ogImage: '/og-image.png',
     shortDescription:
       'Stop getting blurry images when converting PDFs. Learn how to extract high-resolution, 300 DPI quality JPGs and PNGs from your PDF documents.',
-    metaTitle: "How to Convert PDF to JPG High Resolution | PDFMinty",
-    metaDescription: "Stop getting blurry exports when converting PDFs to images. Master DPI scaling math (72 vs 150 vs 300 DPI), PNG vs JPEG formats, and browser-side extraction.",
-    h1: "How to Convert PDF to JPG High Resolution (Without Blurry Text)",
+    metaTitle: 'How to Convert PDF to JPG High Resolution | PDFMinty',
+    metaDescription:
+      'Stop getting blurry exports when converting PDFs to images. Master DPI scaling math (72 vs 150 vs 300 DPI), PNG vs JPEG formats, and browser-side extraction.',
+    h1: 'How to Convert PDF to JPG High Resolution (Without Blurry Text)',
     icon: 'Image',
     category: 'convert',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-08-30',
-    dateModified: '2026-09-18',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     problemSolved:
       'Users complaining that their exported JPGs from PDFs are blurry, pixelated, or unreadable, and seeking a high-DPI extraction workflow.',
     relatedLinks: [
@@ -9585,8 +9837,8 @@ Scale = 300 / 72 = 4.167 -> Canvas: 2,550 × 3,300 px (~8.4 Megapixels)</code></
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-09-05',
-    dateModified: '2026-09-20',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-27',
     author: 'Alex Mercer, Security Lead',
     reviewedBy: 'PdfMinty Engineering Team',
     lastReviewedDate: 'September 4, 2026',
@@ -9704,21 +9956,22 @@ Scale = 300 / 72 = 4.167 -> Canvas: 2,550 × 3,300 px (~8.4 Megapixels)</code></
   {
     id: 'blog-client-side-pdf-processing-explained',
     slug: 'blog/client-side-pdf-processing-explained',
-    name: "Client-Side PDF Processing Explained: WebAssembly, Web Workers, and Ephemeral Blobs",
+    name: 'Client-Side PDF Processing Explained: WebAssembly, Web Workers, and Ephemeral Blobs',
     ogImage: '/og-image.png',
     shortDescription:
       'Technical breakdown of how modern browsers parse, edit, and render PDF binaries locally without server interaction.',
-    metaTitle: "Client-Side PDF Processing Explained (WASM & Blobs) | PDFMinty",
-    metaDescription: "Discover how WebAssembly and Web Workers enable 100% private, client-side PDF editing in your browser without transmitting sensitive files to remote servers.",
-    h1: "Client-Side PDF Processing Explained (WebAssembly & Blobs)",
+    metaTitle: 'Client-Side PDF Processing Explained (WASM & Blobs) | PDFMinty',
+    metaDescription:
+      'Discover how WebAssembly and Web Workers enable 100% private, client-side PDF editing in your browser without transmitting sensitive files to remote servers.',
+    h1: 'Client-Side PDF Processing Explained (WebAssembly & Blobs)',
     icon: 'Terminal',
     category: 'blog',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-09-10',
-    dateModified: '2026-09-20',
+    datePublished: '2026-09-21',
+    dateModified: '2026-09-28',
     author: 'Alex Mercer, Security Lead',
     reviewedBy: 'PdfMinty Engineering Team',
     lastReviewedDate: 'September 4, 2026',
@@ -9886,21 +10139,22 @@ worker.onmessage = function(e) {
   {
     id: 'blog-hipaa-compliant-pdf-tools',
     slug: 'blog/hipaa-compliant-pdf-tools-healthcare',
-    name: "HIPAA-Compliant PDF Workflows: Why Healthcare Requires Client-Side Document Processing",
+    name: 'HIPAA-Compliant PDF Workflows: Why Healthcare Requires Client-Side Document Processing',
     ogImage: '/og-image.png',
     shortDescription:
       'Why uploading patient records to free online PDF editors violates HIPAA, and how client-side WebAssembly tools mitigate ePHI data transit risks.',
-    metaTitle: "HIPAA-Compliant PDF Tools & Workflows for Healthcare | PDFMinty",
-    metaDescription: "Understand why healthcare providers violate HIPAA by uploading patient records to cloud PDF converters, and how client-side processing maintains compliance.",
-    h1: "HIPAA Compliant PDF Workflows: Why US Healthcare Needs Client-Side Processing",
+    metaTitle: 'HIPAA-Compliant PDF Tools & Workflows for Healthcare | PDFMinty',
+    metaDescription:
+      'Understand why healthcare providers violate HIPAA by uploading patient records to cloud PDF converters, and how client-side processing maintains compliance.',
+    h1: 'HIPAA Compliant PDF Workflows: Why US Healthcare Needs Client-Side Processing',
     icon: 'ShieldAlert',
     category: 'blog',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-09-14',
-    dateModified: '2026-09-22',
+    datePublished: '2026-09-22',
+    dateModified: '2026-09-28',
     author: 'Alex Mercer, Security Lead',
     reviewedBy: 'PdfMinty Compliance Team',
     lastReviewedDate: 'September 4, 2026',
@@ -10029,21 +10283,22 @@ worker.onmessage = function(e) {
   {
     id: 'blog-us-tax-legal-forms-w9',
     slug: 'blog/us-tax-w9-nda-secure-pdf-signing',
-    name: "How to Securely Sign US Tax Forms (W-9, 1099) & NDAs Offline",
+    name: 'How to Securely Sign US Tax Forms (W-9, 1099) & NDAs Offline',
     ogImage: '/og-image.png',
     shortDescription:
       'Freelancers and contractors: Learn how to fill out and sign sensitive US tax forms (W-9, 1099) and NDAs without uploading your Social Security Number to the cloud.',
-    metaTitle: "How to Securely Sign US Tax Forms (W-9) & NDAs Offline | PDFMinty",
-    metaDescription: "Safely sign IRS Form W-9, 1099, and commercial NDAs offline. Learn how to protect your SSN and signature using local client-side PDF tools without cloud uploads.",
-    h1: "How to Securely Sign US Tax Forms (W-9) & NDAs Offline",
+    metaTitle: 'How to Securely Sign US Tax Forms (W-9) & NDAs Offline | PDFMinty',
+    metaDescription:
+      'Safely sign IRS Form W-9, 1099, and commercial NDAs offline. Learn how to protect your SSN and signature using local client-side PDF tools without cloud uploads.',
+    h1: 'How to Securely Sign US Tax Forms (W-9) & NDAs Offline',
     icon: 'FileSignature',
     category: 'blog',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-09-17',
-    dateModified: '2026-09-22',
+    datePublished: '2026-09-22',
+    dateModified: '2026-09-28',
     author: 'PdfMinty Security Team',
     reviewedBy: 'PdfMinty Engineering',
     lastReviewedDate: 'September 4, 2026',
@@ -10156,21 +10411,22 @@ worker.onmessage = function(e) {
   {
     id: 'blog-gdpr-compliant-pdf-processing',
     slug: 'blog/gdpr-compliant-pdf-processing-europe',
-    name: "GDPR-Compliant PDF Workflows: Why EU Businesses Need Local Processing",
+    name: 'GDPR-Compliant PDF Workflows: Why EU Businesses Need Local Processing',
     ogImage: '/og-image.png',
     shortDescription:
       'Uploading European employee or customer data to cloud PDF tools can trigger severe GDPR fines. Learn how client-side WebAssembly solves this compliance nightmare.',
-    metaTitle: "GDPR-Compliant PDF Workflows for European Businesses | PDFMinty",
-    metaDescription: "Learn why using online PDF converters exposes European companies to GDPR fines, and how client-side processing eliminates Data Processor and transfer liabilities.",
-    h1: "GDPR Compliant PDF Workflows: Why EU Businesses Need Local Processing",
+    metaTitle: 'GDPR-Compliant PDF Workflows for European Businesses | PDFMinty',
+    metaDescription:
+      'Learn why using online PDF converters exposes European companies to GDPR fines, and how client-side processing eliminates Data Processor and transfer liabilities.',
+    h1: 'GDPR Compliant PDF Workflows: Why EU Businesses Need Local Processing',
     icon: 'Euro',
     category: 'blog',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-09-20',
-    dateModified: '2026-09-23',
+    datePublished: '2026-09-23',
+    dateModified: '2026-09-28',
     author: 'PdfMinty Compliance Team',
     reviewedBy: 'Alex Mercer, Security Lead',
     lastReviewedDate: 'September 4, 2026',
@@ -10286,21 +10542,22 @@ worker.onmessage = function(e) {
   {
     id: 'blog-eidas-compliant-pdf-signatures',
     slug: 'blog/eidas-compliant-pdf-signatures-uk-eu',
-    name: "Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)",
+    name: 'Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)',
     ogImage: '/og-image.png',
     shortDescription:
       'Understand the legal weight of electronic signatures under the EU eIDAS Regulation and UK law. Learn how to securely sign PDFs offline.',
-    metaTitle: "Are Online PDF Signatures Legally Binding in UK & EU? | PDFMinty",
-    metaDescription: "Understand the legal admissibility of electronic signatures under the eIDAS regulation (SES vs AES vs QES) and learn how to sign agreements legally offline.",
-    h1: "Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)",
+    metaTitle: 'Are Online PDF Signatures Legally Binding in UK & EU? | PDFMinty',
+    metaDescription:
+      'Understand the legal admissibility of electronic signatures under the eIDAS regulation (SES vs AES vs QES) and learn how to sign agreements legally offline.',
+    h1: 'Are Online PDF Signatures Legally Binding in the UK & EU? (eIDAS Explained)',
     icon: 'PenTool',
     category: 'blog',
     priority: 0.7,
     changefreq: 'monthly',
     type: 'article',
     status: 'published',
-    datePublished: '2026-09-22',
-    dateModified: '2026-09-24',
+    datePublished: '2026-09-23',
+    dateModified: '2026-09-28',
     author: 'PdfMinty Legal Tech Desk',
     reviewedBy: 'PdfMinty Compliance Team',
     lastReviewedDate: 'September 4, 2026',

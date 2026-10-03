@@ -5,6 +5,7 @@ export { SITE_URL };
 export const ROUTES = {
   HOME: '/',
   MERGE: `/${TOOLS.find((t) => t.id === 'merge')?.slug || 'merge-pdf'}/`,
+  COMPRESS: `/${TOOLS.find((t) => t.id === 'compress-pdf')?.slug || 'compress-pdf'}/`,
   SPLIT: `/${TOOLS.find((t) => t.id === 'split')?.slug || 'split-pdf'}/`,
   ROTATE: `/${TOOLS.find((t) => t.id === 'rotate')?.slug || 'rotate-pdf'}/`,
   DELETE_PAGES: `/${TOOLS.find((t) => t.id === 'delete-pages')?.slug || 'delete-pages-pdf'}/`,
@@ -32,6 +33,7 @@ export const ROUTES = {
   PRIVACY_POLICY: '/privacy-policy/',
   TERMS_OF_SERVICE: '/terms-of-service/',
   ABOUT_US: '/about-us/',
+  ABOUT: '/about-us/',
   CONTACT: '/contact/',
   ADOBE_ALTERNATIVE: '/adobe-acrobat-alternative/',
   ADOBE_SECURITY_ARTICLE: '/blog/adobe-security-vulnerabilities-offline-pdf-tools/',

@@ -15,7 +15,8 @@ export const AuthorBio: React.FC<AuthorBioProps> = ({ className = '', showCreden
   const { i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
 
-  const authorName = isBn && PRIMARY_AUTHOR.nativeName ? PRIMARY_AUTHOR.nativeName : PRIMARY_AUTHOR.name;
+  const authorName =
+    isBn && PRIMARY_AUTHOR.nativeName ? PRIMARY_AUTHOR.nativeName : PRIMARY_AUTHOR.name;
   const authorTitle = isBn
     ? 'প্রধান সফটওয়্যার ইঞ্জিনিয়ার এবং প্রতিষ্ঠাতা'
     : PRIMARY_AUTHOR.jobTitle;

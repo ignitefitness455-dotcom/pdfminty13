@@ -326,9 +326,7 @@ export const BlogPage: React.FC = () => {
                   <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 p-0.5 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                     <span className="text-[10px] font-black text-white">TM</span>
                   </div>
-                  <span className="text-emerald-300 font-bold">
-                    {PRIMARY_AUTHOR.name}
-                  </span>
+                  <span className="text-emerald-300 font-bold">{PRIMARY_AUTHOR.name}</span>
                 </div>
                 <span className="flex items-center gap-1 font-mono text-[11px] text-slate-400">
                   <Calendar className="w-3.5 h-3.5" />

@@ -1,4 +1,17 @@
-import { Heart, Lock, Zap, CheckCircle, ArrowRight, Sparkles, MapPin, Github, Mail, UserCheck, ShieldCheck, Code2 } from 'lucide-react';
+import {
+  Heart,
+  Lock,
+  Zap,
+  CheckCircle,
+  ArrowRight,
+  Sparkles,
+  MapPin,
+  Github,
+  Mail,
+  UserCheck,
+  ShieldCheck,
+  Code2,
+} from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -167,7 +180,11 @@ export const AboutUsPage: React.FC = () => {
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
               <UserCheck className="w-4 h-4" />
-              <span>{t('aboutUs.creatorBadge', { defaultValue: 'Founder & Engineering Accountability' })}</span>
+              <span>
+                {t('aboutUs.creatorBadge', {
+                  defaultValue: 'Founder & Engineering Accountability',
+                })}
+              </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight">
               {t('aboutUs.creatorTitle', { defaultValue: 'Who Builds & Maintains PdfMinty' })}
@@ -202,7 +219,9 @@ export const AboutUsPage: React.FC = () => {
                   </p>
                   <div className="flex items-center gap-1.5 text-xs text-rose-500 font-medium">
                     <MapPin className="w-3.5 h-3.5 shrink-0" />
-                    <span>{PRIMARY_AUTHOR.city}, {PRIMARY_AUTHOR.country} 🇧🇩</span>
+                    <span>
+                      {PRIMARY_AUTHOR.city}, {PRIMARY_AUTHOR.country} 🇧🇩
+                    </span>
                   </div>
                 </div>
               </div>
@@ -251,7 +270,11 @@ export const AboutUsPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-surface-container/60 border border-border-muted/50 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-on-surface">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>{t('aboutUs.humanAccountability', { defaultValue: 'Human Accountability & E-E-A-T' })}</span>
+                  <span>
+                    {t('aboutUs.humanAccountability', {
+                      defaultValue: 'Human Accountability & E-E-A-T',
+                    })}
+                  </span>
                 </div>
                 <p className="text-[11px] text-on-surface-variant leading-normal">
                   {t('aboutUs.humanDesc', {
@@ -264,7 +287,9 @@ export const AboutUsPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-surface-container/60 border border-border-muted/50 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-on-surface">
                   <Code2 className="w-4 h-4 text-emerald-500" />
-                  <span>{t('aboutUs.coreTechStack', { defaultValue: 'Core Technology Stack' })}</span>
+                  <span>
+                    {t('aboutUs.coreTechStack', { defaultValue: 'Core Technology Stack' })}
+                  </span>
                 </div>
                 <p className="text-[11px] text-on-surface-variant leading-normal">
                   {t('aboutUs.techDesc', {

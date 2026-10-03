@@ -184,7 +184,7 @@ export class WorkerManager {
       case 'compressPDF':
         return await ops.compressPDF(
           p.bytes as Uint8Array,
-          p.level as 'basic' | 'medium' | 'maximum' | undefined
+          (p.options ?? p.level ?? 'basic') as ops.CompressOptions
         );
       case 'protectPDF':
         return await ops.protectPDF(p as { fileBytes: Uint8Array; userPassword: string });

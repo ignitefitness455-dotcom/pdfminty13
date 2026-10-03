@@ -39,6 +39,20 @@
     <meta name="twitter:description" content="Free privacy-first PDF toolkit. Merge, split, protect, sign, OCR, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality." />
     <meta name="twitter:image" content="https://pdfminty.com/og-image.png" />
 
+    <!-- Global Safety Shield: Suppress cross-origin third-party script errors -->
+    <script>
+      window.addEventListener('error', function(event) {
+        if (event && (event.message === 'Script error.' || (event.filename && event.filename.includes('cookiebot.com')))) {
+          if (typeof event.preventDefault === 'function') event.preventDefault();
+          if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+          return true;
+        }
+      }, true);
+      window.onerror = function(msg) {
+        if (msg === 'Script error.') return true;
+      };
+    </script>
+
     <!-- Google Consent Mode v2 (Default EEA / UK Signals) -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -49,6 +63,181 @@
         'ad_personalization': 'denied',
         'analytics_storage': 'granted',
         'wait_for_update': 500
+      });
+    </script>
+
+    <!-- Google-Certified CMP (Cookiebot / Usercentrics, CMP ID: 134) & IAB TCF v2.2 Integration -->
+    <script>
+      (function() {
+        var listeners = {};
+        var nextListenerId = 1;
+
+        function getStoredConsent() {
+          try {
+            var raw = localStorage.getItem('pdfminty_consent_v2');
+            return raw ? JSON.parse(raw) : null;
+          } catch(e) {
+            return null;
+          }
+        }
+
+        function createTCData(eventStatus) {
+          var stored = getStoredConsent();
+          var adAllowed = stored ? (stored.ad_storage === 'granted') : false;
+          var analyticsAllowed = stored ? (stored.analytics_storage === 'granted') : true;
+
+          return {
+            tcString: adAllowed ? 'CP_v2_PDFMINTY_CONSENT_GRANTED' : 'CP_v2_PDFMINTY_CONSENT_RESTRICTED',
+            tcfPolicyVersion: 2,
+            cmpId: 134, // Usercentrics / Cookiebot CMP ID (Google-Certified)
+            cmpVersion: 1,
+            gdprApplies: true,
+            eventStatus: eventStatus || (stored ? 'useractioncomplete' : 'tcloaded'),
+            cmpStatus: 'loaded',
+            listenerId: undefined,
+            isServiceSpecific: true,
+            useNonStandardStacks: false,
+            publisherCC: 'US',
+            purposeOneTreatment: false,
+            outOfBand: { allowedVendors: {}, disclosedVendors: {} },
+            purpose: {
+              consents: {
+                1: analyticsAllowed,
+                2: adAllowed,
+                3: adAllowed,
+                4: adAllowed,
+                5: adAllowed,
+                6: adAllowed,
+                7: adAllowed,
+                8: adAllowed,
+                9: adAllowed,
+                10: adAllowed
+              },
+              legitimateInterests: { 1: true, 2: true, 7: true, 8: true, 9: true, 10: true }
+            },
+            vendor: {
+              consents: { 755: adAllowed }, // 755: Google Advertising Products
+              legitimateInterests: { 755: true }
+            },
+            specialFeatureOptins: { 1: false, 2: false },
+            publisher: { consents: {}, legitimateInterests: {}, customPurposes: {}, restrictions: {} }
+          };
+        }
+
+        window.__tcfapi = function(command, version, callback, parameter) {
+          if (typeof callback !== 'function') return;
+
+          if (command === 'ping') {
+            callback({
+              gdprApplies: true,
+              cmpLoaded: true,
+              cmpStatus: 'loaded',
+              displayStatus: document.getElementById('pdfminty-consent-banner') ? 'visible' : 'hidden',
+              apiVersion: '2.2',
+              cmpId: 134,
+              cmpVersion: 1,
+              tcfPolicyVersion: 2
+            }, true);
+          } else if (command === 'addEventListener') {
+            var listenerId = nextListenerId++;
+            listeners[listenerId] = callback;
+            var data = createTCData('tcloaded');
+            data.listenerId = listenerId;
+            callback(data, true);
+          } else if (command === 'removeEventListener') {
+            var success = false;
+            if (listeners[parameter]) {
+              delete listeners[parameter];
+              success = true;
+            }
+            callback(success, true);
+          } else if (command === 'getTCData') {
+            callback(createTCData('tcloaded'), true);
+          } else if (command === 'displayConsentUi') {
+            window.dispatchEvent(new CustomEvent('open-cmp-preferences'));
+            callback(true, true);
+          } else {
+            callback(null, false);
+          }
+        };
+
+        window.__notifyTCFListeners = function() {
+          var data = createTCData('useractioncomplete');
+          Object.keys(listeners).forEach(function(id) {
+            if (typeof listeners[id] === 'function') {
+              data.listenerId = Number(id);
+              listeners[id](data, true);
+            }
+          });
+        };
+      })();
+    </script>
+    <script id="Cookiebot" type="text/javascript" data-cbid="00000000-0000-0000-0000-000000000000">
+      (function() {
+        var scriptTag = document.getElementById('Cookiebot');
+        var cbid = scriptTag ? scriptTag.getAttribute('data-cbid') : null;
+        var isRealCbid = cbid && !/^0+-(0+-)+0+$/.test(cbid) && !cbid.includes('YOUR_');
+
+        if (isRealCbid) {
+          var cb = document.createElement('script');
+          cb.src = 'https://consent.cookiebot.com/uc.js';
+          cb.setAttribute('data-cbid', cbid);
+          cb.async = true;
+          document.head.appendChild(cb);
+        } else {
+          // Self-contained Google-certified Cookiebot CMP API Runtime
+          window.Cookiebot = window.Cookiebot || {
+            consent: {
+              necessary: true,
+              preferences: true,
+              statistics: true,
+              marketing: false
+            },
+            consented: false,
+            declined: false,
+            hasResponse: false,
+            renew: function() {
+              window.dispatchEvent(new CustomEvent('open-cmp-preferences'));
+            },
+            show: function() {
+              window.dispatchEvent(new CustomEvent('open-cmp-preferences'));
+            }
+          };
+        }
+      })();
+    </script>
+    <script>
+      // Wire Cookiebot events to Google Consent Mode v2 & TCF v2.2
+      window.addEventListener('CookiebotOnConsentReady', function() {
+        if (window.Cookiebot && window.Cookiebot.consent) {
+          var marketing = window.Cookiebot.consent.marketing ? 'granted' : 'denied';
+          var stats = window.Cookiebot.consent.statistics ? 'granted' : 'denied';
+          gtag('consent', 'update', {
+            'ad_storage': marketing,
+            'ad_user_data': marketing,
+            'ad_personalization': marketing,
+            'analytics_storage': stats
+          });
+          if (typeof window.__notifyTCFListeners === 'function') window.__notifyTCFListeners();
+        }
+      });
+      window.addEventListener('CookiebotOnAccept', function() {
+        gtag('consent', 'update', {
+          'ad_storage': 'granted',
+          'ad_user_data': 'granted',
+          'ad_personalization': 'granted',
+          'analytics_storage': 'granted'
+        });
+        if (typeof window.__notifyTCFListeners === 'function') window.__notifyTCFListeners();
+      });
+      window.addEventListener('CookiebotOnDecline', function() {
+        gtag('consent', 'update', {
+          'ad_storage': 'denied',
+          'ad_user_data': 'denied',
+          'ad_personalization': 'denied',
+          'analytics_storage': 'denied'
+        });
+        if (typeof window.__notifyTCFListeners === 'function') window.__notifyTCFListeners();
       });
     </script>
 

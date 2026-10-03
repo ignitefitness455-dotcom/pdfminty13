@@ -516,8 +516,9 @@ export default function InternalSEO() {
       return !existingTypes.has(String(type));
     });
 
-    let dynamicScript =
-      document.querySelector<HTMLScriptElement>('script[data-dynamic-seo="true"]');
+    let dynamicScript = document.querySelector<HTMLScriptElement>(
+      'script[data-dynamic-seo="true"]'
+    );
 
     if (missingSchemas.length === 0) {
       if (dynamicScript) {
