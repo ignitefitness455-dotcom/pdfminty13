@@ -17,6 +17,7 @@ class Logger {
     const prefix = `[PDFMinty][${level.toUpperCase()}][${timestamp}]`;
     if (level === 'error') console.error(prefix, message, ...args);
     else if (level === 'warn') console.warn(prefix, message, ...args);
+    else if (level === 'info') console.info(prefix, message, ...args);
     else if (this.isDev) console.log(prefix, message, ...args);
   }
   debug(message: string, ...args: unknown[]) {

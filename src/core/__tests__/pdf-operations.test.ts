@@ -394,6 +394,137 @@ describe('pdf-operations - Edge Cases', () => {
       const corruptedBytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
       await expect(compressPDF(corruptedBytes, 'basic')).rejects.toThrow();
     });
+
+    it('compresses and preserves image-heavy and text+image mixed PDFs', async () => {
+      const doc = await PlainPDFDocument.create();
+      for (let i = 1; i <= 4; i++) {
+        const p = doc.addPage([500, 500]);
+        p.drawText(`Invoice and Report Document Section ${i} with detailed text content and description`, {
+          x: 50,
+          y: 450,
+        });
+      }
+
+      // Embed a test 1x1 JPEG image
+      const jpegBase64 =
+        '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+      const imageBytes = Uint8Array.from(atob(jpegBase64), (c) => c.charCodeAt(0));
+      const embedded = await doc.embedJpg(imageBytes);
+      doc.getPages()[0].drawImage(embedded, { x: 50, y: 100, width: 200, height: 200 });
+
+      const initialBytes = await doc.save();
+      expect(initialBytes.length).toBeGreaterThan(2048);
+
+      const compressed = await compressPDF(initialBytes, 'recommended');
+
+      expect(compressed).toBeInstanceOf(Uint8Array);
+      expect(compressed.length).toBeGreaterThan(0);
+      expect(compressed.length).toBeLessThanOrEqual(initialBytes.length);
+
+      const reloaded = await PlainPDFDocument.load(compressed);
+      expect(reloaded.getPageCount()).toBe(4);
+      expect(reloaded.getPages()[0].getWidth()).toBe(500);
+    });
+
+    it('successfully recompresses image streams and reduces file size when canvas API is available', async () => {
+      const doc = await PlainPDFDocument.create();
+      const page = doc.addPage([600, 800]);
+      page.drawText('Sample document with high-res illustration', { x: 50, y: 700 });
+
+      // Valid JPEG base64 padded with valid JPEG comment marker to exceed 2KB threshold
+      const baseJpg = Uint8Array.from(
+        atob('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='),
+        (c) => c.charCodeAt(0)
+      );
+      const commentLen = 5000;
+      const commentPayload = new Uint8Array(commentLen).fill(0x42);
+      const marker = new Uint8Array([0xff, 0xfe, (commentLen + 2) >> 8, (commentLen + 2) & 0xff]);
+      const validLargeJpg = new Uint8Array(2 + marker.length + commentLen + (baseJpg.length - 2));
+      validLargeJpg.set(baseJpg.subarray(0, 2), 0);
+      validLargeJpg.set(marker, 2);
+      validLargeJpg.set(commentPayload, 2 + marker.length);
+      validLargeJpg.set(baseJpg.subarray(2), 2 + marker.length + commentLen);
+
+      const embedded = await doc.embedJpg(validLargeJpg);
+      page.drawImage(embedded, { x: 50, y: 100, width: 500, height: 500 });
+
+      const initialBytes = await doc.save();
+      expect(initialBytes.length).toBeGreaterThan(5000);
+
+      // Mock browser createImageBitmap & OffscreenCanvas for this test
+      const originalCreateImageBitmap = (globalThis as unknown as { createImageBitmap?: unknown }).createImageBitmap;
+      const originalOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown }).OffscreenCanvas;
+
+      // The recompressed smaller JPEG (baseJpg is ~134 bytes)
+      const smallerJpeg = baseJpg;
+
+      (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap = async () => ({
+        width: 100,
+        height: 100,
+        close: () => {},
+      });
+
+      class MockOffscreenCanvas {
+        width: number;
+        height: number;
+        constructor(width: number, height: number) {
+          this.width = width;
+          this.height = height;
+        }
+        getContext() {
+          return {
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+            fillStyle: '#fff',
+            fillRect: () => {},
+            drawImage: () => {},
+            getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+            putImageData: () => {},
+          };
+        }
+        async convertToBlob() {
+          return {
+            arrayBuffer: async () => smallerJpeg.buffer.slice(smallerJpeg.byteOffset, smallerJpeg.byteOffset + smallerJpeg.byteLength),
+          };
+        }
+      }
+
+      (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = MockOffscreenCanvas;
+
+      try {
+        const compressed = await compressPDF(initialBytes, 'recommended');
+
+        // File size should be significantly smaller!
+        expect(compressed.length).toBeLessThan(initialBytes.length);
+        expect(compressed.length).toBeLessThan(3500); // 5.5KB -> ~1-2KB
+
+        const reloaded = await PlainPDFDocument.load(compressed);
+        expect(reloaded.getPageCount()).toBe(1);
+        expect(reloaded.getPages()[0].getWidth()).toBe(600);
+      } finally {
+        (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap = originalCreateImageBitmap;
+        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = originalOffscreenCanvas;
+      }
+    });
+
+    it('safely handles already-compressed PDFs without corruption or size bloating', async () => {
+      const doc = await PlainPDFDocument.create();
+      for (let i = 1; i <= 5; i++) {
+        const page = doc.addPage([400, 400]);
+        page.drawText(`Already Optimized Document Chapter ${i} with multiple paragraphs of text`, {
+          x: 20,
+          y: 350,
+        });
+      }
+      const initialBytes = await doc.save({ useObjectStreams: true });
+      expect(initialBytes.length).toBeGreaterThan(2048);
+
+      const compressed = await compressPDF(initialBytes, 'recommended');
+      expect(compressed.length).toBeLessThanOrEqual(initialBytes.length);
+
+      const reloaded = await PlainPDFDocument.load(compressed);
+      expect(reloaded.getPageCount()).toBe(5);
+    });
   });
 
   describe('imagesToPDF', () => {
