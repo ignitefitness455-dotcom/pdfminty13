@@ -833,7 +833,11 @@
     "privacyCalloutDesc": "All PDFMinty tools process your documents completely inside your browser memory using client-side WebAssembly. No registration required, zero tracking, and no cloud uploads.",
     "privacyCalloutButton": "Explore All Free Tools",
     "relatedGuides": "Related Guides & Articles",
-    "relatedGuidesSubtitle": "Explore tutorials, security analyses, and deep dives on private PDF processing."
+    "relatedGuidesSubtitle": "Explore tutorials, security analyses, and deep dives on private PDF processing.",
+    "compressToolPromptTitle": "Need to compress a PDF right now?",
+    "compressToolPromptSubtitle": "Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.",
+    "openCompressTool": "Open Compress PDF Tool →",
+    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide"
   },
   "extractPages": {
     "failedToExtract": "Failed to extract pages. Please try again.",

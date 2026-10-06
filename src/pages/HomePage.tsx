@@ -215,23 +215,37 @@ export const HomePage: React.FC = () => {
         />
       </section>
 
-      <HowItWorksSection />
+      <div className="content-auto">
+        <HowItWorksSection />
+      </div>
 
-      <WhyChooseSection />
+      <div className="content-auto">
+        <WhyChooseSection />
+      </div>
 
-      <RecommendedToolsSection />
+      <div className="content-auto">
+        <RecommendedToolsSection />
+      </div>
 
-      <SeoResourcesSection />
+      <div className="content-auto">
+        <SeoResourcesSection />
+      </div>
 
-      <FaqSection />
+      <div className="content-auto">
+        <FaqSection />
+      </div>
 
-      <div className="mt-16 max-w-4xl mx-auto px-4">
+      <div className="mt-16 max-w-4xl mx-auto px-4 content-auto">
         <EmailJoinForm />
       </div>
 
-      <CtaSection />
+      <div className="content-auto">
+        <CtaSection />
+      </div>
 
-      <TrustBadgeSection />
+      <div className="content-auto">
+        <TrustBadgeSection />
+      </div>
     </div>
   );
 };

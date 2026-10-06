@@ -7,6 +7,9 @@ import {
   UserCheck,
   ChevronRight,
   MapPin,
+  Minimize2,
+  ArrowRight,
+  Wrench,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -258,11 +261,70 @@ export const BlogPostPage: React.FC = () => {
           </div>
         </header>
 
+        {/* Quick Tool Launcher if article is related to compression or optimization */}
+        {(article.id.includes('compress') ||
+          article.slug.includes('compress') ||
+          article.slug.includes('size') ||
+          article.slug.includes('large') ||
+          article.slug.includes('batch-process') ||
+          article.slug.includes('scanned-documents') ||
+          (article.relatedLinks && article.relatedLinks.some((l) => l.url.includes('compress-pdf')))) && (
+          <div className="not-prose my-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border-2 border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-emerald-500/10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
+                <Minimize2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white m-0 tracking-tight">
+                  {t('blog.compressToolPromptTitle', { defaultValue: 'Need to compress a PDF right now?' })}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 m-0 mt-0.5 font-medium">
+                  {t('blog.compressToolPromptSubtitle', {
+                    defaultValue: 'Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.',
+                  })}
+                </p>
+              </div>
+            </div>
+            <Link
+              to={ROUTES.COMPRESS}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md shadow-emerald-600/25 shrink-0 hover:scale-[1.03] active:scale-[0.98] no-underline"
+            >
+              <span>{t('blog.openCompressTool', { defaultValue: 'Open Compress PDF Tool →' })}</span>
+            </Link>
+          </div>
+        )}
+
         {/* Article Body */}
         <div
           className="blog-prose prose dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{ __html: cleanArticleBody }}
         />
+
+        {/* Related Tools Box */}
+        {article.relatedLinks && article.relatedLinks.filter((l) => l.type === 'tool').length > 0 && (
+          <div className="my-8 p-6 rounded-2xl bg-surface-container-low border border-border-muted space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-base">
+              <Wrench className="w-4 h-4 text-emerald-500" />
+              <span>{t('blog.relatedToolsTitle', { defaultValue: 'Related Free PDF Tools Mentioned in this Guide' })}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {article.relatedLinks
+                .filter((l) => l.type === 'tool')
+                .map((toolLink, idx) => (
+                  <Link
+                    key={idx}
+                    to={toolLink.url}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high border border-border-muted hover:border-emerald-500/40 transition-all group no-underline"
+                  >
+                    <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                      {toolLink.title}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Real Author Bio Box - Fix for AdSense E-E-A-T */}
         <div className="my-10">

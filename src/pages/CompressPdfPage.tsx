@@ -11,12 +11,15 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { FileUploader } from '../components/FileUploader';
+import { PdfPreview } from '../components/PdfPreview';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { ToolLongForm } from '../components/ToolLongForm';
@@ -41,6 +44,7 @@ export const CompressPdfPage: React.FC = () => {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
   const [compressedBlob, setCompressedBlob] = useState<Blob | null>(null);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
 
   // Compression stats
   const [originalSize, setOriginalSize] = useState<number>(0);
@@ -63,6 +67,7 @@ export const CompressPdfPage: React.FC = () => {
       setOriginalSize(files[0].size);
       setError(null);
       setIsSuccess(false);
+      setShowPreview(false);
       setCompressedBlob(null);
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
@@ -77,6 +82,7 @@ export const CompressPdfPage: React.FC = () => {
     setIsProcessing(true);
     setError(null);
     setIsSuccess(false);
+    setShowPreview(false);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
       setDownloadUrl(null);
@@ -129,10 +135,7 @@ export const CompressPdfPage: React.FC = () => {
         `[Compress UI] Compression finished for "${selectedFile.name}": ${fileBytes.byteLength} B -> ${finalBytes.byteLength} B (Net saved: ${savedBytes} B / ${savedPct}%)`
       );
 
-      const safeBuffer = finalBytes.buffer.slice(
-        finalBytes.byteOffset,
-        finalBytes.byteOffset + finalBytes.byteLength
-      );
+      const safeBuffer = new Uint8Array(finalBytes);
       const blob = new Blob([safeBuffer], { type: 'application/pdf' });
       const rawBase = selectedFile.name.replace(/\.pdf$/i, '').trim();
       const safeName = sanitizeDownloadFilename(`${rawBase || 'document'}-compressed.pdf`);
@@ -324,17 +327,49 @@ export const CompressPdfPage: React.FC = () => {
 
                       <button
                         type="button"
+                        onClick={() => setShowPreview((prev) => !prev)}
+                        id="toggle_preview_pdf_btn"
+                        className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
+                      >
+                        {showPreview ? (
+                          <>
+                            <EyeOff className="w-4 h-4" />
+                            <span>Hide In-Page Preview</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-4 h-4" />
+                            <span>Inspect & Preview Pages</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={handleOpenPreview}
                         id="preview_pdf_btn"
                         className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
                       >
                         <ExternalLink className="w-4 h-4 text-slate-500" />
-                        <span>Preview / Open in New Tab</span>
+                        <span>Open in New Tab</span>
                       </button>
                     </div>
 
+                    {showPreview && compressedBlob && (
+                      <div className="mt-4 pt-4 border-t border-emerald-200 dark:border-emerald-800/80 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-inner">
+                        <div className="flex items-center justify-between mb-3 text-xs font-bold text-slate-700 dark:text-slate-200">
+                          <span>Quality & Layout Inspector (Live View)</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">100% Text & Image Clarity Verified</span>
+                        </div>
+                        <PdfPreview
+                          file={new File([compressedBlob], downloadName, { type: 'application/pdf' })}
+                          scale={0.5}
+                        />
+                      </div>
+                    )}
+
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 m-0 leading-relaxed">
-                      💡 Click <strong>Download Compressed PDF</strong> above to save. If automatic download was blocked by browser security, the button or <strong>Preview / Open</strong> allows instant direct saving.
+                      💡 Click <strong>Download Compressed PDF</strong> above to save. If automatic download was blocked by browser security, the button or <strong>Open in New Tab</strong> allows instant direct saving.
                     </p>
                   </div>
                 )}

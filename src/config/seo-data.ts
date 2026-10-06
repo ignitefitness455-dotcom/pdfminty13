@@ -4129,6 +4129,33 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     status: 'published',
     datePublished: '2026-09-21',
     dateModified: '2026-09-23',
+    relatedLinks: [
+      {
+        title: 'Compress PDF (Batch Shrink)',
+        url: '/compress-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Merge PDF',
+        url: '/merge-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'How to Compress a PDF Without Losing Quality',
+        url: '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
+        type: 'article',
+      },
+      {
+        title: 'Why Is My PDF So Large?',
+        url: '/blog/why-is-my-pdf-so-large/',
+        type: 'article',
+      },
+      {
+        title: 'Grayscale PDF (Size Reduction)',
+        url: '/grayscale-pdf/',
+        type: 'tool',
+      },
+    ],
     longFormBody: `
       <h2>How to Batch Process 50 PDFs in Under 2 Minutes</h2>
       <p>Manual document processing is a major drain on daily productivity. When preparing 50 vendor invoices, student submissions, or quarterly financial records for archiving, uploading and downloading them one by one through traditional web portals takes hours.</p>
@@ -5793,6 +5820,38 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     status: 'published',
     datePublished: '2026-09-21',
     dateModified: '2026-09-25',
+    relatedLinks: [
+      {
+        title: 'Compress PDF (Shrink File Size)',
+        url: '/compress-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Grayscale PDF (Reduce Size)',
+        url: '/grayscale-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Why Is My PDF So Large?',
+        url: '/blog/why-is-my-pdf-so-large/',
+        type: 'article',
+      },
+      {
+        title: 'Fix PDF File Size Too Large for Email',
+        url: '/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/',
+        type: 'article',
+      },
+      {
+        title: 'Sanitize PDF Metadata',
+        url: '/sanitize-pdf/',
+        type: 'tool',
+      },
+      {
+        title: 'Split Large PDF',
+        url: '/split-pdf/',
+        type: 'tool',
+      },
+    ],
     faqs: [
       {
         q: 'Does compressing a PDF reduce text quality?',
@@ -8540,6 +8599,11 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       'Getting rejected by upload forms or email attachments with strict 2MB, 1MB, or 500KB PDF file size caps.',
     relatedLinks: [
       {
+        title: 'Compress PDF (Shrink File Size)',
+        url: '/compress-pdf/',
+        type: 'tool',
+      },
+      {
         title: 'Grayscale PDF (Reduce Size)',
         url: '/grayscale-pdf/',
         type: 'tool',
@@ -8731,11 +8795,11 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
             Convert to lightweight Grayscale, flatten layers, or delete unneeded pages. 100% private, no file uploads.
           </p>
           <div class="pt-2 flex flex-wrap items-center justify-center gap-4">
-            <a href="/grayscale-pdf/" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 dark:!bg-white dark:!text-emerald-950 hover:dark:!bg-emerald-50 font-black text-base rounded-2xl shadow-2xl shadow-black/20 transition-all duration-300 hover:scale-105 active:scale-95 no-underline border-0 cursor-pointer">
-              <span>Grayscale PDF (Reduce Size) →</span>
+            <a href="/compress-pdf/" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 dark:!bg-white dark:!text-emerald-950 hover:dark:!bg-emerald-50 font-black text-base rounded-2xl shadow-2xl shadow-black/20 transition-all duration-300 hover:scale-105 active:scale-95 no-underline border-0 cursor-pointer">
+              <span>Compress PDF (Shrink File Size) →</span>
             </a>
-            <a href="/flatten-pdf/" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-emerald-800/80 hover:bg-emerald-800 text-white font-black text-base rounded-2xl border border-emerald-400/30 transition-all duration-300 hover:scale-105 active:scale-95 no-underline cursor-pointer">
-              <span>Flatten PDF →</span>
+            <a href="/grayscale-pdf/" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-emerald-800/80 hover:bg-emerald-800 text-white font-black text-base rounded-2xl border border-emerald-400/30 transition-all duration-300 hover:scale-105 active:scale-95 no-underline cursor-pointer">
+              <span>Grayscale PDF →</span>
             </a>
           </div>
           <div class="pt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-emerald-100 font-bold">
@@ -9333,6 +9397,35 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
           <a href="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" class="text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Read the Quality Guide →</a>
         </div>
       </div>
+
+      <div class="not-prose my-10 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 border border-emerald-500/30 text-center relative overflow-hidden shadow-2xl shadow-emerald-950/30 group">
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-teal-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 max-w-xl mx-auto space-y-4">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-black uppercase tracking-widest shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>100% Free & Private In-Browser Tool</span>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug m-0">
+            Fix Oversized PDFs Right Now
+          </h3>
+          <p class="text-sm text-slate-300 m-0 leading-relaxed font-medium">
+            Shrink heavy PDF files instantly with our free in-browser compressor. Re-encode embedded rasters and strip invisible metadata safely.
+          </p>
+          <div class="pt-2">
+            <a href="/compress-pdf/" class="btn-link inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-sm sm:text-base rounded-xl shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] no-underline !no-underline border-0 cursor-pointer">
+              <span>Open Compress PDF Tool →</span>
+            </a>
+          </div>
+          <div class="pt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-slate-400 font-semibold">
+            <span>⚡ Instant Processing</span>
+            <span class="text-slate-600">•</span>
+            <span>🔒 Zero Server Uploads</span>
+            <span class="text-slate-600">•</span>
+            <span>✨ Completely Free</span>
+          </div>
+        </div>
+      </div>
     `,
   },
 
@@ -9359,6 +9452,11 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       'Combining multiple high-resolution scanned PDFs often results in a massive, un-shareable file that crashes email clients. This guide solves the merging and optimization workflow.',
     relatedLinks: [
       {
+        title: 'Compress PDF Tool',
+        url: '/compress-pdf/',
+        type: 'tool',
+      },
+      {
         title: 'Merge PDF Tool',
         url: '/merge-pdf/',
         type: 'tool',
@@ -9371,6 +9469,11 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       {
         title: 'Why Is My PDF So Large?',
         url: '/blog/why-is-my-pdf-so-large/',
+        type: 'article',
+      },
+      {
+        title: 'How to Compress a PDF Without Losing Quality',
+        url: '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
         type: 'article',
       },
     ],

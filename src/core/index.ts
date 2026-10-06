@@ -42,7 +42,12 @@ export const getPdfJs = async () => {
   // assignments across multiple page components previously caused the worker to never attach
   // correctly, hanging loadingTask.promise forever and silently dropping uploaded files.
   if (!workerInitialized) {
-    pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+    if (typeof window !== 'undefined') {
+      pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+    } else {
+      // In Web Worker / Node environments, run in-thread without attempting illegal nested workers
+      pdfjs.GlobalWorkerOptions.workerSrc = '';
+    }
     workerInitialized = true;
   }
 

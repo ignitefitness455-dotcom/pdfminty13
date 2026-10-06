@@ -203,9 +203,22 @@ body {
   background-color: var(--custom-bg);
   color: var(--custom-on-bg);
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition:
     background-color 0.2s,
     color 0.15s;
+}
+
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .glass-panel {
