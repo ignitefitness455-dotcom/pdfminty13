@@ -37,6 +37,7 @@ import { Header } from './Header';
 import InternalSEO, { Breadcrumbs } from './InternalSEO';
 import LanguageSuggestionBanner from './LanguageSuggestionBanner';
 import { MobileDrawer } from './MobileDrawer';
+import { PWAInstallTopBanner } from './PWAInstallTopBanner';
 
 const ToolContentSection = React.lazy(() =>
   import('./ToolContentSection').then((m) => ({ default: m.ToolContentSection }))
@@ -172,6 +173,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] rounded-full bg-blue-300/20 dark:bg-blue-900/20 blur-[100px] sm:blur-[140px]" />
         </div>
         <LanguageSuggestionBanner />
+        <PWAInstallTopBanner />
         <Header
           theme={theme}
           setThemeSetting={setThemeSetting}

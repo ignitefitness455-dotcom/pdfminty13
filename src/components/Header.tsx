@@ -9,7 +9,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 
 import LanguageSwitcher from './LanguageSwitcher';
-import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   theme?: 'light' | 'dark';
@@ -169,14 +168,6 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobil
               <span>Sign In</span>
             </Link>
           )}
-
-          {/* Security Badge */}
-          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>{t('header.badgeOffline', { defaultValue: '100% PRIVATE' })}</span>
-          </div>
-
-          <PWAInstallButton variant="header" />
 
           <LanguageSwitcher variant="header" className="hidden sm:inline-block" />
 
