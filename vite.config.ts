@@ -147,6 +147,108 @@ function devApiPlugin() {
           }
         });
       });
+
+      server.middlewares.use('/api/gemini-proxy', async (req: any, res: any, next: any) => {
+        if (req.method !== 'POST') return next();
+        let body = '';
+        req.on('data', (chunk: Buffer) => {
+          body += chunk.toString();
+        });
+        req.on('end', async () => {
+          try {
+            const { textContent, query, mode, messages, imagesBase64 } = JSON.parse(body || '{}');
+            const apiKey = process.env.GEMINI_API_KEY;
+
+            if (!apiKey) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(
+                JSON.stringify({
+                  error: 'Server Gemini API key is not configured. Please set GEMINI_API_KEY.',
+                })
+              );
+              return;
+            }
+
+            const { GoogleGenAI } = await import('@google/genai');
+            const ai = new GoogleGenAI({
+              apiKey,
+              httpOptions: {
+                headers: {
+                  'User-Agent': 'aistudio-build',
+                },
+              },
+            });
+
+            let systemInstruction =
+              'You are PdfMinty AI Assistant, an elite document intelligence and PDF chat system powered by Gemini. You analyze uploaded PDF documents accurately to answer user questions, explain specific clauses, summarize key points, extract structured data and financial tables into Markdown format, and provide clear explanations. If asked in Bengali (বাংলা), answer naturally in Bengali. Always cite page numbers or sections when available. When extracting data or numbers, format them cleanly as Markdown tables.';
+
+            let promptContent: any = '';
+
+            if (mode === 'ocr') {
+              systemInstruction =
+                'You are an expert Document Parsing & OCR engine. Your sole task is to transcribe the provided scanned PDF page image into high-fidelity, cleanly structured Markdown. Preserve headers (#, ##), lists, bold, italics, and format all tables accurately as Markdown tables (| col |). Do not include conversational introductory or concluding text.';
+              const parts: any[] = [
+                { text: 'Transcribe this document image accurately into well-formatted Markdown:' },
+              ];
+              if (Array.isArray(imagesBase64)) {
+                for (const imgStr of imagesBase64) {
+                  if (typeof imgStr === 'string') {
+                    parts.push({
+                      inlineData: {
+                        mimeType: 'image/jpeg',
+                        data: imgStr.replace(/^data:image\/\w+;base64,/, ''),
+                      },
+                    });
+                  }
+                }
+              }
+              promptContent = { parts };
+            } else if (mode === 'summary') {
+              const truncated = typeof textContent === 'string' ? textContent.slice(0, 40000) : '';
+              promptContent = `Please analyze and summarize the following document content. Provide an Executive Summary, Key Highlights, Crucial Sections/Clauses, and Important Data/Deadlines:\n\nDOCUMENT CONTENT:\n${truncated}`;
+            } else if (mode === 'chat' && Array.isArray(messages) && messages.length > 0) {
+              const truncated = typeof textContent === 'string' ? textContent.slice(0, 40000) : '';
+              const historyText = messages
+                .map((m: any) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+                .join('\n\n');
+              promptContent = `DOCUMENT CONTEXT:\n${truncated}\n\nCONVERSATION HISTORY:\n${historyText}\n\nLATEST USER QUERY:\n${query || messages[messages.length - 1]?.content || ''}\n\nPlease respond directly to the latest query based on the document context and conversation history:`;
+            } else {
+              // 'qa' or standard query
+              const truncated = typeof textContent === 'string' ? textContent.slice(0, 40000) : '';
+              promptContent = `Use the provided document text to answer the user's specific query.\n\nUSER SPECIFIC QUERY:\n${query}\n\nDOCUMENT TEXT CONTEXT:\n${truncated}`;
+            }
+
+            const response = await ai.models.generateContent({
+              model: 'gemini-3.8-flash',
+              contents: typeof promptContent === 'string' ? promptContent : promptContent,
+              config: {
+                systemInstruction,
+                temperature: mode === 'ocr' ? 0.1 : 0.3,
+              },
+            });
+
+            const resultText = response.text || '';
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(
+              JSON.stringify({
+                success: true,
+                result: resultText,
+              })
+            );
+          } catch (apiErr: any) {
+            console.error('[dev-api] Gemini proxy error:', apiErr);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(
+              JSON.stringify({
+                error: apiErr?.message || 'Failed to process AI document query.',
+              })
+            );
+          }
+        });
+      });
     },
   };
 }
@@ -201,6 +303,22 @@ export default defineConfig({
     cssMinify: true,
     modulePreload: {
       polyfill: false,
+      resolveDependencies: (_filename, deps) => {
+        // Prevent preloading 4MB+ of non-English translation JSON on index.html
+        return deps.filter((dep) => {
+          if (
+            dep.includes('locales-de') ||
+            dep.includes('locales-fr') ||
+            dep.includes('locales-es') ||
+            dep.includes('locales-bn') ||
+            dep.includes('locales-hi') ||
+            dep.includes('locales-zh')
+          ) {
+            return false;
+          }
+          return true;
+        });
+      },
     },
     rollupOptions: {
       output: {
@@ -233,20 +351,15 @@ export default defineConfig({
             }
           }
 
-          // Content & Locales chunking
-          if (
-            id.includes('/locales/de/') ||
-            id.includes('/locales/fr/') ||
-            id.includes('/locales/es/') ||
-            id.includes('/locales/bn/') ||
-            id.includes('/locales/hi/') ||
-            id.includes('/locales/zh/')
-          ) {
-            return 'locales-multilingual';
-          }
-          if (id.includes('/locales/en/')) {
-            return 'locales-en';
-          }
+          // Per-locale chunking so users only download the language they need
+          if (id.includes('/locales/de/')) return 'locales-de';
+          if (id.includes('/locales/fr/')) return 'locales-fr';
+          if (id.includes('/locales/es/')) return 'locales-es';
+          if (id.includes('/locales/bn/')) return 'locales-bn';
+          if (id.includes('/locales/hi/')) return 'locales-hi';
+          if (id.includes('/locales/zh/')) return 'locales-zh';
+          if (id.includes('/locales/en/')) return 'locales-en';
+
           if (id.includes('/src/config/seo-data')) {
             return 'app-seo-data';
           }

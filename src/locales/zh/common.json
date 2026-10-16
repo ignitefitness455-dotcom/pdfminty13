@@ -288,7 +288,7 @@
     "methodUploadDesc": "上传签名照片或 PNG 图片。PdfMinty 会自动智能抠除白色背景，仅将透明墨水签名完美嵌入文档中。",
     "stepsTitle": "简单 3 步完成 PDF 电子签名",
     "step1Bold": "上传 PDF 文档：",
-    "step1Text": "将合同或表格拖入安全的浏览器查看器中，支持最大 50MB 的文件。",
+    "step1Text": "将合同或表格拖入安全的浏览器查看器中，支持最大 100MB 的文件。",
     "step2Bold": "创建并放置元素：",
     "step2Text": "创建签名或缩写首字母，然后点击或拖拽签名、姓名、日期和文本字段至页面中。",
     "step3Bold": "调整并下载：",
@@ -297,7 +297,7 @@
     "privacyText": "您的文档和签名严格保存在本地设备上，绝不会传输至任何远程服务器，守护您的身份安全。",
     "errors": {
       "choosePdf": "请选择一个 PDF 文件。",
-      "fileTooLarge": "该 PDF 文件超过 50 MB 限制。",
+      "fileTooLarge": "该 PDF 文件超过 100 MB 限制。",
       "cannotOpen": "无法打开此文件，请尝试其他 PDF。",
       "exportFailed": "无法生成已签名的 PDF，请重试。"
     },
@@ -1658,5 +1658,41 @@
       "adPersonalizationTitle": "个性化广告 (ad_personalization)",
       "adPersonalizationDesc": "根据您的偏好显示量身定制的个性化广告。"
     }
+  },
+  "compressPdf": {
+    "workspace": "文档工作区",
+    "unexpectedError": "压缩 PDF 文档时发生错误。",
+    "successTitle": "压缩成功完成！",
+    "downloadButton": "下载压缩后的 PDF",
+    "inspectPreview": "检查与预览页面",
+    "hidePreview": "隐藏预览",
+    "openNewTab": "在新标签页打开",
+    "compressingButton": "正在浏览器内压缩...",
+    "compressSubmit": "压缩并下载 PDF"
+  },
+  "compressAnimation": {
+    "title": "正在压缩文档",
+    "inputDocument": "原始文档",
+    "uncompressed": "原始大小",
+    "targetOptimized": "优化目标",
+    "optimizingEngine": "矢量和图像优化引擎运行中",
+    "stage1": "正在分析文档结构与流对象",
+    "stage2": "正在优化和重新编码嵌入图像",
+    "stage3": "正在清除冗余元数据与缓存",
+    "stage4": "正在压缩交叉引用表与字体子集",
+    "stage5": "正在验证清晰度并生成最终文件",
+    "squisherTitle": "字节粉碎迷你小游戏",
+    "squisherPrompt": "等待时点击按钮粉碎无用字节！",
+    "squisherScore": "你已粉碎了 {{size}} MB 虚拟冗余数据！",
+    "tip1Badge": "无损矢量字体",
+    "tip1Text": "文本与矢量轮廓在任何缩放比例下均保持 100% 清晰，仅优化高分辨率位图。",
+    "tip2Badge": "100% 浏览器本地隐私",
+    "tip2Text": "文件完全在本地设备处理，无需上传至外部服务器。",
+    "tip3Badge": "智能图像重采样",
+    "tip3Text": "在保留图像真实细节的同时优化像素密度，避免模糊失真。",
+    "tip4Badge": "安全清除冗余元数据",
+    "tip4Text": "安全清除隐藏的历史编辑痕迹与过时的打印配置文件。",
+    "tip5Badge": "高速 Web Worker 多线程",
+    "tip5Text": "后台工作线程确保压缩期间界面保持流畅响应。"
   }
 }

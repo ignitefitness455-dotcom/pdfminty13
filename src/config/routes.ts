@@ -27,6 +27,7 @@ export const ROUTES = {
   SANITIZE_PDF: `/${TOOLS.find((t) => t.id === 'sanitize-pdf')?.slug || 'sanitize-pdf'}/`,
   SIGN_PDF: `/${TOOLS.find((t) => t.id === 'sign-pdf')?.slug || 'sign-pdf'}/`,
   OCR_PDF: `/${TOOLS.find((t) => t.id === 'ocr-pdf')?.slug || 'ocr-pdf'}/`,
+  COMPARE_PDF: '/compare-pdf/',
   TRUST_ARTICLE: `/${TOOLS.find((t) => t.id === 'trust-article')?.slug || 'blog/is-it-safe-to-upload-pdf-to-online-tools'}/`,
   BLOG: '/blog/',
   BLOG_POST: '/blog/:postSlug/',
@@ -40,5 +41,10 @@ export const ROUTES = {
   COMPARE_SMALLPDF: '/compare/pdfminty-vs-smallpdf/',
   COMPARE_ILOVEPDF: '/compare/pdfminty-vs-ilovepdf/',
   COMPARE_PAGE: '/compare/:postSlug/',
+  PRICING: '/pricing/',
+  SIGN_IN: '/login/',
+  SIGN_UP: '/signup/',
+  DASHBOARD: '/dashboard/',
+  ACCOUNT: '/dashboard/',
 };
 export default ROUTES;

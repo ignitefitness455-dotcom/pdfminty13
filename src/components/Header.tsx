@@ -1,12 +1,15 @@
-import { Moon, Sun, ShieldCheck, Menu, X } from 'lucide-react';
+import { Moon, Sun, ShieldCheck, Menu, X, User, LogOut, Zap, Sparkles } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 
 import LanguageSwitcher from './LanguageSwitcher';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   theme?: 'light' | 'dark';
@@ -18,6 +21,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobileMenuOpen }) => {
   const { t } = useTranslation('common');
   const { isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const { tier, tasksRemaining, openLimitModal } = useUsageLimit();
   const [logoLoaded, setLogoLoaded] = useState(true);
 
   return (
@@ -60,9 +65,23 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobil
           <Link to="/" className="hover:text-emerald-500 transition-colors">
             {t('header.nav.home', { defaultValue: 'Home' })}
           </Link>
+          {user && (
+            <Link
+              to={ROUTES.DASHBOARD}
+              className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold transition-colors flex items-center gap-1"
+            >
+              <span>{t('header.nav.dashboard', { defaultValue: 'Dashboard' })}</span>
+            </Link>
+          )}
           <a href="#all-tools" className="hover:text-emerald-500 transition-colors">
             {t('header.nav.tools', { defaultValue: 'Tools' })}
           </a>
+          <Link to={ROUTES.PRICING} className="hover:text-emerald-500 transition-colors flex items-center gap-1.5">
+            <span>{t('header.nav.pricing', { defaultValue: 'Pricing' })}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+              $2.49/mo
+            </span>
+          </Link>
           <Link to={ROUTES.BLOG} className="hover:text-emerald-500 transition-colors">
             {t('header.nav.blog', { defaultValue: 'Blog' })}
           </Link>
@@ -76,11 +95,88 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobil
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Daily Task Quota Indicator Button */}
+          <button
+            type="button"
+            onClick={() => openLimitModal({ reason: 'task_limit' })}
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-all cursor-pointer shadow-xs select-none"
+            title={
+              tier === 'pro'
+                ? t('usageLimits.header.proTitle', { defaultValue: 'Pro Tier: Unlimited daily tasks & 500MB file uploads' })
+                : tier === 'free'
+                  ? t('usageLimits.header.freeTitle', { count: tasksRemaining, defaultValue: `Free Account: 10 daily tasks (${tasksRemaining} left) & 150MB file uploads` })
+                  : t('usageLimits.header.guestTitle', { count: tasksRemaining, defaultValue: `Guest: 5 daily tasks (${tasksRemaining} left) & 100MB file uploads` })
+            }
+          >
+            {tier === 'pro' ? (
+              <>
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                <span className="text-amber-600 dark:text-amber-400 font-bold">
+                  {t('usageLimits.header.proBadge', { defaultValue: 'PRO • Unlimited' })}
+                </span>
+              </>
+            ) : tier === 'free' ? (
+              <>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-slate-700 dark:text-slate-300">
+                  {t('usageLimits.header.freeBadge', { count: tasksRemaining, defaultValue: `Tasks: ${tasksRemaining}/10` })}
+                </span>
+              </>
+            ) : (
+              <>
+                <Zap className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />
+                <span className="text-slate-700 dark:text-slate-300">
+                  {t('usageLimits.header.guestBadge', { count: tasksRemaining, defaultValue: `Guest: ${tasksRemaining}/5` })}
+                </span>
+              </>
+            )}
+          </button>
+
+          {/* Sign In / User Profile button */}
+          {user ? (
+            <div className="flex items-center gap-1.5">
+              <Link
+                to={ROUTES.DASHBOARD}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-bold transition-all shadow-sm"
+                title="My Workspace Dashboard"
+              >
+                <div className="w-5 h-5 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black">
+                  {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <span className="max-w-[100px] truncate text-slate-900 dark:text-white">{user.displayName || 'Dashboard'}</span>
+                {user.plan === 'pro' && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
+                    PRO
+                  </span>
+                )}
+              </Link>
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-xl border border-border-muted hover:bg-red-500/10 hover:text-red-500 text-xs text-slate-500 transition-colors cursor-pointer"
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              to={ROUTES.SIGN_IN}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all hover:scale-105 active:scale-95"
+              id="header-signin-btn"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </Link>
+          )}
+
           {/* Security Badge */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide">
+          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>{t('header.badgeOffline', { defaultValue: '100% PRIVATE & OFFLINE' })}</span>
+            <span>{t('header.badgeOffline', { defaultValue: '100% PRIVATE' })}</span>
           </div>
+
+          <PWAInstallButton variant="header" />
 
           <LanguageSwitcher variant="header" className="hidden sm:inline-block" />
 

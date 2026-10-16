@@ -77,7 +77,11 @@ export const RelatedBlogs: React.FC = () => {
     });
   };
 
-  if (pathname === '/blog' || pathname.endsWith('/blog') || relatedBlogs.length === 0) return null;
+  const isHomePage =
+    pathname === '/' ||
+    SUPPORTED_LOCALES.some((loc) => pathname === `/${loc}` || pathname === `/${loc}/`);
+
+  if (isHomePage || pathname === '/blog' || pathname.endsWith('/blog') || relatedBlogs.length === 0) return null;
 
   return (
     <div className="mt-12 pt-8 border-t border-border-muted" id="related_blogs_box">

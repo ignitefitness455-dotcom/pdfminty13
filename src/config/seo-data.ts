@@ -226,13 +226,13 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)', 'Standard PDF 1.0 - 2.0'],
       output: ['Cleaned PDF (.pdf)'],
-      limits: 'Max 50MB per file. Encrypted PDFs must be unlocked prior to editing.',
+      limits: 'Max 100MB per file. Encrypted PDFs must be unlocked prior to editing.',
     },
     technicalNotes: {
       deviceBrowser:
         'Works on all modern desktop and mobile browsers (Chrome, Firefox, Safari, Edge).',
       fileSizeMemory:
-        'Processes files up to 50MB directly in local browser WebAssembly heap (~100MB RAM peak).',
+        'Processes files up to 100MB directly in local browser WebAssembly heap (~150MB RAM peak).',
       accessibility:
         'Full keyboard navigation (Tab/Shift+Tab, Enter) and screen reader ARIA labels.',
     },
@@ -298,7 +298,7 @@ export const TOOLS: ToolSEOInfo[] = [
       },
       {
         q: 'Is it safe to edit metadata on sensitive PDFs?',
-        a: 'Yes. Metadata editing happens entirely in your browser — files up to 50MB are processed locally and never uploaded to a server.',
+        a: 'Yes. Metadata editing happens entirely in your browser — files up to 100MB are processed locally and never uploaded to a server.',
       },
       {
         q: 'Why would I need to edit PDF metadata?',
@@ -359,7 +359,7 @@ export const TOOLS: ToolSEOInfo[] = [
       input: ['PDF (.pdf)'],
       output: ['Sanitized PDF (.pdf)'],
       limits:
-        'Max 50MB. Neutralizes hidden scripts while preserving visible layout, text, and vector graphics.',
+        'Max 100MB. Neutralizes hidden scripts while preserving visible layout, text, and vector graphics.',
     },
     technicalNotes: {
       deviceBrowser: 'Compatible across Windows, macOS, Linux, iOS, and Android web browsers.',
@@ -552,7 +552,7 @@ export const TOOLS: ToolSEOInfo[] = [
       input: ['PDF (.pdf)', 'Multiple PDF Documents'],
       output: ['Combined PDF (.pdf)'],
       limits:
-        'Max 50MB per single file, 150MB total combined deck limit. Files must be decrypted first.',
+        'Max 100MB per single file, 150MB total combined deck limit. Files must be decrypted first.',
     },
     technicalNotes: {
       deviceBrowser: 'Supports drag-and-drop reordering on desktop and touch devices.',
@@ -811,7 +811,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Split PDF Pages (.pdf)', 'ZIP Archive'],
-      limits: 'Max 50MB file size. Custom page range syntax (e.g., 1-3, 5, 8-10) supported.',
+      limits: 'Max 100MB file size. Custom page range syntax (e.g., 1-3, 5, 8-10) supported.',
     },
     technicalNotes: {
       deviceBrowser: 'Cross-platform support across all desktop and mobile browsers.',
@@ -941,7 +941,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Rotated PDF (.pdf)'],
-      limits: 'Max 50MB file size. Rotates by 90°, 180°, or 270° clockwise/counter-clockwise.',
+      limits: 'Max 100MB file size. Rotates by 90°, 180°, or 270° clockwise/counter-clockwise.',
     },
     technicalNotes: {
       deviceBrowser: 'Visual page thumbnail preview supported on touch screens and desktop mice.',
@@ -1062,7 +1062,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Updated PDF (.pdf)'],
-      limits: 'Max 50MB. Document must retain at least 1 page.',
+      limits: 'Max 100MB. Document must retain at least 1 page.',
     },
     technicalNotes: {
       deviceBrowser: 'Interactive visual page thumbnail selector rendered in local browser canvas.',
@@ -1176,7 +1176,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Extracted PDF (.pdf)'],
-      limits: 'Max 50MB. Preserves vector resolution, text layers, and embedded fonts.',
+      limits: 'Max 100MB. Preserves vector resolution, text layers, and embedded fonts.',
     },
     technicalNotes: {
       deviceBrowser: 'Compatible with all modern web browsers.',
@@ -1289,7 +1289,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Reordered PDF (.pdf)'],
-      limits: 'Max 50MB. Drag-and-drop or button-controlled reordering.',
+      limits: 'Max 100MB. Drag-and-drop or button-controlled reordering.',
     },
     technicalNotes: {
       deviceBrowser: 'Supports mouse drag-and-drop and touch screen input.',
@@ -1414,7 +1414,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Watermarked PDF (.pdf)'],
-      limits: 'Max 50MB. Customizable text, opacity, size, and diagonal rotation.',
+      limits: 'Max 100MB. Customizable text, opacity, size, and diagonal rotation.',
     },
     technicalNotes: {
       deviceBrowser: 'Responsive text positioning preview across desktop and mobile screens.',
@@ -1533,7 +1533,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Numbered PDF (.pdf)'],
-      limits: 'Max 50MB. Custom positions (top/bottom, left/center/right).',
+      limits: 'Max 100MB. Custom positions (top/bottom, left/center/right).',
     },
     technicalNotes: {
       deviceBrowser: 'Works across all modern browsers.',
@@ -1651,7 +1651,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Updated PDF (.pdf)'],
-      limits: 'Max 50MB. Insert blank pages at start, end, or specific page index.',
+      limits: 'Max 100MB. Insert blank pages at start, end, or specific page index.',
     },
     technicalNotes: {
       deviceBrowser: 'Works in all browsers.',
@@ -1765,7 +1765,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Encrypted PDF (.pdf)'],
-      limits: 'Max 50MB. Standard 128/256-bit AES PDF encryption.',
+      limits: 'Max 100MB. Standard 128/256-bit AES PDF encryption.',
     },
     technicalNotes: {
       deviceBrowser: 'Uses local browser Web Cryptography API.',
@@ -1955,7 +1955,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['Encrypted PDF (.pdf)'],
       output: ['Unlocked PDF (.pdf)'],
-      limits: 'Max 50MB. Requires valid user password for password-protected files.',
+      limits: 'Max 100MB. Requires valid user password for password-protected files.',
     },
     technicalNotes: {
       deviceBrowser: 'Compatible across all browsers.',
@@ -2069,7 +2069,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['JPG (.jpg)', 'PNG (.png)', 'WebP (.webp)', 'BMP (.bmp)'],
       output: ['Compiled PDF (.pdf)'],
-      limits: 'Max 50MB combined size. Customizable orientation and margins.',
+      limits: 'Max 100MB combined size. Customizable orientation and margins.',
     },
     technicalNotes: {
       deviceBrowser: 'Renders images to local HTML5 canvas.',
@@ -2182,7 +2182,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['PNG Images (.png)', 'JPG Images (.jpg)', 'ZIP Archive'],
-      limits: 'Max 50MB. Renders at 150-300 DPI canvas resolution.',
+      limits: 'Max 100MB. Renders at 150-300 DPI canvas resolution.',
     },
     technicalNotes: {
       deviceBrowser: 'Uses local PDF.js canvas renderer in browser.',
@@ -2306,7 +2306,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Markdown File (.md)', 'Plain Text (.txt)'],
-      limits: 'Max 50MB. Parses document text structure locally.',
+      limits: 'Max 100MB. Parses document text structure locally.',
     },
     technicalNotes: {
       deviceBrowser: 'Client-side text parser engine.',
@@ -2445,7 +2445,7 @@ export const TOOLS: ToolSEOInfo[] = [
       input: ['PDF (.pdf)'],
       output: ['Interactive AI Q&A Response', 'Summary Report'],
       limits:
-        'Max 50MB. Text extracted from up to first 12 pages per query. Requires opt-in consent.',
+        'Max 100MB. Text extracted from up to first 12 pages per query. Requires opt-in consent.',
     },
     technicalNotes: {
       deviceBrowser: 'Requires internet connection for Google Gemini API communication.',
@@ -2575,7 +2575,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Grayscale PDF (.pdf)'],
-      limits: 'Max 50MB. Converts vector graphics, text, and embedded images.',
+      limits: 'Max 100MB. Converts vector graphics, text, and embedded images.',
     },
     technicalNotes: {
       deviceBrowser: 'WebAssembly image luminance processor.',
@@ -2691,7 +2691,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)'],
       output: ['Flattened PDF (.pdf)'],
-      limits: 'Max 50MB. Locks interactive form fields and annotations.',
+      limits: 'Max 100MB. Locks interactive form fields and annotations.',
     },
     technicalNotes: {
       deviceBrowser: 'Compatible across all desktop and mobile browsers.',
@@ -2801,7 +2801,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['Damaged / Corrupted PDF (.pdf)'],
       output: ['Repaired PDF (.pdf)'],
-      limits: 'Max 50MB. Rebuilds cross-reference (XRef) and page tree structure.',
+      limits: 'Max 100MB. Rebuilds cross-reference (XRef) and page tree structure.',
     },
     technicalNotes: {
       deviceBrowser: 'Local PDF structure parser.',
@@ -2911,7 +2911,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['PDF (.pdf)', 'PNG/JPG Signature Image'],
       output: ['Signed PDF (.pdf)'],
-      limits: 'Max 50MB. Supports drawn, typed, and image signatures.',
+      limits: 'Max 100MB. Supports drawn, typed, and image signatures.',
     },
     technicalNotes: {
       deviceBrowser: 'HTML5 canvas signature pad supports stylus, touch finger, and mouse.',
@@ -3132,7 +3132,7 @@ export const TOOLS: ToolSEOInfo[] = [
     supportedFormats: {
       input: ['Scanned PDF (.pdf)', 'Image PDF'],
       output: ['Searchable Text / Markdown (.txt, .md)'],
-      limits: 'Max 50MB. Local Tesseract.js WebAssembly OCR engine.',
+      limits: 'Max 100MB. Local Tesseract.js WebAssembly OCR engine.',
     },
     technicalNotes: {
       deviceBrowser: 'Loads Tesseract WASM language workers in browser memory.',
@@ -6740,7 +6740,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <p>What that actually covers, tool by tool:</p>
 
       <ul class="space-y-2 my-4">
-        <li><strong>Merge PDF</strong> — combine files up to 50MB each, 150MB combined</li>
+        <li><strong>Merge PDF</strong> — combine files up to 100MB each, 150MB combined</li>
         <li><strong>Compress PDF</strong> — reduce file size before uploading or emailing</li>
         <li><strong>Protect / Unlock PDF</strong> — password-protect or decrypt files up to 100MB</li>
         <li><strong>Split, Rotate, Delete Pages, Reorder, Watermark, Add Page Numbers</strong> — the standard editing toolkit, all processed locally</li>
@@ -9526,7 +9526,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         Follow this structured 4-step workflow to assemble your scans cleanly:
       </p>
       <ol class="space-y-3 my-4">
-        <li><strong>Step 1: Merge Locally:</strong> Navigate to the <a href="/merge-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Merge PDF Tool</a>. Select all your scanned files. Because processing occurs client-side in WebAssembly, your machine avoids uploading heavy 50MB files across your network connection.</li>
+        <li><strong>Step 1: Merge Locally:</strong> Navigate to the <a href="/merge-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Merge PDF Tool</a>. Select all your scanned files. Because processing occurs client-side in WebAssembly, your machine avoids uploading heavy 100MB files across your network connection.</li>
         <li><strong>Step 2: Prune Blank and Inverted Pages:</strong> Office sheet feeders frequently capture blank reverse sides or invert upside-down pages. Use our <a href="/delete-pages-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Delete Pages Tool</a> or <a href="/rotate-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Rotate PDF Tool</a> to standardize orientation and remove blank sheets.</li>
         <li><strong>Step 3: Apply Grayscale Compression:</strong> Pass the combined document through the <a href="/grayscale-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Grayscale PDF Tool</a>. This strips redundant RGB color channels and recompresses the underlying image XObjects.</li>
         <li><strong>Step 4: Verify and Archive:</strong> Check the output file size. The final document will be lightweight, compliant with portal upload limits, and ready for distribution.</li>

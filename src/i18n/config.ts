@@ -1,27 +1,10 @@
-import i18n from 'i18next';
+import i18n, { type Resource } from 'i18next';
+import resourcesToBackend from 'i18next-resources-to-backend';
 import { initReactI18next } from 'react-i18next';
 
-import bnCommon from '../locales/bn/common.json';
-import bnFaq from '../locales/bn/faq.json';
-import bnMergePdf from '../locales/bn/merge-pdf.json';
-import deCommon from '../locales/de/common.json';
-import deFaq from '../locales/de/faq.json';
-import deMergePdf from '../locales/de/merge-pdf.json';
 import enCommon from '../locales/en/common.json';
 import enFaq from '../locales/en/faq.json';
 import enMergePdf from '../locales/en/merge-pdf.json';
-import esCommon from '../locales/es/common.json';
-import esFaq from '../locales/es/faq.json';
-import esMergePdf from '../locales/es/merge-pdf.json';
-import frCommon from '../locales/fr/common.json';
-import frFaq from '../locales/fr/faq.json';
-import frMergePdf from '../locales/fr/merge-pdf.json';
-import hiCommon from '../locales/hi/common.json';
-import hiFaq from '../locales/hi/faq.json';
-import hiMergePdf from '../locales/hi/merge-pdf.json';
-import zhCommon from '../locales/zh/common.json';
-import zhFaq from '../locales/zh/faq.json';
-import zhMergePdf from '../locales/zh/merge-pdf.json';
 
 // Supported locales defined in ONE config array so adding more locales touches only this place
 export const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'bn', 'hi', 'zh'] as const;
@@ -30,14 +13,42 @@ export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: SupportedLocale = 'en';
 export const DEFAULT_NAMESPACE = 'common';
 
-export const resources = {
+export const resources: Resource = {
   en: { common: enCommon, faq: enFaq, 'merge-pdf': enMergePdf },
-  bn: { common: bnCommon, faq: bnFaq, 'merge-pdf': bnMergePdf },
-  de: { common: deCommon, faq: deFaq, 'merge-pdf': deMergePdf },
-  es: { common: esCommon, faq: esFaq, 'merge-pdf': esMergePdf },
-  fr: { common: frCommon, faq: frFaq, 'merge-pdf': frMergePdf },
-  hi: { common: hiCommon, faq: hiFaq, 'merge-pdf': hiMergePdf },
-  zh: { common: zhCommon, faq: zhFaq, 'merge-pdf': zhMergePdf },
+};
+
+// Dynamic loaders for non-English locales to prevent bundling ~4MB of unneeded translations on initial load
+const localeLoaders: Record<string, Record<string, () => Promise<{ default: unknown }>>> = {
+  bn: {
+    common: () => import('../locales/bn/common.json'),
+    faq: () => import('../locales/bn/faq.json'),
+    'merge-pdf': () => import('../locales/bn/merge-pdf.json'),
+  },
+  de: {
+    common: () => import('../locales/de/common.json'),
+    faq: () => import('../locales/de/faq.json'),
+    'merge-pdf': () => import('../locales/de/merge-pdf.json'),
+  },
+  es: {
+    common: () => import('../locales/es/common.json'),
+    faq: () => import('../locales/es/faq.json'),
+    'merge-pdf': () => import('../locales/es/merge-pdf.json'),
+  },
+  fr: {
+    common: () => import('../locales/fr/common.json'),
+    faq: () => import('../locales/fr/faq.json'),
+    'merge-pdf': () => import('../locales/fr/merge-pdf.json'),
+  },
+  hi: {
+    common: () => import('../locales/hi/common.json'),
+    faq: () => import('../locales/hi/faq.json'),
+    'merge-pdf': () => import('../locales/hi/merge-pdf.json'),
+  },
+  zh: {
+    common: () => import('../locales/zh/common.json'),
+    faq: () => import('../locales/zh/faq.json'),
+    'merge-pdf': () => import('../locales/zh/merge-pdf.json'),
+  },
 };
 
 export interface LocaleMetadata {
@@ -179,22 +190,43 @@ export function getInitialLocale(): SupportedLocale {
 
 const initialLocale = getInitialLocale();
 
-i18n.use(initReactI18next).init({
-  lng: initialLocale,
-  fallbackLng: DEFAULT_LOCALE,
-  supportedLngs: SUPPORTED_LOCALES as unknown as string[],
-  defaultNS: DEFAULT_NAMESPACE,
-  ns: [DEFAULT_NAMESPACE, 'merge-pdf', 'faq'],
-  resources,
-  interpolation: {
-    escapeValue: false,
-  },
-  react: {
-    useSuspense: false,
-    bindI18n: 'languageChanged loaded',
-    bindI18nStore: 'added removed',
-  },
-});
+const dynamicResourceBackend = resourcesToBackend(
+  (language: string, namespace: string) => {
+    if (language === 'en') {
+      const enMap: Record<string, unknown> = {
+        common: enCommon,
+        faq: enFaq,
+        'merge-pdf': enMergePdf,
+      };
+      return Promise.resolve(enMap[namespace] || {});
+    }
+    const loader = localeLoaders[language]?.[namespace];
+    if (loader) {
+      return loader().then((m) => (m as { default?: unknown }).default || m);
+    }
+    return Promise.reject(new Error(`Locale ${language}/${namespace} not found`));
+  }
+);
+
+i18n
+  .use(dynamicResourceBackend)
+  .use(initReactI18next)
+  .init({
+    lng: initialLocale,
+    fallbackLng: DEFAULT_LOCALE,
+    supportedLngs: SUPPORTED_LOCALES as unknown as string[],
+    defaultNS: DEFAULT_NAMESPACE,
+    ns: [DEFAULT_NAMESPACE, 'merge-pdf', 'faq'],
+    resources,
+    interpolation: {
+      escapeValue: false,
+    },
+    react: {
+      useSuspense: false,
+      bindI18n: 'languageChanged loaded',
+      bindI18nStore: 'added removed',
+    },
+  });
 
 if (typeof document !== 'undefined') {
   document.documentElement.lang = initialLocale;

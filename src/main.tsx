@@ -7,8 +7,10 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { UsageLimitProvider } from './contexts/UsageLimitContext';
 import { setupErrorTelemetry, FileProcessingProvider } from './error-handler';
 import i18n, { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './i18n/config';
 import './index.css';
@@ -75,14 +77,21 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <I18nextProvider i18n={i18n}>
       <HelmetProvider>
-        <BrowserRouter basename={getBasename()}>
+        <BrowserRouter
+          basename={getBasename()}
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
           <ThemeProvider>
             <ToastProvider>
-              <FileProcessingProvider>
-                <ErrorBoundary resetKey="root-app">
-                  <App />
-                </ErrorBoundary>
-              </FileProcessingProvider>
+              <AuthProvider>
+                <UsageLimitProvider>
+                  <FileProcessingProvider>
+                    <ErrorBoundary resetKey="root-app">
+                      <App />
+                    </ErrorBoundary>
+                  </FileProcessingProvider>
+                </UsageLimitProvider>
+              </AuthProvider>
             </ToastProvider>
           </ThemeProvider>
         </BrowserRouter>

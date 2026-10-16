@@ -139,6 +139,15 @@ async function loadPlainPDF(bytes: Uint8Array, skipEncryptionCheck = false) {
   }
 }
 
+function isValidTtfHeader(bytes: Uint8Array): boolean {
+  if (!bytes || bytes.length < 12) return false;
+  // Valid TTF / OpenType header magic bytes (0x00010000, OTTO, true)
+  const isTtf = bytes[0] === 0x00 && bytes[1] === 0x01 && bytes[2] === 0x00 && bytes[3] === 0x00;
+  const isOtto = bytes[0] === 0x4f && bytes[1] === 0x54 && bytes[2] === 0x54 && bytes[3] === 0x4f;
+  const isTrue = bytes[0] === 0x74 && bytes[1] === 0x72 && bytes[2] === 0x75 && bytes[3] === 0x65;
+  return isTtf || isOtto || isTrue;
+}
+
 let fontBytes: Uint8Array | null = null;
 
 async function getFontBytes(): Promise<Uint8Array> {
@@ -154,8 +163,10 @@ async function getFontBytes(): Promise<Uint8Array> {
         const fileBuffer = fs.readFileSync(fontPath);
         if (fileBuffer.length > 50000) {
           const cleanBytes = new Uint8Array(fileBuffer);
-          fontBytes = cleanBytes;
-          return fontBytes;
+          if (isValidTtfHeader(cleanBytes)) {
+            fontBytes = cleanBytes;
+            return fontBytes;
+          }
         }
       }
     } catch (err) {
@@ -173,7 +184,7 @@ async function getFontBytes(): Promise<Uint8Array> {
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
         const fetchedBytes = new Uint8Array(arrayBuffer);
-        if (fetchedBytes.length > 50000) {
+        if (fetchedBytes.length > 50000 && isValidTtfHeader(fetchedBytes)) {
           fontBytes = fetchedBytes;
           return fontBytes;
         }
@@ -186,16 +197,13 @@ async function getFontBytes(): Promise<Uint8Array> {
   const rawData = (notoSansRegularBytes as { default?: unknown })?.default || notoSansRegularBytes;
   if (rawData) {
     const fallbackBytes = new Uint8Array(rawData as unknown as ArrayBuffer);
-    if (fallbackBytes.length > 50000) {
+    if (fallbackBytes.length > 50000 && isValidTtfHeader(fallbackBytes)) {
       fontBytes = fallbackBytes;
       return fontBytes;
     }
   }
 
-  logger.warn(
-    'Font NotoSans-Regular.ttf could not be loaded; Helvetica standard font will be used as a graceful fallback.'
-  );
-  // Final fallback to a mock/empty if nothing else is available
+  // Graceful fallback to StandardFonts.Helvetica
   fontBytes = new Uint8Array(0);
   return fontBytes;
 }
@@ -343,11 +351,19 @@ export async function deletePagesPDF(
   }
 }
 
-export async function reorderPDF(bytes: Uint8Array, newOrder: number[]): Promise<Uint8Array> {
+export type ReorderPageTarget = number | { page: number; rotation?: number };
+
+export async function reorderPDF(
+  bytes: Uint8Array,
+  newOrder: ReorderPageTarget[]
+): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
   const reorderedPdf = await PDFDocument.create();
 
-  const indices = newOrder.map((p) => p - 1);
+  const normalizedOrder = newOrder.map((item) =>
+    typeof item === 'number' ? { page: item, rotation: 0 } : item
+  );
+  const indices = normalizedOrder.map((p) => p.page - 1);
   if (indices.length === 0) {
     throw new Error('No pages specified for reordering.');
   }
@@ -357,7 +373,14 @@ export async function reorderPDF(bytes: Uint8Array, newOrder: number[]): Promise
 
   try {
     const copiedPages = await reorderedPdf.copyPages(pdfDoc, indices);
-    copiedPages.forEach((p) => reorderedPdf.addPage(p));
+    copiedPages.forEach((p, idx) => {
+      const extraRotation = normalizedOrder[idx]?.rotation || 0;
+      if (extraRotation % 360 !== 0) {
+        const cur = p.getRotation().angle;
+        p.setRotation(degrees((cur + extraRotation) % 360));
+      }
+      reorderedPdf.addPage(p);
+    });
     return await reorderedPdf.save();
   } catch (err) {
     handlePdfLibError(err, 'Failed to reorder document.');
@@ -375,14 +398,14 @@ export async function watermarkPDF(
     let font;
     try {
       const fontData = await getFontBytes();
-      if (fontData && fontData.length > 50000) {
+      if (fontData && fontData.length > 50000 && isValidTtfHeader(fontData)) {
         font = await pdfDoc.embedFont(fontData, {
           customName: 'NotoSans',
           subset: true,
         });
       }
     } catch (fontErr) {
-      logger.warn('Failed to embed NotoSans font, falling back to Helvetica:', fontErr);
+      logger.debug('NotoSans font embedding fallback to Helvetica:', fontErr);
     }
 
     if (!font) {
@@ -461,14 +484,14 @@ export async function addPageNumbersPDF(
     let font;
     try {
       const fontData = await getFontBytes();
-      if (fontData && fontData.length > 50000) {
+      if (fontData && fontData.length > 50000 && isValidTtfHeader(fontData)) {
         font = await pdfDoc.embedFont(fontData, {
           customName: 'NotoSans',
           subset: true,
         });
       }
     } catch (fontErr) {
-      logger.warn('Failed to embed NotoSans font, falling back to Helvetica:', fontErr);
+      logger.debug('NotoSans font embedding fallback to Helvetica:', fontErr);
     }
 
     if (!font) {

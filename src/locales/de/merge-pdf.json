@@ -18,7 +18,7 @@
     "subtitleWithLimit": "PDF-Dateien hier ablegen oder zum Auswählen klicken",
     "browseButton": "Dateien durchsuchen",
     "ariaLabel": "PDF-Dateien zum Zusammenfügen hochladen",
-    "supportedFormat": "Unterstützt PDF-Dateien bis zu 50 MB"
+    "supportedFormat": "Unterstützt PDF-Dateien bis zu 100 MB"
   },
   "emptyState": {
     "title": "PDFs zum Zusammenfügen hochladen",

@@ -8,6 +8,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlobsSequentially } from '../utils/download';
 import { logger } from '../utils/logger';
 
@@ -75,6 +76,16 @@ export const SplitPage: React.FC = () => {
       });
 
       setSplitFiles(items.map((item) => ({ url: item.url, filename: item.filename })));
+
+      addActivityItem({
+        toolName: 'Split PDF',
+        toolId: 'split',
+        fileName: selectedFile.name,
+        fileSizeFormatted: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Merge',
+        savings: `${items.length} files`,
+      });
 
       await downloadBlobsSequentially(items, 600);
       setIsSuccess(true);

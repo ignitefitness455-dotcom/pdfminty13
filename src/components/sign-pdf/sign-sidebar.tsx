@@ -6,6 +6,10 @@ import {
   PenLine,
   Type,
   UserRound,
+  Check,
+  X,
+  ShieldCheck,
+  Wand2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -27,6 +31,8 @@ type Props = {
   exporting: boolean;
   onExport: () => void;
   onReset: () => void;
+  onAutoDetect?: () => void;
+  isDetecting?: boolean;
 };
 
 const KINDS: { kind: FieldKind; icon: React.ReactNode }[] = [
@@ -35,6 +41,9 @@ const KINDS: { kind: FieldKind; icon: React.ReactNode }[] = [
   { kind: 'name', icon: <UserRound className="size-4" aria-hidden="true" /> },
   { kind: 'date', icon: <CalendarDays className="size-4" aria-hidden="true" /> },
   { kind: 'text', icon: <Type className="size-4" aria-hidden="true" /> },
+  { kind: 'checkmark', icon: <Check className="size-4 text-emerald-600 stroke-[3]" aria-hidden="true" /> },
+  { kind: 'cross', icon: <X className="size-4 text-rose-600 stroke-[3]" aria-hidden="true" /> },
+  { kind: 'stamp', icon: <ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" /> },
 ];
 
 export function SignSidebar({
@@ -48,6 +57,8 @@ export function SignSidebar({
   exporting,
   onExport,
   onReset,
+  onAutoDetect,
+  isDetecting,
 }: Props) {
   const { t } = useTranslation('common');
   const hasSignature = Boolean(signatures.signature);
@@ -98,9 +109,21 @@ export function SignSidebar({
         </div>
 
         <div className="flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 px-5 py-5">
+          {onAutoDetect && (
+            <button
+              type="button"
+              onClick={onAutoDetect}
+              disabled={isDetecting}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 px-3 py-2.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              <Wand2 className={`size-4 ${isDetecting ? 'animate-spin' : ''}`} />
+              <span>{isDetecting ? 'Detecting Zones...' : 'Auto-Detect Form & Sign Zones'}</span>
+            </button>
+          )}
+
           <div>
             <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              {t('signPdf.sidebar.fields', { defaultValue: 'Fields' })}
+              {t('signPdf.sidebar.fields', { defaultValue: 'Fields & Digital Stamps' })}
             </span>
             <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
               {t('signPdf.sidebar.fieldsHelp', {

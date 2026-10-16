@@ -1,3 +1,4 @@
+import confetti from 'canvas-confetti';
 import {
   Download,
   Minimize2,
@@ -18,6 +19,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { CompressAnimation } from '../components/CompressAnimation';
 import { FileUploader } from '../components/FileUploader';
 import { PdfPreview } from '../components/PdfPreview';
 import { SEO } from '../components/SEO';
@@ -25,6 +27,7 @@ import { ToolHeader } from '../components/ToolHeader';
 import { ToolLongForm } from '../components/ToolLongForm';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
@@ -146,6 +149,33 @@ export const CompressPdfPage: React.FC = () => {
       setDownloadUrl(url);
       setDownloadName(safeName);
       setIsSuccess(true);
+      try {
+        confetti({
+          particleCount: 65,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#10b981', '#34d399', '#059669', '#6ee7b7', '#14b8a6'],
+        });
+      } catch {
+        // Non-blocking confetti fallback
+      }
+
+      // Record real user activity for Dashboard
+      try {
+        const formatMb = (bytes: number) =>
+          bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+        addActivityItem({
+          toolName: 'Compress PDF',
+          toolId: 'compress',
+          fileName: selectedFile.name,
+          fileSizeFormatted: `${formatMb(fileBytes.byteLength)} → ${formatMb(finalBytes.byteLength)}`,
+          status: 'completed',
+          tag: 'Compress',
+          savings: `${savedPct}% reduced`,
+        });
+      } catch {
+        // Non-blocking log
+      }
 
       // Attempt automatic download (fail-safe: even if browser blocks unprompted download, manual button is ready)
       try {
@@ -215,7 +245,13 @@ export const CompressPdfPage: React.FC = () => {
               <span>{t('compressPdf.workspace', { defaultValue: 'Document Workspace' })}</span>
             </div>
 
-            {!selectedFile ? (
+            {isProcessing && selectedFile ? (
+              <CompressAnimation
+                fileName={selectedFile.name}
+                originalSizeBytes={selectedFile.size}
+                compressionMode={compressionMode}
+              />
+            ) : !selectedFile ? (
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept=".pdf,application/pdf"
@@ -549,14 +585,14 @@ export const CompressPdfPage: React.FC = () => {
               }`}
             >
               {isProcessing ? (
-                <span className="flex items-center space-x-1.5">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Compressing in Browser...</span>
+                <span className="flex items-center space-x-2">
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-300" />
+                  <span className="animate-pulse">{t('compressPdf.compressingButton', { defaultValue: 'Compressing in Browser...' })}</span>
                 </span>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>Compress & Download PDF</span>
+                  <span>{t('compressPdf.compressSubmit', { defaultValue: 'Compress & Download PDF' })}</span>
                 </>
               )}
             </button>

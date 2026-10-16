@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import SEO from '../components/SEO';
 import { ROUTES } from '../config/routes';
 
@@ -129,6 +130,9 @@ export const IsSafePdfArticlePage: React.FC = () => {
             </table>
           </div>
         </section>
+
+        {/* Recommended Security Partner */}
+        <SecurityAffiliateBanner variant="editorial" />
 
         {/* CTA */}
         <section className="text-center bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-3xl p-8 sm:p-12 space-y-6 shadow-xl">

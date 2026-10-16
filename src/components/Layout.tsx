@@ -21,6 +21,7 @@ import {
   Wrench,
   FilePenLine,
   ShieldBan,
+  GitCompare,
 } from 'lucide-react';
 import React, { useState, createContext, useContext, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,9 +37,16 @@ import { Header } from './Header';
 import InternalSEO, { Breadcrumbs } from './InternalSEO';
 import LanguageSuggestionBanner from './LanguageSuggestionBanner';
 import { MobileDrawer } from './MobileDrawer';
-import { RelatedBlogs } from './RelatedBlogs';
-import { RelatedTools } from './RelatedTools';
-import { ToolContentSection } from './ToolContentSection';
+
+const ToolContentSection = React.lazy(() =>
+  import('./ToolContentSection').then((m) => ({ default: m.ToolContentSection }))
+);
+const RelatedTools = React.lazy(() =>
+  import('./RelatedTools').then((m) => ({ default: m.RelatedTools }))
+);
+const RelatedBlogs = React.lazy(() =>
+  import('./RelatedBlogs').then((m) => ({ default: m.RelatedBlogs }))
+);
 
 interface ToolInfo {
   name: string;
@@ -125,6 +133,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       Wrench,
       FilePenLine,
       ShieldBan,
+      GitCompare,
     }),
     []
   );
@@ -199,13 +208,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 }
               }
               const activeItem = TOOLS.find((t) => t.slug === activeSlug);
-              if (activeItem?.type === 'tool') {
-                return <ToolContentSection tool={activeItem} />;
-              }
-              return null;
+              return (
+                <React.Suspense fallback={null}>
+                  {activeItem?.type === 'tool' && <ToolContentSection tool={activeItem} />}
+                  <RelatedTools />
+                  <RelatedBlogs />
+                </React.Suspense>
+              );
             })()}
-            <RelatedTools />
-            <RelatedBlogs />
           </div>
         </main>
 

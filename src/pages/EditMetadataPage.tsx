@@ -35,7 +35,7 @@ export default function EditMetadataPage() {
     };
   }, [downloadUrl]);
 
-  const limitMB = TOOL_SIZE_LIMITS['edit-metadata']?.maxSingleMB || 50;
+  const limitMB = TOOL_SIZE_LIMITS['edit-metadata']?.maxSingleMB || 100;
 
   const handleProcess = async () => {
     if (!file) return;

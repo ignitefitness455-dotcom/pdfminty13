@@ -3,6 +3,8 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useAuth } from '../../contexts/AuthContext';
+import { recordDailyTask } from '../../utils/usageLimit';
 import { Button } from '../ui/button';
 
 import { exportSignedPdf } from './export';
@@ -22,6 +24,10 @@ const EMPTY_SIGNATURES: SignatureSet = {
 
 export function SignPdfTool() {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const isPro = user?.plan === 'pro';
+  // Guest: 100MB, Logged-in Free: 150MB, Pro: 500MB
+  const limitMB = isPro ? 500 : user ? 150 : 100;
   const [file, setFile] = useState<File | null>(null);
   const [bytes, setBytes] = useState<ArrayBuffer | null>(null);
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
@@ -69,9 +75,12 @@ export function SignPdfTool() {
         setError(t('signPdf.errors.choosePdf', { defaultValue: 'Please choose a PDF file.' }));
         return;
       }
-      if (nextFile.size > 50 * 1024 * 1024) {
+      if (nextFile.size > limitMB * 1024 * 1024) {
         setError(
-          t('signPdf.errors.fileTooLarge', { defaultValue: 'This PDF is larger than 50 MB.' })
+          t('signPdf.errors.fileTooLarge', {
+            limit: limitMB,
+            defaultValue: `This PDF is larger than ${limitMB} MB.`,
+          })
         );
         return;
       }
@@ -95,8 +104,11 @@ export function SignPdfTool() {
         );
       }
     },
-    [t]
+    [limitMB, t]
   );
+
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detectionNotice, setDetectionNotice] = useState<string | null>(null);
 
   const addField = useCallback((pageIndex: number, kind: FieldKind, nx: number, ny: number) => {
     const defaults: Record<FieldKind, { w: number; h: number }> = {
@@ -105,6 +117,9 @@ export function SignPdfTool() {
       name: { w: 0.25, h: 0.045 },
       date: { w: 0.2, h: 0.045 },
       text: { w: 0.28, h: 0.05 },
+      checkmark: { w: 0.06, h: 0.045 },
+      cross: { w: 0.06, h: 0.045 },
+      stamp: { w: 0.32, h: 0.12 },
     };
     const size = defaults[kind];
     const field: PlacedField = {
@@ -121,6 +136,125 @@ export function SignPdfTool() {
     setPendingKind(null);
   }, []);
 
+  const autoDetectFields = useCallback(async () => {
+    if (!doc || !pages.length) return;
+    setIsDetecting(true);
+    setDetectionNotice(null);
+
+    try {
+      const detected: PlacedField[] = [];
+
+      for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+        const info = pages[pIdx];
+        const page = await doc.getPage(pIdx + 1);
+
+        // 1. Check interactive form annotations
+        try {
+          const annotations = await page.getAnnotations();
+          for (const annot of annotations) {
+            if (annot.subtype === 'Widget' && annot.rect) {
+              const [rx1, ry1, rx2, ry2] = annot.rect;
+              const w = Math.abs(rx2 - rx1) / info.width;
+              const h = Math.abs(ry2 - ry1) / info.height;
+              const x = Math.min(rx1, rx2) / info.width;
+              const y = (info.height - Math.max(ry1, ry2)) / info.height;
+
+              let kind: FieldKind = 'text';
+              if (annot.fieldType === 'Sig') kind = 'signature';
+              else if (annot.fieldType === 'Btn') kind = 'checkmark';
+
+              detected.push({
+                id: crypto.randomUUID(),
+                kind,
+                pageIndex: pIdx,
+                x: Math.max(0, Math.min(x, 1 - w)),
+                y: Math.max(0, Math.min(y, 1 - h)),
+                w: Math.max(0.04, Math.min(w, 0.4)),
+                h: Math.max(0.03, Math.min(h, 0.15)),
+              });
+            }
+          }
+        } catch {
+          // ignore annotation check errors
+        }
+
+        // 2. Scan text content for signature & form prompt labels
+        try {
+          const textContent = await page.getTextContent();
+          for (const item of textContent.items) {
+            if (!('str' in item)) continue;
+            const text = item.str.toLowerCase();
+            const transform = item.transform;
+            const tx = transform[4];
+            const ty = transform[5];
+            const itemW = item.width || 40;
+            const itemH = item.height || 12;
+
+            const nx = tx / info.width;
+            const ny = (info.height - ty - itemH) / info.height;
+
+            if (text.includes('signature') || text.includes('sign here')) {
+              detected.push({
+                id: crypto.randomUUID(),
+                kind: 'signature',
+                pageIndex: pIdx,
+                x: Math.min(nx + (itemW / info.width) + 0.02, 0.72),
+                y: Math.max(0, ny - 0.01),
+                w: 0.24,
+                h: 0.075,
+              });
+            } else if (text.includes('date:')) {
+              detected.push({
+                id: crypto.randomUUID(),
+                kind: 'date',
+                pageIndex: pIdx,
+                x: Math.min(nx + (itemW / info.width) + 0.02, 0.76),
+                y: Math.max(0, ny),
+                w: 0.2,
+                h: 0.045,
+              });
+            }
+          }
+        } catch {
+          // ignore text check errors
+        }
+      }
+
+      if (detected.length > 0) {
+        setFields((prev) => [...prev, ...detected]);
+        setDetectionNotice(`Auto-detected ${detected.length} form field & signature zone(s)!`);
+      } else {
+        // Fallback: place a default signature and date at the bottom of the last page
+        const lastIdx = pages.length - 1;
+        const fallbackFields: PlacedField[] = [
+          {
+            id: crypto.randomUUID(),
+            kind: 'signature',
+            pageIndex: lastIdx,
+            x: 0.55,
+            y: 0.82,
+            w: 0.24,
+            h: 0.075,
+          },
+          {
+            id: crypto.randomUUID(),
+            kind: 'date',
+            pageIndex: lastIdx,
+            x: 0.15,
+            y: 0.84,
+            w: 0.2,
+            h: 0.045,
+          },
+        ];
+        setFields((prev) => [...prev, ...fallbackFields]);
+        setDetectionNotice('Placed standard signature & date fields on the document.');
+      }
+    } finally {
+      setIsDetecting(false);
+      setTimeout(() => setDetectionNotice(null), 5000);
+    }
+  }, [doc, pages]);
+
   const updateField = (id: string, patch: Partial<PlacedField>) =>
     setFields((current) =>
       current.map((field) => (field.id === id ? { ...field, ...patch } : field))
@@ -135,12 +269,18 @@ export function SignPdfTool() {
     setExporting(true);
     try {
       const output = await exportSignedPdf({ bytes, pages, fields, signatures, dateText });
+      const filename = `${file?.name.replace(/\.pdf$/i, '') || 'document'}-signed.pdf`;
+      try {
+        recordDailyTask(user, filename);
+      } catch {
+        // Non-blocking
+      }
       const url = URL.createObjectURL(
         new Blob([output as unknown as BlobPart], { type: 'application/pdf' })
       );
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${file?.name.replace(/\.pdf$/i, '') || 'document'}-signed.pdf`;
+      link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -205,6 +345,15 @@ export function SignPdfTool() {
               </Button>
             </div>
           </div>
+          {detectionNotice ? (
+            <p
+              role="status"
+              className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {detectionNotice}
+            </p>
+          ) : null}
           {error ? (
             <p
               role="alert"
@@ -246,6 +395,8 @@ export function SignPdfTool() {
           exporting={exporting}
           onExport={exportPdf}
           onReset={reset}
+          onAutoDetect={autoDetectFields}
+          isDetecting={isDetecting}
         />
       </div>
       <SignatureDialog

@@ -650,3 +650,82 @@ textarea {
   --font-sig-satisfy: 'Satisfy', 'Apple Chancery', 'Brush Script MT', cursive;
   --font-sig-homemade: 'Homemade Apple', 'Bradley Hand', 'Segoe Script', cursive;
 }
+
+/* Compression Animation Effects */
+@keyframes scanbeam {
+  0% {
+    top: 2%;
+    opacity: 0.3;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 2%;
+    opacity: 0.3;
+  }
+}
+
+.animate-scanbeam {
+  animation: scanbeam 2.4s ease-in-out infinite;
+}
+
+@keyframes byteflow {
+  0% {
+    transform: translateX(-12px) scale(0.8);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(18px) scale(1.1);
+  }
+  100% {
+    transform: translateX(48px) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.animate-byteflow {
+  animation: byteflow 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes compress-squeeze {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.96, 0.94);
+  }
+}
+
+.animate-compress-squeeze {
+  animation: compress-squeeze 2.2s ease-in-out infinite;
+}
+
+@keyframes shimmer-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer-slide {
+  animation: shimmer-slide 2s infinite linear;
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 2.8s ease-in-out infinite;
+}
+

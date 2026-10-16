@@ -6,13 +6,19 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const MergePage: React.FC = () => {
   const { t } = useTranslation('merge-pdf');
+  const { user } = useAuth();
+  const isPro = user?.plan === 'pro';
+  const isLoggedIn = !!user;
+  const currentLimits = getToolLimit('merge-pdf', isPro, isLoggedIn);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,19 +43,19 @@ export const MergePage: React.FC = () => {
     }
     const updatedFiles = [...files, ...newFiles];
     const totalBytes = updatedFiles.reduce((acc, f) => acc + f.size, 0);
-    const maxTotalBytes = (TOOL_SIZE_LIMITS['merge-pdf'].maxTotalMB || 150) * 1024 * 1024;
+    const maxTotalBytes = (currentLimits.maxTotalMB || 200) * 1024 * 1024;
 
     if (totalBytes > maxTotalBytes) {
       setError(
         t('errors.totalSizeExceeded', {
           size: (totalBytes / 1024 / 1024).toFixed(2),
-          limit: TOOL_SIZE_LIMITS['merge-pdf'].maxTotalMB,
+          limit: currentLimits.maxTotalMB,
           defaultValue: `Uploading failed! The combined size of all your files (${(
             totalBytes /
             1024 /
             1024
           ).toFixed(2)} MB) exceeds the absolute combined limit of ${
-            TOOL_SIZE_LIMITS['merge-pdf'].maxTotalMB
+            currentLimits.maxTotalMB
           } MB. please remove some files.`,
         })
       );
@@ -119,6 +125,22 @@ export const MergePage: React.FC = () => {
       setDownloadName(name);
       await downloadBlob(blob, name);
       setIsSuccess(true);
+
+      // Record real user activity for Dashboard
+      try {
+        const mb = (blob.size / (1024 * 1024)).toFixed(1);
+        addActivityItem({
+          toolName: 'Merge PDF',
+          toolId: 'merge',
+          fileName: name,
+          fileSizeFormatted: `${mb} MB (${files.length} files)`,
+          status: 'completed',
+          tag: 'Merge',
+          savings: `${files.length} files combined`,
+        });
+      } catch {
+        // Non-blocking log
+      }
     } catch (err: unknown) {
       logger.error('Merge error:', err);
       const message = err instanceof Error ? err.message : String(err);
@@ -149,10 +171,10 @@ export const MergePage: React.FC = () => {
               multiple
               title={t('dropzone.title', { defaultValue: 'Add more files to merge' })}
               subtitle={t('dropzone.subtitleWithLimit', {
-                maxSingle: TOOL_SIZE_LIMITS['merge-pdf'].maxSingleMB,
-                defaultValue: `Drag PDF files here or click to browse (Max limit: ${TOOL_SIZE_LIMITS['merge-pdf'].maxSingleMB}MB per file)`,
+                maxSingle: currentLimits.maxSingleMB,
+                defaultValue: `Drag PDF files here or click to browse (Max limit: ${currentLimits.maxSingleMB}MB per file)`,
               })}
-              maxSizeMB={TOOL_SIZE_LIMITS['merge-pdf'].maxSingleMB}
+              maxSizeMB={currentLimits.maxSingleMB}
             />
           </div>
 

@@ -23,7 +23,11 @@ const validCanonicalRoutes = new Set<string>([
   '/privacy-policy/',
   '/terms-of-service/',
   '/adobe-acrobat-alternative/',
+  '/pricing/',
+  '/login/',
+  '/signup/',
   '/blog/',
+  '/compare-pdf/',
   '/index.html',
 ]);
 

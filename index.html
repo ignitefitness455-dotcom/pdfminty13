@@ -241,15 +241,12 @@
       });
     </script>
 
-    <!-- Google AdSense -->
-    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053" crossorigin="anonymous"></script>
-
     <!-- DNS Prefetch & Preconnect for Third-Party Services -->
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
 
-    <!-- Deferred Third-Party Scripts (Analytics) -->
+    <!-- Deferred Third-Party Scripts (Analytics & Ads) -->
     <script>
       (function() {
         var GA_ID = 'G-5WYDTKWS1J';
@@ -284,6 +281,13 @@
           window.gtag = gtag;
           gtag('js', new Date());
           gtag('config', GA_ID);
+
+          // Google AdSense (loaded non-blocking on idle/interaction)
+          var ads = document.createElement('script');
+          ads.async = true;
+          ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053';
+          ads.crossOrigin = 'anonymous';
+          document.head.appendChild(ads);
         }
 
         var events = ['touchstart', 'scroll', 'pointermove', 'keydown', 'click'];
@@ -403,9 +407,8 @@
       ]
     }
     </script>
-    <!-- DNS prefetch and preconnect for external APIs -->
+    <!-- DNS prefetch for external APIs -->
     <link rel="dns-prefetch" href="//generativelanguage.googleapis.com" />
-    <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#059669" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />

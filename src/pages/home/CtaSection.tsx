@@ -2,6 +2,8 @@ import { Zap } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { PWAInstallButton } from '../../components/PWAInstallButton';
+
 export const CtaSection: React.FC = () => {
   const { t } = useTranslation('common');
 
@@ -36,7 +38,7 @@ export const CtaSection: React.FC = () => {
               'Select any tool above to process your documents privately on your device. Fast performance, no subscriptions, and privacy-first client-side processing.',
           })}
         </p>
-        <div className="pt-4">
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={handleScrollToTools}
             className="px-8 py-3.5 rounded-xl bg-security-green hover:bg-primary-fixed-dim text-[#131313] font-black text-sm uppercase tracking-wider transition-all shadow-lg hover:shadow-security-green/10 active:scale-95 cursor-pointer max-w-xs inline-flex items-center justify-center gap-2"
@@ -44,6 +46,7 @@ export const CtaSection: React.FC = () => {
             <Zap className="w-4 h-4 fill-[#131111] text-[#131111]" aria-hidden="true" />
             <span>{t('home.cta.button', { defaultValue: 'Explore All Tools' })}</span>
           </button>
+          <PWAInstallButton variant="hero" />
         </div>
       </div>
     </div>

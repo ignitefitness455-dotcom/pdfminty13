@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FileUploader } from '../components/FileUploader';
+import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
@@ -247,6 +248,12 @@ export const ProtectPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <SecurityAffiliateBanner
+        variant="pass"
+        contextTitle="Store Your PDF Passwords in NordPass"
+        contextDesc="Never lose track of passwords set on sensitive documents. NordPass uses XChaCha20 zero-knowledge encryption to securely store and auto-fill your keys across all your devices."
+      />
     </div>
   );
 };

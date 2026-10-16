@@ -16,6 +16,8 @@
  *    cleanup if they really want to.
  */
 
+import { recordDailyTask } from './usageLimit';
+
 const REVOKE_DELAY_MS = 60_000;
 
 export function sanitizeDownloadFilename(filename: string, defaultName = 'document.pdf'): string {
@@ -36,6 +38,14 @@ export async function downloadBlob(
   // Reliable universal download using Blob URL and hidden anchor tag.
   // Works cleanly in all browsers, mobile devices, and sandboxed iframes.
   const safeFilename = sanitizeDownloadFilename(filename);
+
+  // Automatically count successful task execution
+  try {
+    recordDailyTask(null, safeFilename);
+  } catch {
+    // Non-blocking quota recording
+  }
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

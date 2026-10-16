@@ -344,7 +344,7 @@
     "methodUploadDesc": "Sube una foto o PNG de tu firma. PdfMinty elimina automáticamente el fondo blanco para que solo la tinta de tu firma se coloque de forma transparente en el documento.",
     "stepsTitle": "Cómo firmar tu PDF en 3 sencillos pasos",
     "step1Bold": "Sube el documento PDF:",
-    "step1Text": "Arrastra tu contrato o formulario al visor seguro del navegador. Compatible con archivos de hasta 50 MB.",
+    "step1Text": "Arrastra tu contrato o formulario al visor seguro del navegador. Compatible con archivos de hasta 100 MB.",
     "step2Bold": "Crea y coloca elementos:",
     "step2Text": "Crea tu firma o iniciales, luego haz clic o arrastra los campos de firma, nombre, fecha o texto libre directamente a la página.",
     "step3Bold": "Ajusta y descarga:",
@@ -353,7 +353,7 @@
     "privacyText": "Tus documentos y firmas permanecen estrictamente confidenciales en tu dispositivo local. Nunca se envía ningún archivo a servidores en la nube.",
     "errors": {
       "choosePdf": "Por favor, selecciona un archivo PDF.",
-      "fileTooLarge": "Este archivo PDF supera el límite de 50 MB.",
+      "fileTooLarge": "Este archivo PDF supera el límite de 100 MB.",
       "cannotOpen": "No se pudo abrir este archivo. Por favor, prueba con otro PDF.",
       "exportFailed": "No se pudo generar el PDF firmado. Por favor, inténtalo de nuevo."
     },
@@ -1677,5 +1677,41 @@
       "adPersonalizationTitle": "Personalización de publicidad (ad_personalization)",
       "adPersonalizationDesc": "Permite mostrar anuncios personalizados según sus preferencias."
     }
+  },
+  "compressPdf": {
+    "workspace": "Espacio de Documentos",
+    "unexpectedError": "Ocurrió un error al comprimir el PDF.",
+    "successTitle": "¡Compresión completada con éxito!",
+    "downloadButton": "Descargar PDF Comprimido",
+    "inspectPreview": "Inspeccionar y previsualizar",
+    "hidePreview": "Ocultar vista previa",
+    "openNewTab": "Abrir en nueva pestaña",
+    "compressingButton": "Comprimiendo en el navegador...",
+    "compressSubmit": "Comprimir y Descargar PDF"
+  },
+  "compressAnimation": {
+    "title": "Comprimiendo Documento",
+    "inputDocument": "Documento Original",
+    "uncompressed": "Tamaño original",
+    "targetOptimized": "Objetivo Optimizado",
+    "optimizingEngine": "Optimización de vectores e imágenes activa",
+    "stage1": "Analizando estructura del documento",
+    "stage2": "Optimizando y re-codificando gráficos",
+    "stage3": "Eliminando metadatos redundantes",
+    "stage4": "Compactando secuencias y referencias cruzadas",
+    "stage5": "Verificando nitidez y finalizando",
+    "squisherTitle": "Minijuego Aplasta-Bytes",
+    "squisherPrompt": "¡Haz clic en el botón para aplastar bytes innecesarios mientras esperas!",
+    "squisherScore": "¡Has aplastado {{size}} MB de datos redundantes!",
+    "tip1Badge": "Fuentes vectoriales sin pérdida",
+    "tip1Text": "El texto y los vectores se mantienen 100% nítidos a cualquier escala de zoom.",
+    "tip2Badge": "100% Privado en el Navegador",
+    "tip2Text": "Tu archivo se procesa 100% en tu dispositivo. Nada se sube a servidores externos.",
+    "tip3Badge": "Reducción Inteligente",
+    "tip3Text": "Las fotos se equilibran a resolución web/impresión sin artefactos visibles.",
+    "tip4Badge": "Compactación de Metadatos",
+    "tip4Text": "Historiales ocultos y perfiles de impresión obsoletos se eliminan limpiamente.",
+    "tip5Badge": "Worker Web de Alta Velocidad",
+    "tip5Text": "El procesamiento multihilo mantiene la interfaz fluida durante la compresión."
   }
 }

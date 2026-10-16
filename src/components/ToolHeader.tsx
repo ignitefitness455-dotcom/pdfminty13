@@ -1,11 +1,12 @@
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Crown } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
 import { ROUTES } from '../config/routes';
 import { TOOLS } from '../config/seo-data';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ToolHeaderProps {
   slug: string;
@@ -21,11 +22,11 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
   overrideDesc,
 }) => {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const isPro = user?.plan === 'pro';
+  const isLoggedIn = !!user;
   const tool = TOOLS.find((item) => item.slug === slug);
-  const sizeLimit =
-    limitMB ||
-    (TOOL_SIZE_LIMITS as Record<string, { maxSingleMB?: number }>)[slug]?.maxSingleMB ||
-    50;
+  const sizeLimit = limitMB || getToolLimit(slug, isPro, isLoggedIn).maxSingleMB;
 
   const title =
     overrideTitle ||
@@ -52,12 +53,24 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
       </Link>
 
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-baseline gap-2.5">
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {title}
           </h1>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-            {t('toolCommon.limit', { limit: sizeLimit, defaultValue: `Limit: ${sizeLimit}MB` })}
+          <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">·</span>
+          <span
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold ${
+              isPro
+                ? 'text-amber-600 dark:text-amber-400 font-bold'
+                : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            {isPro && <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />}
+            <span>
+              {isPro
+                ? `PRO Limit: ${sizeLimit}MB`
+                : t('toolCommon.limit', { limit: sizeLimit, defaultValue: `Limit: ${sizeLimit}MB` })}
+            </span>
           </span>
         </div>
         {desc && (

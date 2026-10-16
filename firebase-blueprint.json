@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and subscription tier in PDFMinty",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique user authentication identifier"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User full name"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User avatar image URL"
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["free", "pro"],
+          "description": "Subscription tier"
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "Whether email is verified"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account registration timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last profile update timestamp"
+        }
+      },
+      "required": ["uid", "email", "plan"]
+    },
+    "UserUsageQuota": {
+      "title": "UserUsageQuota",
+      "description": "Periodic processing quota tracking for AI and OCR features",
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "string",
+          "description": "Usage billing period e.g. 2026-10"
+        },
+        "aiAnalysesUsed": {
+          "type": "number",
+          "description": "Number of AI document queries used"
+        },
+        "ocrPagesProcessed": {
+          "type": "number",
+          "description": "Number of OCR pages processed"
+        },
+        "heavyOperationsCount": {
+          "type": "number",
+          "description": "Number of heavy batch operations"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last quota update timestamp"
+        }
+      },
+      "required": ["aiAnalysesUsed"]
+    },
+    "UserFeedback": {
+      "title": "UserFeedback",
+      "description": "User submitted feedback or bug reports",
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Feedback body text"
+        },
+        "rating": {
+          "type": "number",
+          "description": "Satisfaction rating from 1 to 5"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Submitting user ID if authenticated"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Submission timestamp"
+        }
+      },
+      "required": ["message"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user profiles isolated strictly to the authenticated owner"
+    },
+    "/users/{userId}/usage/{period}": {
+      "schema": "UserUsageQuota",
+      "description": "Monthly usage and processing quota counters isolated per user"
+    },
+    "/feedback/{feedbackId}": {
+      "schema": "UserFeedback",
+      "description": "Customer feedback submissions; writeable by users, readable only by administrators"
+    }
+  }
+}

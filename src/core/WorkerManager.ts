@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger';
 
 import { editMetadataPDF, type MetadataPayload } from './metadata-operations';
+import type { ReorderPageTarget } from './pdf-operations';
 import { PDFSanitizer } from './PDFSanitizer';
 
 interface WorkerPromise {
@@ -152,7 +153,10 @@ export class WorkerManager {
       case 'deletePagesPDF':
         return await ops.deletePagesPDF(p.bytes as Uint8Array, p.pageIndices as number[]);
       case 'reorderPDF':
-        return await ops.reorderPDF(p.bytes as Uint8Array, p.newOrder as number[]);
+        return await ops.reorderPDF(
+          p.bytes as Uint8Array,
+          p.newOrder as ReorderPageTarget[]
+        );
       case 'watermarkPDF':
         return await ops.watermarkPDF(
           p.bytes as Uint8Array,

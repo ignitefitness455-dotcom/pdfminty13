@@ -15,7 +15,7 @@ interface Env {
 
 const MAX_TEXT_LENGTH = 30000;
 const MAX_QUERY_LENGTH = 2000;
-const DEFAULT_MODEL = 'gemini-2.0-flash';
+const DEFAULT_MODEL = 'gemini-3.8-flash';
 
 /**
  * Parses space/comma/newline/semicolon/pipe separated API keys from secret variables.
@@ -146,13 +146,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       query?: unknown;
       mode?: unknown;
       imagesBase64?: unknown;
+      messages?: unknown;
     }
     const rawData = (await request.json()) as GeminiProxyPayload;
-    const { textContent, query, mode, imagesBase64 } = rawData;
+    const { textContent, query, mode, imagesBase64, messages } = rawData;
 
-    if (mode !== 'summary' && mode !== 'qa' && mode !== 'ocr') {
+    if (mode !== 'summary' && mode !== 'qa' && mode !== 'ocr' && mode !== 'chat') {
       return new Response(
-        JSON.stringify({ error: "Invalid mode. Allowed values: 'summary', 'qa', 'ocr'." }),
+        JSON.stringify({ error: "Invalid mode. Allowed values: 'summary', 'qa', 'ocr', 'chat'." }),
         {
           status: 400,
           headers: {
@@ -173,37 +174,22 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Validate query in 'qa' mode — prevent cost abuse via oversized prompts.
-    if (mode === 'qa') {
-      if (typeof query !== 'string' || !query.trim()) {
-        return new Response(
-          JSON.stringify({ error: 'A non-empty query is required in qa mode.' }),
-          {
-            status: 400,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-            } as HeadersInit,
-          }
-        );
-      }
-      if (query.length > MAX_QUERY_LENGTH) {
-        return new Response(
-          JSON.stringify({
-            error: `Query is too long (max ${MAX_QUERY_LENGTH} characters).`,
-          }),
-          {
-            status: 400,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-            } as HeadersInit,
-          }
-        );
-      }
+    // Validate query in 'qa' or 'chat' mode
+    if ((mode === 'qa' || mode === 'chat') && !query && (!Array.isArray(messages) || messages.length === 0)) {
+      return new Response(
+        JSON.stringify({ error: 'A query or message history is required.' }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          } as HeadersInit,
+        }
+      );
     }
 
     const truncated = typeof textContent === 'string' ? textContent.slice(0, MAX_TEXT_LENGTH) : '';
+    const safeQuery = typeof query === 'string' ? query.slice(0, MAX_QUERY_LENGTH) : '';
     const apiKeys = parseApiKeys(
       env.GEMINI_API_KEY,
       env.GROQ_API_KEY,
@@ -256,6 +242,19 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       systemInstruction +=
         ' Your task is to provide clear, detailed, and objective summaries of the provided custom text.';
       contentsPayload = `Please analyze and summarize the following document text content. Focus on identifying the primary messages, key sections, important metadata, and critical bullet points. Keep it clear and beautifully formatted with clean, professional linebreaks.\n\nDOCUMENT TEXT CONTENT:\n${truncated}`;
+    } else if (mode === 'chat') {
+      systemInstruction =
+        'You are PdfMinty AI Assistant, an elite document intelligence and PDF chat system powered by Gemini. You analyze uploaded PDF documents accurately to answer user questions, explain specific clauses, summarize key points, extract structured data and financial tables into Markdown format, and provide clear explanations. If asked in Bengali (বাংলা), answer naturally in Bengali. Always cite page numbers or sections when available. When extracting data or numbers, format them cleanly as Markdown tables.';
+      interface ChatHistoryItem {
+        role?: string;
+        content?: string;
+        text?: string;
+      }
+      const msgsArray = Array.isArray(messages) ? (messages as ChatHistoryItem[]) : [];
+      const historyText = msgsArray
+        .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content || m.text || ''}`)
+        .join('\n\n');
+      contentsPayload = `DOCUMENT CONTEXT:\n${truncated}\n\nCONVERSATION HISTORY:\n${historyText}\n\nLATEST USER QUERY:\n${safeQuery}\n\nPlease respond directly to the user based on the document context and conversation history:`;
     } else {
       systemInstruction +=
         " Your task is to answer user queries accurately based exclusively on the provided document text context. If the answer cannot be found or deduced, reply with 'This information could not be found in the document.'";

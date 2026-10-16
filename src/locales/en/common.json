@@ -21,6 +21,19 @@
       "close": "Close menu"
     }
   },
+  "pwa": {
+    "installApp": "Install App",
+    "installed": "Installed!",
+    "installTooltip": "Install PDFMinty as a desktop/mobile app for 100% offline access",
+    "installMobileTitle": "Install PDFMinty App",
+    "installMobileSubtitle": "Work 100% offline without internet",
+    "iosModalTitle": "Install on iPhone & iPad",
+    "desktopModalTitle": "Install PDFMinty App",
+    "offlineBenefit": "Access all PDF tools 100% offline without network.",
+    "offlineActive": "Offline Mode Active",
+    "offlineNotice": "All core PDF tools process locally in your device RAM without internet.",
+    "reconnected": "Back online. All services synced."
+  },
   "footer": {
     "brandDescription": "Free, privacy-first PDF utility suite. Core document tools run 100% locally in your browser without uploads. AI and OCR features utilize secure, encrypted API processing.",
     "sections": {
@@ -717,7 +730,7 @@
     "methodUploadDesc": "Upload a signature photo or PNG image. PdfMinty provides smart background removal so only your signature ink appears transparently on your document.",
     "stepsTitle": "How to eSign Your PDF in 3 Simple Steps",
     "step1Bold": "Upload PDF Document:",
-    "step1Text": "Drop your contract or form into the secure browser viewer. Files up to 50MB are supported.",
+    "step1Text": "Drop your contract or form into the secure browser viewer. Files up to 100MB are supported.",
     "step2Bold": "Create & Place Elements:",
     "step2Text": "Create your signature or initials, then click or drag signature, signer name, date, and custom text fields directly onto the page.",
     "step3Bold": "Adjust & Download:",
@@ -726,7 +739,7 @@
     "privacyText": "Your documents and signatures remain strictly confidential on your local device. No files or signatures are ever sent to remote cloud servers, keeping your identity secure.",
     "errors": {
       "choosePdf": "Please choose a PDF file.",
-      "fileTooLarge": "This PDF is larger than 50 MB.",
+      "fileTooLarge": "This PDF is larger than 100 MB.",
       "cannotOpen": "This file could not be opened. Please try another PDF.",
       "exportFailed": "The signed PDF could not be created. Please try again."
     },
@@ -1720,5 +1733,101 @@
       "adPersonalizationTitle": "Ad Personalization (ad_personalization)",
       "adPersonalizationDesc": "Enables personalized advertising and targeted recommendations based on your preferences."
     }
+  },
+  "usageLimits": {
+    "tier": {
+      "guest": "Guest",
+      "free": "Free Account",
+      "pro": "PRO Member"
+    },
+    "uploader": {
+      "maxSize": "Max file size: {{size}}MB",
+      "guestTasks": "5 Daily Tasks ({{count}} left)",
+      "freeTasks": "10 Daily Tasks ({{count}} left)",
+      "proTasks": "PRO • 500MB • Unlimited Tasks",
+      "guestPrompt": "Log in for 150MB & 10 tasks →",
+      "freePrompt": "Pro: 500MB & Unlimited →",
+      "guestDailyLimitReached": "Daily guest task limit reached (5/5). Sign in for 10 tasks & 150MB, or upgrade to Pro for unlimited.",
+      "freeDailyLimitReached": "Daily free task limit reached (10/10). Upgrade to Pro for unlimited tasks.",
+      "guestFileTooLarge": "too large ({{size}} MB exceeds 100 MB guest limit. Log in for 150 MB!)",
+      "freeFileTooLarge": "too large ({{size}} MB exceeds 150 MB free limit. Upgrade to Pro for 500 MB!)"
+    },
+    "header": {
+      "guestBadge": "Guest: {{count}}/5",
+      "freeBadge": "Tasks: {{count}}/10",
+      "proBadge": "PRO • Unlimited",
+      "guestTitle": "Guest: 5 daily tasks ({{count}} left) & 100MB file uploads",
+      "freeTitle": "Free Account: 10 daily tasks ({{count}} left) & 150MB file uploads",
+      "proTitle": "Pro Tier: Unlimited daily tasks & 500MB file uploads"
+    },
+    "mobile": {
+      "guestTitle": "Guest: {{count}}/5 Left",
+      "freeTitle": "Free: {{count}}/10 Left",
+      "proTitle": "PRO Plan (Unlimited)",
+      "guestLimit": "Max 100 MB per file",
+      "freeLimit": "Max 150 MB per file",
+      "proLimit": "Max 500 MB per file",
+      "view": "View"
+    },
+    "modal": {
+      "badgeTask": "Daily Task Limit",
+      "badgeSize": "File Size Limit",
+      "taskTitleGuest": "Daily 5 Guest Tasks Completed!",
+      "taskTitleFree": "Daily 10 Free Tasks Completed!",
+      "sizeTitle": "File Size Limit Exceeded",
+      "taskDescGuest": "You have used all 5 free daily tasks available for guests. Create a free account or sign in to get 10 daily tasks & 150 MB uploads, or upgrade to Pro for unlimited daily access!",
+      "taskDescFree": "You have completed all 10 free tasks for today. Upgrade to PDFMinty Pro to unlock unlimited daily tasks and 500 MB large batch processing.",
+      "sizeDescGuest": "Your file is {{size}} MB. Guests can upload up to 100 MB. Sign in for free to get 150 MB, or upgrade to Pro for 500 MB!",
+      "sizeDescFree": "Your file is {{size}} MB. Free accounts support up to 150 MB. Upgrade to Pro to process files up to 500 MB!",
+      "colGuest": "Guest",
+      "colFree": "Free Login",
+      "colPro": "Pro",
+      "colGuestSize": "100 MB",
+      "colFreeSize": "150 MB",
+      "colProSize": "500 MB",
+      "colGuestTasks": "5 tasks / day",
+      "colFreeTasks": "10 tasks / day",
+      "colProTasks": "Unlimited",
+      "btnSignInGuest": "Sign In Free (Get 10 Tasks & 150 MB)",
+      "btnUpgradeGuest": "Or Upgrade to Pro (500 MB & Unlimited)",
+      "btnUpgradeFree": "Upgrade to Pro (Unlimited Tasks • 500 MB)",
+      "btnLater": "Maybe Later"
+    }
+  },
+  "compressPdf": {
+    "workspace": "Document Workspace",
+    "unexpectedError": "An error occurred while compressing your PDF document.",
+    "successTitle": "Compression Completed Successfully!",
+    "downloadButton": "Download Compressed PDF",
+    "inspectPreview": "Inspect & Preview Pages",
+    "hidePreview": "Hide In-Page Preview",
+    "openNewTab": "Open in New Tab",
+    "compressingButton": "Compressing in Browser...",
+    "compressSubmit": "Compress & Download PDF"
+  },
+  "compressAnimation": {
+    "title": "Compressing Document",
+    "inputDocument": "Input Document",
+    "uncompressed": "Original size",
+    "targetOptimized": "Optimized Target",
+    "optimizingEngine": "Lossless Vector & Image Downsampling Active",
+    "stage1": "Analyzing Document Structure",
+    "stage2": "Optimizing & Re-encoding Graphics",
+    "stage3": "Purging Redundant Metadata",
+    "stage4": "Compacting Streams & Cross-References",
+    "stage5": "Verifying Sharpness & Finalizing",
+    "squisherTitle": "Byte Squisher Mini-Game",
+    "squisherPrompt": "Tap the button to crush redundant bloat while you wait!",
+    "squisherScore": "You have squished {{size}} MB of virtual junk!",
+    "tip1Badge": "Lossless Vector Fonts",
+    "tip1Text": "Text and font glyphs remain 100% crisp and readable at any zoom level, while heavy image raster data is streamlined.",
+    "tip2Badge": "100% Client-Side Privacy",
+    "tip2Text": "Your file is compressed entirely on your device with WebAssembly. No files are uploaded to any external server.",
+    "tip3Badge": "Smart Downsampling",
+    "tip3Text": "Embedded photos are intelligently re-quantized to web/print DPI without introducing blurry color artifacts.",
+    "tip4Badge": "Metadata Compaction",
+    "tip4Text": "Hidden duplicate fonts, obsolete print color profiles, and redundant edit history streams are purged safely.",
+    "tip5Badge": "High-Speed Web Worker",
+    "tip5Text": "Multithreaded background processing ensures your browser interface stays fluid and responsive during compression."
   }
 }

@@ -29,7 +29,7 @@ export function ToolWorkspace<TOptions extends Record<string, unknown>>({
   description,
   acceptedTypes,
   multiple = false,
-  maxSizeMB = 50,
+  maxSizeMB = 100,
   onProcess,
   renderOptions,
   defaultOptions,

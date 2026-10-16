@@ -379,7 +379,7 @@
     "methodUploadDesc": "Laden Sie ein Foto oder PNG Ihrer Unterschrift hoch. PdfMinty entfernt automatisch den weißen Hintergrund, sodass nur Ihre Signatur transparent im PDF platziert wird.",
     "stepsTitle": "So signieren Sie Ihr PDF in 3 einfachen Schritten",
     "step1Bold": "PDF-Dokument hochladen:",
-    "step1Text": "Legen Sie Ihr Dokument im sicheren Browser-Viewer ab. Dateien bis zu 50 MB werden unterstützt.",
+    "step1Text": "Legen Sie Ihr Dokument im sicheren Browser-Viewer ab. Dateien bis zu 100 MB werden unterstützt.",
     "step2Bold": "Elemente erstellen & platzieren:",
     "step2Text": "Erstellen Sie Ihre Signatur oder Initialen und ziehen Sie Signatur, Name, Datum oder benutzerdefinierte Textfelder direkt auf die Seite.",
     "step3Bold": "Anpassen & herunterladen:",
@@ -388,7 +388,7 @@
     "privacyText": "Ihre Dokumente und Unterschriften bleiben absolut vertraulich auf Ihrem lokalen Gerät. Es werden keine Daten an externe Server übertragen.",
     "errors": {
       "choosePdf": "Bitte wählen Sie eine PDF-Datei aus.",
-      "fileTooLarge": "Diese PDF-Datei ist größer als 50 MB.",
+      "fileTooLarge": "Diese PDF-Datei ist größer als 100 MB.",
       "cannotOpen": "Diese Datei konnte nicht geöffnet werden. Bitte versuchen Sie ein anderes PDF.",
       "exportFailed": "Das signierte PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
     },
@@ -1685,5 +1685,41 @@
       "adPersonalizationTitle": "Personalisierte Werbung (ad_personalization)",
       "adPersonalizationDesc": "Aktiviert personalisierte Werbung basierend auf Ihren Interessen."
     }
+  },
+  "compressPdf": {
+    "workspace": "Dokument-Arbeitsbereich",
+    "unexpectedError": "Fehler beim Komprimieren der PDF-Datei.",
+    "successTitle": "Komprimierung erfolgreich abgeschlossen!",
+    "downloadButton": "Komprimierte PDF herunterladen",
+    "inspectPreview": "Seiten prüfen und anzeigen",
+    "hidePreview": "Vorschau ausblenden",
+    "openNewTab": "In neuem Tab öffnen",
+    "compressingButton": "Wird im Browser komprimiert...",
+    "compressSubmit": "Komprimieren & Herunterladen"
+  },
+  "compressAnimation": {
+    "title": "Dokument wird komprimiert",
+    "inputDocument": "Quelldokument",
+    "uncompressed": "Originalgröße",
+    "targetOptimized": "Optimiertes Ziel",
+    "optimizingEngine": "Vektor- und Bildoptimierung aktiv",
+    "stage1": "Dokumentstruktur wird analysiert",
+    "stage2": "Grafiken werden optimiert und neu kodiert",
+    "stage3": "Überflüssige Metadaten werden bereinigt",
+    "stage4": "Streams und Querverweise werden komprimiert",
+    "stage5": "Schärfe wird geprüft und Datei fertiggestellt",
+    "squisherTitle": "Byte-Squisher Mini-Spiel",
+    "squisherPrompt": "Klicken Sie, um überschüssige Bytes während des Wartens zu zerkleinern!",
+    "squisherScore": "Sie haben {{size}} MB Datenmüll zerkleinert!",
+    "tip1Badge": "Verlustfreie Vektorschriften",
+    "tip1Text": "Text und Vektoren bleiben bei jeder Zoomstufe zu 100% gestochen scharf.",
+    "tip2Badge": "100% Datenschutz im Browser",
+    "tip2Text": "Verarbeitung erfolgt rein lokal auf Ihrem Gerät ohne Server-Uploads.",
+    "tip3Badge": "Intelligentes Downsampling",
+    "tip3Text": "Fotos werden ressourcenschonend ohne sichtbare Artefakte optimiert.",
+    "tip4Badge": "Metadaten-Bereinigung",
+    "tip4Text": "Ausgeblendete Historien und veraltete Farbprofile werden sicher entfernt.",
+    "tip5Badge": "Schneller Web Worker",
+    "tip5Text": "Multi-Thread-Hintergrundverarbeitung hält den Browser reaktionsschnell."
   }
 }

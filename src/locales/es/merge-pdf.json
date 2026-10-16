@@ -18,7 +18,7 @@
     "subtitleWithLimit": "Arrastra archivos PDF aquí o haz clic para explorar",
     "browseButton": "Explorar Archivos",
     "ariaLabel": "Subir archivos PDF para unir",
-    "supportedFormat": "Admite archivos PDF de hasta 50 MB cada uno"
+    "supportedFormat": "Admite archivos PDF de hasta 100 MB cada uno"
   },
   "emptyState": {
     "title": "Sube PDFs para unir",

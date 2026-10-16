@@ -1,4 +1,4 @@
-export type FieldKind = 'signature' | 'initials' | 'name' | 'date' | 'text';
+export type FieldKind = 'signature' | 'initials' | 'name' | 'date' | 'text' | 'checkmark' | 'cross' | 'stamp';
 
 export type SignatureAsset = {
   /** PNG data URL, transparent background */
@@ -45,6 +45,9 @@ export const FIELD_LABEL: Record<FieldKind, string> = {
   name: 'Name',
   date: 'Date',
   text: 'Text',
+  checkmark: 'Checkmark (✓)',
+  cross: 'Cross (✗)',
+  stamp: 'Digital Stamp (Verified)',
 };
 
 export const SIGNATURE_FONTS = [

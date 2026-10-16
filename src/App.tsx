@@ -5,6 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import FaqSchema from './components/FaqSchema';
 import HowToSchema from './components/HowToSchema';
 import { Layout } from './components/Layout';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { PWAController } from './components/PWAController';
 import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
@@ -24,6 +25,15 @@ const PrivacyPolicyPage = lazyWithRetry(() =>
 );
 const TermsOfServicePage = lazyWithRetry(() =>
   import('./pages/TermsOfServicePage').then((m) => ({ default: m.TermsOfServicePage }))
+);
+const PricingPage = lazyWithRetry(() =>
+  import('./pages/PricingPage').then((m) => ({ default: m.PricingPage }))
+);
+const AuthPage = lazyWithRetry(() =>
+  import('./pages/AuthPage').then((m) => ({ default: m.AuthPage }))
+);
+const DashboardPage = lazyWithRetry(() =>
+  import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))
 );
 
 // Lazy: all interactive heavy tools — splits each tool's code out of the initial bundle.
@@ -99,6 +109,9 @@ const SignPdfPage = lazyWithRetry(() =>
 const OcrPdfPage = lazyWithRetry(() =>
   import('./pages/OcrPdfPage').then((m) => ({ default: m.OcrPdfPage }))
 );
+const ComparePdfPage = lazyWithRetry(() =>
+  import('./pages/ComparePdfPage').then((m) => ({ default: m.ComparePdfPage }))
+);
 const BlogPage = lazyWithRetry(() =>
   import('./pages/BlogPage').then((m) => ({ default: m.BlogPage }))
 );
@@ -160,6 +173,7 @@ export const App: React.FC = () => {
       <SkipToContent />
       <Layout>
         <PWAController />
+        <OfflineIndicator />
         <HowToSchema />
         <FaqSchema />
         <Suspense fallback={<ToolSkeleton />}>
@@ -371,6 +385,16 @@ export const App: React.FC = () => {
               }
             />
             <Route
+              path={ROUTES.COMPARE_PDF}
+              element={
+                <ErrorBoundary resetKey="compare-pdf">
+                  <ComparePdfPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route path="/pdf-diff" element={<Navigate to={ROUTES.COMPARE_PDF} replace />} />
+            <Route path="/pdf-diff/" element={<Navigate to={ROUTES.COMPARE_PDF} replace />} />
+            <Route
               path={ROUTES.TRUST_ARTICLE}
               element={
                 <ErrorBoundary resetKey="trust-article">
@@ -474,6 +498,53 @@ export const App: React.FC = () => {
                 </ErrorBoundary>
               }
             />
+            <Route
+              path={ROUTES.PRICING}
+              element={
+                <ErrorBoundary resetKey="pricing">
+                  <PricingPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path={ROUTES.SIGN_IN}
+              element={
+                <ErrorBoundary resetKey="signin">
+                  <AuthPage initialMode="signin" />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path={ROUTES.SIGN_UP}
+              element={
+                <ErrorBoundary resetKey="signup">
+                  <AuthPage initialMode="signup" />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path={ROUTES.DASHBOARD}
+              element={
+                <ErrorBoundary resetKey="dashboard">
+                  <DashboardPage />
+                </ErrorBoundary>
+              }
+            />
+            {/* Direct aliases */}
+            <Route path="/dashboard" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/account" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/account/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/profile" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/profile/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/my-profile" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/my-profile/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+            <Route path="/pricing" element={<Navigate to={ROUTES.PRICING} replace />} />
+            <Route path="/login" element={<Navigate to={ROUTES.SIGN_IN} replace />} />
+            <Route path="/signin" element={<Navigate to={ROUTES.SIGN_IN} replace />} />
+            <Route path="/signin/" element={<Navigate to={ROUTES.SIGN_IN} replace />} />
+            <Route path="/signup" element={<Navigate to={ROUTES.SIGN_UP} replace />} />
+            <Route path="/register" element={<Navigate to={ROUTES.SIGN_UP} replace />} />
+            <Route path="/register/" element={<Navigate to={ROUTES.SIGN_UP} replace />} />
             {/* Legacy path redirects */}
             <Route path="/about" element={<Navigate to={ROUTES.ABOUT_US} replace />} />
             <Route path="/contact-us" element={<Navigate to={ROUTES.CONTACT} replace />} />

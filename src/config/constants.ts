@@ -228,28 +228,92 @@ export const UPLOAD_LIMITS = {
 };
 
 export const TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?: number }> = {
-  'merge-pdf': { maxSingleMB: 50, maxTotalMB: 150 },
-  'split-pdf': { maxSingleMB: 50 },
-  'rotate-pdf': { maxSingleMB: 50 },
-  'delete-pages-pdf': { maxSingleMB: 50 },
-  'watermark-pdf': { maxSingleMB: 50 },
-  'add-page-numbers': { maxSingleMB: 50 },
-  'add-blank-page': { maxSingleMB: 50 },
+  'merge-pdf': { maxSingleMB: 100, maxTotalMB: 200 },
+  'split-pdf': { maxSingleMB: 100 },
+  'rotate-pdf': { maxSingleMB: 100 },
+  'delete-pages-pdf': { maxSingleMB: 100 },
+  'watermark-pdf': { maxSingleMB: 100 },
+  'add-page-numbers': { maxSingleMB: 100 },
+  'add-blank-page': { maxSingleMB: 100 },
   'protect-pdf': { maxSingleMB: 100 },
   'unlock-pdf': { maxSingleMB: 100 },
-  'image-to-pdf': { maxSingleMB: 20, maxTotalMB: 100 },
-  'pdf-to-image': { maxSingleMB: 35 },
-  'pdf-to-markdown': { maxSingleMB: 35 },
-  'ai-analyze': { maxSingleMB: 15 },
-  'extract-pages-pdf': { maxSingleMB: 50 },
-  'reorder-pdf': { maxSingleMB: 50 },
-  'grayscale-pdf': { maxSingleMB: 30 },
-  'flatten-pdf': { maxSingleMB: 50 },
-  'repair-pdf': { maxSingleMB: 50 },
-  'edit-metadata': { maxSingleMB: 50 },
-  'sanitize-pdf': { maxSingleMB: 50 },
-  'sign-pdf': { maxSingleMB: 50 },
-  'ocr-pdf': { maxSingleMB: 35 },
+  'image-to-pdf': { maxSingleMB: 50, maxTotalMB: 150 },
+  'pdf-to-image': { maxSingleMB: 50 },
+  'pdf-to-markdown': { maxSingleMB: 50 },
+  'ai-analyze': { maxSingleMB: 25 },
+  'extract-pages-pdf': { maxSingleMB: 100 },
+  'reorder-pdf': { maxSingleMB: 100 },
+  'grayscale-pdf': { maxSingleMB: 50 },
+  'flatten-pdf': { maxSingleMB: 100 },
+  'repair-pdf': { maxSingleMB: 100 },
+  'edit-metadata': { maxSingleMB: 100 },
+  'sanitize-pdf': { maxSingleMB: 100 },
+  'sign-pdf': { maxSingleMB: 100 },
+  'ocr-pdf': { maxSingleMB: 50 },
+};
+
+export const FREE_TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?: number }> = {
+  'merge-pdf': { maxSingleMB: 150, maxTotalMB: 300 },
+  'split-pdf': { maxSingleMB: 150 },
+  'rotate-pdf': { maxSingleMB: 150 },
+  'delete-pages-pdf': { maxSingleMB: 150 },
+  'watermark-pdf': { maxSingleMB: 150 },
+  'add-page-numbers': { maxSingleMB: 150 },
+  'add-blank-page': { maxSingleMB: 150 },
+  'protect-pdf': { maxSingleMB: 150 },
+  'unlock-pdf': { maxSingleMB: 150 },
+  'image-to-pdf': { maxSingleMB: 100, maxTotalMB: 250 },
+  'pdf-to-image': { maxSingleMB: 100 },
+  'pdf-to-markdown': { maxSingleMB: 100 },
+  'ai-analyze': { maxSingleMB: 50 },
+  'extract-pages-pdf': { maxSingleMB: 150 },
+  'reorder-pdf': { maxSingleMB: 150 },
+  'grayscale-pdf': { maxSingleMB: 100 },
+  'flatten-pdf': { maxSingleMB: 150 },
+  'repair-pdf': { maxSingleMB: 150 },
+  'edit-metadata': { maxSingleMB: 150 },
+  'sanitize-pdf': { maxSingleMB: 150 },
+  'sign-pdf': { maxSingleMB: 150 },
+  'ocr-pdf': { maxSingleMB: 100 },
+};
+
+export const PRO_TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?: number }> = {
+  'merge-pdf': { maxSingleMB: 500, maxTotalMB: 1000 },
+  'split-pdf': { maxSingleMB: 500 },
+  'rotate-pdf': { maxSingleMB: 500 },
+  'delete-pages-pdf': { maxSingleMB: 500 },
+  'watermark-pdf': { maxSingleMB: 500 },
+  'add-page-numbers': { maxSingleMB: 500 },
+  'add-blank-page': { maxSingleMB: 500 },
+  'protect-pdf': { maxSingleMB: 500 },
+  'unlock-pdf': { maxSingleMB: 500 },
+  'image-to-pdf': { maxSingleMB: 200, maxTotalMB: 500 },
+  'pdf-to-image': { maxSingleMB: 200 },
+  'pdf-to-markdown': { maxSingleMB: 200 },
+  'ai-analyze': { maxSingleMB: 100 },
+  'extract-pages-pdf': { maxSingleMB: 500 },
+  'reorder-pdf': { maxSingleMB: 500 },
+  'grayscale-pdf': { maxSingleMB: 300 },
+  'flatten-pdf': { maxSingleMB: 500 },
+  'repair-pdf': { maxSingleMB: 500 },
+  'edit-metadata': { maxSingleMB: 500 },
+  'sanitize-pdf': { maxSingleMB: 500 },
+  'sign-pdf': { maxSingleMB: 500 },
+  'ocr-pdf': { maxSingleMB: 200 },
+};
+
+export const getToolLimit = (
+  slug: string,
+  isPro = false,
+  isLoggedIn = false
+): { maxSingleMB: number; maxTotalMB?: number } => {
+  if (isPro) {
+    return PRO_TOOL_SIZE_LIMITS[slug] || { maxSingleMB: 500, maxTotalMB: 1000 };
+  }
+  if (isLoggedIn) {
+    return FREE_TOOL_SIZE_LIMITS[slug] || { maxSingleMB: 150, maxTotalMB: 300 };
+  }
+  return TOOL_SIZE_LIMITS[slug] || { maxSingleMB: 100, maxTotalMB: 200 };
 };
 
 export const AI_LIMITS = {

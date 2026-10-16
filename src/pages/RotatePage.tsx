@@ -7,6 +7,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
 
@@ -113,6 +114,17 @@ export const RotatePage: React.FC = () => {
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
+
+      addActivityItem({
+        toolName: 'Rotate PDF',
+        toolId: 'rotate',
+        fileName: selectedFile.name,
+        fileSizeFormatted: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Edit',
+        savings: `${degrees}° rotated`,
+      });
+
       await downloadBlob(blob, name);
       setIsSuccess(true);
     } catch (err: unknown) {

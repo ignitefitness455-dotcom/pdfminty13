@@ -1,8 +1,9 @@
-import { ShieldCheck, BookOpen } from 'lucide-react';
+import { ShieldCheck, BookOpen, ExternalLink } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { NORD_AFFILIATE_LINKS } from '../config/constants';
 import { ROUTES } from '../config/routes';
 
 import LanguageSwitcher from './LanguageSwitcher';
@@ -128,6 +129,33 @@ export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
                   {t('footer.links.trustArticle', { defaultValue: 'Is Online PDF Safe?' })}
                 </Link>
               </li>
+              <li className="pt-2 border-t border-border-muted/50">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Privacy Partners
+                </span>
+              </li>
+              <li>
+                <a
+                  href={NORD_AFFILIATE_LINKS.NORDVPN}
+                  target="_blank"
+                  rel="nofollow sponsored noreferrer"
+                  className="hover:text-emerald-500 transition-colors flex items-center justify-between group"
+                >
+                  <span>NordVPN (Encrypted Tunnel)</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={NORD_AFFILIATE_LINKS.NORDPASS}
+                  target="_blank"
+                  rel="nofollow sponsored noreferrer"
+                  className="hover:text-emerald-500 transition-colors flex items-center justify-between group"
+                >
+                  <span>NordPass (Password Vault)</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -137,6 +165,16 @@ export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
               {t('footer.sections.companyLegal', { defaultValue: 'Company & Legal' })}
             </h4>
             <ul className="space-y-2 text-xs font-medium">
+              <li>
+                <Link to={ROUTES.PRICING} className="hover:text-emerald-500 transition-colors font-bold text-emerald-600 dark:text-emerald-400">
+                  {t('footer.links.pricing', { defaultValue: 'Pro Pricing & Plans' })}
+                </Link>
+              </li>
+              <li>
+                <Link to={ROUTES.SIGN_IN} className="hover:text-emerald-500 transition-colors">
+                  {t('footer.links.signIn', { defaultValue: 'Member Sign In' })}
+                </Link>
+              </li>
               <li>
                 <Link to={ROUTES.ABOUT_US} className="hover:text-emerald-500 transition-colors">
                   {t('footer.links.aboutUs', { defaultValue: 'About Us' })}

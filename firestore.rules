@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Common security helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isEmailVerified() {
+      return isAuthenticated() && request.auth.token.email_verified == true;
+    }
+
+    // Default deny all unmatched collections and documents
+    match /{document=**} {
+      allow read, write: false;
+    }
+
+    // 1. Private User Profile Documents
+    // Strictly isolated: each authenticated user can only access their own document
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+
+      // Create: User can only create their own profile document with valid required fields
+      allow create: if isOwner(userId)
+                    && request.resource.data.uid == userId
+                    && request.resource.data.email is string
+                    && request.resource.data.plan in ['free', 'pro'];
+
+      // Update: User can update their profile information (e.g. displayName, photoURL, emailVerified)
+      // Standard clients cannot self-elevate plan from 'free' to 'pro' directly
+      allow update: if isOwner(userId)
+                    && request.resource.data.uid == userId
+                    && (
+                      request.resource.data.plan == resource.data.plan
+                      || request.auth.token.admin == true
+                    );
+
+      // Delete: Standard deletion allowed only by owner
+      allow delete: if isOwner(userId);
+
+      // Subcollection: Periodic Usage Quotas & Metrics
+      match /usage/{period} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+                              && request.resource.data.aiAnalysesUsed is number
+                              && request.resource.data.aiAnalysesUsed >= 0;
+        allow delete: if false; // preserve audit counters
+      }
+    }
+
+    // 2. Feedback Submissions
+    // Public creation allowed with validated content; reading restricted to system admins
+    match /feedback/{feedbackId} {
+      allow read: if isAuthenticated() && request.auth.token.admin == true;
+      allow create: if request.resource.data.message is string
+                    && request.resource.data.message.size() >= 2
+                    && request.resource.data.message.size() <= 2000
+                    && request.resource.data.createdAt is timestamp;
+      allow update, delete: if false;
+    }
+
+    // 3. Platform System Announcements
+    match /system_announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.token.admin == true;
+    }
+  }
+}

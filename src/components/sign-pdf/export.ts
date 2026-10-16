@@ -137,6 +137,51 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
       continue;
     }
 
+    if (field.kind === 'checkmark') {
+      const asset = rasterizeCheckmark(vw / vh);
+      if (asset) {
+        const img = await embed(asset);
+        page.drawImage(img, {
+          x: anchorX,
+          y: anchorY,
+          width: vw,
+          height: vh,
+          rotate: degrees(totalDeg),
+        });
+      }
+      continue;
+    }
+
+    if (field.kind === 'cross') {
+      const asset = rasterizeCross(vw / vh);
+      if (asset) {
+        const img = await embed(asset);
+        page.drawImage(img, {
+          x: anchorX,
+          y: anchorY,
+          width: vw,
+          height: vh,
+          rotate: degrees(totalDeg),
+        });
+      }
+      continue;
+    }
+
+    if (field.kind === 'stamp') {
+      const asset = rasterizeStamp(input.signatures.fullName, input.dateText, vw / vh);
+      if (asset) {
+        const img = await embed(asset);
+        page.drawImage(img, {
+          x: anchorX,
+          y: anchorY,
+          width: vw,
+          height: vh,
+          rotate: degrees(totalDeg),
+        });
+      }
+      continue;
+    }
+
     const text =
       field.kind === 'name'
         ? input.signatures.fullName
@@ -186,8 +231,108 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
     }
   }
 
+  // Flatten interactive form fields into permanent content stream
+  try {
+    const form = pdf.getForm();
+    form.flatten();
+  } catch {
+    // PDF might not contain an interactive AcroForm
+  }
+
   pdf.setModificationDate(new Date());
   return pdf.save({ useObjectStreams: true });
+}
+
+function rasterizeCheckmark(aspect: number): string | null {
+  const h = 200;
+  const w = Math.max(1, Math.round(h * aspect));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  ctx.strokeStyle = '#059669'; // Emerald ink
+  ctx.lineWidth = Math.min(w, h) * 0.16;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  ctx.beginPath();
+  ctx.moveTo(w * 0.2, h * 0.52);
+  ctx.lineTo(w * 0.42, h * 0.76);
+  ctx.lineTo(w * 0.82, h * 0.24);
+  ctx.stroke();
+
+  return canvas.toDataURL('image/png');
+}
+
+function rasterizeCross(aspect: number): string | null {
+  const h = 200;
+  const w = Math.max(1, Math.round(h * aspect));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  ctx.strokeStyle = '#dc2626'; // Rose red ink
+  ctx.lineWidth = Math.min(w, h) * 0.16;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  ctx.beginPath();
+  ctx.moveTo(w * 0.25, h * 0.25);
+  ctx.lineTo(w * 0.75, h * 0.75);
+  ctx.moveTo(w * 0.75, h * 0.25);
+  ctx.lineTo(w * 0.25, h * 0.75);
+  ctx.stroke();
+
+  return canvas.toDataURL('image/png');
+}
+
+function rasterizeStamp(signerName: string, dateStr: string, aspect: number): string | null {
+  const h = 240;
+  const w = Math.max(1, Math.round(h * aspect));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  // Background pill / seal
+  ctx.fillStyle = 'rgba(236, 253, 245, 0.9)'; // emerald tint
+  ctx.strokeStyle = '#047857'; // emerald-700
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.roundRect(6, 6, w - 12, h - 12, 16);
+  ctx.fill();
+  ctx.stroke();
+
+  // Inner dashed border
+  ctx.strokeStyle = '#059669';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(14, 14, w - 28, h - 28);
+  ctx.setLineDash([]);
+
+  // Title text
+  ctx.fillStyle = '#065f46';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('DIGITALLY SIGNED & VERIFIED', w / 2, 48);
+
+  // Signer Name
+  ctx.fillStyle = '#111827';
+  ctx.font = 'bold 26px Arial, sans-serif';
+  ctx.fillText(signerName || 'VERIFIED SIGNER', w / 2, 100);
+
+  // Verification metadata
+  ctx.fillStyle = '#047857';
+  ctx.font = '16px monospace';
+  ctx.fillText(`DATE: ${dateStr}`, w / 2, 145);
+  ctx.fillText('PDFMINTY AIR-GAPPED VERIFICATION', w / 2, 180);
+
+  return canvas.toDataURL('image/png');
 }
 
 function rasterizeText(text: string, aspect: number): string | null {

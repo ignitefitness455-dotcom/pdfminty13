@@ -20,6 +20,7 @@ import {
   FilePenLine,
   ShieldBan,
   FileCode2,
+  GitCompare,
 } from 'lucide-react';
 import React from 'react';
 
@@ -51,6 +52,7 @@ export const prefetchMap: Record<string, () => Promise<unknown>> = {
   'pdf-to-markdown': () => import('../pages/PdfToMarkdownPage'),
   'sign-pdf': () => import('../pages/SignPdfPage'),
   'ocr-pdf': () => import('../pages/OcrPdfPage'),
+  'compare-pdf': () => import('../pages/ComparePdfPage'),
 };
 
 const prefetchedSet = new Set<string>();
@@ -87,6 +89,7 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
   FilePenLine,
   ShieldBan,
   FileCode2,
+  GitCompare,
 };
 
 export const badgeColors: Record<string, string> = {

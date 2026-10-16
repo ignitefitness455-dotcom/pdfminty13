@@ -1,4 +1,4 @@
-import { RotateCw, Trash2 } from 'lucide-react';
+import { RotateCw, Trash2, Check, X, ShieldCheck } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -250,7 +250,28 @@ export function PlacedFieldView({
             : 'shadow-[0_0_0_1px_rgba(5,150,105,0.45)] hover:shadow-[0_0_0_1.5px_#059669]'
         )}
       >
-        {isImage ? (
+        {field.kind === 'checkmark' ? (
+          <div className="flex size-full items-center justify-center text-emerald-600">
+            <Check className="size-4/5 stroke-[3]" />
+          </div>
+        ) : field.kind === 'cross' ? (
+          <div className="flex size-full items-center justify-center text-rose-600">
+            <X className="size-4/5 stroke-[3]" />
+          </div>
+        ) : field.kind === 'stamp' ? (
+          <div className="flex size-full flex-col items-center justify-center rounded border-2 border-emerald-700 bg-emerald-50/70 p-1 text-center font-mono text-emerald-800 shadow-sm select-none">
+            <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-900">
+              <ShieldCheck className="size-3 text-emerald-600" />
+              <span>DIGITALLY SIGNED</span>
+            </div>
+            <div className="text-[7px] font-semibold text-emerald-700 truncate w-full">
+              {signatures.fullName || 'VERIFIED SIGNER'}
+            </div>
+            <div className="text-[6px] text-emerald-600 font-mono">
+              {dateText}
+            </div>
+          </div>
+        ) : isImage ? (
           asset ? (
             <img
               src={asset.dataUrl}

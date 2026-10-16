@@ -1658,5 +1658,41 @@
       "adPersonalizationTitle": "Personnalisation des annonces (ad_personalization)",
       "adPersonalizationDesc": "Permet l affichage de publicités personnalisées selon vos préférences."
     }
+  },
+  "compressPdf": {
+    "workspace": "Espace de Documents",
+    "unexpectedError": "Une erreur est survenue lors de la compression.",
+    "successTitle": "Compression terminée avec succès !",
+    "downloadButton": "Télécharger le PDF compressé",
+    "inspectPreview": "Inspecter et prévisualiser",
+    "hidePreview": "Masquer l aperçu",
+    "openNewTab": "Ouvrir dans un nouvel onglet",
+    "compressingButton": "Compression dans le navigateur...",
+    "compressSubmit": "Compresser et télécharger"
+  },
+  "compressAnimation": {
+    "title": "Compression du document",
+    "inputDocument": "Document d origine",
+    "uncompressed": "Taille originale",
+    "targetOptimized": "Fichier optimisé",
+    "optimizingEngine": "Optimisation vectorielle et rééchantillonnage actif",
+    "stage1": "Analyse de la structure du document",
+    "stage2": "Optimisation et réencodage des graphiques",
+    "stage3": "Suppression des métadonnées superflues",
+    "stage4": "Compactage des flux et références croisées",
+    "stage5": "Vérification de la netteté et finalisation",
+    "squisherTitle": "Mini-jeu Écraseur d octets",
+    "squisherPrompt": "Cliquez pour écraser les octets superflus pendant l attente !",
+    "squisherScore": "Vous avez écrasé {{size}} Mo de données superflues !",
+    "tip1Badge": "Polices vectorielles intactes",
+    "tip1Text": "Le texte et les vecteurs restent nets à 100% quel que soit le zoom.",
+    "tip2Badge": "100% Privé dans le Navigateur",
+    "tip2Text": "Votre fichier est traité localement sur votre appareil sans envoi vers un serveur.",
+    "tip3Badge": "Rééchantillonnage intelligent",
+    "tip3Text": "Les photos intégrées sont rééquilibrées sans altération visible.",
+    "tip4Badge": "Nettoyage des métadonnées",
+    "tip4Text": "Les historiques inutiles et métadonnées cachées sont purgés en toute sécurité.",
+    "tip5Badge": "Web Worker haute vitesse",
+    "tip5Text": "Le traitement multithread garantit une interface fluide pendant la compression."
   }
 }

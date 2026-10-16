@@ -81,7 +81,7 @@ export const RepairPdfPage: React.FC = () => {
     }
   };
 
-  const limitMB = TOOL_SIZE_LIMITS['repair-pdf']?.maxSingleMB || 50;
+  const limitMB = TOOL_SIZE_LIMITS['repair-pdf']?.maxSingleMB || 100;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadein" id="repair_page_container">

@@ -187,7 +187,7 @@ export function UploadScreen({ onFile, error }: Props) {
               <strong>{t('signPdf.step1Bold', { defaultValue: 'Upload PDF Document:' })}</strong>{' '}
               {t('signPdf.step1Text', {
                 defaultValue:
-                  'Drop your contract or form into the secure browser viewer. Files up to 50MB are supported.',
+                  'Drop your contract or form into the secure browser viewer. Files up to 100MB are supported.',
               })}
             </li>
             <li>

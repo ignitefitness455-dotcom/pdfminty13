@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FileUploader } from '../components/FileUploader';
+import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
@@ -246,6 +247,12 @@ export const UnlockPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <SecurityAffiliateBanner
+        variant="pass"
+        contextTitle="Manage Document Credentials with NordPass"
+        contextDesc="Tired of forgotten PDF unlock keys? Store all your document passwords and security credentials in NordPass encrypted vault for instant autofill."
+      />
     </div>
   );
 };

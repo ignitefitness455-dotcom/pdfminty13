@@ -1,7 +1,9 @@
-import { Upload, File, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Upload, File, AlertCircle, ShieldCheck, Crown, Zap, Sparkles } from 'lucide-react';
 import React, { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useAuth } from '../contexts/AuthContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { extractFileProcessingContext } from '../error-handler';
 
 interface FileUploaderProps {
@@ -21,11 +23,26 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   multiple = false,
   title,
   subtitle,
-  maxSizeMB = 50,
+  maxSizeMB = 100,
   icon: IconComponent = Upload,
   id,
 }) => {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const {
+    tier,
+    tasksRemaining,
+    isLimitReached,
+    openLimitModal,
+  } = useUsageLimit();
+
+  const isPro = tier === 'pro';
+  // Guest: 100MB (or custom tool limit), Logged-in Free: 150MB, Pro: 500MB
+  const effectiveMaxMB = isPro
+    ? Math.max(maxSizeMB, 500)
+    : user
+      ? Math.max(maxSizeMB, 150)
+      : maxSizeMB;
   const [isDragActive, setIsDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,9 +57,26 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       if (!filesList || filesList.length === 0) return;
       setError(null);
 
+      // Check daily task quota
+      if (isLimitReached) {
+        openLimitModal({ reason: 'task_limit' });
+        setError(
+          tier === 'guest'
+            ? t('usageLimits.uploader.guestDailyLimitReached', {
+                defaultValue:
+                  'Daily guest task limit reached (5/5). Sign in for 10 tasks & 150MB, or upgrade to Pro for unlimited.',
+              })
+            : t('usageLimits.uploader.freeDailyLimitReached', {
+                defaultValue:
+                  'Daily free task limit reached (10/10). Upgrade to Pro for unlimited tasks.',
+              })
+        );
+        return;
+      }
+
       const validFiles: File[] = [];
       const expectedTypes = accept.split(',').map((t) => t.trim());
-      const limitBytes = maxSizeMB * 1024 * 1024;
+      const limitBytes = effectiveMaxMB * 1024 * 1024;
 
       const rejectedFiles: { name: string; reason: string }[] = [];
 
@@ -100,10 +134,25 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
         // 2. Validate maximum file size limit
         if (file.size > limitBytes) {
+          const sizeMB = Number((file.size / 1024 / 1024).toFixed(1));
+          let tierReason = `too large (${sizeMB} MB, max ${effectiveMaxMB} MB)`;
+          if (tier === 'guest') {
+            tierReason = t('usageLimits.uploader.guestFileTooLarge', {
+              size: sizeMB,
+              defaultValue: `too large (${sizeMB} MB exceeds 100 MB guest limit. Log in for 150 MB!)`,
+            });
+          } else if (tier === 'free') {
+            tierReason = t('usageLimits.uploader.freeFileTooLarge', {
+              size: sizeMB,
+              defaultValue: `too large (${sizeMB} MB exceeds 150 MB free limit. Upgrade to Pro for 500 MB!)`,
+            });
+          }
+
           rejectedFiles.push({
             name: file.name,
-            reason: `too large (${(file.size / 1024 / 1024).toFixed(2)} MB, max ${maxSizeMB} MB)`,
+            reason: tierReason,
           });
+          openLimitModal({ reason: 'file_size', attemptedFileSizeMB: sizeMB });
           continue;
         }
 
@@ -165,7 +214,16 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         }
       }
     },
-    [accept, maxSizeMB, multiple, onFilesSelected]
+    [
+      accept,
+      effectiveMaxMB,
+      isLimitReached,
+      multiple,
+      onFilesSelected,
+      openLimitModal,
+      t,
+      tier,
+    ]
   );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -200,8 +258,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   );
 
   const triggerInputClick = useCallback(() => {
+    if (isLimitReached) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     fileInputRef.current?.click();
-  }, []);
+  }, [isLimitReached, openLimitModal]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -270,12 +332,94 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
         <h3 className="font-semibold text-slate-800 text-base md:text-lg mb-1">{displayTitle}</h3>
         <p className="text-slate-500 text-sm mb-2">{displaySubtitle}</p>
-        <span className="inline-flex py-1 px-3 rounded-md bg-white border border-slate-200 text-xs text-slate-500 font-medium group-hover:border-emerald-200 group-hover:text-emerald-700">
-          {t('fileUploader.maxSize', {
-            size: maxSizeMB,
-            defaultValue: `Max file size: ${maxSizeMB}MB`,
-          })}
-        </span>
+        <div className="flex items-center gap-2 justify-center flex-wrap pt-1">
+          <span className="inline-flex py-1 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 font-medium group-hover:border-emerald-200 group-hover:text-emerald-700">
+            {t('usageLimits.uploader.maxSize', {
+              size: effectiveMaxMB,
+              defaultValue: `Max file size: ${effectiveMaxMB}MB`,
+            })}
+          </span>
+
+          {tier === 'guest' && (
+            <>
+              <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+                <Zap className="w-3 h-3 text-emerald-600 fill-emerald-600" />
+                <span>
+                  {t('usageLimits.uploader.guestTasks', {
+                    count: tasksRemaining,
+                    defaultValue: `5 Daily Tasks (${tasksRemaining} left)`,
+                  })}
+                </span>
+              </span>
+              <span
+                role="link"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openLimitModal({ reason: 'task_limit' });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    openLimitModal({ reason: 'task_limit' });
+                  }
+                }}
+                className="text-[11px] text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-bold hover:underline cursor-pointer"
+              >
+                {t('usageLimits.uploader.guestPrompt', {
+                  defaultValue: 'Log in for 150MB & 10 tasks →',
+                })}
+              </span>
+            </>
+          )}
+
+          {tier === 'free' && (
+            <>
+              <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                <span>
+                  {t('usageLimits.uploader.freeTasks', {
+                    count: tasksRemaining,
+                    defaultValue: `10 Daily Tasks (${tasksRemaining} left)`,
+                  })}
+                </span>
+              </span>
+              <span
+                role="link"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openLimitModal({ reason: 'task_limit' });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    openLimitModal({ reason: 'task_limit' });
+                  }
+                }}
+                className="text-[11px] text-amber-600 hover:text-amber-700 dark:text-amber-400 font-bold hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>
+                  {t('usageLimits.uploader.freePrompt', {
+                    defaultValue: 'Pro: 500MB & Unlimited →',
+                  })}
+                </span>
+              </span>
+            </>
+          )}
+
+          {isPro && (
+            <span className="inline-flex items-center gap-1 py-1 px-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 font-black">
+              <Crown className="w-3 h-3 fill-amber-500 text-amber-500" />
+              <span>
+                {t('usageLimits.uploader.proTasks', {
+                  defaultValue: 'PRO • 500MB • Unlimited Tasks',
+                })}
+              </span>
+            </span>
+          )}
+        </div>
       </div>
 
       {error && (

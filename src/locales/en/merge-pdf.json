@@ -18,7 +18,7 @@
     "subtitleWithLimit": "Drag PDF files here or click to browse (Max limit: {{maxSingle}}MB per file)",
     "browseButton": "Browse Files",
     "ariaLabel": "Upload PDF files to merge",
-    "supportedFormat": "Supports PDF files up to 50MB each"
+    "supportedFormat": "Supports PDF files up to 100MB each"
   },
   "emptyState": {
     "title": "Upload PDFs to merge",
