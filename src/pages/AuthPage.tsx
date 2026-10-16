@@ -17,6 +17,10 @@ import {
   RefreshCw,
   Edit3,
   Check,
+  HelpCircle,
+  Settings,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -26,6 +30,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import {
+  firebaseConfig,
+  saveCustomFirebaseConfig,
+  clearCustomFirebaseConfig,
+} from '../lib/firebase';
 import { isDisposableEmail, getDisposableEmailError } from '../utils/disposableEmailBlocker';
 
 import { DashboardPage } from './DashboardPage';
@@ -82,6 +91,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
   const [resendCooldown, setResendCooldown] = useState<number>(0);
   const [isResending, setIsResending] = useState<boolean>(false);
   const [copiedDomain, setCopiedDomain] = useState<boolean>(false);
+  const [showFirebaseHelp, setShowFirebaseHelp] = useState<boolean>(false);
+  const [showConfigModal, setShowConfigModal] = useState<boolean>(false);
+  const [customApiKey, setCustomApiKey] = useState(firebaseConfig.apiKey || '');
+  const [customProjectId, setCustomProjectId] = useState(firebaseConfig.projectId || '');
+  const [customAuthDomain, setCustomAuthDomain] = useState(firebaseConfig.authDomain || '');
+  const [customAppId, setCustomAppId] = useState(firebaseConfig.appId || '');
 
   // Live detection of disposable/temporary email
   const isTempEmail = isSignUp && email.trim().length > 3 ? isDisposableEmail(email.trim()) : false;
@@ -262,38 +277,88 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
       navigate(ROUTES.DASHBOARD);
     } catch (err: unknown) {
       const errObj = err as { code?: string; message?: string };
+      const errCode = (errObj.code || '').toLowerCase();
+      const errStr = (err instanceof Error ? err.message : String(err)).toLowerCase();
       console.warn('[Google Auth Info]:', errObj.code || err);
 
-      if (errObj.code === 'auth/unauthorized-domain') {
+      const isUnauthorizedDomain =
+        errCode === 'auth/unauthorized-domain' ||
+        errStr.includes('auth/unauthorized-domain') ||
+        errStr.includes('unauthorized domain') ||
+        errStr.includes('unauthorized-domain');
+
+      const isOpNotAllowed =
+        errCode === 'auth/operation-not-allowed' ||
+        errStr.includes('auth/operation-not-allowed') ||
+        errStr.includes('operation-not-allowed');
+
+      const isPopupBlocked =
+        errCode === 'auth/popup-blocked' ||
+        errStr.includes('auth/popup-blocked') ||
+        errStr.includes('popup-blocked') ||
+        errStr.includes('popup was blocked');
+
+      const isPopupClosed =
+        errCode === 'auth/popup-closed-by-user' ||
+        errCode === 'auth/cancelled-popup-request' ||
+        errStr.includes('popup-closed-by-user') ||
+        errStr.includes('cancelled-popup-request');
+
+      if (isUnauthorizedDomain) {
         setUnauthorizedDomain(window.location.hostname);
+        setShowFirebaseHelp(true);
         setErrorMessage(
           isBn
-            ? 'এই ডোমেনটি Firebase Console-এ অনুমোদিত নয় (auth/unauthorized-domain)। নিচে দেওয়া ডোমেনটি Firebase-এ যোগ করুন অথবা সরাসরি ইমেইল ও পাসওয়ার্ড দিয়ে সাইন-ইন/সাইন-আপ করুন।'
-            : 'This preview domain is not authorized in Firebase Authentication (auth/unauthorized-domain). Add the domain below to Firebase Console, or sign in using Email & Password.'
+            ? `এই ডোমেনটি (${window.location.hostname}) Firebase Console-এ অনুমোদিত নয় (auth/unauthorized-domain)। নিচে দেওয়া ৩টি সহজ ধাপে এটি ঠিক করুন, অথবা সরাসরি ইমেইল ও পাসওয়ার্ড দিয়ে সাইন-ইন করুন।`
+            : `This domain (${window.location.hostname}) is not authorized in Firebase Authentication (auth/unauthorized-domain). Follow the 3 steps below to authorize it, or sign in with email.`
         );
-      } else if (errObj.code === 'auth/operation-not-allowed') {
+      } else if (isOpNotAllowed) {
+        setShowFirebaseHelp(true);
         setErrorMessage(
           isBn
-            ? 'Firebase Console-এ Google Sign-In মেথড এনেবল করা নেই। Firebase Console > Authentication > Sign-in method-এ গিয়ে Google সক্রিয় করুন।'
-            : 'Google Sign-In is not enabled in Firebase Console. Please enable it in Firebase Console > Authentication > Sign-in method.'
+            ? 'Firebase Console-এ Google Sign-In মেথড এনেবল করা নেই (auth/operation-not-allowed)। Firebase Console > Authentication > Sign-in method-এ গিয়ে Google সক্রিয় করুন।'
+            : 'Google Sign-In is not enabled in Firebase Console (auth/operation-not-allowed). Please enable it in Firebase Console > Authentication > Sign-in method.'
         );
-      } else if (
-        errObj.code === 'auth/popup-closed-by-user' ||
-        errObj.code === 'auth/cancelled-popup-request'
-      ) {
+      } else if (isPopupBlocked) {
+        setErrorMessage(
+          isBn
+            ? 'আপনার ব্রাউজারে পপ-আপ উইন্ডো ব্লক করা রয়েছে (auth/popup-blocked)। ব্রাউজারের অ্যাড্রেস বার থেকে Pop-ups অনুমোদন করুন অথবা ইমেইল দিয়ে লগইন করুন।'
+            : 'Google pop-up was blocked by your browser (auth/popup-blocked). Please allow pop-ups for this site or sign in with email.'
+        );
+      } else if (isPopupClosed) {
         // User voluntarily closed the Google popup window
         setErrorMessage(null);
       } else {
+        setShowFirebaseHelp(true);
         setErrorMessage(
           errObj.message ||
             (isBn
-              ? 'Google সাইন-ইন সম্পন্ন করা যায়নি। পুনরায় চেষ্টা করুন।'
-              : 'Could not complete Google Sign-In. Please try again.')
+              ? 'Google সাইন-ইন সম্পন্ন করা যায়নি। অনুগ্রহ করে Firebase Console সেটিংস ও Authorized Domains পরীক্ষা করুন।'
+              : 'Could not complete Google Sign-In. Please check your Firebase Console settings and Authorized domains.')
         );
       }
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSaveCustomConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customApiKey || !customProjectId) {
+      showToast(isBn ? 'API Key এবং Project ID আবশ্যক' : 'API Key and Project ID are required', 'error');
+      return;
+    }
+    saveCustomFirebaseConfig({
+      apiKey: customApiKey.trim(),
+      projectId: customProjectId.trim(),
+      authDomain: customAuthDomain.trim() || `${customProjectId.trim()}.firebaseapp.com`,
+      appId: customAppId.trim(),
+    });
+  };
+
+  const handleResetConfig = () => {
+    clearCustomFirebaseConfig();
+    window.location.reload();
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -740,6 +805,170 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
             <span>{isBn ? 'Google দিয়ে এগিয়ে যান' : 'Continue with Google'}</span>
           </button>
 
+          {/* Quick Help Toggle for Google Sign-In & Firebase Settings */}
+          <div className="mt-2 text-center">
+            <button
+              type="button"
+              onClick={() => setShowFirebaseHelp(!showFirebaseHelp)}
+              className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors font-medium cursor-pointer"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>
+                {isBn
+                  ? 'Google সাইন-ইন সমস্যা? সমাধানের সহজ ধাপ দেখুন'
+                  : 'Google Sign-In issue? View quick fix steps'}
+              </span>
+              {showFirebaseHelp ? (
+                <ChevronUp className="w-3 h-3 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              )}
+            </button>
+          </div>
+
+          {/* Comprehensive Guidance Box when domain is unauthorized or user toggles help */}
+          {(unauthorizedDomain || showFirebaseHelp) && (
+            <div className="mt-4 mb-2 p-4 rounded-2xl border border-amber-300 dark:border-amber-700/60 bg-gradient-to-b from-amber-50 to-orange-50/40 dark:from-amber-950/40 dark:to-slate-900 text-xs space-y-3.5 shadow-sm animate-fadein">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold text-amber-900 dark:text-amber-200">
+                    {isBn
+                      ? 'Firebase Console-এ এই ডোমেনটি অনুমোদন (Authorize) করার নিয়ম'
+                      : 'How to Fix Firebase Google Sign-In Error'}
+                  </p>
+                  <p className="text-amber-800 dark:text-amber-300 leading-relaxed text-[11px]">
+                    {isBn
+                      ? 'Google সাইন-ইন কাজ না করার মূল কারণ হলো বর্তমান ওয়েবসাইট ডোমেনটি Firebase Authentication-এর অনুমোদিত তালিকায় (Authorized Domains) যুক্ত না থাকা।'
+                      : 'Firebase blocks Google popup logins if the current website domain is not listed under Authorized Domains in Firebase Console.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Current Domain Box with One-Click Copy */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  {isBn ? 'আপনার বর্তমান ডোমেন / হোস্টনেম:' : 'Your Current Domain / Hostname:'}
+                </span>
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl border border-amber-200 dark:border-amber-800">
+                  <code className="text-[11px] font-mono text-slate-800 dark:text-slate-200 truncate flex-1 select-all font-semibold">
+                    {window.location.hostname}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.hostname);
+                      setCopiedDomain(true);
+                      showToast(isBn ? 'ডোমেন কপি করা হয়েছে!' : 'Domain copied to clipboard!', 'success');
+                      setTimeout(() => setCopiedDomain(false), 2000);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800/80 text-amber-900 dark:text-amber-200 rounded-lg transition-colors shrink-0 cursor-pointer"
+                  >
+                    {copiedDomain ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedDomain ? (isBn ? 'কপি হয়েছে' : 'Copied') : isBn ? 'কপি করুন' : 'Copy'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3 Step Tutorial */}
+              <div className="bg-white/90 dark:bg-slate-900/90 p-3.5 rounded-xl border border-amber-200/80 dark:border-amber-900/50 space-y-2 text-[11px] text-slate-700 dark:text-slate-300">
+                <p className="font-bold text-slate-900 dark:text-slate-100">
+                  {isBn ? 'সহজ ৩টি ধাপে সমাধান করুন:' : 'Follow these 3 easy steps:'}
+                </p>
+                <ol className="list-decimal list-inside space-y-1.5 pl-0.5 leading-relaxed">
+                  <li>
+                    <span>
+                      {isBn ? 'Firebase Console-এর ' : 'Go to '}
+                      <a
+                        href={`https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5"
+                      >
+                        Authentication &gt; Settings
+                        <ExternalLink className="w-2.5 h-2.5 inline ml-0.5" />
+                      </a>
+                      {isBn ? '-এ যান।' : '.'}
+                    </span>
+                  </li>
+                  <li>
+                    {isBn ? (
+                      <span>
+                        নিচে স্ক্রোল করে <b>Authorized domains</b> সেকশনে <b>Add domain</b> বাটনে ক্লিক করুন।
+                      </span>
+                    ) : (
+                      <span>
+                        Scroll down to <b>Authorized domains</b> and click <b>Add domain</b>.
+                      </span>
+                    )}
+                  </li>
+                  <li>
+                    {isBn ? (
+                      <span>
+                        উপরে কপি করা ডোমেন (<code>{window.location.hostname}</code>) পেস্ট করে <b>Save / Add</b> করুন।
+                      </span>
+                    ) : (
+                      <span>
+                        Paste your domain (<code>{window.location.hostname}</code>) and click <b>Add</b>.
+                      </span>
+                    )}
+                  </li>
+                  <li>
+                    {isBn ? (
+                      <span>
+                        <a
+                          href={`https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/providers`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5"
+                        >
+                          Sign-in method
+                          <ExternalLink className="w-2.5 h-2.5 inline ml-0.5" />
+                        </a>{' '}
+                        ট্যাবে <b>Google</b> এনাবল করা আছে কিনা নিশ্চিত করুন।
+                      </span>
+                    ) : (
+                      <span>
+                        Verify that <b>Google</b> is enabled under{' '}
+                        <a
+                          href={`https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/providers`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5"
+                        >
+                          Sign-in method
+                          <ExternalLink className="w-2.5 h-2.5 inline ml-0.5" />
+                        </a>.
+                      </span>
+                    )}
+                  </li>
+                </ol>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1 border-t border-amber-200/80 dark:border-amber-800/60 text-[11px]">
+                <a
+                  href={`https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  <span>{isBn ? 'Firebase Settings খুলুন' : 'Open Firebase Console'}</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfigModal(true)}
+                  className="inline-flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>{isBn ? 'কাস্টম Firebase প্রজেক্ট সেট করুন' : 'Custom Firebase Project'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="relative my-6 text-center">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200 dark:border-slate-800" />
@@ -748,63 +977,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
               {isBn ? 'অথবা ইমেইল ব্যবহার করুন' : 'Or continue with email'}
             </span>
           </div>
-
-          {/* Error & Guidance Messages for Unauthorized Domain */}
-          {unauthorizedDomain && (
-            <div className="mb-5 p-4 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 text-xs space-y-3 shadow-sm animate-fadein">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-bold text-amber-900 dark:text-amber-200">
-                    {isBn
-                      ? 'Firebase-এ এই ডোমেনটি Authorized Domains তালিকায় যুক্ত করতে হবে'
-                      : 'Domain Authorization Required in Firebase Console'}
-                  </p>
-                  <p className="text-amber-800 dark:text-amber-300 leading-relaxed">
-                    {isBn
-                      ? 'Google সাইন-ইন চালু করতে Firebase Console > Authentication > Settings > Authorized domains-এ এই হোস্টনেমটি যোগ করুন:'
-                      : 'To enable Google Sign-In, add this hostname to Firebase Console under Settings > Authorized domains:'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-lg border border-amber-200 dark:border-amber-800">
-                <code className="text-[11px] font-mono text-slate-800 dark:text-slate-200 truncate flex-1 select-all">
-                  {unauthorizedDomain}
-                </code>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(unauthorizedDomain);
-                    setCopiedDomain(true);
-                    showToast(isBn ? 'ডোমেন কপি করা হয়েছে!' : 'Domain copied to clipboard!', 'success');
-                    setTimeout(() => setCopiedDomain(false), 2000);
-                  }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 text-amber-900 dark:text-amber-200 rounded transition-colors shrink-0 cursor-pointer"
-                >
-                  {copiedDomain ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedDomain ? (isBn ? 'কপি হয়েছে' : 'Copied') : isBn ? 'কপি করুন' : 'Copy'}</span>
-                </button>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-amber-200 dark:border-amber-800/60 text-[11px]">
-                <a
-                  href="https://console.firebase.google.com/project/pdfminty-9836d/authentication/settings"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
-                >
-                  <span>{isBn ? 'Firebase Settings খুলুন' : 'Open Firebase Console'}</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-                <span className="text-slate-500 dark:text-slate-400">
-                  {isBn
-                    ? 'অথবা নিচে ইমেইল ও পাসওয়ার্ড দিয়ে সরাসরি সাইন-আপ করুন'
-                    : 'Or use Email & Password below to sign up directly'}
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Error Message */}
           {errorMessage && (
@@ -1147,6 +1319,120 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Custom Firebase Configuration Modal */}
+      {showConfigModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadein">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative space-y-4">
+            <button
+              type="button"
+              onClick={() => setShowConfigModal(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <Settings className="w-5 h-5" />
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                {isBn ? 'Firebase কনফিগারেশন সেটিংস' : 'Firebase Project Configuration'}
+              </h3>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {isBn
+                ? 'আপনি চাইলে আপনার নিজস্ব Firebase Project-এর Web Client Keys এখানে যুক্ত করতে পারেন। এই তথ্যগুলো শুধুমাত্র আপনার ব্রাউজারের লোকাল স্টোরেজে সংরক্ষিত থাকবে।'
+                : 'Connect your own Firebase Project by providing your Web App client keys from Firebase Console > Project Settings.'}
+            </p>
+
+            <form onSubmit={handleSaveCustomConfig} className="space-y-3 pt-1">
+              <div>
+                <label htmlFor="custom-firebase-project-id" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Firebase Project ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="custom-firebase-project-id"
+                  type="text"
+                  required
+                  value={customProjectId}
+                  onChange={(e) => setCustomProjectId(e.target.value)}
+                  placeholder="e.g. my-pdf-app-12345"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="custom-firebase-api-key" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  API Key <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="custom-firebase-api-key"
+                  type="text"
+                  required
+                  value={customApiKey}
+                  onChange={(e) => setCustomApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="custom-firebase-auth-domain" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Auth Domain (Optional)
+                </label>
+                <input
+                  id="custom-firebase-auth-domain"
+                  type="text"
+                  value={customAuthDomain}
+                  onChange={(e) => setCustomAuthDomain(e.target.value)}
+                  placeholder="my-pdf-app-12345.firebaseapp.com"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="custom-firebase-app-id" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  App ID (Optional)
+                </label>
+                <input
+                  id="custom-firebase-app-id"
+                  type="text"
+                  value={customAppId}
+                  onChange={(e) => setCustomAppId(e.target.value)}
+                  placeholder="1:123456789:web:abcdef"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={handleResetConfig}
+                  className="text-[11px] text-red-500 hover:underline cursor-pointer"
+                >
+                  {isBn ? 'ডিফল্ট সেটিংসে ফিরুন' : 'Reset to Default'}
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfigModal(false)}
+                    className="px-3 py-2 rounded-xl font-bold text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer"
+                  >
+                    {isBn ? 'বাতিল' : 'Cancel'}
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-sm"
+                  >
+                    {isBn ? 'সংরক্ষণ করুন' : 'Save & Reload'}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
