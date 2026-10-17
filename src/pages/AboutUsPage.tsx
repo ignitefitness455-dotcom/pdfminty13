@@ -74,7 +74,10 @@ export const AboutUsPage: React.FC = () => {
                 {t('aboutUs.pdfmintySolution', { defaultValue: 'The PdfMinty Solution' })}
               </h2>
               <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
-                {t('aboutUs.solutionDesc')}
+                {t('aboutUs.solutionDesc', {
+                  defaultValue:
+                    'PdfMinty processes your files directly in your web browser for our 30+ standard PDF tools without server uploads. The two opt-in exceptions are the AI Analyze tool (which transmits extracted text to Google Gemini) and the OCR PDF tool (which transmits selected scanned page images to Google Gemini Multimodal Vision), both of which require your explicit consent before running.',
+                })}
               </p>
             </div>
           </div>

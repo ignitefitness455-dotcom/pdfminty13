@@ -1449,7 +1449,7 @@
     "mainTitle": "PDF Tools Built for Privacy.",
     "intro": "PdfMinty was created with a simple core principle: your documents belong to you. We built a complete suite of PDF tools that run entirely inside your web browser, keeping your files on your device at all times.",
     "problemDesc": "Most online PDF services require you to upload your sensitive contracts, tax records, and medical files to their remote servers. You have no guarantee of when or if your documents are deleted, or who might access them.",
-    "solutionDesc": "PdfMinty processes your files directly in your web browser for our standard PDF tools without server uploads. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box.",
+    "solutionDesc": "PdfMinty 在您的 Web 浏览器中直接处理 30+ 种标准 PDF 工具的文件，无需上传到任何服务器。两个需选用的例外是 AI Analyze 工具（将提取的文本发送给 Google Gemini）和 OCR PDF 工具（将选定的扫描页面图像发送给 Google Gemini 多模态视觉），两者在运行前均需获得您的明确同意。",
     "freeAccessible": "Free & Accessible",
     "keyboardNav": "Keyboard Navigation & Focus Indicators",
     "screenReader": "Full Screen Reader & ARIA Compatibility",

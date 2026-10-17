@@ -532,9 +532,9 @@ export const TOOL_FAQS: ToolFaqMap = {
         'AI Analysis lets you instantly generate executive summaries, extract key data points, translate content, and ask natural language questions about your PDF document.',
     },
     {
-      question: 'Is my confidential document sent to train public AI models?',
+      question: 'How is my document handled during AI analysis?',
       answer:
-        'No. Requests are processed securely via encrypted API endpoints without retaining or training on your proprietary document data.',
+        'Standard tools run locally in your browser. For AI Analyze, extracted text is transmitted via an encrypted HTTPS connection to Google Gemini API solely to generate answers. PdfMinty does not retain, store, or log your document content on its servers.',
     },
     {
       question: 'Can I analyze large PDF reports or research papers?',

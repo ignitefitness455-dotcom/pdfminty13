@@ -225,6 +225,7 @@ export const PdfToMarkdownPage: React.FC = () => {
   const [images, setImages] = useState<ExtractedMarkdownImage[]>([]);
   const [pageCount, setPageCount] = useState<number>(0);
   const [isScannedResult, setIsScannedResult] = useState<boolean>(false);
+  const [hasOcrConsent, setHasOcrConsent] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   const operationTokenRef = useRef<number>(0);
@@ -243,6 +244,12 @@ export const PdfToMarkdownPage: React.FC = () => {
 
   const handleRunAiOcr = async () => {
     if (!selectedFile) return;
+    if (!hasOcrConsent) {
+      setError(
+        'Please acknowledge the Cloud AI Vision consent checkbox before transcribing scanned pages.'
+      );
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -610,32 +617,47 @@ export const PdfToMarkdownPage: React.FC = () => {
       </div>
 
       {isScannedResult && (
-        <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="p-5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl flex flex-col gap-4 shadow-sm">
           <div className="flex items-start space-x-3.5">
-            <Sparkles className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1 text-xs md:text-sm text-amber-900">
-              <p className="font-extrabold text-base text-amber-950">
+            <Sparkles className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1 text-xs md:text-sm text-amber-900 dark:text-amber-200">
+              <p className="font-extrabold text-base text-amber-950 dark:text-amber-100">
                 {t('pdfToMarkdown.scannedDetected')}
               </p>
-              <p>
+              <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-xs">
                 Standard text-layer extraction yielded minimal text because this PDF is composed of
-                scanned images. Use our Multimodal AI Vision OCR engine to transcribe pages and
-                tables directly into clean Markdown.
+                scanned images. Use our Multimodal AI Vision OCR engine to transcribe pages directly
+                into clean Markdown via an encrypted Google Gemini API proxy.
               </p>
             </div>
           </div>
-          <button
-            onClick={handleRunAiOcr}
-            disabled={loading}
-            className="py-2.5 px-5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center space-x-2 transition-all shadow-sm flex-shrink-0 cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>
-              {t('pdfToMarkdown.transcribeWithAI', {
-                defaultValue: 'Transcribe with AI Vision OCR',
-              })}
-            </span>
-          </button>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
+            <label className="flex items-start sm:items-center space-x-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={hasOcrConsent}
+                onChange={(e) => setHasOcrConsent(e.target.checked)}
+                className="mt-0.5 sm:mt-0 accent-amber-600 rounded cursor-pointer"
+              />
+              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                I consent to sending page images to Google Gemini AI Vision for OCR extraction.
+              </span>
+            </label>
+
+            <button
+              onClick={handleRunAiOcr}
+              disabled={loading || !hasOcrConsent}
+              className="py-2.5 px-5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 disabled:opacity-40 text-white flex items-center justify-center space-x-2 transition-all shadow-sm flex-shrink-0 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>
+                {t('pdfToMarkdown.transcribeWithAI', {
+                  defaultValue: 'Transcribe with AI Vision OCR',
+                })}
+              </span>
+            </button>
+          </div>
         </div>
       )}
 

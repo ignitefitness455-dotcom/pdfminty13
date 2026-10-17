@@ -2415,7 +2415,7 @@ export const TOOLS: ToolSEOInfo[] = [
       </ol>
       
       <h2>Handling Scanned PDFs Without Embedded Text</h2>
-      <p>If your document is a scanned contract or photograph of a physical page without an embedded text stream, text cannot be parsed directly. Use our local <a href="/ocr-pdf/">OCR PDF Tool</a> first to generate an optical character recognition layer, or follow our diagnostic tutorial: <a href="/blog/how-to-make-a-scanned-pdf-searchable/">How to Make a Scanned PDF Searchable Offline</a>.</p>
+      <p>If your document is a scanned contract or photograph of a physical page without an embedded text stream, text cannot be parsed directly. Use our <a href="/ocr-pdf/">AI Vision OCR PDF Tool</a> first to generate an optical character recognition layer, or follow our diagnostic tutorial: <a href="/blog/how-to-make-a-scanned-pdf-searchable/">How to Make a Scanned PDF Searchable</a>.</p>
       <h2>Optimizing Document Ingestion for LLMs and Vector Search</h2>
       <p>Converting binary PDF layouts into clean Markdown eliminates complex bounding boxes, font mapping tables, and unnecessary formatting noise. The resulting plain text retains semantic header hierarchies (# and ##) and table structures, drastically reducing token overhead and improving semantic chunking when feeding technical documentation into Retrieval-Augmented Generation (RAG) pipelines.</p>
     `,
@@ -2428,7 +2428,7 @@ export const TOOLS: ToolSEOInfo[] = [
     shortDescription: 'Summarize or ask questions via secure, privacy-guaranteed AI',
     metaTitle: 'AI PDF Analyzer Free — Chat & Summarize PDFs | PDFMinty',
     metaDescription:
-      'Analyze PDF files with edge AI. Securely summarize, chat with, and extract deep structural details from your PDF contents with privacy in mind.',
+      'Analyze PDF files with AI. Securely summarize, chat with, and extract deep structural details from your PDF contents with privacy in mind.',
     h1: 'AI PDF Analyzer Free — Chat & Summarize PDF Documents',
     icon: 'Sparkles',
     iconColor: 'text-security-green',
@@ -2518,10 +2518,10 @@ export const TOOLS: ToolSEOInfo[] = [
     ],
     keywords: [
       'ai analyze pdf',
-      'chat with pdf offline',
+      'chat with pdf securely',
       'summarize pdf with ai',
       'ask questions to pdf',
-      'private ai pdf reader',
+      'ai pdf assistant',
     ],
     relatedTools: [
       'pdf-to-markdown',
@@ -2548,7 +2548,7 @@ export const TOOLS: ToolSEOInfo[] = [
       <h2>Smart, Privacy-First PDF Analysis</h2>
       <p>Unlike other AI tools that upload and store entire files, PDFMinty processes text layers locally first, only sending plain text to secure APIs. This local-first parsing shields your private documents from unauthorized search indexes and keeps your files safe.</p>
       <h2>Zero-Storage Ephemeral Inference for Confidential Files</h2>
-      <p>Unlike third-party document portals that retain uploaded files on cloud object storage for model retraining or telemetry analysis, PDFMinty executes page-by-page text parsing directly within your local browser runtime. Extracted text fragments are processed strictly during your active session and never stored, cached, or added to training corpuses.</p>
+      <p>Unlike third-party document portals that retain uploaded files on cloud object storage for telemetry analysis or marketing, PDFMinty executes page-by-page text parsing directly within your local browser runtime. Extracted text fragments are transmitted over an encrypted TLS connection solely to produce answers for your active session and are never permanently stored, cached, or logged on PdfMinty servers.</p>
     `,
   },
   {
@@ -3206,16 +3206,16 @@ export const TOOLS: ToolSEOInfo[] = [
       'extract-pages-pdf',
     ],
     longFormBody: `
-<h2>The Technical Guide to Client-Side OCR (Optical Character Recognition via WebAssembly)</h2>
+<h2>The Technical Guide to Optical Character Recognition (AI Vision OCR)</h2>
       <p class="lead font-medium text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
         When you receive a scanned document or photo-based PDF, the file is simply a collection of raster pixels. You cannot search for words using <strong>Ctrl+F</strong>, highlight sentences with your cursor, or copy table data into Microsoft Excel or Word.
       </p>
 
       <p>
-        PDFMinty's OCR PDF tool executes optical character recognition directly inside your web browser using a compiled <strong>Tesseract WebAssembly (WASM)</strong> neural engine. Below is a technical breakdown of image pre-processing requirements, DPI scaling math, and how to transcribe scanned documents into clean, searchable Markdown and plain text without transmitting sensitive files to cloud OCR APIs.
+        PDFMinty's OCR PDF tool leverages Google Gemini Multimodal AI Vision to transcribe scanned documents into clean, editable Unicode text and structured Markdown. Unlike standard PdfMinty tools that execute 100% locally in browser memory, this high-accuracy AI Vision feature operates via an encrypted HTTPS connection with explicit user consent, processing up to 5 pages per run with zero permanent server storage on our servers.
       </p>
 
-      <h2>When to Use Local OCR: 3 High-Value Scenarios</h2>
+      <h2>When to Use AI Vision OCR: 3 High-Value Scenarios</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6 not-prose">
         <div class="p-5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-2">
           <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">🏛️ Scenario A: Historical Legal Archives</span>
@@ -4749,7 +4749,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <li><strong>PDF Organization:</strong> <a href="/merge-pdf/">Merge PDF</a>, <a href="/split-pdf/">Split PDF</a>, <a href="/rotate-pdf/">Rotate PDF</a>, <a href="/delete-pages-pdf/">Delete Pages</a>, <a href="/extract-pages-pdf/">Extract Pages</a>, <a href="/reorder-pdf/">Reorder Pages</a>, and <a href="/add-blank-page/">Add Blank Page</a>.</li>
         <li><strong>Privacy & Security:</strong> <a href="/sanitize-pdf/">Sanitize PDF</a> (remove hidden author details, timestamps, and GPS/XMP data), <a href="/edit-pdf-metadata/">Edit Metadata</a>, <a href="/protect-pdf/">Protect PDF</a> (AES-GCM encryption), <a href="/unlock-pdf/">Unlock PDF</a>, and <a href="/sign-pdf/">Free e-Signatures</a>.</li>
         <li><strong>Conversion & Formatting:</strong> <a href="/image-to-pdf/">Image to PDF</a>, <a href="/pdf-to-image/">PDF to Image</a>, <a href="/pdf-to-markdown/">PDF to Markdown</a>, <a href="/grayscale-pdf/">Grayscale PDF</a>, <a href="/flatten-pdf/">Flatten PDF</a>, <a href="/repair-pdf/">Repair PDF</a>, <a href="/add-page-numbers/">Add Page Numbers</a>, and <a href="/watermark-pdf/">Watermark PDF</a>.</li>
-        <li><strong>AI & OCR Intelligence:</strong> <a href="/ocr-pdf/">OCR PDF</a> for extracting text from scanned images, and <a href="/ai-analyze-pdf/">AI Analyze PDF</a> for local document summaries and structural insights.</li>
+        <li><strong>AI & OCR Intelligence:</strong> <a href="/ocr-pdf/">OCR PDF</a> for extracting text from scanned images via AI Vision, and <a href="/ai-analyze-pdf/">AI Analyze PDF</a> for intelligent document summaries and structural insights via Google Gemini.</li>
       </ul>
 
       <h2>Who Runs & Engineers PdfMinty</h2>
@@ -7598,14 +7598,14 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
   {
     id: 'how-to-make-a-scanned-pdf-searchable',
     slug: 'blog/how-to-make-a-scanned-pdf-searchable',
-    name: 'How to Extract Text from a Scanned PDF Image Offline (OCR & Markdown Workflow)',
+    name: 'How to Extract Text from a Scanned PDF (AI Vision OCR & Markdown Guide)',
     ogImage: '/og-image.png',
     shortDescription:
-      'Learn how to use offline OCR to extract readable, copyable text or Markdown from scanned and image-only PDFs without uploading them.',
-    metaTitle: 'How to Extract Text from a Scanned PDF Offline (OCR Guide) | PDFMinty',
+      'Learn how to use AI Vision OCR to extract readable, copyable text or Markdown from scanned and image-only PDFs with complete privacy transparency.',
+    metaTitle: 'How to Extract Text from a Scanned PDF (OCR Guide) | PDFMinty',
     metaDescription:
-      'Extract text from scanned image PDFs offline. Learn how to run optical character recognition locally to pull clean text and Markdown without cloud uploads.',
-    h1: 'How to Extract Text from a Scanned PDF Image Offline',
+      'Extract text from scanned image PDFs. Learn how to run optical character recognition to pull clean text and Markdown with full privacy transparency.',
+    h1: 'How to Extract Text from a Scanned PDF Image',
     icon: 'Scan',
     category: 'blog',
     priority: 0.8,
@@ -7652,17 +7652,17 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       },
       {
         q: 'How does PdfMinty handle privacy during OCR processing?',
-        a: 'The OCR engine runs entirely inside your browser (using WebAssembly) on your local device. The text recognition happens offline, and your confidential scanned images are never uploaded to a cloud server.',
+        a: 'Standard PDF operations run 100% locally in your browser. For scanned PDFs requiring OCR, PdfMinty utilizes Google Gemini Multimodal Vision API over an encrypted HTTPS connection solely to transcribe text upon your explicit consent, with no permanent document storage on our servers.',
       },
     ],
     longFormBody: `
-<h2>How to Extract Text from a Scanned PDF Image Offline (OCR &amp; Markdown Workflow)</h2>
+<h2>How to Extract Text from a Scanned PDF (AI Vision OCR &amp; Markdown Workflow)</h2>
       <p class="lead font-medium text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
         A scanned PDF appears identical to a standard digital document on your screen, but beneath the interface, every page is merely an unindexed raster photograph. When you press <strong>Ctrl+F</strong> or try to select a sentence, your cursor either grabs the entire page as a monolithic image or returns zero search results.
       </p>
 
       <p>
-        To unlock the contents of image-only documents for copying, searching, or editing in Microsoft Word, you require <strong>Optical Character Recognition (OCR)</strong>. However, uploading confidential contracts, medical charts, or financial tax statements to free cloud OCR portals introduces severe privacy liabilities. Below is an architectural walkthrough on executing high-accuracy OCR locally inside your web browser using WebAssembly, converting scanned images directly into structured Markdown and plain text without transmitting a single byte over the network.
+        To unlock the contents of image-only documents for copying, searching, or editing in Microsoft Word, you require <strong>Optical Character Recognition (OCR)</strong>. Unlike traditional cloud converter portals that retain user documents indefinitely, PDFMinty provides transparent AI Vision OCR powered by Google Gemini with explicit opt-in consent, converting scanned images directly into structured Markdown and plain text without storing files on our servers.
       </p>
 
       <h2>1. The Technical Anatomy of Scanned Documents</h2>
@@ -7686,14 +7686,14 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         The modern, efficient workflow prioritizes <strong>clean structural extraction</strong>: converting the visual raster document into clean Markdown (<code>.md</code>) or plain text (<code>.txt</code>) that can be edited cleanly in word processors or ingested by data pipelines.
       </p>
 
-      <h2>3. Step-by-Step Guide: Extracting Text Privately via Browser-Side OCR</h2>
+      <h2>3. Step-by-Step Guide: Extracting Text via AI Vision OCR</h2>
       <p>
-        Using PDFMinty's client-side OCR engine, you can extract text from scanned documents in seconds without server uploads:
+        Using PDFMinty's OCR engine, you can extract text from scanned documents in seconds:
       </p>
       <ol class="space-y-3 my-4">
         <li>Open the <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">OCR PDF Tool</a> or <a href="/pdf-to-markdown/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">PDF to Markdown Tool</a>.</li>
-        <li>Select your scanned PDF. The file is read directly into your browser's local WebAssembly memory heap.</li>
-        <li>The OCR engine initializes an in-browser Tesseract WebAssembly worker, reading canvas pixels and analyzing contours, baselines, and character loops on your local CPU.</li>
+        <li>Select your scanned PDF. Page previews render locally in your browser.</li>
+        <li>Review and check the explicit Cloud AI Vision consent checkbox authorizing optical character recognition via Google Gemini API proxy.</li>
         <li>Once recognition completes, review the extracted text in the live editor. You can copy it directly to your clipboard or download it as a clean Markdown or plain text document ready for Microsoft Word or Google Docs.</li>
       </ol>
 
@@ -7707,35 +7707,41 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <li><strong>Contrast &amp; Binarization:</strong> Yellowed paper, scanner shadows, or dark background bleed reduce character recognition. Converting colored scans to high-contrast monochrome dramatically cleans up glyph edges.</li>
       </ul>
 
-      <h2>5. Architecture Comparison: In-Browser WASM vs Cloud OCR Services</h2>
+      <h2>5. Architecture Comparison: Local PDF Tools vs AI Cloud Services</h2>
       <div class="overflow-x-auto my-6">
         <table class="min-w-full text-xs text-left border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden">
           <thead class="bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-bold">
             <tr>
               <th class="p-3 border-b border-slate-200 dark:border-zinc-700">Feature</th>
-              <th class="p-3 border-b border-slate-200 dark:border-zinc-700">PDFMinty (In-Browser WASM)</th>
-              <th class="p-3 border-b border-slate-200 dark:border-zinc-700">Cloud OCR APIs (AWS/Google)</th>
-              <th class="p-3 border-b border-slate-200 dark:border-zinc-700">Desktop Software Suites</th>
+              <th class="p-3 border-b border-slate-200 dark:border-zinc-700">PDFMinty Standard Tools</th>
+              <th class="p-3 border-b border-slate-200 dark:border-zinc-700">PDFMinty AI Vision OCR</th>
+              <th class="p-3 border-b border-slate-200 dark:border-zinc-700">Legacy Cloud Portals</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200 dark:divide-zinc-800 text-slate-700 dark:text-slate-300">
             <tr>
               <td class="p-3 font-semibold">Privacy &amp; Data Transit</td>
-              <td class="p-3 text-emerald-600 font-bold">Zero Network Transit (100% Local)</td>
-              <td class="p-3 text-rose-500">Transmits full document to cloud servers</td>
-              <td class="p-3">Local machine</td>
+              <td class="p-3 text-emerald-600 font-bold">100% In-Browser (Zero Network Transit)</td>
+              <td class="p-3 text-amber-600 font-bold">Encrypted HTTPS Proxy (Explicit Consent)</td>
+              <td class="p-3 text-rose-500">Transmits files to third-party servers</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold">Server Storage</td>
+              <td class="p-3 text-emerald-600 font-bold">Zero Storage (Browser RAM Only)</td>
+              <td class="p-3 text-emerald-600 font-bold">Zero Storage on PdfMinty Servers</td>
+              <td class="p-3">Saved on cloud storage buckets</td>
             </tr>
             <tr>
               <td class="p-3 font-semibold">Setup / Installation</td>
-              <td class="p-3">Zero install, runs in any modern browser</td>
-              <td class="p-3">Requires API keys, SDKs, and billing setup</td>
-              <td class="p-3">Requires multi-gigabyte desktop software</td>
+              <td class="p-3">Zero install, runs in browser</td>
+              <td class="p-3">Zero install, 1-click in browser</td>
+              <td class="p-3">Requires account or software install</td>
             </tr>
             <tr>
               <td class="p-3 font-semibold">Cost</td>
-              <td class="p-3">100% Free, unlimited usage</td>
-              <td class="p-3">Per-page API fees ($1.50 per 1,000 pages)</td>
-              <td class="p-3">High upfront or monthly subscription costs</td>
+              <td class="p-3">100% Free</td>
+              <td class="p-3">100% Free (Up to 5 pages/run)</td>
+              <td class="p-3">Monthly subscriptions &amp; paywalls</td>
             </tr>
             <tr>
               <td class="p-3 font-semibold">Compliance (HIPAA / GDPR)</td>
@@ -8893,15 +8899,21 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     dateModified: '2026-09-28',
     longFormBody: `
       <h2>Terms of Service — PdfMinty</h2>
-      <p><em>Last Updated & Reviewed: September 2026 • Technical Reviewer: Legal & Compliance Team</em></p>
+      <p><em>Last Updated & Reviewed: October 2026 • Technical Reviewer: Legal & Compliance Team • Publisher: Mohammed Tanveer Munshi, Dhaka, Bangladesh</em></p>
 
-      <h2>1. Acceptance of Terms</h2>
-      <p>By accessing, browsing, or using PdfMinty (<a href="https://pdfminty.com">https://pdfminty.com</a>) and any of its associated 22 PDF tools, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service and our Privacy Policy. If you do not agree, please do not use our services.</p>
+      <h2>1. Acceptance of Terms & Eligibility</h2>
+      <p>By accessing, browsing, or using PdfMinty (<a href="https://pdfminty.com">https://pdfminty.com</a>) and any of its associated 30+ PDF tools, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service and our Privacy Policy. You represent that you are at least 13 years of age or possess legal parental consent. If you do not agree, please do not use our services.</p>
 
-      <h2>2. Nature of Service & Client-Side In-Browser Execution</h2>
-      <p>PdfMinty provides free, browser-based document processing utilities. All standard tools (such as Merge, Split, Rotate, Protect, Unlock, Watermark, Delete Pages, Image to PDF, etc.) process files 100% locally on your computer or mobile device using WebAssembly and client-side JavaScript. We do not transmit or store your files on external servers for standard operations. For our opt-in AI PDF Assistant (/ai-analyze-pdf), extracted text is sent via encrypted API to Google Gemini only after you grant explicit consent.</p>
+      <h2>2. Nature of Service & Client-Side In-Browser Execution Guarantee</h2>
+      <p>PdfMinty provides free, browser-based document processing utilities. All standard tools (such as Merge, Split, Rotate, Compress, Protect, Unlock, Watermark, Delete Pages, Extract Pages, Reorder Pages, Image to PDF, PDF to Image, PDF to Markdown, Grayscale, Flatten, Repair, Edit Metadata, Sanitize, and Sign PDF) process files 100% locally on your computer or mobile device using WebAssembly and client-side JavaScript. We do not transmit or store your files on external servers for standard operations.</p>
 
-      <h2>3. Permitted Web Crawler, Search Engine & AI Agent Access Policy</h2>
+      <h2>3. Opt-In Cloud AI Vision & Document Intelligence Disclosure (Google Gemini)</h2>
+      <p>For our opt-in AI tools — the AI PDF Assistant (<a href="/ai-analyze-pdf/">/ai-analyze-pdf/</a>) and OCR PDF (<a href="/ocr-pdf/">/ocr-pdf/</a>) — extracted plain text or selected scanned page images (up to 5 pages per run) are transmitted securely via encrypted HTTPS proxy to Google Gemini API only after you grant explicit checkbox consent. PdfMinty never retains, caches, or stores your documents on our servers.</p>
+
+      <h2>4. User Responsibilities & Document Intellectual Property</h2>
+      <p>You retain complete intellectual property rights, ownership, and copyright of any documents, text, or images processed using PdfMinty. You represent and warrant that you own or have obtained all necessary licenses, authorizations, and permissions to process, alter, or modify any files submitted to the tools. You agree not to use the service for any unlawful, infringing, or malicious activities.</p>
+
+      <h2>5. Permitted Web Crawler, Search Engine & AI Agent Access Policy</h2>
       <p>PdfMinty encourages open web discovery, transparent indexing, and helpful artificial intelligence integration:</p>
       <ul>
         <li><strong>Authorized Crawlers:</strong> Legitimate search engine crawlers (Googlebot, Bingbot, Applebot, etc.), advertising verification bots (including Google AdSense crawlers Mediapartners-Google and Google-Display-Ads-Bot), and benign AI assistant bots (such as GPTBot, ClaudeBot, PerplexityBot, Cohere, and CCBot) are granted explicit permission to crawl, index, and reference all public tool pages, guides, and documentation.</li>
@@ -8909,17 +8921,17 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <li><strong>Prohibited Activities:</strong> Automated scrapers or bots are strictly prohibited from attempting to access, flood, or exploit backend API routes (/api/*), conducting denial-of-service (DoS) attacks, or bypassing technical security restrictions.</li>
       </ul>
 
-      <h2>4. User Responsibilities & Document Intellectual Property</h2>
-      <p>You retain all intellectual property rights and ownership of any documents, text, or images processed using PdfMinty. You represent and warrant that you own or have obtained all necessary licenses, authorizations, and permissions to process, alter, or modify any files submitted to the tools. You agree not to use the service for any unlawful, infringing, or malicious activities.</p>
+      <h2>6. Advertisements & Google AdSense Disclosures</h2>
+      <p>PdfMinty displays advertisements served by Google AdSense and other reputable third-party advertising partners. These networks may use cookies to serve relevant advertisements based on prior visits. Users may opt out of personalized advertising by visiting Google's <a href="https://www.google.com/settings/ads">Ads Settings</a> or <a href="https://www.aboutads.info/choices/">www.aboutads.info</a>. Core PDF tools require no cookies and execute locally.</p>
 
-      <h2>5. Advertisements & Third-Party Services</h2>
-      <p>PdfMinty may display advertisements served by Google AdSense and other reputable third-party advertising partners. These networks may use cookies to serve relevant advertisements. Your interactions with third-party advertisers or external websites linked from PdfMinty are solely between you and the respective third party.</p>
-
-      <h2>6. Disclaimer of Warranties & Limitation of Liability</h2>
+      <h2>7. Disclaimer of Warranties & Limitation of Liability</h2>
       <p>PdfMinty and its tools are provided on an "as is" and "as available" basis, without warranty of any kind, whether express, implied, or statutory. In no event shall PdfMinty, its operators, or contributors be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of your access to, use of, or inability to use the site or its tools. Always keep local backup copies of your critical documents.</p>
 
-      <h2>7. Contact Us & Inquiries</h2>
-      <p>If you have any questions or feedback regarding these Terms of Service, please contact us via our <a href="/contact/">Contact Page</a> or email us at support@pdfminty.com.</p>
+      <h2>8. Copyright & DMCA Takedown Procedure</h2>
+      <p>If you believe that any public content on our site infringes upon your copyright, please contact our designated agent at <strong>support@pdfminty.com</strong> with detailed evidence for prompt review and resolution.</p>
+
+      <h2>9. Contact Us & Inquiries</h2>
+      <p>If you have any questions or feedback regarding these Terms of Service, please contact us via our <a href="/contact/">Contact Page</a> or email us directly at <strong>support@pdfminty.com</strong>.</p>
     `,
   },
   {
@@ -11061,7 +11073,7 @@ worker.onmessage = function(e) {
 
 <h2>Fix 2: Run OCR to Add a Real Text Layer</h2>
 <p>If your PDF is a scan, OCR is the only path to selectable text. OCR analyzes the image, recognizes the characters, and embeds a new text layer beneath the visible picture — after which selection, search, and copy all work. Modern OCR reads clean scans at effectively perfect accuracy and even handles multi-column layouts, tables, and most handwriting-like fonts with surprising grace.</p>
-<p>Where you run OCR matters for sensitive documents. Cloud OCR services upload every page to a server; a browser-side tool like <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">PdfMinty's OCR PDF</a> runs the recognition locally in your browser, so contracts, IDs, medical records, and financial statements never leave your device. For files that are not sensitive, any reputable OCR works — but local processing is the only option that is safe by default. If you need a comprehensive walkthrough on making image-only documents searchable offline, refer to our companion guide: <a href="/blog/how-to-make-a-scanned-pdf-searchable/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">How to Make a Scanned PDF Searchable</a>.</p>
+<p>Where you run OCR matters for sensitive documents. Traditional cloud OCR services often store documents on remote servers. <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">PdfMinty's OCR PDF</a> utilizes Google Gemini Multimodal Vision API over an encrypted HTTPS connection solely to transcribe text upon explicit user consent, without permanent server storage on our servers. For standard non-OCR tasks, PdfMinty executes 100% locally in your browser. If you need a comprehensive walkthrough on making image-only documents searchable, refer to our companion guide: <a href="/blog/how-to-make-a-scanned-pdf-searchable/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">How to Make a Scanned PDF Searchable</a>.</p>
 <ul class="list-disc pl-5 my-4 space-y-2">
   <li>Best results come from clean, straight, high-contrast scans — 300 DPI is the sweet spot.</li>
   <li>After OCR, verify a few random passages against the image; OCR is excellent but not infallible on blurry or skewed pages.</li>

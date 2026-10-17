@@ -42,6 +42,7 @@ export const OcrPdfPage: React.FC = () => {
   const [ocrResult, setOcrResult] = useState<string>('');
   const [ocrLanguage, setOcrLanguage] = useState<string>('auto');
   const [copied, setCopied] = useState(false);
+  const [hasConsented, setHasConsented] = useState<boolean>(false);
 
   const operationTokenRef = useRef<number>(0);
 
@@ -160,6 +161,12 @@ export const OcrPdfPage: React.FC = () => {
     if (!selectedFile) return;
     if (selectedPages.size === 0) {
       setError('Please select at least one page to transcribe.');
+      return;
+    }
+    if (!hasConsented) {
+      setError(
+        'Please acknowledge the Cloud AI Vision consent checkbox before proceeding with OCR extraction.'
+      );
       return;
     }
 
@@ -408,9 +415,41 @@ export const OcrPdfPage: React.FC = () => {
                   </select>
                 </div>
 
+                {/* AI Vision Disclosure & Explicit Consent Box */}
+                <div className="p-3.5 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-xl space-y-2 text-xs text-amber-950 dark:text-amber-200">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-300">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>
+                      {t('ocrPdf.consentTitle', {
+                        defaultValue: 'Cloud AI Vision Disclosure & Consent',
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
+                    {t('ocrPdf.consentDesc', {
+                      defaultValue:
+                        'Selected pages (up to 5) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.',
+                    })}
+                  </p>
+                  <label className="flex items-start gap-2 pt-1 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={hasConsented}
+                      onChange={(e) => setHasConsented(e.target.checked)}
+                      className="mt-0.5 accent-emerald-600 rounded cursor-pointer"
+                    />
+                    <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                      {t('ocrPdf.consentCheckbox', {
+                        defaultValue:
+                          'I understand and consent to transmitting selected page images to Google Gemini AI Vision for OCR transcription.',
+                      })}
+                    </span>
+                  </label>
+                </div>
+
                 <button
                   onClick={handleStartOcr}
-                  disabled={loading || selectedPages.size === 0}
+                  disabled={loading || selectedPages.size === 0 || !hasConsented}
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-bold rounded-xl shadow transition-colors cursor-pointer"
                 >
                   {loading ? (

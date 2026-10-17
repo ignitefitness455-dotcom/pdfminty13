@@ -1454,7 +1454,7 @@
     "mainTitle": "PDF-Werkzeuge für maximale Privatsphäre.",
     "intro": "PdfMinty wurde mit einem einfachen Grundprinzip geschaffen: Ihre Dokumente gehören Ihnen. Wir haben eine komplette Suite von PDF-Tools entwickelt, die vollständig in Ihrem Webbrowser läuft, sodass Ihre Dateien jederzeit auf Ihrem Gerät verbleiben.",
     "problemDesc": "Die meisten Online-PDF-Dienste verlangen, dass Sie Ihre vertraulichen Verträge, Steuerunterlagen und medizinischen Daten auf Remote-Server hochladen. Sie haben keine Garantie, wann oder ob Ihre Dokumente gelöscht werden.",
-    "solutionDesc": "PdfMinty verarbeitet Ihre Dateien für Standard-Werkzeuge direkt in Ihrem Webbrowser – ganz ohne Server-Uploads. Die einzige Ausnahme ist das KI-Analysetool, das erst nach Ihrer ausdrücklichen Zustimmung extrahierten Text an Google Gemini sendet.",
+    "solutionDesc": "PdfMinty verarbeitet Ihre Dateien für über 30 Standard-Werkzeuge direkt in Ihrem Webbrowser – ganz ohne Server-Uploads. Die beiden optionalen Ausnahmen sind das KI-Analysetool (das extrahierten Text an Google Gemini sendet) und das OCR-PDF-Tool (das ausgewählte gescannte Seitenbilder an Google Gemini Multimodal Vision sendet), die beide Ihrer vorherigen ausdrücklichen Zustimmung bedürfen.",
     "freeAccessible": "Kostenlos & Zugänglich",
     "keyboardNav": "Tastaturnavigation & Fokusindikatoren",
     "screenReader": "Vollständige Screenreader- & ARIA-Kompatibilität",

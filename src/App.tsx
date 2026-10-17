@@ -547,10 +547,18 @@ export const App: React.FC = () => {
             <Route path="/register/" element={<Navigate to={ROUTES.SIGN_UP} replace />} />
             {/* Legacy path redirects */}
             <Route path="/about" element={<Navigate to={ROUTES.ABOUT_US} replace />} />
+            <Route path="/about/" element={<Navigate to={ROUTES.ABOUT_US} replace />} />
             <Route path="/contact-us" element={<Navigate to={ROUTES.CONTACT} replace />} />
+            <Route path="/contact-us/" element={<Navigate to={ROUTES.CONTACT} replace />} />
+            <Route path="/contact" element={<Navigate to={ROUTES.CONTACT} replace />} />
             <Route path="/privacy" element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />} />
+            <Route path="/privacy/" element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />} />
+            <Route path="/privacy-policy" element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />} />
             <Route path="/terms" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
+            <Route path="/terms/" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
+            <Route path="/terms-of-service" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/tos" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
+            <Route path="/tos/" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/edit-metadata" element={<Navigate to={ROUTES.EDIT_METADATA} replace />} />
             <Route path="/intelligence" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
             <Route path="/protect" element={<Navigate to={ROUTES.PROTECT} replace />} />

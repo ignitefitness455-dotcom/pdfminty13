@@ -411,16 +411,19 @@ export const onRequest: PagesFunction = async (context) => {
     );
     newResponse.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
 
-    // Content-Security-Policy — supports Google AdSense, GA4/GTM analytics, and font resources
+    // Content-Security-Policy — supports Firebase Auth (Google Sign-In), AdSense, GA4/GTM, and local PDF WebAssembly
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://*.doubleclick.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://apis.google.com https://www.gstatic.com https://www.google.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://*.doubleclick.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
-      "img-src 'self' blob: data: https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://launchbuff.com https://launchstag.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com",
-      "connect-src 'self' blob: https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://*.doubleclick.net https://static.cloudflareinsights.com https://generativelanguage.googleapis.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net",
-      "frame-src 'self' https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://pagead2.googlesyndication.com https://*.googlesyndication.com",
+      "img-src 'self' blob: data: https://lh3.googleusercontent.com https://*.googleusercontent.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://launchbuff.com https://launchstag.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com",
+      "connect-src 'self' blob: https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com https://firestore.googleapis.com https://generativelanguage.googleapis.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://*.doubleclick.net https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net",
+      "frame-src 'self' https://accounts.google.com https://pdfminty-9836d.firebaseapp.com https://apis.google.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://pagead2.googlesyndication.com https://*.googlesyndication.com",
+      "child-src 'self' blob: https://accounts.google.com https://pdfminty-9836d.firebaseapp.com https://apis.google.com",
       "worker-src 'self' blob:",
+      "media-src 'self' blob: data:",
+      "manifest-src 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
