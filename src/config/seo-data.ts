@@ -8853,7 +8853,16 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <h2>3. Opt-In AI Feature Disclosure (/ai-analyze-pdf)</h2>
       <p>PdfMinty offers an optional AI PDF Assistant. If you select a file and check the explicit consent checkbox in the AI tool, extracted text from up to the first 12 pages is transmitted over an encrypted TLS connection to Google Gemini API to answer your questions or generate summaries. Binary PDF files are never stored, and text is transmitted solely for processing your immediate query.</p>
 
-      <h2>4. Google AdSense & Third-Party Advertising Cookies</h2>
+      <h2>4. Google User Data, OAuth Authentication & Account Information</h2>
+      <p>When you choose to sign in to PDFMinty using Google Sign-In (OAuth), we request basic profile information from your Google Account: your email address, display name, profile avatar photo URL, and unique Google user identifier (UID). We use this information solely to authenticate your identity, establish your secure session, track your daily processing task quotas, and manage your membership tier (Free vs PRO) in Google Cloud Firestore. PDFMinty never requests or accesses your Google Drive files, Gmail messages, Google Contacts, or any external Google Workspace data.</p>
+
+      <h2>5. Google API Services User Data Policy (Limited Use Disclosure)</h2>
+      <p><strong>PDFMinty's use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements.</strong> We do not sell, rent, lease, transfer, or disclose Google user data to third parties, external advertising networks, or data brokers. Furthermore, Google user data is never used to train or fine-tune machine learning or artificial intelligence models.</p>
+
+      <h2>6. Data Retention, Account Deletion & Access Revocation</h2>
+      <p>We retain your account credentials and plan settings only for as long as you maintain an active account with PDFMinty. You can revoke PDFMinty's access to your Google Account at any time by visiting <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Security Settings</a>. You may permanently delete your PDFMinty account and erase all associated Firestore database records at any time directly through your Account Dashboard or by sending a deletion request to support@pdfminty.com. Upon request, your account record is irreversibly purged within 7 business days.</p>
+
+      <h2>7. Google AdSense & Third-Party Advertising Cookies</h2>
       <p>PdfMinty uses Google AdSense to display advertisements when you visit our website. To comply with Google AdSense policies, please review the following required advertising disclosures:</p>
       <ul>
         <li>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites on the Internet.</li>
@@ -8862,10 +8871,10 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <li>For more details on how Google processes data when you visit partner sites, please see Google's policy at <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">How Google uses information from sites or apps that use our services</a>.</li>
       </ul>
 
-      <h2>5. Web Analytics & Cookie Usage</h2>
+      <h2>8. Web Analytics & Cookie Usage</h2>
       <p>PdfMinty uses privacy-respecting website performance analytics (such as Google Analytics 4 with IP anonymization and Cloudflare Web Analytics) to understand aggregate traffic trends, pageviews, and browser performance. We do not sell user data, track individual personal identities, or store cookies containing sensitive document data.</p>
 
-      <h2>6. GDPR & CCPA/CPRA Privacy Rights</h2>
+      <h2>9. GDPR & CCPA/CPRA Privacy Rights</h2>
       <p>Depending on your geographic location, you possess statutory rights under privacy frameworks such as the European Union General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA/CPRA):</p>
       <ul>
         <li><strong>Right of Access & Deletion:</strong> Because standard PDF operations do not collect or store user accounts, identities, or files, there is no personally identifiable file data retained on our servers to access or delete.</li>

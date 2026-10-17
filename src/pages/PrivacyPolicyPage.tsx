@@ -73,6 +73,60 @@ export const PrivacyPolicyPage: React.FC = () => {
 
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
+              <Lock className="w-5 h-5 text-emerald-500" />
+              {t('privacyPolicy.secGoogleTitle', {
+                defaultValue: '4. Google User Data, OAuth Authentication & Account Information',
+              })}
+            </h2>
+            <p>
+              {t('privacyPolicy.secGoogleDesc', {
+                defaultValue:
+                  'When you choose to sign in to PDFMinty using Google Sign-In (OAuth), we request basic profile information from your Google Account: your email address, display name, profile avatar photo URL, and unique Google user identifier (UID). We use this information solely to authenticate your identity, establish your secure session, track your daily processing task quotas, and manage your membership tier (Free vs PRO) in Google Cloud Firestore. PDFMinty never requests or accesses your Google Drive files, Gmail messages, Google Contacts, or any external Google Workspace data.',
+              })}
+            </p>
+          </section>
+
+          <section className="space-y-3 pt-6 border-t border-border-muted bg-emerald-500/5 p-4 rounded-2xl border-emerald-500/20">
+            <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
+              <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              {t('privacyPolicy.secLimitedUseTitle', {
+                defaultValue: '5. Google API Services User Data Policy (Limited Use Disclosure)',
+              })}
+            </h2>
+            <p className="text-on-surface leading-relaxed font-semibold">
+              {t('privacyPolicy.secLimitedUseDesc', {
+                defaultValue:
+                  "PDFMinty's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.",
+              })}{' '}
+              <a
+                href="https://developers.google.com/terms/api-services-user-data-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-600 dark:text-emerald-400 underline font-bold"
+              >
+                Google API Services User Data Policy
+              </a>
+              . We do not sell, rent, lease, transfer, or disclose Google user data to third parties, external advertising networks, or data brokers. Furthermore, Google user data is never used to train or fine-tune machine learning or artificial intelligence models.
+            </p>
+          </section>
+
+          <section className="space-y-3 pt-6 border-t border-border-muted">
+            <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
+              <Database className="w-5 h-5 text-emerald-500" />
+              {t('privacyPolicy.secRetentionTitle', {
+                defaultValue: '6. Data Retention, Account Deletion & Access Revocation',
+              })}
+            </h2>
+            <p>
+              {t('privacyPolicy.secRetentionDesc', {
+                defaultValue:
+                  "We retain your account credentials and plan settings only for as long as you maintain an active account with PDFMinty. You can revoke PDFMinty's access to your Google Account at any time by visiting Google Security Settings (https://myaccount.google.com/permissions). You may permanently delete your PDFMinty account and erase all associated Firestore database records at any time directly through your Account Dashboard or by sending a deletion request to support@pdfminty.com. Upon request, your account record is irreversibly purged within 7 business days.",
+              })}
+            </p>
+          </section>
+
+          <section className="space-y-3 pt-6 border-t border-border-muted">
+            <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Globe className="w-5 h-5 text-emerald-500" />
               {t('privacyPolicy.sec4Title')}
             </h2>
