@@ -14,15 +14,16 @@ export interface FirestoreUserProfile {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  plan: 'free' | 'pro';
+  isPro?: boolean;
+  plan?: 'free' | 'pro';
   emailVerified: boolean;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
 
 /**
- * Synchronizes user profile to Firestore `users/{userId}` document.
- * Safe to call on sign-in and sign-up; merges existing fields to preserve custom claims.
+ * Synchronizes user profile metadata to Firestore `users/{userId}` document.
+ * Client NEVER writes `isPro` — only a server-side Cloudflare Worker webhook writes `isPro`.
  */
 export async function syncUserProfileToFirestore(user: AppUser): Promise<void> {
   if (!db || !user?.uid) {
@@ -34,19 +35,22 @@ export async function syncUserProfileToFirestore(user: AppUser): Promise<void> {
     const existingSnap = await getDoc(userRef);
 
     if (!existingSnap.exists()) {
-      // First-time profile creation
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email || '',
-        displayName: user.displayName || user.email?.split('@')[0] || 'User',
-        photoURL: user.photoURL || null,
-        plan: user.plan || 'free',
-        emailVerified: Boolean(user.emailVerified),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+      // First-time profile creation (do NOT write isPro from client)
+      await setDoc(
+        userRef,
+        {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || user.email?.split('@')[0] || 'User',
+          photoURL: user.photoURL || null,
+          emailVerified: Boolean(user.emailVerified),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
     } else {
-      // Existing user: update metadata while preserving verified plan
+      // Existing user: update profile metadata only (never touch isPro)
       const existingData = existingSnap.data() as FirestoreUserProfile;
       await updateDoc(userRef, {
         displayName: user.displayName || existingData.displayName,
@@ -82,12 +86,13 @@ export async function fetchUserProfileFromFirestore(uid: string): Promise<Firest
 }
 
 /**
- * Subscribes to real-time changes on the user's Firestore document.
+ * Subscribes to real-time changes on the user's Firestore document `users/{uid}`.
+ * Exposes `isPro === true` only when the document has `isPro === true`.
  * Returns unsubscribe function.
  */
 export function subscribeToUserProfile(
   uid: string,
-  onUpdate: (profile: FirestoreUserProfile) => void
+  onUpdate: (profile: Partial<FirestoreUserProfile> & { isPro: boolean }) => void
 ): () => void {
   if (!db || !uid) {
     return () => {};
@@ -99,11 +104,18 @@ export function subscribeToUserProfile(
       userRef,
       (snap) => {
         if (snap.exists()) {
-          onUpdate(snap.data() as FirestoreUserProfile);
+          const data = snap.data() as FirestoreUserProfile;
+          onUpdate({
+            ...data,
+            isPro: data.isPro === true,
+          });
+        } else {
+          onUpdate({ isPro: false });
         }
       },
       (err) => {
         console.warn('[Firestore] Profile listener note:', err);
+        onUpdate({ isPro: false });
       }
     );
   } catch (err) {

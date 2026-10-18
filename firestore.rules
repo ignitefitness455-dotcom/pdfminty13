@@ -21,24 +21,21 @@ service cloud.firestore {
     }
 
     // 1. Private User Profile Documents
-    // Strictly isolated: each authenticated user can only access their own document
+    // Strictly isolated: each authenticated user can only access their own document.
+    // Client NEVER writes `isPro` — only the Cloudflare Worker webhook writes `isPro`.
     match /users/{userId} {
       allow read: if isOwner(userId);
 
-      // Create: User can only create their own profile document with valid required fields
+      // Create: User can only create their own profile document and cannot set `isPro`
       allow create: if isOwner(userId)
                     && request.resource.data.uid == userId
                     && request.resource.data.email is string
-                    && request.resource.data.plan in ['free', 'pro'];
+                    && !('isPro' in request.resource.data);
 
-      // Update: User can update their profile information (e.g. displayName, photoURL, emailVerified)
-      // Standard clients cannot self-elevate plan from 'free' to 'pro' directly
+      // Update: User can update their profile metadata, but can NEVER write or modify `isPro` or `plan`
       allow update: if isOwner(userId)
                     && request.resource.data.uid == userId
-                    && (
-                      request.resource.data.plan == resource.data.plan
-                      || request.auth.token.admin == true
-                    );
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro', 'plan']);
 
       // Delete: Standard deletion allowed only by owner
       allow delete: if isOwner(userId);

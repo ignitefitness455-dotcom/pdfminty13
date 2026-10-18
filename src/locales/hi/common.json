@@ -1489,7 +1489,15 @@
     "orEmail": "or by email at",
     "sec6Li1Title": "Right of Access & Deletion:",
     "sec6Li2Title": "Do Not Sell My Information:",
-    "sec6Li3Title": "Browser Controls:"
+    "sec6Li3Title": "Browser Controls:",
+    "secGoogleTitle": "4. Google उपयोगकर्ता डेटा, OAuth 2.0 प्रमाणीकरण और खाता जानकारी",
+    "secGoogleDesc": "जब आप Google Sign-In (OAuth 2.0) का उपयोग करके PDFMinty में साइन इन करते हैं, तो हम आपके Google खाते से बुनियादी प्रोफ़ाइल जानकारी (ईमेल पता, नाम, प्रोफ़ाइल फ़ोटो और UID) का अनुरोध करते हैं। हम इसका उपयोग केवल प्रमाणीकरण और Google Cloud Firestore में आपके खाता कोटा प्रबंधन के लिए करते हैं। PDFMinty कभी भी आपके Google Drive या Gmail डेटा तक नहीं पहुँचता है।",
+    "secLimitedUseTitle": "5. Google API सेवाएँ उपयोगकर्ता डेटा नीति (सीमित उपयोग प्रकटीकरण)",
+    "secLimitedUseDesc": "Google API से प्राप्त जानकारी का PDFMinty द्वारा उपयोग और किसी अन्य ऐप में स्थानांतरण Google API Services User Data Policy (सीमित उपयोग आवश्यकताओं सहित) का पूरी तरह पालन करेगा।",
+    "secRetentionTitle": "6. डेटा प्रतिधारण, खाता हटाना और पहुँच निरसन",
+    "secRetentionDesc": "हम आपके खाता डेटा को केवल तब तक रखते हैं जब तक आपका खाता सक्रिय रहता है। आप Google सुरक्षा सेटिंग्स (https://myaccount.google.com/permissions) से पहुँच रद्द कर सकते हैं और अपने डैशबोर्ड या support@pdfminty.com पर ईमेल करके खाता स्थायी रूप से हटा सकते हैं (7 कार्य दिवसों के भीतर)।",
+    "secCmpTitle": "9. सहमति प्रबंधन प्लेटफ़ॉर्म (CMP) और कुकी प्राथमिकताएँ (EEA, UK और स्विट्ज़रलैंड)",
+    "secCmpIntro": "EEA, यूनाइटेड किंगडम और स्विट्ज़रलैंड के आगंतुकों के लिए, PDFMinty IAB TCF v2.2 और Google Consent Mode v2 के अनुसार Google-प्रमाणित CMP — Cookiebot by Usercentrics (CMP ID: 134) — का उपयोग करता है।"
   },
   "contact": {
     "hereToHelp": "We're Here to Help",

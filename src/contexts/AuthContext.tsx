@@ -17,6 +17,17 @@ import {
 } from '../lib/firebase';
 import { syncUserProfileToFirestore, subscribeToUserProfile } from '../services/userService';
 import { isDisposableEmail } from '../utils/disposableEmailBlocker';
+import { setSyncedProStatus } from '../utils/usageLimit';
+
+export const LEMON_SQUEEZY_CHECKOUT_URL =
+  'https://pdfminty.lemonsqueezy.com/checkout/buy/6cc92d05-f59d-4a1b-9d04-abcb89f50da6';
+
+export function buildLemonSqueezyCheckoutUrl(uid: string, email?: string | null): string {
+  const url = new URL(LEMON_SQUEEZY_CHECKOUT_URL);
+  url.searchParams.set('checkout[custom][uid]', uid);
+  url.searchParams.set('checkout[email]', email || '');
+  return url.toString();
+}
 
 export interface AppUser {
   uid: string;
@@ -24,6 +35,7 @@ export interface AppUser {
   displayName: string | null;
   photoURL: string | null;
   plan: 'free' | 'pro';
+  isPro?: boolean;
   emailVerified: boolean;
   createdAt?: string;
 }
@@ -31,11 +43,13 @@ export interface AppUser {
 interface AuthContextType {
   user: AppUser | null;
   firebaseUser: User | null;
+  isPro: boolean;
   loading: boolean;
   isConfigured: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  upgradeToPro: () => Promise<void>;
   signInAsDemo: (customEmail?: string) => void;
   sendVerificationEmail: () => Promise<void>;
   verifyEmailWithCode: (code: string) => Promise<void>;
@@ -53,10 +67,11 @@ const DEMO_USER_STORAGE_KEY = 'pdfminty_demo_user';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
+  const [isPro, setIsPro] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const isConfigured = isFirebaseConfigured();
 
-  // Sync Firebase Auth state or local session
+  // Sync Firebase Auth state and real-time Firestore `users/{uid}` listener
   useEffect(() => {
     if (isConfigured && auth) {
       let unsubscribeFirestore: (() => void) | undefined;
@@ -69,32 +84,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setFirebaseUser(fbUser);
         if (fbUser) {
-          const savedPlan = (localStorage.getItem(`pdfminty_plan_${fbUser.uid}`) as 'free' | 'pro') || 'free';
           const currentUser: AppUser = {
             uid: fbUser.uid,
             email: fbUser.email,
             displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
             photoURL: fbUser.photoURL,
-            plan: savedPlan,
+            plan: 'free',
+            isPro: false,
             emailVerified: fbUser.emailVerified,
           };
           setUser(currentUser);
+          setIsPro(false);
+          setSyncedProStatus(false);
 
-          // Synchronize profile to Firestore
+          // Synchronize profile metadata to Firestore (never writes isPro)
           syncUserProfileToFirestore(currentUser);
 
-          // Listen for real-time Firestore profile changes (e.g. cloud plan upgrade)
+          // Subscribe in real time with Firestore onSnapshot to document `users/{uid}`
           unsubscribeFirestore = subscribeToUserProfile(fbUser.uid, (firestoreProfile) => {
-            if (firestoreProfile.plan) {
-              try {
-                localStorage.setItem(`pdfminty_plan_${fbUser.uid}`, firestoreProfile.plan);
-              } catch {
-                // Ignore storage error
-              }
-              setUser((prev) => (prev ? { ...prev, plan: firestoreProfile.plan } : null));
-            }
+            const proActive = firestoreProfile.isPro === true;
+            setIsPro(proActive);
+            setSyncedProStatus(proActive);
+            setUser((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    isPro: proActive,
+                    plan: proActive ? 'pro' : 'free',
+                  }
+                : null
+            );
           });
         } else {
+          setIsPro(false);
+          setSyncedProStatus(false);
           setUser(null);
         }
         setLoading(false);
@@ -107,16 +130,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       };
     } else {
-      // Offline / Developer preview fallback so user can inspect features before pasting Firebase keys
+      // Offline / Developer preview fallback
       try {
         const stored = localStorage.getItem(DEMO_USER_STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored);
-          setUser(parsed);
+          const parsed = JSON.parse(stored) as AppUser;
+          setUser({ ...parsed, plan: 'free', isPro: false });
         }
       } catch {
         // Ignore local storage errors
       }
+      setIsPro(false);
+      setSyncedProStatus(false);
       setLoading(false);
       return undefined;
     }
@@ -135,16 +160,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             displayName: result.user.displayName || email.split('@')[0],
             photoURL: result.user.photoURL,
             plan: 'free',
+            isPro: false,
             emailVerified: result.user.emailVerified,
           });
         } else {
-          // Simulated demo mode when keys are not yet pasted
           const demoUser: AppUser = {
             uid: 'demo_' + Date.now(),
             email,
             displayName: email.split('@')[0],
             photoURL: null,
             plan: 'free',
+            isPro: false,
             emailVerified: true,
           };
           localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
@@ -169,7 +195,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (name && result.user) {
             await updateProfile(result.user, { displayName: name });
           }
-          // Automatically dispatch verification email via Firebase Auth
           try {
             await sendEmailVerification(result.user);
           } catch (verErr) {
@@ -182,6 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             displayName: name || result.user.displayName || email.split('@')[0],
             photoURL: result.user.photoURL,
             plan: 'free',
+            isPro: false,
             emailVerified: result.user.emailVerified,
           });
         } else {
@@ -191,6 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             displayName: name || email.split('@')[0],
             photoURL: null,
             plan: 'free',
+            isPro: false,
             emailVerified: false,
           };
           localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
@@ -207,9 +234,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       if (isConfigured && auth) {
-        // Authenticate with real Firebase Google Auth popup.
-        // If domain is unauthorized or popup is closed, throw real error so UI guides the user properly.
-        // Never auto-sign-in a fake user!
+        const result = await signInWithPopup(auth, googleProvider);
+        setFirebaseUser(result.user);
+        setUser((prev) => ({
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName || 'Google User',
+          photoURL: result.user.photoURL,
+          plan: prev?.uid === result.user.uid && prev.isPro ? 'pro' : 'free',
+          isPro: prev?.uid === result.user.uid ? Boolean(prev.isPro) : false,
+          emailVerified: result.user.emailVerified,
+        }));
+      } else {
+        throw new Error('AUTH_NOT_CONFIGURED');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [isConfigured]);
+
+  /**
+   * Prompts Google sign-in first if the user is not signed in.
+   * Once signed in, redirects to the Lemon Squeezy Pro checkout URL with
+   * `checkout[custom][uid]=<firebase uid>` and `checkout[email]=<user email>`.
+   */
+  const upgradeToPro = useCallback(async () => {
+    const activeFbUser = auth?.currentUser || firebaseUser;
+    if (activeFbUser?.uid) {
+      const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+        activeFbUser.uid,
+        activeFbUser.email || user?.email
+      );
+      window.location.assign(checkoutUrl);
+      return;
+    }
+
+    if (user?.uid && !user.uid.startsWith('demo_')) {
+      const checkoutUrl = buildLemonSqueezyCheckoutUrl(user.uid, user.email);
+      window.location.assign(checkoutUrl);
+      return;
+    }
+
+    // Not signed in: prompt Google sign-in first, then redirect to Lemon Squeezy checkout
+    if (isConfigured && auth) {
+      setLoading(true);
+      try {
         const result = await signInWithPopup(auth, googleProvider);
         setFirebaseUser(result.user);
         setUser({
@@ -218,15 +287,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           displayName: result.user.displayName || 'Google User',
           photoURL: result.user.photoURL,
           plan: 'free',
+          isPro: false,
           emailVerified: result.user.emailVerified,
         });
-      } else {
-        throw new Error('AUTH_NOT_CONFIGURED');
+        const checkoutUrl = buildLemonSqueezyCheckoutUrl(result.user.uid, result.user.email);
+        window.location.assign(checkoutUrl);
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
+    } else {
+      throw new Error('AUTH_NOT_CONFIGURED');
     }
-  }, [isConfigured]);
+  }, [firebaseUser, user, isConfigured]);
 
   const signInAsDemo = useCallback((customEmail?: string) => {
     const demoEmail = customEmail || 'demo.user@pdfminty.com';
@@ -236,6 +308,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       displayName: demoEmail.split('@')[0],
       photoURL: null,
       plan: 'free',
+      isPro: false,
       emailVerified: true,
     };
     try {
@@ -243,6 +316,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Ignore storage errors
     }
+    setIsPro(false);
+    setSyncedProStatus(false);
     setUser(demoUser);
   }, []);
 
@@ -261,7 +336,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const trimmed = code.trim();
     if (!trimmed) throw new Error('EMPTY_CODE');
 
-    // Extract oobCode if the user pasted the entire verification link from the email
     let actionCode = trimmed;
     if (trimmed.includes('oobCode=')) {
       try {
@@ -302,6 +376,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       localStorage.removeItem(DEMO_USER_STORAGE_KEY);
       setFirebaseUser(null);
+      setIsPro(false);
+      setSyncedProStatus(false);
       setUser(null);
     } finally {
       setLoading(false);
@@ -340,32 +416,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [isConfigured]
   );
 
-  const updatePlan = useCallback(
-    (newPlan: 'free' | 'pro') => {
-      setUser((prev) => {
-        if (!prev) return null;
-        const updated = { ...prev, plan: newPlan };
-        if (isConfigured && auth?.currentUser) {
-          localStorage.setItem(`pdfminty_plan_${auth.currentUser.uid}`, newPlan);
-        } else {
-          localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(updated));
-        }
-        return updated;
-      });
-    },
-    [isConfigured]
-  );
+  // Client never writes `isPro` — only the Cloudflare Worker webhook writes `isPro` to Firestore.
+  const updatePlan = useCallback((_newPlan: 'free' | 'pro') => {
+    // Intentionally a no-op on the client to enforce server-authoritative `isPro`
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         firebaseUser,
+        isPro,
         loading,
         isConfigured,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
+        upgradeToPro,
         signInAsDemo,
         sendVerificationEmail,
         verifyEmailWithCode,
@@ -384,11 +451,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 const defaultAuthContext: AuthContextType = {
   user: null,
   firebaseUser: null,
+  isPro: false,
   loading: false,
   isConfigured: false,
   signInWithEmail: async () => {},
   signUpWithEmail: async () => {},
   signInWithGoogle: async () => {},
+  upgradeToPro: async () => {},
   signInAsDemo: () => {},
   sendVerificationEmail: async () => {},
   verifyEmailWithCode: async () => {},
@@ -402,4 +471,9 @@ const defaultAuthContext: AuthContextType = {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   return context || defaultAuthContext;
+};
+
+export const usePro = () => {
+  const { isPro, upgradeToPro, loading } = useAuth();
+  return { isPro, upgradeToPro, loading };
 };

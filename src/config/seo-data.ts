@@ -8825,68 +8825,165 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     name: 'Privacy Policy',
     ogImage: '/og-image.png',
     shortDescription:
-      '100% in-browser processing privacy policy for PdfMinty with Google AdSense disclosures',
-    metaTitle: 'Privacy Policy — 100% Zero-Data Collection | PdfMinty',
+      'Comprehensive Privacy Policy for PDFMinty: 100% client-side PDF processing, Google OAuth 2.0 Limited Use compliance, Google Gemini AI opt-in disclosures, AdSense, GDPR & CCPA rights.',
+    metaTitle: 'Privacy Policy — 100% Zero-Data Collection & Google OAuth Compliance | PDFMinty',
     metaDescription:
-      "Read PdfMinty's Privacy Policy. We do not collect, upload, store, or transmit your PDF files. All processing happens 100% locally inside your web browser. Includes Google AdSense and cookie disclosures.",
+      "Read PDFMinty's comprehensive Privacy Policy. Standard PDF tools process files 100% locally in your browser with zero uploads. Includes complete Google OAuth Limited Use, Google Gemini AI, AdSense, GDPR, and CCPA disclosures.",
     h1: 'Privacy Policy',
     icon: 'Shield',
     category: 'static',
     priority: 0.5,
     changefreq: 'yearly',
     type: 'article',
-    datePublished: '2026-09-21',
-    dateModified: '2026-09-28',
+    datePublished: '2026-01-01',
+    dateModified: '2026-10-18',
     longFormBody: `
-      <h2>Privacy Policy — 100% Zero-Data Collection | PdfMinty</h2>
-      <p><em>Last Updated & Reviewed: September 2026 • Technical Reviewer: Security & Compliance Architecture Team</em></p>
+      <h2>Privacy Policy — 100% Zero-Data Collection &amp; Google OAuth Compliance | PDFMinty</h2>
+      <p><em>Effective Date: January 1, 2026 • Last Updated &amp; Reviewed: October 18, 2026 • Data Controller: PDFMinty Security &amp; Compliance Architecture Team (https://pdfminty.com/)</em></p>
 
-      <h2>The Short Version</h2>
-      <p>PdfMinty's standard 22 PDF tools process files 100% locally inside your web browser without uploading your documents to any server. Your document contents never leave your device. If you explicitly choose to use the opt-in AI PDF Assistant (/ai-analyze-pdf), extracted text is sent securely via encrypted API to Google Gemini to fulfill your query, strictly after you give consent. Below you will also find detailed disclosures regarding Google AdSense advertising cookies, analytics, and your international privacy rights.</p>
+      <h2>Executive Summary (The Short Version)</h2>
+      <p>PDFMinty's 30+ standard PDF tools process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI tools — the AI PDF Assistant (<a href="/ai-analyze-pdf/">/ai-analyze-pdf/</a>) or the OCR PDF tool (<a href="/ocr-pdf/">/ocr-pdf/</a>) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth 2.0 or Email/Password, we store only your basic account profile (email, display name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).</p>
 
-      <h2>1. Local In-Browser Processing (Standard Tools)</h2>
-      <p>When you select a PDF file in standard PdfMinty tools (merge, split, rotate, protect, watermark, convert, delete pages, reorder, etc.), it is processed entirely using client-side WebAssembly, JavaScript, and Web Workers in your browser memory on your local machine or mobile device.</p>
+      <h2>Data Processing &amp; Privacy Architecture Matrix</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Service / Feature Category</th>
+            <th>Data Accessed or Collected</th>
+            <th>Processing Location</th>
+            <th>Retention &amp; Storage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>30+ Standard PDF Tools</strong> (Merge, Split, Compress, Sign, Protect, Unlock, etc.)</td>
+            <td>User-selected PDF/Image files in local browser memory only</td>
+            <td>100% Client-Side (In-Browser WebAssembly &amp; RAM)</td>
+            <td>Zero server upload; purged immediately when tab closes</td>
+          </tr>
+          <tr>
+            <td><strong>Opt-In Cloud AI Tools</strong> (/ai-analyze-pdf/ &amp; /ocr-pdf/)</td>
+            <td>Extracted document text (up to 12 pages) or rendered page images (up to 5 pages) after explicit user consent</td>
+            <td>Encrypted HTTPS Proxy (/api/gemini-proxy) to Google Gemini API</td>
+            <td>Ephemeral in-memory processing only; never stored on PDFMinty servers</td>
+          </tr>
+          <tr>
+            <td><strong>Optional User Accounts &amp; Google Sign-In (OAuth 2.0)</strong></td>
+            <td>Email address, display name, profile photo URL, unique user ID (UID), plan tier</td>
+            <td>Google Firebase Authentication &amp; Google Cloud Firestore</td>
+            <td>Retained while account is active; deleted within 7 business days upon request</td>
+          </tr>
+          <tr>
+            <td><strong>Guest Quota &amp; UI Preferences</strong></td>
+            <td>Daily task counter, dark/light theme, language preference, cookie consent state</td>
+            <td>Client-Side Browser localStorage</td>
+            <td>Stored locally in user's browser; user can clear anytime</td>
+          </tr>
+        </tbody>
+      </table>
 
-      <h2>2. Zero Storage & No File Uploads</h2>
-      <p>We do not maintain backend servers or cloud storage buckets that store, cache, or buffer your PDF documents. All binary file transformations execute entirely within your device's RAM. When you close the browser tab or refresh the page, all file data is completely purged from memory.</p>
+      <h2>1. Local In-Browser Processing (Standard PDF Tools)</h2>
+      <p>When you select a PDF or image file in any of PDFMinty's standard utilities (including Merge PDF, Split PDF, Compress PDF, Protect PDF, Unlock PDF, Rotate PDF, Sign PDF, Watermark PDF, Add Page Numbers, Delete Pages, Extract Pages, Reorder Pages, Flatten PDF, Grayscale PDF, Repair PDF, Edit PDF Metadata, Sanitize PDF, PDF to Image, Image to PDF, Compare PDF, and PDF to Markdown), the entire operation executes locally on your device using client-side WebAssembly (<code>@cantoo/pdf-lib</code>, <code>pdfjs-dist</code>), HTML5 Canvas (<code>fabric</code>, <code>signature_pad</code>), and dedicated Web Workers. Your files are read directly from your local disk into your web browser's isolated memory sandbox using the standard HTML5 <code>FileReader</code> and <code>ArrayBuffer</code> APIs. At no point during standard PDF operations are your files uploaded, transmitted, streamed, or copied to PDFMinty servers or any external cloud infrastructure.</p>
 
-      <h2>3. Opt-In AI Feature Disclosure (/ai-analyze-pdf)</h2>
-      <p>PdfMinty offers an optional AI PDF Assistant. If you select a file and check the explicit consent checkbox in the AI tool, extracted text from up to the first 12 pages is transmitted over an encrypted TLS connection to Google Gemini API to answer your questions or generate summaries. Binary PDF files are never stored, and text is transmitted solely for processing your immediate query.</p>
-
-      <h2>4. Google User Data, OAuth Authentication & Account Information</h2>
-      <p>When you choose to sign in to PDFMinty using Google Sign-In (OAuth), we request basic profile information from your Google Account: your email address, display name, profile avatar photo URL, and unique Google user identifier (UID). We use this information solely to authenticate your identity, establish your secure session, track your daily processing task quotas, and manage your membership tier (Free vs PRO) in Google Cloud Firestore. PDFMinty never requests or accesses your Google Drive files, Gmail messages, Google Contacts, or any external Google Workspace data.</p>
-
-      <h2>5. Google API Services User Data Policy (Limited Use Disclosure)</h2>
-      <p><strong>PDFMinty's use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements.</strong> We do not sell, rent, lease, transfer, or disclose Google user data to third parties, external advertising networks, or data brokers. Furthermore, Google user data is never used to train or fine-tune machine learning or artificial intelligence models.</p>
-
-      <h2>6. Data Retention, Account Deletion & Access Revocation</h2>
-      <p>We retain your account credentials and plan settings only for as long as you maintain an active account with PDFMinty. You can revoke PDFMinty's access to your Google Account at any time by visiting <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Security Settings</a>. You may permanently delete your PDFMinty account and erase all associated Firestore database records at any time directly through your Account Dashboard or by sending a deletion request to support@pdfminty.com. Upon request, your account record is irreversibly purged within 7 business days.</p>
-
-      <h2>7. Google AdSense & Third-Party Advertising Cookies</h2>
-      <p>PdfMinty uses Google AdSense to display advertisements when you visit our website. To comply with Google AdSense policies, please review the following required advertising disclosures:</p>
+      <h2>2. Zero Document Storage, No File Uploads &amp; Memory Purging</h2>
+      <p>We do not operate backend file servers, cloud storage buckets (such as AWS S3 or Google Cloud Storage), or document databases that store, cache, or log your PDF files. All binary file transformations happen strictly within your device's volatile Random Access Memory (RAM).</p>
       <ul>
-        <li>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites on the Internet.</li>
-        <li>Google's use of advertising cookies enables it and its partners to serve ads to our users based on their visits to PdfMinty and/or other sites on the Internet.</li>
+        <li><strong>Automatic Blob &amp; Buffer Cleanup:</strong> Temporary download links are generated locally in your browser via <code>URL.createObjectURL()</code> and are systematically revoked via <code>URL.revokeObjectURL()</code> when you reset a tool, close the preview, or navigate away.</li>
+        <li><strong>Complete Session Erasure:</strong> When you close your browser tab or refresh the page, the browser's garbage collector immediately and irreversibly purges all allocated <code>ArrayBuffer</code> and <code>Uint8Array</code> memory segments.</li>
+        <li><strong>Cryptographic Password Operations:</strong> When you encrypt a PDF using <a href="/protect-pdf/">Protect PDF</a> or decrypt a file using <a href="/unlock-pdf/">Unlock PDF</a>, passwords are processed exclusively inside your local browser memory and are never transmitted over the network.</li>
+      </ul>
+
+      <h2>3. Opt-In Cloud AI Features Disclosure (AI Analyze PDF &amp; OCR PDF)</h2>
+      <p>PDFMinty provides two clearly labeled, optional AI-powered tools: the AI PDF Assistant (<a href="/ai-analyze-pdf/">/ai-analyze-pdf/</a>) and OCR PDF (<a href="/ocr-pdf/">/ocr-pdf/</a>). Unlike our standard local tools, these two features require cloud inference via the Google Gemini API:</p>
+      <ul>
+        <li><strong>Affirmative User Consent Required:</strong> Neither tool transmits any data automatically. Before any AI analysis or OCR transcription begins, you must actively initiate the action and confirm consent in the user interface.</li>
+        <li><strong>Data Minimized &amp; Scoped:</strong> For <a href="/ai-analyze-pdf/">AI Analyze PDF</a>, text is first extracted locally in your browser (up to 12 pages / 40,000 characters) and only the extracted plain text and your prompt are sent over a TLS 1.3 encrypted HTTPS connection to our serverless edge proxy (<code>/api/gemini-proxy</code>) for processing by the Google Gemini API. For <a href="/ocr-pdf/">OCR PDF</a>, only the rendered page images you select (up to 5 pages per batch) are transmitted for optical character recognition.</li>
+        <li><strong>Zero Retention &amp; Ephemeral Processing:</strong> PDFMinty's edge proxy acts purely as a stateless pass-through to protect API credentials. We never log, store, cache, or retain your document text, page images, prompts, or AI responses in any database or storage medium.</li>
+      </ul>
+
+      <h2>4. Google User Data, OAuth 2.0 Authentication &amp; Account Information</h2>
+      <p>All 30+ PDF tools on PDFMinty are publicly accessible to guest users without requiring registration or login. However, if you optionally choose to create an account or sign in using Google Sign-In (OAuth 2.0) or Email/Password authentication (powered by Google Firebase Authentication), we collect and process specific basic account information.</p>
+      <h3>4.1 Specific Google User Data We Access (OAuth 2.0 Scopes)</h3>
+      <ul>
+        <li><code>openid</code> — Verifies your unique Google Account identifier (UID) for secure authentication.</li>
+        <li><code>https://www.googleapis.com/auth/userinfo.email</code> — Accesses your primary Google Account email address and email verification status to identify your account and communicate essential account security notices.</li>
+        <li><code>https://www.googleapis.com/auth/userinfo.profile</code> — Accesses your public display name and profile picture URL so we can display your name and avatar in the application header and your Account Dashboard.</li>
+      </ul>
+      <h3>4.2 How We Use &amp; Store Google User Data</h3>
+      <ul>
+        <li><strong>Authentication &amp; Session Security:</strong> To sign you in securely, maintain your authenticated session token, and protect your account against unauthorized access.</li>
+        <li><strong>Quota &amp; Subscription Management:</strong> To synchronize your account profile and membership plan (<code>free</code> vs. <code>pro</code> tier) in our Google Cloud Firestore database (under the isolated document path <code>/users/{uid}</code>), unlocking higher daily task allowances and file size limits (150 MB for Free accounts; 500 MB and unlimited tasks for PRO members).</li>
+        <li><strong>Strict Scope Limitation:</strong> PDFMinty <strong>never</strong> requests access to restricted or sensitive Google Workspace scopes. We never access, read, modify, or delete your Google Drive files, Gmail messages, Google Contacts, or Google Calendar.</li>
+      </ul>
+
+      <h2>5. Google API Services User Data Policy (Mandatory Limited Use Disclosure)</h2>
+      <p><strong>PDFMinty's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.</strong> Please review the official <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>.</p>
+      <p>In strict accordance with Google's Limited Use requirements, PDFMinty guarantees and enforces the following binding commitments regarding all Google User Data:</p>
+      <ul>
+        <li><strong>Limited to User-Facing Features:</strong> We only use Google user data to provide or improve user-facing authentication and account management features that are prominent in the PDFMinty application interface.</li>
+        <li><strong>No Unauthorized Third-Party Transfers:</strong> We do not transfer, sell, rent, lease, or disclose Google user data to any third parties, data brokers, or external platforms, except as strictly necessary to provide the user-facing authentication service (via Google Firebase), to comply with applicable laws, or as part of a merger, acquisition, or sale of assets after obtaining explicit prior user consent.</li>
+        <li><strong>Zero Use for Advertising:</strong> We never use or transfer Google user data for serving advertisements, including retargeting, personalized advertising, or interest-based advertising.</li>
+        <li><strong>Prohibition on Human Inspection:</strong> No human personnel are permitted to read or inspect Google user data unless we first obtain your affirmative agreement for specific support inquiries, it is necessary for security purposes (such as investigating abuse), or it is required to comply with applicable law.</li>
+        <li><strong>No AI or ML Model Training:</strong> Google user data is never used to train, fine-tune, or improve generalized Artificial Intelligence (AI) or Machine Learning (ML) models.</li>
+      </ul>
+
+      <h2>6. Data Retention, Account Deletion &amp; Access Revocation</h2>
+      <p>We retain your user account profile (email, display name, UID, and subscription status) in Google Cloud Firestore only for as long as you maintain an active account with PDFMinty. You have the absolute right to revoke access and delete your personal data at any time:</p>
+      <ul>
+        <li><strong>Revoking Google OAuth Permissions:</strong> You can immediately revoke PDFMinty's access to your Google Account at any time via your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Account Security &amp; Third-Party Access Settings</a>.</li>
+        <li><strong>Account &amp; Database Deletion:</strong> You may request permanent deletion of your PDFMinty user account and all associated Firestore profile records directly from your <a href="/dashboard/">Account Dashboard</a> or by emailing our Data Protection Team at <a href="mailto:support@pdfminty.com">support@pdfminty.com</a> or <a href="mailto:pdfminty@gmail.com">pdfminty@gmail.com</a> with the subject line <em>"Account Deletion Request"</em>. All account records and authentication identifiers are permanently and irreversibly purged within <strong>7 business days</strong>.</li>
+        <li><strong>Clearing Local Browser Data:</strong> Guest task counters, recent tool activity summaries, theme settings, and consent tokens stored in your browser's <code>localStorage</code> can be cleared instantly at any time through your browser settings.</li>
+      </ul>
+
+      <h2>7. Data Security, Encryption &amp; Firestore Isolation Rules</h2>
+      <p>PDFMinty implements defense-in-depth technical and organizational security safeguards to protect application integrity and user account records:</p>
+      <ul>
+        <li><strong>Transport Layer Encryption:</strong> All network traffic across <code>pdfminty.com</code> is encrypted in transit using HTTPS / TLS 1.3 with HTTP Strict Transport Security (HSTS) preloading enabled (<code>max-age=31536000; includeSubDomains; preload</code>).</li>
+        <li><strong>Strict Firestore Security Rules:</strong> User profile records in Google Cloud Firestore are protected by strict cryptographic security rules that enforce strict user isolation (<code>request.auth != null &amp;&amp; request.auth.uid == userId</code>), preventing any user from reading or modifying another user's profile, email, or privilege tier.</li>
+        <li><strong>Browser Hardening Headers:</strong> Every page response enforces a strict <code>Content-Security-Policy (CSP)</code>, <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, and restrictive <code>Permissions-Policy</code> headers.</li>
+      </ul>
+
+      <h2>8. Google AdSense &amp; Third-Party Advertising Cookies</h2>
+      <p>PDFMinty uses Google AdSense to display advertisements on public informational pages to support free access to our browser PDF toolkit. To comply with Google Publisher and AdSense policies, please review the following required advertising disclosures:</p>
+      <ul>
+        <li>Third-party vendors, including Google, use cookies (such as the DoubleClick DART cookie) to serve ads based on a user's prior visits to this website or other websites on the Internet.</li>
+        <li>Google's use of advertising cookies enables it and its partners to serve ads to our users based on their visits to PDFMinty and/or other sites on the Internet.</li>
         <li>Users may opt out of personalized advertising by visiting Google's <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">Ads Settings</a> or by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>.</li>
-        <li>For more details on how Google processes data when you visit partner sites, please see Google's policy at <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">How Google uses information from sites or apps that use our services</a>.</li>
+        <li>For more details on how Google processes data when you visit partner sites, please see Google's official policy at <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">How Google uses information from sites or apps that use our services</a>.</li>
       </ul>
 
-      <h2>8. Web Analytics & Cookie Usage</h2>
-      <p>PdfMinty uses privacy-respecting website performance analytics (such as Google Analytics 4 with IP anonymization and Cloudflare Web Analytics) to understand aggregate traffic trends, pageviews, and browser performance. We do not sell user data, track individual personal identities, or store cookies containing sensitive document data.</p>
+      <h2>9. Consent Management Platform (CMP) &amp; Cookie Preferences (EEA, UK &amp; Switzerland)</h2>
+      <p>For visitors located in the European Economic Area (EEA), the United Kingdom, and Switzerland, PDFMinty deploys a Google-Certified Consent Management Platform (CMP) — <a href="https://www.cookiebot.com/en/privacy-policy/" target="_blank" rel="noopener noreferrer">Cookiebot by Usercentrics</a> (CMP ID: 134) — in strict adherence to the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2. Under Google Consent Mode v2, all advertising signals (<code>ad_storage</code>, <code>ad_user_data</code>, and <code>ad_personalization</code>) default to <code>denied</code> until you grant affirmative consent.</p>
 
-      <h2>9. GDPR & CCPA/CPRA Privacy Rights</h2>
-      <p>Depending on your geographic location, you possess statutory rights under privacy frameworks such as the European Union General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA/CPRA):</p>
+      <h2>10. Web Analytics, Error Telemetry &amp; Abuse Prevention</h2>
+      <p>PDFMinty uses privacy-respecting website performance analytics (Google Analytics 4 with IP anonymization enabled and Cloudflare Web Analytics) to measure aggregate traffic trends, page load speeds, and core web vitals. We never log document filenames, PDF text contents, or personal identities in analytics events. To protect our serverless API endpoints (<code>/api/gemini-proxy</code>, <code>/api/contact</code>, <code>/api/subscribe</code>, and <code>/api/feedback</code>) against automated DDoS attacks and quota abuse, our edge middleware utilizes ephemeral rate-limiting counters via Cloudflare KV and cryptographically signed HMAC-SHA256 state tokens that expire automatically within 60 seconds.</p>
+
+      <h2>11. Third-Party Service Providers &amp; Sub-Processors</h2>
       <ul>
-        <li><strong>Right of Access & Deletion:</strong> Because standard PDF operations do not collect or store user accounts, identities, or files, there is no personally identifiable file data retained on our servers to access or delete.</li>
-        <li><strong>Do Not Sell My Information:</strong> PdfMinty does not sell, rent, or monetize your personal information or document contents to any third parties.</li>
-        <li><strong>Browser Controls:</strong> You may configure your web browser to reject cookies or delete stored browsing traces at any time without impacting the core functionality of our client-side tools.</li>
+        <li><strong>Cloudflare, Inc. (Cloudflare Pages &amp; Workers):</strong> Global CDN hosting, DDoS protection, TLS termination, and serverless edge routing.</li>
+        <li><strong>Google LLC (Firebase Authentication &amp; Cloud Firestore):</strong> Optional user authentication, OAuth 2.0 session management, and user account tier storage.</li>
+        <li><strong>Google LLC (Google Gemini API):</strong> Ephemeral cloud AI document summarization and optical character recognition strictly when initiated by user opt-in.</li>
+        <li><strong>Google LLC (Google AdSense &amp; Google Analytics 4):</strong> Website monetization and anonymized traffic measurement subject to user cookie consent.</li>
+        <li><strong>Resend, Inc.:</strong> Transactional email delivery strictly when a user voluntarily submits our Contact Us form or subscribes to our optional newsletter.</li>
       </ul>
 
-      <h2>7. AI Bots, Crawlers & Search Engines Access Policy</h2>
-      <p>PdfMinty supports open web standards. Search engine crawlers, automated verification bots (including Google AdSense crawlers Mediapartners-Google and Google-Display-Ads-Bot), and benign AI assistant crawlers (such as GPTBot, ClaudeBot, and PerplexityBot) are welcome to access, crawl, and index all public pages, tools, documentation, and tutorials. Automated access to backend API routes (/api/*) is restricted to safeguard operational integrity.</p>
+      <h2>12. International Privacy Rights (GDPR, UK GDPR, CCPA/CPRA &amp; Global Laws)</h2>
+      <p>Depending on your jurisdiction, you hold statutory rights under data protection regulations including the European Union General Data Protection Regulation (GDPR), the UK GDPR, the California Consumer Privacy Act (CCPA/CPRA), and Brazil's LGPD:</p>
+      <ul>
+        <li><strong>Right of Access, Portability &amp; Deletion (GDPR Arts. 15–20):</strong> You have the right to request a copy of any personal account data held by PDFMinty, request correction of inaccurate data, or demand complete erasure. Because standard PDF tools run 100% locally in your browser, we never possess your PDF files.</li>
+        <li><strong>Do Not Sell or Share My Personal Information (CCPA/CPRA):</strong> PDFMinty does not sell, rent, or monetize your personal information, Google user data, or document contents to any third parties.</li>
+        <li><strong>Legal Basis for Processing (EEA/UK Users):</strong> We process optional account data under <em>Contractual Necessity</em> (GDPR Art. 6(1)(b)), opt-in AI/cookie processing under <em>Explicit Consent</em> (GDPR Art. 6(1)(a)), and edge security/anti-abuse under <em>Legitimate Interests</em> (GDPR Art. 6(1)(f)).</li>
+        <li><strong>Browser &amp; Cookie Controls:</strong> You may configure your web browser to reject cookies or clear local storage at any time without impacting the core functionality of our client-side PDF tools.</li>
+      </ul>
 
-      <h2>8. Contact Us Regarding Privacy</h2>
-      <p>If you have any questions, inquiries, or feedback regarding our privacy practices or cookie policies, please reach out via our <a href="/contact/">Contact Page</a> or by email at support@pdfminty.com.</p>
+      <h2>13. Children's Privacy (COPPA Compliance)</h2>
+      <p>PDFMinty is a general-audience productivity toolkit and is not directed to children under the age of 13 (or under 16 in applicable EEA jurisdictions). We do not knowingly collect personally identifiable information from children. If you are a parent or guardian and believe that a child has created an account or provided personal information to us, please contact us immediately at <a href="mailto:support@pdfminty.com">support@pdfminty.com</a> so we can promptly delete such information.</p>
+
+      <h2>14. AI Bots, Crawlers &amp; Search Engine Verification Access Policy</h2>
+      <p>PDFMinty supports open web standards. Search engine crawlers (Googlebot, Bingbot), Google OAuth and Brand Verification crawlers, Google AdSense crawlers (Mediapartners-Google and Google-Display-Ads-Bot), and benign AI indexers (GPTBot, ClaudeBot, PerplexityBot) are explicitly permitted to access, crawl, and verify our homepage, privacy policy, terms of service, and all 30+ public PDF tools without authentication.</p>
+
+      <h2>15. Contact Us &amp; Data Protection Inquiries</h2>
+      <p>If you have any questions, data subject access requests (DSAR), account deletion requests, or inquiries regarding this Privacy Policy or our Google OAuth compliance, please contact our Data Protection &amp; Support Team via our <a href="/contact/">Contact Page</a> or directly by email at <a href="mailto:support@pdfminty.com">support@pdfminty.com</a> or <a href="mailto:pdfminty@gmail.com">pdfminty@gmail.com</a>.</p>
     `,
   },
   {

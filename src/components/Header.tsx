@@ -20,9 +20,22 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobileMenuOpen }) => {
   const { t } = useTranslation('common');
   const { isDark, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, isPro, upgradeToPro, logout } = useAuth();
   const { tier, tasksRemaining, openLimitModal } = useUsageLimit();
   const [logoLoaded, setLogoLoaded] = useState(true);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const handleUpgradeClick = async () => {
+    if (isUpgrading) return;
+    setIsUpgrading(true);
+    try {
+      await upgradeToPro();
+    } catch (err) {
+      console.warn('[Checkout] Upgrade flow cancelled or failed:', err);
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 shadow-sm transition-colors duration-200">
@@ -78,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobil
           <Link to={ROUTES.PRICING} className="hover:text-emerald-500 transition-colors flex items-center gap-1.5">
             <span>{t('header.nav.pricing', { defaultValue: 'Pricing' })}</span>
             <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
-              $2.49/mo
+              BDT 299.99/mo
             </span>
           </Link>
           <Link to={ROUTES.BLOG} className="hover:text-emerald-500 transition-colors">
@@ -94,20 +107,46 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobil
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Pro Badge when isPro is true, or Upgrade to Pro button when false */}
+          {isPro ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-wider shadow-xs select-none"
+              id="header-pro-badge"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span>Pro</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handleUpgradeClick}
+              disabled={isUpgrading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+              id="header-upgrade-pro-btn"
+              title="Upgrade to Pro (BDT 299.99/month)"
+            >
+              <Zap className="w-3.5 h-3.5 fill-white" />
+              <span>Upgrade to Pro</span>
+              <span className="hidden md:inline text-[10px] font-black bg-black/20 px-1.5 py-0.5 rounded-md">
+                BDT 299.99/month
+              </span>
+            </button>
+          )}
+
           {/* Daily Task Quota Indicator Button */}
           <button
             type="button"
             onClick={() => openLimitModal({ reason: 'task_limit' })}
             className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-all cursor-pointer shadow-xs select-none"
             title={
-              tier === 'pro'
+              isPro || tier === 'pro'
                 ? t('usageLimits.header.proTitle', { defaultValue: 'Pro Tier: Unlimited daily tasks & 500MB file uploads' })
                 : tier === 'free'
                   ? t('usageLimits.header.freeTitle', { count: tasksRemaining, defaultValue: `Free Account: 10 daily tasks (${tasksRemaining} left) & 150MB file uploads` })
                   : t('usageLimits.header.guestTitle', { count: tasksRemaining, defaultValue: `Guest: 5 daily tasks (${tasksRemaining} left) & 100MB file uploads` })
             }
           >
-            {tier === 'pro' ? (
+            {isPro || tier === 'pro' ? (
               <>
                 <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                 <span className="text-amber-600 dark:text-amber-400 font-bold">
@@ -143,9 +182,9 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen = false, setMobil
                   {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <span className="max-w-[100px] truncate text-slate-900 dark:text-white">{user.displayName || 'Dashboard'}</span>
-                {user.plan === 'pro' && (
+                {isPro && (
                   <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
-                    PRO
+                    Pro
                   </span>
                 )}
               </Link>

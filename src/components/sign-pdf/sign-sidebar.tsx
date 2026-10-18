@@ -10,6 +10,9 @@ import {
   X,
   ShieldCheck,
   Wand2,
+  Trash2,
+  Crown,
+  Plus,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,10 +21,15 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-import { FIELD_LABEL, type FieldKind, type SignatureSet } from './types';
+import { FIELD_LABEL, type FieldKind, type SavedSignaturePreset, type SignatureSet } from './types';
 
 type Props = {
   signatures: SignatureSet;
+  savedPresets?: SavedSignaturePreset[];
+  isPro?: boolean;
+  maxSavedSignatures?: number;
+  onSelectPreset?: (preset: SavedSignaturePreset) => void;
+  onDeletePreset?: (id: string) => void;
   dateText: string;
   onDateChange: (v: string) => void;
   onEditSignature: () => void;
@@ -48,6 +56,11 @@ const KINDS: { kind: FieldKind; icon: React.ReactNode }[] = [
 
 export function SignSidebar({
   signatures,
+  savedPresets = [],
+  isPro = false,
+  maxSavedSignatures = 1,
+  onSelectPreset,
+  onDeletePreset,
   dateText,
   onDateChange,
   onEditSignature,
@@ -78,8 +91,9 @@ export function SignSidebar({
               {t('signPdf.sidebar.yourSignature', { defaultValue: 'Your signature' })}
             </span>
             <Button variant="ghost" size="xs" onClick={onEditSignature}>
+              <Plus className="size-3.5 mr-1" />
               {hasSignature
-                ? t('signPdf.sidebar.change', { defaultValue: 'Change' })
+                ? t('signPdf.sidebar.newOrChange', { defaultValue: isPro ? 'Add / Edit Stamp' : 'Change' })
                 : t('signPdf.sidebar.create', { defaultValue: 'Create' })}
             </Button>
           </div>
@@ -106,6 +120,69 @@ export function SignSidebar({
               {signatures.initialsText ? ` · ${signatures.initialsText}` : ''}
             </p>
           ) : null}
+
+          {/* Saved Signatures Stamp Library */}
+          {savedPresets.length > 0 && (
+            <div className="mt-2 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Crown className="size-3.5 text-amber-500" />
+                  <span>
+                    Saved Stamps ({savedPresets.length}/{maxSavedSignatures})
+                  </span>
+                </span>
+                {!isPro && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                    Pro: Store up to 5
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
+                {savedPresets.map((preset) => {
+                  const isSelected =
+                    signatures.signature?.dataUrl === preset.set.signature?.dataUrl;
+                  return (
+                    <div
+                      key={preset.id}
+                      className={cn(
+                        'flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-all',
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/30'
+                          : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900 hover:border-slate-300'
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => onSelectPreset?.(preset)}
+                        className="flex flex-1 items-center gap-2.5 text-left min-w-0 cursor-pointer"
+                      >
+                        {preset.set.signature ? (
+                          <img
+                            src={preset.set.signature.dataUrl}
+                            alt={preset.label}
+                            className="h-7 w-14 object-contain rounded bg-white px-1 border border-slate-200"
+                          />
+                        ) : null}
+                        <span className="truncate font-semibold text-slate-800 dark:text-slate-200">
+                          {preset.label}
+                        </span>
+                      </button>
+                      {onDeletePreset && (
+                        <button
+                          type="button"
+                          onClick={() => onDeletePreset(preset.id)}
+                          aria-label="Delete saved signature"
+                          className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 px-5 py-5">

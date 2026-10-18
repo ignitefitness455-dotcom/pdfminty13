@@ -1508,7 +1508,15 @@
     "orEmail": "or by email at",
     "sec6Li1Title": "Right of Access & Deletion:",
     "sec6Li2Title": "Do Not Sell My Information:",
-    "sec6Li3Title": "Browser Controls:"
+    "sec6Li3Title": "Browser Controls:",
+    "secGoogleTitle": "4. Datos de Usuario de Google, Autenticación OAuth 2.0 e Información de Cuenta",
+    "secGoogleDesc": "Cuando inicia sesión en PDFMinty con Google Sign-In (OAuth 2.0), solicitamos información básica de su perfil de Google: dirección de correo electrónico (userinfo.email), nombre visible, foto de perfil (userinfo.profile) e identificador único (openid / UID). Usamos estos datos únicamente para autenticar su identidad y gestionar su cuenta en Google Cloud Firestore. PDFMinty nunca accede a Google Drive, Gmail ni Google Contacts.",
+    "secLimitedUseTitle": "5. Política de Datos de Usuario de los Servicios API de Google (Uso Limitado)",
+    "secLimitedUseDesc": "El uso y la transferencia a cualquier otra aplicación por parte de PDFMinty de la información recibida de las API de Google se adherirán a la Google API Services User Data Policy, incluidos los requisitos de Uso Limitado (Limited Use).",
+    "secRetentionTitle": "6. Retención de Datos, Eliminación de Cuenta y Revocación de Acceso",
+    "secRetentionDesc": "Conservamos los datos de su cuenta solo mientras mantenga una cuenta activa en PDFMinty. Puede revocar el acceso en la Configuración de Seguridad de Google (https://myaccount.google.com/permissions) y solicitar la eliminación permanente desde su Panel de Cuenta o escribiendo a support@pdfminty.com (eliminación en 7 días hábiles).",
+    "secCmpTitle": "9. Plataforma de Gestión de Consentimiento (CMP) y Preferencias de Cookies (EEE, Reino Unido y Suiza)",
+    "secCmpIntro": "Para los visitantes del Espacio Económico Europeo (EEE), el Reino Unido y Suiza, PDFMinty utiliza una Plataforma de Gestión de Consentimiento certificada por Google — Cookiebot by Usercentrics (CMP ID: 134) — conforme a IAB TCF v2.2 y Google Consent Mode v2."
   },
   "contact": {
     "hereToHelp": "We're Here to Help",

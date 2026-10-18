@@ -1494,7 +1494,15 @@
     "orEmail": "oder per E-Mail an",
     "sec6Li1Title": "Auskunfts- & Löschungsrecht:",
     "sec6Li2Title": "Kein Verkauf persönlicher Daten:",
-    "sec6Li3Title": "Browser-Einstellungen:"
+    "sec6Li3Title": "Browser-Einstellungen:",
+    "secGoogleTitle": "4. Google-Nutzerdaten, OAuth 2.0-Authentifizierung & Kontoinformationen",
+    "secGoogleDesc": "Wenn Sie sich über Google Sign-In (OAuth 2.0) bei PDFMinty anmelden, erfassen wir grundlegende Profilinformationen Ihres Google-Kontos: E-Mail-Adresse (userinfo.email), Anzeigename, Profilbild-URL (userinfo.profile) und Ihre eindeutige Google-Nutzer-ID (openid / UID). Wir verwenden diese Daten ausschließlich zur Authentifizierung, Sitzungsverwaltung und Kontingentverwaltung in Google Cloud Firestore. PDFMinty greift niemals auf Google Drive, Gmail oder Google Kontakte zu.",
+    "secLimitedUseTitle": "5. Richtlinie zu Nutzerdaten der Google API-Dienste (Limited Use Disclosure)",
+    "secLimitedUseDesc": "Die Nutzung und Weitergabe von Informationen, die PDFMinty von Google APIs erhält, an andere Apps erfolgt unter Einhaltung der Google API Services User Data Policy, einschließlich der Anforderungen zur eingeschränkten Nutzung (Limited Use).",
+    "secRetentionTitle": "6. Datenspeicherung, Kontolöschung & Widerruf des Zugriffs",
+    "secRetentionDesc": "Wir speichern Ihr Kontoprofil nur so lange, wie Sie ein aktives Konto bei PDFMinty unterhalten. Sie können den Zugriff jederzeit in den Google-Sicherheitseinstellungen (https://myaccount.google.com/permissions) widerrufen und Ihr Konto über das Dashboard oder per E-Mail an support@pdfminty.com dauerhaft löschen lassen (Löschung innerhalb von 7 Werktagen).",
+    "secCmpTitle": "9. Consent Management Platform (CMP) & Cookie-Einstellungen (EWR, UK & Schweiz)",
+    "secCmpIntro": "Für Besucher aus dem Europäischen Wirtschaftsraum (EWR), Großbritannien und der Schweiz setzt PDFMinty eine Google-zertifizierte Consent Management Platform (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — gemäß IAB TCF v2.2 und Google Consent Mode v2 ein."
   },
   "contact": {
     "hereToHelp": "Wir sind hier, um zu helfen",

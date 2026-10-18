@@ -101,11 +101,12 @@ export function generateSitemapXml(): SitemapGenerationResult {
   const staticRoutes: Array<{ path: string; priority: string; changefreq: string; lastmod?: string; isI18n?: boolean }> = [
     { path: '/', priority: '1.0', changefreq: 'daily', isI18n: true, lastmod: today },
     { path: '/blog/', priority: '0.9', changefreq: 'daily', lastmod: today },
-    { path: '/adobe-acrobat-alternative/', priority: '0.8', changefreq: 'weekly', lastmod: '2026-09-28' },
-    { path: '/about-us/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-09-28' },
-    { path: '/contact/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-09-28' },
-    { path: '/privacy-policy/', priority: '0.3', changefreq: 'monthly', lastmod: '2026-09-28' },
-    { path: '/terms-of-service/', priority: '0.3', changefreq: 'monthly', lastmod: '2026-09-28' },
+    { path: '/adobe-acrobat-alternative/', priority: '0.8', changefreq: 'weekly', lastmod: '2026-10-18' },
+    { path: '/pricing/', priority: '0.7', changefreq: 'monthly', lastmod: '2026-10-18' },
+    { path: '/about-us/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
+    { path: '/contact/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
+    { path: '/privacy-policy/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
+    { path: '/terms-of-service/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
   ];
 
   const homepageHreflangs = getHreflangs('', baseUrl);
@@ -115,15 +116,19 @@ export function generateSitemapXml(): SitemapGenerationResult {
   for (const route of staticRoutes) {
     const slashedPath = route.path === '' ? '/' : (route.path.endsWith('/') ? route.path : `${route.path}/`);
     const loc = `${baseUrl}${slashedPath.startsWith('/') ? slashedPath : `/${slashedPath}`}`;
+    const cleanRouteSlug = slashedPath.replace(/^\//, '').replace(/\/$/, '');
+    const matchedTool = (TOOLS as ToolSEOInfo[]).find(
+      (t) => t.slug.replace(/^\//, '').replace(/\/$/, '') === cleanRouteSlug
+    );
     
     pageEntries.push({
       loc,
-      lastmod: route.lastmod,
+      lastmod: matchedTool?.dateModified || route.lastmod,
       changefreq: route.changefreq,
       priority: route.priority,
       imageLoc: `${baseUrl}/og-image.png`,
-      title: 'PdfMinty — Free Privacy-First PDF Toolkit',
-      caption: 'Free in-browser PDF utilities with zero server uploads',
+      title: matchedTool?.metaTitle || 'PdfMinty — Free Privacy-First PDF Toolkit',
+      caption: matchedTool?.shortDescription || 'Free in-browser PDF utilities with zero server uploads',
       hreflangs: route.isI18n ? homepageHreflangs : undefined,
     });
 
@@ -162,7 +167,7 @@ export function generateSitemapXml(): SitemapGenerationResult {
     const cleanSlug = item.slug.replace(/^\//, '').replace(/\/$/, '');
 
     // Skip static pages handled in sitemap-pages
-    const isStaticPage = ['about-us', 'contact', 'privacy-policy', 'terms-of-service', 'blog', 'adobe-acrobat-alternative'].includes(cleanSlug);
+    const isStaticPage = ['about-us', 'contact', 'privacy-policy', 'terms-of-service', 'blog', 'adobe-acrobat-alternative', 'pricing'].includes(cleanSlug);
     if (isStaticPage) {
       continue;
     }
@@ -238,9 +243,9 @@ export function generateSitemapXml(): SitemapGenerationResult {
 
   // Master Sitemap Index
   const sitemapIndexXml = buildSitemapIndexXml([
-    { loc: `${baseUrl}/sitemap-tools.xml` },
-    { loc: `${baseUrl}/sitemap-blog.xml` },
-    { loc: `${baseUrl}/sitemap-pages.xml` },
+    { loc: `${baseUrl}/sitemap-tools.xml`, lastmod: today },
+    { loc: `${baseUrl}/sitemap-blog.xml`, lastmod: today },
+    { loc: `${baseUrl}/sitemap-pages.xml`, lastmod: today },
   ]);
 
   const sitemaps: Record<string, string> = {

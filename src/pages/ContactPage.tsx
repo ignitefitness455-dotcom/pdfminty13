@@ -7,25 +7,42 @@ import {
   Shield,
   Sparkles,
   MessageSquare,
+  Crown,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import SEO from '../components/SEO';
 import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
+import { resolveCurrentSession } from '../utils/usageLimit';
 
 export const ContactPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const { tier } = resolveCurrentSession(user);
+  const isPro = tier === 'pro' || user?.plan === 'pro';
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: 'General Inquiry',
+    name: user?.displayName || '',
+    email: user?.email || '',
+    subject: isPro ? 'Pro Priority Feature Request' : 'General Inquiry',
     message: '',
   });
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || user.displayName || '',
+        email: prev.email || user.email || '',
+      }));
+    }
+  }, [user]);
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText('support@pdfminty.com');
@@ -33,15 +50,31 @@ export const ContactPage: React.FC = () => {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) return;
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const taggedSubject = isPro
+        ? `[PRO PRIORITY] ${formData.subject}`
+        : formData.subject;
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: taggedSubject,
+          message: formData.message.trim(),
+        }),
+      });
+    } catch {
+      // Fallback to local confirmation if edge endpoint is offline in preview
+    } finally {
       setLoading(false);
       setSubmitted(true);
-    }, 600);
+    }
   };
 
   return (
@@ -97,17 +130,27 @@ export const ContactPage: React.FC = () => {
           {/* Response Time Box */}
           <div className="bg-surface-container-low border border-border-muted p-6 rounded-2xl space-y-3 shadow-sm flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
-              <Clock className="w-6 h-6" />
+              {isPro ? <Crown className="w-6 h-6 text-amber-500" /> : <Clock className="w-6 h-6" />}
             </div>
             <h2 className="text-base font-bold text-on-surface">
-              {t('contact.responseTime', { defaultValue: 'Response Time' })}
+              {isPro
+                ? 'Pro Priority SLA'
+                : t('contact.responseTime', { defaultValue: 'Response Time' })}
             </h2>
             <p className="text-xs text-on-surface-variant">
-              {t('contact.replyFast', { defaultValue: 'We reply as fast as possible' })}
+              {isPro
+                ? 'Direct engineering queue & feature priority'
+                : t('contact.replyFast', { defaultValue: 'We reply as fast as possible' })}
             </p>
             <div className="pt-2">
-              <span className="inline-block px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 font-extrabold text-sm">
-                24 - 48 Hours
+              <span
+                className={`inline-block px-4 py-2 rounded-xl font-extrabold text-sm ${
+                  isPro
+                    ? 'bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400'
+                    : 'bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400'
+                }`}
+              >
+                {isPro ? '< 4 Hours (Priority)' : '24 - 48 Hours'}
               </span>
             </div>
           </div>

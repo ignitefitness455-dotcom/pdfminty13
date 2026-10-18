@@ -15,6 +15,13 @@ export type SignatureSet = {
   initials: SignatureAsset | null;
 };
 
+export type SavedSignaturePreset = {
+  id: string;
+  label: string;
+  createdAt: string;
+  set: SignatureSet;
+};
+
 export type PlacedField = {
   id: string;
   kind: FieldKind;

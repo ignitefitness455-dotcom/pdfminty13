@@ -33,7 +33,7 @@ export const PricingPage: React.FC = () => {
   const { i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
 
-  const { user, updatePlan } = useAuth();
+  const { user, isPro, upgradeToPro } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -59,7 +59,7 @@ export const PricingPage: React.FC = () => {
 
   const pricing = calculateLocalizedPricing(geo);
 
-  const handleSelectPlan = (planName: string) => {
+  const handleSelectPlan = async (planName: string) => {
     if (planName === 'Free') {
       showToast(
         isBn
@@ -71,35 +71,29 @@ export const PricingPage: React.FC = () => {
       return;
     }
 
-    if (!user) {
+    setIsProcessingCheckout(true);
+    try {
+      await upgradeToPro();
+    } catch {
       showToast(
         isBn
-          ? 'আপনার প্ল্যান সক্রিয় করতে অনুগ্রহ করে সাইন ইন করুন বা ফ্রি অ্যাকাউন্ট খুলুন।'
-          : 'Please sign in or create a free account to activate your plan.',
+          ? 'প্রো চেকআউট শুরু করতে অনুগ্রহ করে গুগল সাইন-ইন সম্পন্ন করুন।'
+          : 'Please complete Google sign-in to proceed to Pro checkout.',
         'info'
       );
-      navigate(`${ROUTES.SIGN_UP}?plan=${planName.toLowerCase()}`);
-      return;
+    } finally {
+      setIsProcessingCheckout(false);
     }
-
-    setCheckoutModalPlan(planName);
   };
 
-  const handleConfirmCheckout = () => {
+  const handleConfirmCheckout = async () => {
     setIsProcessingCheckout(true);
-    setTimeout(() => {
+    try {
+      await upgradeToPro();
+    } finally {
       setIsProcessingCheckout(false);
       setCheckoutModalPlan(null);
-      if (user) {
-        updatePlan('pro');
-      }
-      showToast(
-        isBn
-          ? `🎉 অভিনন্দন! ${checkoutModalPlan} প্ল্যান সফলভাবে সক্রিয় করা হয়েছে।`
-          : `🎉 Congratulations! ${checkoutModalPlan} plan activated successfully for your account.`,
-        'success'
-      );
-    }, 1200);
+    }
   };
 
   const handleManualCountryChange = (countryCode: string) => {
@@ -129,7 +123,7 @@ export const PricingPage: React.FC = () => {
         </title>
         <meta
           name="description"
-          content="Simple, affordable pricing for PDFMinty. 100% free forever core tier with budget-friendly upgrades for 500MB batch processing, unlimited AI tokens, and batch OCR."
+          content="Simple, affordable pricing for PDFMinty. 100% free forever core tier with budget-friendly upgrades for 500MB batch processing, Priority Gemini 2.5 Flash AI analysis, and batch OCR."
         />
         <link rel="canonical" href="https://pdfminty.com/pricing/" />
       </Helmet>
@@ -396,65 +390,73 @@ export const PricingPage: React.FC = () => {
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? '500MB প্রতি ফাইল ও ব্যাচ লিমিট' : '500MB per file & batch limit'}</strong>{' '}
-                  {isBn ? 'বড় ও স্ক্যান করা ফাইলের জন্য' : 'for heavy legal & scanned files'}
+                  <strong>{isBn ? '500MB ব্যাচ ও ফাইল লিমিট:' : '500MB Batch & File Limit:'}</strong>{' '}
+                  {isBn ? 'ভারী স্ক্যান ও আইনি PDF নির্বিঘ্নে প্রসেস করুন' : 'Seamlessly process heavy scanned and legal PDFs'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'আনলিমিটেড AI ডকুমেন্ট টোকেন' : 'Unlimited AI document tokens'}</strong>{' '}
-                  {isBn ? 'Gemini Flash প্রযুক্তিতে' : 'with Gemini Flash'}
+                  <strong>{isBn ? 'প্রায়োরিটি AI অ্যানালাইসিস (50 কুয়েরি/দিন):' : 'Priority AI Analysis (50/day • 50 pages/PDF):'}</strong>{' '}
+                  {isBn ? 'Gemini 2.5 Flash দিয়ে সারসংক্ষেপ ও তথ্য এক্সট্রাক্ট' : 'Summarize, query & extract insights using Gemini 2.5 Flash'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'সম্পূর্ণ ব্যাচ OCR' : 'Full Batch OCR'}</strong>{' '}
-                  {isBn ? 'এডিটেবল Markdown/Text এক্সপোর্ট সহ' : 'with editable Markdown/Text export'}
+                  <strong>{isBn ? 'সম্পূর্ণ ব্যাচ OCR (15 পেজ/ব্যাচ):' : 'Full Batch OCR (Up to 15 pages/run):'}</strong>{' '}
+                  {isBn ? 'স্ক্যান করা ডকুমেন্ট এডিটেবল Markdown ও Text-এ রূপান্তর' : 'Convert scanned documents & images into editable Markdown & Text'}
                 </span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'প্রোফাইলে একাধিক সিগনেচার স্ট্যাম্প সংরক্ষণ' : 'Save multiple signature stamps securely in profile'}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? '100% বিজ্ঞাপন মুক্ত' : '100% Ad-Free'}</strong>{' '}
-                  {isBn ? 'পরিচ্ছন্ন কাজের পরিবেশ' : 'clean workspace environment'}
+                  <strong>{isBn ? 'সংরক্ষিত স্বাক্ষর (Saved Signatures):' : 'Saved Signatures:'}</strong>{' '}
+                  {isBn ? 'একাধিক সিগনেচার স্ট্যাম্প সংরক্ষণ ও তাৎক্ষণিক প্রয়োগ' : 'Store and apply multiple signature stamps instantly'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'অগ্রাধিকারমূলক সাপোর্ট ও ফিচার রিকোয়েস্ট' : 'Priority email support & feature requests'}</span>
+                <span>
+                  <strong>{isBn ? '100% বিজ্ঞাপন মুক্ত:' : '100% Ad-Free:'}</strong>{' '}
+                  {isBn ? 'পরিচ্ছন্ন ও মনোযোগহীন কাজের ইন্টারফেস' : 'Clean, distraction-free interface'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>
+                  <strong>{isBn ? 'প্রায়োরিটি সাপোর্ট:' : 'Priority Support:'}</strong>{' '}
+                  {isBn ? 'দ্রুত ইমেইল রেসপন্স ও সরাসরি ফিচার রিকোয়েস্ট' : 'Fast email responses and direct feature requests'}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-emerald-500/20">
-            <button
-              type="button"
-              onClick={() => handleSelectPlan('Pro')}
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Zap className="w-4 h-4 fill-white" />
-              <span>
-                {isBn
-                  ? `প্রো আপগ্রেড করুন — ${
-                      billingCycle === 'annual'
-                        ? `${pricing.proAnnual.formattedAnnual}/বছর`
-                        : `${pricing.proMonthly.formatted}/মাস`
-                    }`
-                  : `Upgrade to Pro — ${
-                      billingCycle === 'annual'
-                        ? `${pricing.proAnnual.formattedAnnual}/yr`
-                        : geo.currencyCode === 'USD'
-                          ? '$2.49/mo'
-                          : `${pricing.proMonthly.formatted}/mo ($2.49 USD)`
-                    }`}
-              </span>
-            </button>
+            {isPro ? (
+              <div
+                className="w-full py-3.5 px-4 rounded-xl font-black text-sm bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2"
+                id="pricing-pro-active-badge"
+              >
+                <Sparkles className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <span>Pro Active</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSelectPlan('Pro')}
+                disabled={isProcessingCheckout}
+                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                id="pricing-upgrade-pro-btn"
+              >
+                <Zap className="w-4 h-4 fill-white" />
+                <span>
+                  {isProcessingCheckout
+                    ? 'Redirecting to Checkout...'
+                    : 'Upgrade to Pro (BDT 299.99/month)'}
+                </span>
+              </button>
+            )}
             <p className="text-[11px] text-center text-slate-400 mt-2">
               {isBn
                 ? '14 দিনের 100% মানি-ব্যাক গ্যারান্টি • যেকোনো সময় বাতিলযোগ্য'
@@ -630,26 +632,44 @@ export const PricingPage: React.FC = () => {
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
-                  {isBn ? 'AI ডকুমেন্ট অ্যানালাইসিস (Gemini)' : 'AI Document Analysis (Gemini)'}
+                  {isBn ? 'AI ডকুমেন্ট অ্যানালাইসিস (Gemini 2.5 Flash)' : 'AI Document Analysis (Gemini 2.5 Flash)'}
                 </td>
-                <td className="p-4 text-slate-500 dark:text-slate-400">Daily quota</td>
-                <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
-                  Unlimited High-Speed
+                <td className="p-4 text-slate-500 dark:text-slate-400">
+                  {isBn ? 'স্ট্যান্ডার্ড (15 পেজ/PDF)' : 'Standard (Up to 15 pages/PDF)'}
                 </td>
                 <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
-                  Unlimited High-Speed
+                  {isBn ? '50 কুয়েরি/দিন (50 পেজ/PDF)' : '50 Queries/Day (Up to 50 pages/PDF)'}
+                </td>
+                <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
+                  {isBn ? '50 কুয়েরি/দিন (50 পেজ/PDF)' : '50 Queries/Day (Up to 50 pages/PDF)'}
                 </td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
                   {isBn ? 'ব্যাচ অপটিক্যাল ক্যারেক্টার রিকগনিশন (OCR)' : 'Batch Optical Character Recognition (OCR)'}
                 </td>
-                <td className="p-4 text-slate-500 dark:text-slate-400">Standard single page</td>
-                <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
-                  Multi-page Fast OCR
+                <td className="p-4 text-slate-500 dark:text-slate-400">
+                  {isBn ? 'সর্বোচ্চ 5 পেজ/রান' : 'Up to 5 pages/run'}
                 </td>
                 <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
-                  Multi-page Fast OCR
+                  {isBn ? 'ফুল ব্যাচ OCR (15 পেজ/ব্যাচ)' : 'Full Batch OCR (15 pages/batch)'}
+                </td>
+                <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
+                  {isBn ? 'ফুল ব্যাচ OCR (15 পেজ/ব্যাচ)' : 'Full Batch OCR (15 pages/batch)'}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
+                  {isBn ? 'সংরক্ষিত সিগনেচার স্ট্যাম্প (Saved Signatures)' : 'Saved Signature Stamps'}
+                </td>
+                <td className="p-4 text-slate-500 dark:text-slate-400">
+                  {isBn ? '1টি সিগনেচার প্রিসেট' : '1 Signature Preset'}
+                </td>
+                <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
+                  {isBn ? 'একাধিক স্ট্যাম্প সংরক্ষণ (5টি পর্যন্ত)' : 'Multiple Saved Stamps (Up to 5)'}
+                </td>
+                <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
+                  {isBn ? 'একাধিক স্ট্যাম্প সংরক্ষণ (5টি পর্যন্ত)' : 'Multiple Saved Stamps (Up to 5)'}
                 </td>
               </tr>
               <tr>

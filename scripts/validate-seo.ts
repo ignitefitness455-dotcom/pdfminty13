@@ -26,6 +26,7 @@ const validCanonicalRoutes = new Set<string>([
   '/pricing/',
   '/login/',
   '/signup/',
+  '/dashboard/',
   '/blog/',
   '/compare-pdf/',
   '/index.html',

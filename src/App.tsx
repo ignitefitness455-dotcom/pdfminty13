@@ -11,6 +11,8 @@ import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
 import { ROUTES } from './config/routes';
 import { HomePage } from './pages/HomePage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsOfServicePage } from './pages/TermsOfServicePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Lazy-loaded static pages
@@ -19,12 +21,6 @@ const AboutUsPage = lazyWithRetry(() =>
 );
 const ContactPage = lazyWithRetry(() =>
   import('./pages/ContactPage').then((m) => ({ default: m.ContactPage }))
-);
-const PrivacyPolicyPage = lazyWithRetry(() =>
-  import('./pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
-);
-const TermsOfServicePage = lazyWithRetry(() =>
-  import('./pages/TermsOfServicePage').then((m) => ({ default: m.TermsOfServicePage }))
 );
 const PricingPage = lazyWithRetry(() =>
   import('./pages/PricingPage').then((m) => ({ default: m.PricingPage }))

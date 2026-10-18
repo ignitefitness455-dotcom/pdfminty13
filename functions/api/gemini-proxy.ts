@@ -13,9 +13,9 @@ interface Env {
   RATELIMIT_KV?: KVNamespace;
 }
 
-const MAX_TEXT_LENGTH = 30000;
+const MAX_TEXT_LENGTH = 60000;
 const MAX_QUERY_LENGTH = 2000;
-const DEFAULT_MODEL = 'gemini-3.8-flash';
+const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 /**
  * Parses space/comma/newline/semicolon/pipe separated API keys from secret variables.

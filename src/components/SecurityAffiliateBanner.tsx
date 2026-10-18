@@ -3,6 +3,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { NORD_AFFILIATE_LINKS } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
+import { resolveCurrentSession } from '../utils/usageLimit';
 
 export interface SecurityAffiliateBannerProps {
   variant?: 'vpn' | 'pass' | 'dual' | 'compact' | 'editorial';
@@ -18,6 +20,13 @@ export const SecurityAffiliateBanner: React.FC<SecurityAffiliateBannerProps> = (
   contextDesc,
 }) => {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const { tier } = resolveCurrentSession(user);
+
+  // 100% Ad-Free guarantee for Pro members
+  if (tier === 'pro' || user?.plan === 'pro') {
+    return null;
+  }
 
   if (variant === 'compact') {
     return (

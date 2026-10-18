@@ -1489,7 +1489,15 @@
     "orEmail": "or by email at",
     "sec6Li1Title": "Right of Access & Deletion:",
     "sec6Li2Title": "Do Not Sell My Information:",
-    "sec6Li3Title": "Browser Controls:"
+    "sec6Li3Title": "Browser Controls:",
+    "secGoogleTitle": "4. Google 用户数据、OAuth 2.0 身份验证与账户信息",
+    "secGoogleDesc": "当您选择使用 Google 登录 (OAuth 2.0) 登录 PDFMinty 时，我们会请求您 Google 账户的基本个人资料信息：电子邮件地址 (userinfo.email)、显示名称、头像 URL (userinfo.profile) 和唯一用户标识符 (openid / UID)。我们仅将这些信息用于身份验证以及在 Google Cloud Firestore 中管理您的配额和会员等级。PDFMinty 绝不会访问您的 Google Drive 或 Gmail 数据。",
+    "secLimitedUseTitle": "5. Google API 服务用户数据政策（有限使用披露）",
+    "secLimitedUseDesc": "PDFMinty 对从 Google API 收到的信息的使用以及向任何其他应用程序的传输均将遵守 Google API Services User Data Policy，包括有限使用 (Limited Use) 要求。",
+    "secRetentionTitle": "6. 数据保留、账户删除与访问权限撤销",
+    "secRetentionDesc": "我们仅在您的 PDFMinty 账户处于活跃状态期间保留您的账户资料。您可以随时通过 Google 安全设置 (https://myaccount.google.com/permissions) 撤销访问权限，并通过账户仪表板或发送邮件至 support@pdfminty.com 请求永久删除您的账户（将在 7 个工作日内彻底清除）。",
+    "secCmpTitle": "9. 同意管理平台 (CMP) 与 Cookie 偏好设置（欧洲经济区、英国和瑞士）",
+    "secCmpIntro": "对于位于欧洲经济区 (EEA)、英国和瑞士的访问者，PDFMinty 部署了经 Google 认证的同意管理平台 (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — 严格遵循 IAB TCF v2.2 和 Google Consent Mode v2。"
   },
   "contact": {
     "hereToHelp": "We're Here to Help",

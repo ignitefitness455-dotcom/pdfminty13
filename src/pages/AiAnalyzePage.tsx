@@ -23,6 +23,8 @@ import {
   CornerDownLeft,
   Crown,
   StopCircle,
+  Lock,
+  Zap,
 } from 'lucide-react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useState, useEffect, useRef } from 'react';
@@ -35,10 +37,11 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
 import { getPdfJs } from '../core/index';
 import { PDFSanitizer } from '../core/PDFSanitizer';
 import { logger } from '../utils/logger';
-import { recordDailyTask, getUsageStatus } from '../utils/usageLimit';
+import { recordDailyTask } from '../utils/usageLimit';
 
 interface ChatMessage {
   id: string;
@@ -298,8 +301,37 @@ export const AiAnalyzePage: React.FC = () => {
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
-  // Usage quota state
-  const [usage, setUsage] = useState(() => getUsageStatus());
+  // Usage quota state & real-time Firestore Pro status
+  const { user, isPro, upgradeToPro } = useAuth();
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const maxAllowedPages = isPro ? 50 : 15;
+  const PRO_DAILY_AI_LIMIT = 50;
+
+  const handleUpgradeClick = async () => {
+    if (isUpgrading) return;
+    setIsUpgrading(true);
+    try {
+      await upgradeToPro();
+    } catch (err) {
+      logger.error('Upgrade to Pro error:', err);
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  const getProAiUsedToday = (): number => {
+    try {
+      const todayKey = new Date().toISOString().slice(0, 10);
+      const raw = localStorage.getItem('pdfminty_pro_ai_daily');
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw) as { date?: string; count?: number };
+      return parsed.date === todayKey ? parsed.count || 0 : 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const [proAiUsed, setProAiUsed] = useState<number>(() => getProAiUsedToday());
 
   const operationTokenRef = useRef(0);
   const aiQueryTokenRef = useRef(0);
@@ -309,7 +341,7 @@ export const AiAnalyzePage: React.FC = () => {
   // Refresh usage when updated
   useEffect(() => {
     const handleUsageUpdated = () => {
-      setUsage(getUsageStatus());
+      setProAiUsed(getProAiUsedToday());
     };
     window.addEventListener('pdfminty-usage-updated', handleUsageUpdated);
     return () => {
@@ -332,6 +364,10 @@ export const AiAnalyzePage: React.FC = () => {
   }, []);
 
   const handleFilesSelected = async (files: File[]) => {
+    if (!isPro) {
+      setError('AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.');
+      return;
+    }
     if (files.length === 0) return;
     const myToken = ++operationTokenRef.current;
     const file = files[0];
@@ -367,8 +403,8 @@ export const AiAnalyzePage: React.FC = () => {
       if (myToken !== operationTokenRef.current) return;
       setTotalPages(pdf.numPages);
 
-      // Support up to 15 pages for comprehensive analysis
-      const maxPages = Math.min(pdf.numPages, 15);
+      // Support up to 50 pages for Pro users, 15 pages for Guest/Free users
+      const maxPages = Math.min(pdf.numPages, maxAllowedPages);
       let textBuffer = '';
       const collectedMeta: PageMeta[] = [];
 
@@ -412,7 +448,7 @@ export const AiAnalyzePage: React.FC = () => {
       }
 
       if (myToken !== operationTokenRef.current) return;
-      setExtractedText(textBuffer);
+      setExtractedText(textBuffer.slice(0, isPro ? 60000 : 30000));
       setPagesMeta(collectedMeta);
 
       // Generate a welcome introduction message
@@ -420,7 +456,7 @@ export const AiAnalyzePage: React.FC = () => {
       const initialAssistantMessage: ChatMessage = {
         id: 'msg-welcome',
         role: 'assistant',
-        content: `👋 **Welcome! I've loaded "${file.name}"** (${pdf.numPages} pages, ~${estWords.toLocaleString()} words indexed).\n\nI am powered by **Google Gemini 3.8 Flash**. You can ask me any specific question about your document, or click one of the quick innovation buttons below to get started!`,
+        content: `👋 **Welcome! I've loaded "${file.name}"** (${Math.min(pdf.numPages, maxAllowedPages)} of ${pdf.numPages} pages, ~${estWords.toLocaleString()} words indexed).\n\nI am powered by **Google Gemini Flash**${isPro ? ' (**Pro Priority Mode: Up to 50 pages/PDF & 50 daily AI queries**)' : ''}. You can ask me any specific question about your document, or click one of the quick innovation buttons below to get started!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages([initialAssistantMessage]);
@@ -463,8 +499,19 @@ export const AiAnalyzePage: React.FC = () => {
    * Supports multi-turn chat and preset innovation prompts.
    */
   const submitChat = async (userPrompt: string, presetTitle?: string) => {
+    if (!isPro) {
+      setError('AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.');
+      return;
+    }
     const trimmed = userPrompt.trim();
     if (!trimmed || !extractedText) return;
+
+    if (isPro && proAiUsed >= PRO_DAILY_AI_LIMIT) {
+      setError(
+        `Daily Pro AI Fair-Use limit reached (${PRO_DAILY_AI_LIMIT}/${PRO_DAILY_AI_LIMIT} queries today). Your quota resets automatically at midnight.`
+      );
+      return;
+    }
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -527,8 +574,16 @@ export const AiAnalyzePage: React.FC = () => {
       setMessages((prev) => [...prev, assistantMessage]);
 
       try {
-        recordDailyTask(null, 'ai_analyze');
-        setUsage(getUsageStatus());
+        if (isPro) {
+          const todayKey = new Date().toISOString().slice(0, 10);
+          const nextCount = getProAiUsedToday() + 1;
+          localStorage.setItem(
+            'pdfminty_pro_ai_daily',
+            JSON.stringify({ date: todayKey, count: nextCount })
+          );
+          setProAiUsed(nextCount);
+        }
+        recordDailyTask(user, 'ai_analyze');
       } catch {
         // Non-blocking
       }
@@ -677,7 +732,10 @@ export const AiAnalyzePage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-2 sm:px-4" id="ai_analyze_page">
       <SEO slug="ai-analyze-pdf" />
-      <ToolHeader slug="ai-analyze-pdf" limitMB={TOOL_SIZE_LIMITS['ai-analyze'].maxSingleMB} />
+      <ToolHeader
+        slug="ai-analyze-pdf"
+        limitMB={isPro ? 500 : TOOL_SIZE_LIMITS['ai-analyze'].maxSingleMB}
+      />
 
       {/* Top Banner: Gemini AI Engine status & User Task Quota */}
       <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-amber-500/10 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-500/20 dark:border-emerald-700/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
@@ -691,7 +749,7 @@ export const AiAnalyzePage: React.FC = () => {
                 Chat with PDF & AI Smart Summarizer
               </h2>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                Gemini 3.8 Flash
+                Gemini Flash
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -700,26 +758,26 @@ export const AiAnalyzePage: React.FC = () => {
           </div>
         </div>
 
-        {/* User Tier & Remaining Tasks Indicator */}
+        {/* User Tier & Pro Badge / Upgrade Button */}
         <div className="flex items-center space-x-3 text-xs">
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-            {usage.tier === 'pro' ? (
-              <>
-                <Crown className="w-4 h-4 text-amber-500" />
-                <span className="font-bold text-amber-700 dark:text-amber-400">Pro Unlimited</span>
-              </>
-            ) : (
-              <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-slate-600 dark:text-slate-300 font-medium">
-                  Daily Tasks:{' '}
-                  <strong className="text-emerald-700 dark:text-emerald-400">
-                    {usage.tasksRemaining === 'unlimited' ? '∞' : `${usage.tasksRemaining} left`}
-                  </strong>
-                </span>
-              </>
-            )}
-          </div>
+          {isPro ? (
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-amber-500/30 shadow-xs">
+              <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span className="font-bold text-amber-700 dark:text-amber-400">
+                Pro ({Math.max(0, PRO_DAILY_AI_LIMIT - proAiUsed)}/{PRO_DAILY_AI_LIMIT} AI Queries • 50 Pages/PDF)
+              </span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleUpgradeClick}
+              disabled={isUpgrading}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 cursor-pointer transition-all"
+            >
+              <Zap className="w-3.5 h-3.5 fill-white" />
+              <span>Upgrade to Pro (BDT 299.99/month)</span>
+            </button>
+          )}
           <Link
             to={ROUTES.DASHBOARD}
             className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
@@ -729,7 +787,45 @@ export const AiAnalyzePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Pro Feature Gate Banner when isPro is false */}
+      {!isPro && (
+        <div
+          className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-white via-emerald-50/40 to-amber-50/40 dark:from-slate-900 dark:via-emerald-950/20 dark:to-amber-950/20 border-2 border-amber-500/40 shadow-xl space-y-5 text-center max-w-3xl mx-auto"
+          id="ai_analyze_pro_gate"
+        >
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
+            <Lock className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-wider">
+              <Crown className="w-3.5 h-3.5 fill-current" />
+              <span>Pro-Only Feature</span>
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              Unlock AI Document Analysis with PDFMinty Pro
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
+              Summarize complex contracts, extract financial tables into Markdown, and ask deep questions across up to 50 pages per PDF with 500MB file-size limits using Google Gemini 2.5 Flash.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleUpgradeClick}
+              disabled={isUpgrading}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-xl shadow-emerald-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+              id="ai_gate_upgrade_btn"
+            >
+              <Zap className="w-4 h-4 fill-white" />
+              <span>
+                {isUpgrading ? 'Redirecting to Checkout...' : 'Upgrade to Pro (BDT 299.99/month)'}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${!isPro ? 'opacity-60 pointer-events-none select-none' : ''}`}>
         {/* Left Column (5 cols): File Upload, Document Inspector & Page Thumbnails */}
         <div className="lg:col-span-5 space-y-4">
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
@@ -751,7 +847,7 @@ export const AiAnalyzePage: React.FC = () => {
                 <FileUploader
                   onFilesSelected={handleFilesSelected}
                   accept=".pdf,application/pdf"
-                  maxSizeMB={TOOL_SIZE_LIMITS['ai-analyze'].maxSingleMB}
+                  maxSizeMB={isPro ? 500 : TOOL_SIZE_LIMITS['ai-analyze'].maxSingleMB}
                 />
                 <EmptyState />
               </div>
@@ -767,7 +863,8 @@ export const AiAnalyzePage: React.FC = () => {
                       {selectedFile.name}
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • {totalPages} pages indexed
+                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                      {Math.min(totalPages, maxAllowedPages)} of {totalPages} pages indexed
                     </p>
                   </div>
                   <button
@@ -810,12 +907,13 @@ export const AiAnalyzePage: React.FC = () => {
                   </div>
                 ) : extractedText ? (
                   <div className="space-y-3">
-                    {/* Page limit notice if > 15 pages */}
-                    {totalPages > 15 && (
+                    {/* Page limit notice if > maxAllowedPages */}
+                    {totalPages > maxAllowedPages && (
                       <div className="flex items-start space-x-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl text-xs text-amber-800 dark:text-amber-300">
                         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         <span>
-                          Analysis is anchored on the first 15 of {totalPages} pages for rapid response.
+                          Analysis is anchored on the first {maxAllowedPages} of {totalPages} pages for rapid response.
+                          {!isPro && ' Upgrade to Pro to index up to 50 pages per document!'}
                         </span>
                       </div>
                     )}

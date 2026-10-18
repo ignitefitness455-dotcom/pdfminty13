@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
 import { useModal } from '../hooks/useModal';
 import { type UserTier } from '../utils/usageLimit';
 
@@ -30,6 +31,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
 }) => {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
+  const { upgradeToPro } = useAuth();
 
   const { modalRef, onKeyDown } = useModal(isOpen, onClose);
 
@@ -42,9 +44,13 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
     navigate(ROUTES.SIGN_IN);
   };
 
-  const handleUpgradePro = () => {
+  const handleUpgradePro = async () => {
     onClose();
-    navigate(ROUTES.PRICING);
+    try {
+      await upgradeToPro();
+    } catch {
+      navigate(ROUTES.PRICING);
+    }
   };
 
   return (
@@ -232,7 +238,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
                 <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                 <span>
                   {t('usageLimits.modal.btnUpgradeGuest', {
-                    defaultValue: 'Or Upgrade to Pro (500 MB & Unlimited)',
+                    defaultValue: 'Upgrade to Pro (BDT 299.99/month • 500 MB)',
                   })}
                 </span>
               </button>
@@ -248,7 +254,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
                 <Zap className="w-4 h-4 fill-white" />
                 <span>
                   {t('usageLimits.modal.btnUpgradeFree', {
-                    defaultValue: 'Upgrade to Pro (Unlimited Tasks • 500 MB)',
+                    defaultValue: 'Upgrade to Pro (BDT 299.99/month • 500 MB)',
                   })}
                 </span>
               </button>

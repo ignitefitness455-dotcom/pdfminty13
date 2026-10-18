@@ -74,7 +74,7 @@ export const DashboardPage: React.FC = () => {
   const { i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
 
-  const { user, logout, updateDisplayName, updatePlan, resetPassword, sendVerificationEmail, reloadUser } = useAuth();
+  const { user, isPro, upgradeToPro, logout, updateDisplayName, resetPassword, sendVerificationEmail, reloadUser } = useAuth();
   const [resendingVerification, setResendingVerification] = useState(false);
 
   const handleResendFromDashboard = async () => {
@@ -133,7 +133,7 @@ export const DashboardPage: React.FC = () => {
     const saved = localStorage.getItem(`pdfminty_sub_autorenew_${userUid}`);
     return saved !== null ? saved === 'true' : true;
   });
-  const [renewalDate, setRenewalDate] = useState<string>(() => {
+  const [renewalDate] = useState<string>(() => {
     const saved = localStorage.getItem(`pdfminty_sub_renewal_${userUid}`);
     if (saved) return saved;
     const nextMonth = new Date();
@@ -194,7 +194,6 @@ export const DashboardPage: React.FC = () => {
   // Statistics based on real user activities & daily usage limits
   const stats = useMemo(() => {
     const totalOps = activities.length;
-    const isPro = user?.plan === 'pro';
     const totalPages = activities.reduce((acc, curr) => acc + (curr.pages || 0), 0);
     const storageProcessedMB = Math.round(totalPages * 0.42 * 10) / 10;
     const dailyLimitNum = typeof dailyTasksLimit === 'number' ? dailyTasksLimit : 10;
@@ -210,7 +209,7 @@ export const DashboardPage: React.FC = () => {
       dailyPercent,
       isPro,
     };
-  }, [activities, user?.plan, dailyTasksLimit, tasksRemaining]);
+  }, [activities, isPro, dailyTasksLimit, tasksRemaining]);
 
   // Complete List of Tools across all categories
   const allTools = useMemo(
@@ -444,65 +443,34 @@ export const DashboardPage: React.FC = () => {
     }, 600);
   };
 
-  const handleActivatePro = () => {
+  const handleActivatePro = async () => {
     setIsUpgrading(true);
-    setTimeout(() => {
-      updatePlan('pro');
-      setAutoRenew(true);
-      const nextDate = new Date();
-      nextDate.setDate(nextDate.getDate() + 30);
-      const dateFormatted = nextDate.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-      setRenewalDate(dateFormatted);
-      try {
-        localStorage.setItem(`pdfminty_sub_renewal_${userUid}`, dateFormatted);
-        localStorage.setItem(`pdfminty_sub_autorenew_${userUid}`, 'true');
-      } catch {
-        // ignore
-      }
+    try {
+      await upgradeToPro();
+    } catch {
+      showToast(
+        isBn
+          ? 'প্রো চেকআউট শুরু করতে অনুগ্রহ করে গুগল সাইন-ইন সম্পন্ন করুন।'
+          : 'Please complete Google sign-in to proceed to Pro checkout.',
+        'info'
+      );
+    } finally {
       setIsUpgrading(false);
       setShowUpgradeModal(false);
-      showToast(
-        isBn
-          ? '🎉 অভিনন্দন! প্রো প্ল্যান ($2.49/mo) সক্রিয় করা হয়েছে!'
-          : '🎉 Congratulations! Pro Plan ($2.49/mo) has been activated for your account!',
-        'success'
-      );
-    }, 800);
+    }
   };
 
-  const handleRenewSubscription = () => {
+  const handleRenewSubscription = async () => {
     setIsRenewing(true);
-    setTimeout(() => {
-      const nextDate = new Date();
-      nextDate.setDate(nextDate.getDate() + 30);
-      const dateFormatted = nextDate.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-      setRenewalDate(dateFormatted);
-      try {
-        localStorage.setItem(`pdfminty_sub_renewal_${userUid}`, dateFormatted);
-      } catch {
-        // ignore
-      }
+    try {
+      await upgradeToPro();
+    } finally {
       setIsRenewing(false);
       setShowRenewModal(false);
-      showToast(
-        isBn
-          ? `🎉 প্রো সাবস্ক্রিপশন সফলভাবে রিনিউ করা হয়েছে! পরবর্তী নবায়ন: ${dateFormatted}`
-          : `🎉 Pro subscription successfully renewed! Next renewal date: ${dateFormatted}`,
-        'success'
-      );
-    }, 700);
+    }
   };
 
   const handleConfirmCancelSubscription = () => {
-    updatePlan('free');
     setAutoRenew(false);
     try {
       localStorage.setItem(`pdfminty_sub_autorenew_${userUid}`, 'false');
@@ -512,8 +480,8 @@ export const DashboardPage: React.FC = () => {
     setShowCancelModal(false);
     showToast(
       isBn
-        ? 'আপনার প্রো সাবস্ক্রিপশন বাতিল করা হয়েছে। অ্যাকাউন্টটি ফ্রি প্ল্যানে (১০ টাস্ক/দিন) পরিবর্তিত হলো।'
-        : 'Your Pro subscription has been cancelled. Your account is now on the Free tier (10 tasks/day).',
+        ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে। সাবস্ক্রিপশন স্ট্যাটাস আপনার বিলিং পোর্টাল ওয়েবহুক দ্বারা পরিচালিত হয়।'
+        : 'Auto-renew preference updated. Subscription status is managed via Lemon Squeezy billing webhook.',
       'info'
     );
   };
@@ -688,11 +656,12 @@ export const DashboardPage: React.FC = () => {
               {!stats.isPro ? (
                 <button
                   type="button"
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  onClick={handleActivatePro}
+                  disabled={isUpgrading}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
                 >
                   <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
-                  <span>{isBn ? 'প্রো আপগ্রেড ($2.49/mo)' : 'Upgrade to Pro ($2.49/mo)'}</span>
+                  <span>{isBn ? 'প্রো আপগ্রেড করুন (BDT 299.99/month)' : 'Upgrade to Pro (BDT 299.99/month)'}</span>
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
@@ -1661,11 +1630,12 @@ export const DashboardPage: React.FC = () => {
                   {!stats.isPro ? (
                     <button
                       type="button"
-                      onClick={() => setShowUpgradeModal(true)}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer"
+                      onClick={handleActivatePro}
+                      disabled={isUpgrading}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-60"
                     >
                       <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
-                      <span>{isBn ? 'প্রো সক্রিয় করুন ($2.49/mo)' : 'Activate Pro ($2.49/mo)'}</span>
+                      <span>{isBn ? 'প্রো আপগ্রেড করুন (BDT 299.99/month)' : 'Upgrade to Pro (BDT 299.99/month)'}</span>
                     </button>
                   ) : (
                     <div className="flex flex-wrap items-center gap-2">

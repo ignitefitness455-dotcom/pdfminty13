@@ -7,6 +7,7 @@ import {
   FileText,
   Check,
   FileCheck2,
+  Crown,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,10 +18,12 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
 import { getPdfJs } from '../core/index';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
+import { resolveCurrentSession } from '../utils/usageLimit';
 
 interface OcrPagePreview {
   index: number;
@@ -29,6 +32,12 @@ interface OcrPagePreview {
 
 export const OcrPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const { tier } = resolveCurrentSession(user);
+  const isPro = tier === 'pro' || user?.plan === 'pro';
+  const maxBatchPages = isPro ? 15 : 5;
+  const maxPreviewPages = isPro ? 25 : 10;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +94,8 @@ export const OcrPdfPage: React.FC = () => {
         const doc = await pdfjs.getDocument({ data: fileBytes.slice() }).promise;
 
         const loadedPreviews: OcrPagePreview[] = [];
-        // Limit previews generation to first 10 pages for speed, but let them OCR any page
-        const pagesToRender = Math.min(doc.numPages, 10);
+        // Pro users preview up to 25 pages; standard users up to 10 pages
+        const pagesToRender = Math.min(doc.numPages, maxPreviewPages);
 
         for (let i = 1; i <= pagesToRender; i++) {
           if (myToken !== operationTokenRef.current) return;
@@ -129,7 +138,7 @@ export const OcrPdfPage: React.FC = () => {
     };
 
     handleFileLoad();
-  }, [selectedFile]);
+  }, [selectedFile, maxPreviewPages]);
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
@@ -144,10 +153,11 @@ export const OcrPdfPage: React.FC = () => {
         nextSelection.delete(pageIdx);
       }
     } else {
-      // Limit to max 5 pages per run to protect rate limits and timeout budgets
-      if (nextSelection.size >= 5) {
+      if (nextSelection.size >= maxBatchPages) {
         setError(
-          'To ensure high performance and respect rate limits, please select up to 5 pages at a time.'
+          isPro
+            ? `Pro Batch OCR supports up to ${maxBatchPages} pages per batch for optimal vision accuracy.`
+            : `Standard mode allows up to ${maxBatchPages} pages per run. Upgrade to Pro for Full Batch OCR (up to 15 pages at once)!`
         );
         return;
       }
@@ -155,6 +165,12 @@ export const OcrPdfPage: React.FC = () => {
       setError(null);
     }
     setSelectedPages(nextSelection);
+  };
+
+  const handleSelectBatchPages = () => {
+    const batch = pagePreviews.slice(0, maxBatchPages).map((p) => p.index);
+    setSelectedPages(new Set(batch));
+    setError(null);
   };
 
   const handleStartOcr = async () => {
@@ -290,14 +306,17 @@ export const OcrPdfPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto" id="ocr_pdf_page_container">
       <SEO slug="ocr-pdf" />
-      <ToolHeader slug="ocr-pdf" limitMB={TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB} />
+      <ToolHeader
+        slug="ocr-pdf"
+        limitMB={isPro ? 500 : TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB}
+      />
 
       {!selectedFile ? (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <FileUploader
             onFilesSelected={handleFilesSelected}
             accept=".pdf,application/pdf,image/png,image/jpeg,image/webp"
-            maxSizeMB={TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB}
+            maxSizeMB={isPro ? 500 : TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB}
           />
         </div>
       ) : (
@@ -323,11 +342,27 @@ export const OcrPdfPage: React.FC = () => {
 
               {!selectedFile.type.startsWith('image/') && (
                 <div className="space-y-3 pt-2">
-                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    {t('ocrPdf.selectPagesTitle', {
-                      defaultValue: 'Select Pages for AI OCR (Max 5)',
-                    })}
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                      {isPro && <Crown className="w-3.5 h-3.5 text-amber-500" />}
+                      <span>
+                        {isPro
+                          ? `Pro Batch OCR (Up to ${maxBatchPages} Pages)`
+                          : t('ocrPdf.selectPagesTitle', {
+                              defaultValue: 'Select Pages for AI OCR (Max 5)',
+                            })}
+                      </span>
+                    </p>
+                    {pagePreviews.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={handleSelectBatchPages}
+                        className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 underline cursor-pointer"
+                      >
+                        Select Batch ({Math.min(pagePreviews.length, maxBatchPages)})
+                      </button>
+                    )}
+                  </div>
                   {renderingPreviews ? (
                     <div className="flex justify-center items-center py-8">
                       <RefreshCw className="w-5 h-5 text-slate-400 animate-spin mr-2" />

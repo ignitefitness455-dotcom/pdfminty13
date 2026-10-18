@@ -12,7 +12,7 @@ import { PdfPage } from './pdf-page';
 import { loadPdfDocument, readPageInfos } from './pdfjs';
 import { SignSidebar } from './sign-sidebar';
 import { SignatureDialog } from './signature-dialog';
-import type { FieldKind, PageInfo, PlacedField, SignatureSet } from './types';
+import type { FieldKind, PageInfo, PlacedField, SavedSignaturePreset, SignatureSet } from './types';
 import { UploadScreen } from './upload-screen';
 
 const EMPTY_SIGNATURES: SignatureSet = {
@@ -26,6 +26,8 @@ export function SignPdfTool() {
   const { t } = useTranslation('common');
   const { user } = useAuth();
   const isPro = user?.plan === 'pro';
+  const maxSavedSignatures = isPro ? 5 : 1;
+  const storageKey = `pdfminty_saved_signatures_${user?.uid || 'guest'}`;
   // Guest: 100MB, Logged-in Free: 150MB, Pro: 500MB
   const limitMB = isPro ? 500 : user ? 150 : 100;
   const [file, setFile] = useState<File | null>(null);
@@ -33,7 +35,30 @@ export function SignPdfTool() {
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [signatures, setSignatures] = useState<SignatureSet>(EMPTY_SIGNATURES);
+  const [savedPresets, setSavedPresets] = useState<SavedSignaturePreset[]>(() => {
+    try {
+      const raw = localStorage.getItem(`pdfminty_saved_signatures_${user?.uid || 'guest'}`);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw) as SavedSignaturePreset[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+  const [signatures, setSignatures] = useState<SignatureSet>(() => {
+    try {
+      const raw = localStorage.getItem(`pdfminty_saved_signatures_${user?.uid || 'guest'}`);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SavedSignaturePreset[];
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].set) {
+          return parsed[0].set;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return EMPTY_SIGNATURES;
+  });
   const [fields, setFields] = useState<PlacedField[]>([]);
   const [pendingKind, setPendingKind] = useState<FieldKind | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -386,6 +411,19 @@ export function SignPdfTool() {
       <div className="w-full shrink-0 lg:w-[340px] xl:w-[380px]">
         <SignSidebar
           signatures={signatures}
+          savedPresets={savedPresets}
+          isPro={isPro}
+          maxSavedSignatures={maxSavedSignatures}
+          onSelectPreset={(preset) => setSignatures(preset.set)}
+          onDeletePreset={(id) => {
+            const next = savedPresets.filter((p) => p.id !== id);
+            setSavedPresets(next);
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(next));
+            } catch {
+              // ignore
+            }
+          }}
           dateText={dateText}
           onDateChange={setDateText}
           onEditSignature={() => setSignatureOpen(true)}
@@ -403,7 +441,24 @@ export function SignPdfTool() {
         open={signatureOpen}
         onOpenChange={setSignatureOpen}
         initial={signatures}
-        onApply={setSignatures}
+        onApply={(nextSig) => {
+          setSignatures(nextSig);
+          if (nextSig.signature) {
+            const newPreset: SavedSignaturePreset = {
+              id: crypto.randomUUID(),
+              label: nextSig.fullName || `Stamp ${savedPresets.length + 1}`,
+              createdAt: new Date().toLocaleDateString(),
+              set: nextSig,
+            };
+            const updated = [newPreset, ...savedPresets].slice(0, maxSavedSignatures);
+            setSavedPresets(updated);
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(updated));
+            } catch {
+              // ignore
+            }
+          }
+        }}
       />
     </div>
   );

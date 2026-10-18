@@ -80,19 +80,30 @@ export const getStoredUsage = (): DailyUsageStorage => {
   }
 };
 
+let syncedProStatus = false;
+
 /**
- * Resolves current user tier and user ID from auth and localStorage.
+ * Updates the in-memory synced Pro status from Firestore `users/{uid}` onSnapshot.
  */
-export const resolveCurrentSession = (providedUser?: { uid?: string; plan?: 'free' | 'pro' } | null): {
+export const setSyncedProStatus = (isPro: boolean): void => {
+  if (syncedProStatus !== isPro) {
+    syncedProStatus = isPro;
+    notifyUsageChanged();
+  }
+};
+
+/**
+ * Resolves current user tier and user ID from auth and Firestore-synced `isPro` state.
+ * Keep free-tier and guest behavior unchanged; `pro` tier is active only when `isPro === true`.
+ */
+export const resolveCurrentSession = (
+  providedUser?: { uid?: string; plan?: 'free' | 'pro'; isPro?: boolean } | null
+): {
   tier: UserTier;
   uid: string | null;
 } => {
   if (providedUser && providedUser.uid) {
-    if (providedUser.plan === 'pro') {
-      return { tier: 'pro', uid: providedUser.uid };
-    }
-    const savedPlan = localStorage.getItem(`pdfminty_plan_${providedUser.uid}`);
-    if (savedPlan === 'pro') {
+    if (providedUser.isPro === true || providedUser.plan === 'pro' || syncedProStatus) {
       return { tier: 'pro', uid: providedUser.uid };
     }
     return { tier: 'free', uid: providedUser.uid };
@@ -101,21 +112,19 @@ export const resolveCurrentSession = (providedUser?: { uid?: string; plan?: 'fre
   // Fallback to Firebase current user
   if (typeof window !== 'undefined' && auth?.currentUser) {
     const fbUid = auth.currentUser.uid;
-    const savedPlan = localStorage.getItem(`pdfminty_plan_${fbUid}`);
-    if (savedPlan === 'pro') {
+    if (syncedProStatus) {
       return { tier: 'pro', uid: fbUid };
     }
     return { tier: 'free', uid: fbUid };
   }
 
-  // Fallback to Demo user in localStorage
+  // Fallback to Demo user in localStorage (always free tier, never client-writable pro)
   if (typeof window !== 'undefined') {
     try {
       const demoRaw = localStorage.getItem('pdfminty_demo_user');
       if (demoRaw) {
         const demo = JSON.parse(demoRaw);
         if (demo && demo.uid) {
-          if (demo.plan === 'pro') return { tier: 'pro', uid: demo.uid };
           return { tier: 'free', uid: demo.uid };
         }
       }
