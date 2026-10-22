@@ -66,7 +66,7 @@ export function PdfPage({
 
   useEffect(() => {
     if (!inView || !canvasRef.current) return;
-    const signal = { cancelled: false };
+    const signal: { cancelled: boolean; cancel?: () => void } = { cancelled: false };
     setRendered(false);
     renderPageToCanvas(doc, info.index, canvasRef.current, cssWidth, signal)
       .then(() => {
@@ -75,6 +75,7 @@ export function PdfPage({
       .catch((err) => console.error('[v0] page render failed', err));
     return () => {
       signal.cancelled = true;
+      signal.cancel?.();
     };
   }, [doc, info.index, cssWidth, inView]);
 

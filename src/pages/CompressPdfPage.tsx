@@ -38,7 +38,7 @@ export const CompressPdfPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionMode, setCompressionMode] = useState<CompressionMode>('recommended');
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
-  const [customQuality, setCustomQuality] = useState<number>(0.80);
+  const [customQuality, setCustomQuality] = useState<number>(0.8);
   const [isGrayscale, setIsGrayscale] = useState<boolean>(false);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -52,6 +52,9 @@ export const CompressPdfPage: React.FC = () => {
   // Compression stats
   const [originalSize, setOriginalSize] = useState<number>(0);
   const [compressedSize, setCompressedSize] = useState<number>(0);
+  const [wasAlreadyCompact, setWasAlreadyCompact] = useState<boolean>(false);
+
+  const operationTokenRef = React.useRef<number>(0);
 
   // Revoke object URL on cleanup
   useEffect(() => {
@@ -62,14 +65,23 @@ export const CompressPdfPage: React.FC = () => {
     };
   }, [downloadUrl]);
 
+  useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+    };
+  }, []);
+
   const limitMB = TOOL_SIZE_LIMITS['compress-pdf']?.maxSingleMB || 100;
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
+      operationTokenRef.current++;
       setSelectedFile(files[0]);
       setOriginalSize(files[0].size);
       setError(null);
       setIsSuccess(false);
+      setWasAlreadyCompact(false);
       setShowPreview(false);
       setCompressedBlob(null);
       if (downloadUrl) {
@@ -82,9 +94,11 @@ export const CompressPdfPage: React.FC = () => {
   const handleCompress = async () => {
     if (!selectedFile) return;
 
+    const myToken = ++operationTokenRef.current;
     setIsProcessing(true);
     setError(null);
     setIsSuccess(false);
+    setWasAlreadyCompact(false);
     setShowPreview(false);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
@@ -94,6 +108,7 @@ export const CompressPdfPage: React.FC = () => {
 
     try {
       const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
+      if (myToken !== operationTokenRef.current) return;
 
       const level =
         compressionMode === 'extreme'
@@ -118,21 +133,19 @@ export const CompressPdfPage: React.FC = () => {
         'compressPDF',
         { bytes: fileBytes, options }
       );
+      if (myToken !== operationTokenRef.current) return;
 
       // Senior Engineering Guarantee: Invariant that compressed output is NEVER larger than original.
-      // If compressedBytes is valid and smaller or equal to original, use it; otherwise preserve the original bytes.
-      const finalBytes =
-        compressedBytes &&
+      // If compressedBytes is valid and strictly smaller than original, use it; otherwise preserve the original bytes.
+      const isSmaller =
+        Boolean(compressedBytes) &&
         compressedBytes.byteLength > 0 &&
-        compressedBytes.byteLength <= fileBytes.byteLength
-          ? compressedBytes
-          : fileBytes;
+        compressedBytes.byteLength < fileBytes.byteLength;
+      const finalBytes = isSmaller ? compressedBytes : fileBytes;
 
       const savedBytes = fileBytes.byteLength - finalBytes.byteLength;
       const savedPct =
-        fileBytes.byteLength > 0
-          ? Math.round((savedBytes / fileBytes.byteLength) * 100)
-          : 0;
+        fileBytes.byteLength > 0 ? Math.round((savedBytes / fileBytes.byteLength) * 100) : 0;
 
       logger.info(
         `[Compress UI] Compression finished for "${selectedFile.name}": ${fileBytes.byteLength} B -> ${finalBytes.byteLength} B (Net saved: ${savedBytes} B / ${savedPct}%)`
@@ -144,8 +157,10 @@ export const CompressPdfPage: React.FC = () => {
       const safeName = sanitizeDownloadFilename(`${rawBase || 'document'}-compressed.pdf`);
       const url = URL.createObjectURL(blob);
 
+      setOriginalSize(fileBytes.byteLength);
       setCompressedBlob(blob);
       setCompressedSize(finalBytes.byteLength);
+      setWasAlreadyCompact(!isSmaller);
       setDownloadUrl(url);
       setDownloadName(safeName);
       setIsSuccess(true);
@@ -163,7 +178,9 @@ export const CompressPdfPage: React.FC = () => {
       // Record real user activity for Dashboard
       try {
         const formatMb = (bytes: number) =>
-          bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+          bytes >= 1048576
+            ? `${(bytes / 1048576).toFixed(1)} MB`
+            : `${Math.round(bytes / 1024)} KB`;
         addActivityItem({
           toolName: 'Compress PDF',
           toolId: 'compress',
@@ -181,9 +198,13 @@ export const CompressPdfPage: React.FC = () => {
       try {
         await downloadBlob(blob, safeName);
       } catch (dlErr) {
-        logger.warn('Browser prevented automatic download. Manual download button is active:', dlErr);
+        logger.warn(
+          'Browser prevented automatic download. Manual download button is active:',
+          dlErr
+        );
       }
     } catch (err: unknown) {
+      if (myToken !== operationTokenRef.current) return;
       logger.error('Compress operation failed:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -193,7 +214,9 @@ export const CompressPdfPage: React.FC = () => {
           })
       );
     } finally {
-      setIsProcessing(false);
+      if (myToken === operationTokenRef.current) {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -210,12 +233,6 @@ export const CompressPdfPage: React.FC = () => {
       setTimeout(() => {
         if (link.parentNode) link.parentNode.removeChild(link);
       }, 1000);
-    }
-  };
-
-  const handleOpenPreview = () => {
-    if (downloadUrl) {
-      window.open(downloadUrl, '_blank');
     }
   };
 
@@ -289,8 +306,12 @@ export const CompressPdfPage: React.FC = () => {
             )}
 
             {error && (
-              <div className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl flex items-start gap-2.5 text-xs text-red-700 dark:text-red-300 font-semibold leading-relaxed">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl flex items-start gap-2.5 text-xs text-red-700 dark:text-red-300 font-semibold leading-relaxed"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
@@ -298,6 +319,8 @@ export const CompressPdfPage: React.FC = () => {
             {/* Results card upon successful compression */}
             {isSuccess && (
               <div
+                role="status"
+                aria-live="polite"
                 className="p-5 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-4"
                 id="compress_success_banner"
               >
@@ -316,34 +339,45 @@ export const CompressPdfPage: React.FC = () => {
                     <span className="text-slate-500 dark:text-slate-400 block mb-0.5">
                       Original Size:
                     </span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                    <span className="font-bold text-slate-800 dark:text-slate-200 text-sm block">
                       {formatBytes(originalSize)}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {originalSize.toLocaleString()} B
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 dark:text-slate-400 block mb-0.5">
                       Compressed:
                     </span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm block">
                       {formatBytes(compressedSize)}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {compressedSize.toLocaleString()} B
                     </span>
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <span className="text-slate-500 dark:text-slate-400 block mb-0.5">
                       Space Saved:
                     </span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">
+                    <span className="font-bold text-slate-900 dark:text-white text-sm block">
                       {savedBytes > 0
                         ? `${formatBytes(savedBytes)} (${percentSaved}%)`
-                        : 'Max Optimized'}
+                        : '0 B (0%)'}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {savedBytes.toLocaleString()} B saved
                     </span>
                   </div>
                 </div>
 
-                {savedBytes === 0 && (
+                {(savedBytes === 0 || wasAlreadyCompact) && (
                   <div className="space-y-1.5 text-[11px] text-emerald-800 dark:text-emerald-200 leading-normal">
                     <p className="m-0">
-                      ℹ️ <strong>Already Compact:</strong> This document is already in the most compact structure. Original file size was preserved to prevent file bloating.
+                      ℹ️ <strong>Already Compact:</strong> Re-encoding did not yield a smaller file
+                      than the original ({originalSize.toLocaleString()} B). Original bytes were
+                      preserved unchanged so output is never larger than input.
                     </p>
                   </div>
                 )}
@@ -363,6 +397,7 @@ export const CompressPdfPage: React.FC = () => {
 
                       <button
                         type="button"
+                        aria-expanded={showPreview}
                         onClick={() => setShowPreview((prev) => !prev)}
                         id="toggle_preview_pdf_btn"
                         className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
@@ -380,32 +415,39 @@ export const CompressPdfPage: React.FC = () => {
                         )}
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={handleOpenPreview}
+                      <a
+                        href={downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         id="preview_pdf_btn"
-                        className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
+                        className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm no-underline"
                       >
                         <ExternalLink className="w-4 h-4 text-slate-500" />
                         <span>Open in New Tab</span>
-                      </button>
+                      </a>
                     </div>
 
                     {showPreview && compressedBlob && (
                       <div className="mt-4 pt-4 border-t border-emerald-200 dark:border-emerald-800/80 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-inner">
                         <div className="flex items-center justify-between mb-3 text-xs font-bold text-slate-700 dark:text-slate-200">
                           <span>Quality & Layout Inspector (Live View)</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">100% Text & Image Clarity Verified</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                            Live Output Preview
+                          </span>
                         </div>
                         <PdfPreview
-                          file={new File([compressedBlob], downloadName, { type: 'application/pdf' })}
+                          file={
+                            new File([compressedBlob], downloadName, { type: 'application/pdf' })
+                          }
                           scale={0.5}
                         />
                       </div>
                     )}
 
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 m-0 leading-relaxed">
-                      💡 Click <strong>Download Compressed PDF</strong> above to save. If automatic download was blocked by browser security, the button or <strong>Open in New Tab</strong> allows instant direct saving.
+                      💡 Click <strong>Download Compressed PDF</strong> above to save. If automatic
+                      download was blocked by browser security, the button or{' '}
+                      <strong>Open in New Tab</strong> allows instant direct saving.
                     </p>
                   </div>
                 )}
@@ -418,7 +460,10 @@ export const CompressPdfPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
             <div className="border-b border-slate-100 dark:border-slate-800 pb-2">
-              <h3 className="font-bold text-slate-900 dark:text-white">
+              <h3
+                className="font-bold text-slate-900 dark:text-white"
+                id="compression-mode-heading"
+              >
                 Compression Settings
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">
@@ -427,11 +472,20 @@ export const CompressPdfPage: React.FC = () => {
             </div>
 
             {/* International Standard Compression Modes */}
-            <div className="space-y-3">
+            <div className="space-y-3" role="radiogroup" aria-labelledby="compression-mode-heading">
               {/* Option 1: Recommended Compression (Default) */}
               <div
+                role="radio"
+                aria-checked={compressionMode === 'recommended'}
+                tabIndex={0}
                 onClick={() => setCompressionMode('recommended')}
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setCompressionMode('recommended');
+                  }
+                }}
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                   compressionMode === 'recommended'
                     ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/25 shadow-sm ring-1 ring-emerald-500'
                     : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-900/60'
@@ -451,17 +505,28 @@ export const CompressPdfPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
-                  Smart Vector-Preserving Optimization (iLovePDF Engine)
+                  Smart Vector-Preserving Optimization
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed m-0">
-                  Recompresses embedded high-res images to ~80% quality while preserving 100% of all vector text, fonts, and layout. Delivers massive 60–90% size drops (e.g. 82 MB → 250 KB) without losing text crispness.
+                  Recompresses embedded high-resolution raster images (~70% JPEG quality, max
+                  1600px) and packs PDF object streams while preserving vector text, fonts, links,
+                  and layout. Actual size reduction depends on embedded image content.
                 </p>
               </div>
 
               {/* Option 2: Extreme Compression */}
               <div
+                role="radio"
+                aria-checked={compressionMode === 'extreme'}
+                tabIndex={0}
                 onClick={() => setCompressionMode('extreme')}
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setCompressionMode('extreme');
+                  }
+                }}
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative outline-none focus-visible:ring-2 focus-visible:ring-rose-500 ${
                   compressionMode === 'extreme'
                     ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/25 shadow-sm ring-1 ring-rose-500'
                     : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-900/60'
@@ -481,17 +546,27 @@ export const CompressPdfPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-[11px] font-semibold text-rose-700 dark:text-rose-400 mb-1">
-                  Maximum size drop (~65% Quality)
+                  Stronger image downsampling (~60% JPEG quality, max 1280px)
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed m-0">
-                  Aggressive compression for strictly limited email attachments and portal upload limits. Vector text remains fully readable and intact.
+                  Stronger embedded image compression for email attachments and portal upload
+                  limits. Selectable vector text, fonts, and page geometry remain intact.
                 </p>
               </div>
 
               {/* Option 3: Low Compression / High Quality */}
               <div
+                role="radio"
+                aria-checked={compressionMode === 'low'}
+                tabIndex={0}
                 onClick={() => setCompressionMode('low')}
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setCompressionMode('low');
+                  }
+                }}
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   compressionMode === 'low'
                     ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/25 shadow-sm ring-1 ring-indigo-500'
                     : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-900/60'
@@ -511,10 +586,11 @@ export const CompressPdfPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-400 mb-1">
-                  High-fidelity images (~88% Quality)
+                  High-fidelity images (~80% JPEG quality, max 2048px)
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed m-0">
-                  Maintains high photo detail with light compression (20–50% reduction). Ideal for photography portfolios and print-ready proofs.
+                  Maintains high photo detail with gentle image and object-stream optimization.
+                  Ideal for portfolios and print-ready proofs.
                 </p>
               </div>
             </div>
@@ -523,6 +599,8 @@ export const CompressPdfPage: React.FC = () => {
             <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
               <button
                 type="button"
+                aria-expanded={showAdvanced}
+                aria-controls="compress-advanced-panel"
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="w-full px-3.5 py-2 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
               >
@@ -532,22 +610,34 @@ export const CompressPdfPage: React.FC = () => {
                 </span>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1">
                   {showAdvanced ? 'Hide' : 'Configure'}
-                  {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  {showAdvanced ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
                 </span>
               </button>
 
               {showAdvanced && (
-                <div className="p-3 border-t border-slate-200 dark:border-slate-700 space-y-3 bg-white dark:bg-slate-900">
+                <div
+                  id="compress-advanced-panel"
+                  className="p-3 border-t border-slate-200 dark:border-slate-700 space-y-3 bg-white dark:bg-slate-900"
+                >
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-600 dark:text-slate-400 font-semibold">
+                      <label
+                        htmlFor="custom-jpeg-quality-range"
+                        className="text-slate-600 dark:text-slate-400 font-semibold"
+                      >
                         Custom JPEG Quality:
-                      </span>
+                      </label>
                       <span className="font-bold text-emerald-600 dark:text-emerald-400">
                         {Math.round(customQuality * 100)}%
                       </span>
                     </div>
                     <input
+                      id="custom-jpeg-quality-range"
+                      aria-label="Custom JPEG Quality"
                       type="range"
                       min="0.40"
                       max="0.95"
@@ -587,12 +677,18 @@ export const CompressPdfPage: React.FC = () => {
               {isProcessing ? (
                 <span className="flex items-center space-x-2">
                   <RefreshCw className="w-4 h-4 animate-spin text-emerald-300" />
-                  <span className="animate-pulse">{t('compressPdf.compressingButton', { defaultValue: 'Compressing in Browser...' })}</span>
+                  <span className="animate-pulse">
+                    {t('compressPdf.compressingButton', {
+                      defaultValue: 'Compressing in Browser...',
+                    })}
+                  </span>
                 </span>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{t('compressPdf.compressSubmit', { defaultValue: 'Compress & Download PDF' })}</span>
+                  <span>
+                    {t('compressPdf.compressSubmit', { defaultValue: 'Compress & Download PDF' })}
+                  </span>
                 </>
               )}
             </button>
@@ -644,6 +740,5 @@ export const CompressPdfPage: React.FC = () => {
     </div>
   );
 };
-
 
 export default CompressPdfPage;

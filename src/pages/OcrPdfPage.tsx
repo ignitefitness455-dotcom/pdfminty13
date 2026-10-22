@@ -54,12 +54,22 @@ export const OcrPdfPage: React.FC = () => {
   const [hasConsented, setHasConsented] = useState<boolean>(false);
 
   const operationTokenRef = useRef<number>(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     return () => {
       pagePreviews.forEach((p) => URL.revokeObjectURL(p.dataUrl));
     };
   }, [pagePreviews]);
+
+  useEffect(() => {
+    const token = operationTokenRef;
+    const abortRef = abortControllerRef;
+    return () => {
+      token.current++;
+      abortRef.current?.abort();
+    };
+  }, []);
 
   // Load document and render page previews if it is a PDF
   useEffect(() => {
@@ -94,39 +104,67 @@ export const OcrPdfPage: React.FC = () => {
         const doc = await pdfjs.getDocument({ data: fileBytes.slice() }).promise;
 
         const loadedPreviews: OcrPagePreview[] = [];
-        // Pro users preview up to 25 pages; standard users up to 10 pages
-        const pagesToRender = Math.min(doc.numPages, maxPreviewPages);
+        let committedPreviews = false;
+        try {
+          // Pro users preview up to 25 pages; standard users up to 10 pages
+          const pagesToRender = Math.min(doc.numPages, maxPreviewPages);
 
-        for (let i = 1; i <= pagesToRender; i++) {
-          if (myToken !== operationTokenRef.current) return;
-          const page = await doc.getPage(i);
-          const viewport = page.getViewport({ scale: 0.8 });
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          if (context) {
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            await page.render({ canvasContext: context, viewport }).promise;
-            canvas.toBlob(
-              (blob) => {
+          for (let i = 1; i <= pagesToRender; i++) {
+            if (myToken !== operationTokenRef.current) {
+              loadedPreviews.forEach((p) => URL.revokeObjectURL(p.dataUrl));
+              return;
+            }
+            const page = await doc.getPage(i);
+            try {
+              const viewport = page.getViewport({ scale: 0.8 });
+              const canvas = document.createElement('canvas');
+              const context = canvas.getContext('2d');
+              if (context) {
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                await page.render({ canvasContext: context, viewport }).promise;
+                const blob = await new Promise<Blob | null>((resolve) =>
+                  canvas.toBlob(resolve, 'image/jpeg', 0.85)
+                );
                 if (blob && myToken === operationTokenRef.current) {
                   const url = URL.createObjectURL(blob);
                   loadedPreviews.push({ index: i - 1, dataUrl: url });
-                  if (loadedPreviews.length === pagesToRender) {
-                    // Sort to match original order
-                    loadedPreviews.sort((a, b) => a.index - b.index);
-                    setPagePreviews([...loadedPreviews]);
-                  }
                 }
-              },
-              'image/jpeg',
-              0.85
-            );
+              }
+            } finally {
+              page.cleanup();
+              if (
+                myToken === operationTokenRef.current &&
+                loadedPreviews.length === pagesToRender
+              ) {
+                loadedPreviews.sort((a, b) => a.index - b.index);
+                committedPreviews = true;
+                setPagePreviews([...loadedPreviews]);
+              }
+            }
           }
-        }
 
-        // Default select first page
-        setSelectedPages(new Set([0]));
+          // Default select first page
+          if (myToken === operationTokenRef.current) {
+            if (!committedPreviews && loadedPreviews.length > 0) {
+              loadedPreviews.sort((a, b) => a.index - b.index);
+              committedPreviews = true;
+              setPagePreviews([...loadedPreviews]);
+            }
+            setSelectedPages(new Set([0]));
+          } else if (!committedPreviews) {
+            loadedPreviews.forEach((p) => URL.revokeObjectURL(p.dataUrl));
+          }
+        } catch (renderErr) {
+          if (!committedPreviews) {
+            loadedPreviews.forEach((p) => URL.revokeObjectURL(p.dataUrl));
+          }
+          throw renderErr;
+        } finally {
+          await doc.destroy().catch(() => {
+            /* ignore */
+          });
+        }
       } catch (err) {
         logger.error('Failed to parse document for OCR previews:', err);
         setError('Failed to analyze the PDF file. It might be corrupted or encrypted.');
@@ -191,6 +229,9 @@ export const OcrPdfPage: React.FC = () => {
     setOcrResult('');
 
     const myToken = ++operationTokenRef.current;
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const imageBase64s: string[] = [];
@@ -247,7 +288,9 @@ export const OcrPdfPage: React.FC = () => {
         body: JSON.stringify({
           mode: 'ocr',
           imagesBase64: imageBase64s,
+          language: ocrLanguage,
         }),
+        signal: controller.signal,
       });
 
       if (myToken !== operationTokenRef.current) return;
@@ -262,7 +305,12 @@ export const OcrPdfPage: React.FC = () => {
       const data = (await res.json()) as { success: boolean; result: string };
       setOcrResult(data.result || 'No text could be extracted from the document.');
     } catch (err: unknown) {
-      if (myToken !== operationTokenRef.current) return;
+      if (
+        myToken !== operationTokenRef.current ||
+        (err instanceof Error && err.name === 'AbortError')
+      ) {
+        return;
+      }
       logger.error('OCR Extraction error:', err);
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg || 'An error occurred during AI character recognition.');
@@ -306,10 +354,7 @@ export const OcrPdfPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto" id="ocr_pdf_page_container">
       <SEO slug="ocr-pdf" />
-      <ToolHeader
-        slug="ocr-pdf"
-        limitMB={isPro ? 500 : TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB}
-      />
+      <ToolHeader slug="ocr-pdf" limitMB={isPro ? 500 : TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB} />
 
       {!selectedFile ? (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -333,7 +378,12 @@ export const OcrPdfPage: React.FC = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => setSelectedFile(null)}
+                  onClick={() => {
+                    operationTokenRef.current++;
+                    abortControllerRef.current?.abort();
+                    setLoading(false);
+                    setSelectedFile(null);
+                  }}
                   className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 py-1 px-3 rounded-lg transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}

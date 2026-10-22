@@ -17,20 +17,22 @@ service cloud.firestore {
 
     // Default deny all unmatched collections and documents
     match /{document=**} {
-      allow read, write: false;
+      allow read, write: if false;
     }
 
     // 1. Private User Profile Documents
     // Strictly isolated: each authenticated user can only access their own document.
-    // Client NEVER writes `isPro` — only the Cloudflare Worker webhook writes `isPro`.
+    // Client NEVER writes `isPro` or `plan: 'pro'` — only the privileged backend writes pro status.
     match /users/{userId} {
       allow read: if isOwner(userId);
 
-      // Create: User can only create their own profile document and cannot set `isPro`
+      // Create: User can only create their own profile document and cannot set `isPro` or `plan: 'pro'`
       allow create: if isOwner(userId)
                     && request.resource.data.uid == userId
                     && request.resource.data.email is string
-                    && !('isPro' in request.resource.data);
+                    && request.resource.data.email.size() <= 320
+                    && !('isPro' in request.resource.data)
+                    && (!('plan' in request.resource.data) || request.resource.data.plan == 'free');
 
       // Update: User can update their profile metadata, but can NEVER write or modify `isPro` or `plan`
       allow update: if isOwner(userId)
@@ -45,7 +47,9 @@ service cloud.firestore {
         allow read: if isOwner(userId);
         allow create, update: if isOwner(userId)
                               && request.resource.data.aiAnalysesUsed is number
-                              && request.resource.data.aiAnalysesUsed >= 0;
+                              && request.resource.data.aiAnalysesUsed >= 0
+                              && (!('ocrPagesProcessed' in request.resource.data) || (request.resource.data.ocrPagesProcessed is number && request.resource.data.ocrPagesProcessed >= 0))
+                              && (!('heavyOperationsCount' in request.resource.data) || (request.resource.data.heavyOperationsCount is number && request.resource.data.heavyOperationsCount >= 0));
         allow delete: if false; // preserve audit counters
       }
     }

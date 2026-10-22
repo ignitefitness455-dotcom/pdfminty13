@@ -1,5 +1,7 @@
 const fs = require("fs");
-let content = fs.readFileSync("./src/config/seo-data.ts", "utf8");
+const isApply = process.argv.includes("--apply");
+const original = fs.readFileSync("./src/config/seo-data.ts", "utf8");
+let content = original;
 
 // First, fix the targets of deleted/merged pages
 content = content.replace(
@@ -35,5 +37,11 @@ content = content.replace(/href="(\/edit-pdf-metadata)(?<!\/)"/g, 'href="$1/"');
 content = content.replace(/href="(\/pdfminty-vs-smallpdf)(?<!\/)"/g, 'href="/compare/pdfminty-vs-smallpdf/"');
 content = content.replace(/href="(\/pdfminty-vs-ilovepdf)(?<!\/)"/g, 'href="/compare/pdfminty-vs-ilovepdf/"');
 
-fs.writeFileSync("./src/config/seo-data.ts", content, "utf8");
-console.log("Internal links in seo-data.ts fixed!");
+if (content === original) {
+  console.log("[NO-OP] Internal links in seo-data.ts already canonical.");
+} else if (isApply) {
+  fs.writeFileSync("./src/config/seo-data.ts", content, "utf8");
+  console.log("[APPLIED] Internal links in seo-data.ts fixed!");
+} else {
+  console.log("[DRY-RUN] Internal links in seo-data.ts need updates. Re-run with --apply to write changes.");
+}

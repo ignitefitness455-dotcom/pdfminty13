@@ -123,6 +123,8 @@ export const ProtectPage: React.FC = () => {
                 <button
                   onClick={() => {
                     setSelectedFile(null);
+                    setPassword('');
+                    setError(null);
                     setIsSuccess(false);
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);

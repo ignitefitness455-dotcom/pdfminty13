@@ -29,15 +29,20 @@ export const ImgToPdfPage: React.FC = () => {
 
   React.useEffect(() => {
     return () => {
-      // Clean up all generated URLs when leaving page
-      urlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
     };
   }, [downloadUrl]);
+
+  React.useEffect(() => {
+    return () => {
+      // Clean up all generated URLs when leaving page
+      urlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const handleFilesSelected = (newFiles: File[]) => {
     setError(null);

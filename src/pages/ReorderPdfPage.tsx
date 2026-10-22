@@ -109,18 +109,22 @@ export const ReorderPdfPage: React.FC = () => {
   }, [items]);
 
   useEffect(() => {
-    const currentUrls = urlsRef.current;
-    const token = operationTokenRef;
     return () => {
-      token.current++;
-      currentUrls.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
     };
   }, [downloadUrl]);
+
+  useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+      urlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length > 0) {
@@ -167,6 +171,26 @@ export const ReorderPdfPage: React.FC = () => {
       } catch (err: unknown) {
         if (myToken !== operationTokenRef.current) return;
         logger.error('Failed to render previews:', err);
+        try {
+          const fallbackBytes = new Uint8Array(await file.arrayBuffer());
+          if (myToken !== operationTokenRef.current) return;
+          const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
+            bytes: fallbackBytes,
+          });
+          if (myToken !== operationTokenRef.current) return;
+          if (count > 0) {
+            const fallbackItems: PageItem[] = Array.from({ length: count }, (_, idx) => ({
+              id: `p-${idx + 1}-${idx}-${Date.now()}`,
+              page: idx + 1,
+              dataUrl: '',
+              rotation: 0,
+            }));
+            setItems(fallbackItems);
+            setOriginalBackup(fallbackItems);
+          }
+        } catch {
+          // Ignore secondary error
+        }
         setError(
           isBn
             ? 'পৃষ্ঠার প্রিভিউ রেন্ডার করা যায়নি। আপনি ম্যানুয়ালি পেজ নম্বর ক্রম লিখতে পারেন।'
@@ -818,19 +842,31 @@ export const ReorderPdfPage: React.FC = () => {
                         {/* Page Preview Thumbnail Image Container */}
                         <div
                           className="relative w-full aspect-[3/4] bg-white rounded-xl overflow-hidden flex items-center justify-center shadow-inner cursor-pointer group/img"
-                          onClick={() => setPreviewItem(item)}
+                          onClick={() => item.dataUrl && setPreviewItem(item)}
                           title={isBn ? 'ক্লিক করে বড় প্রিভিউ দেখুন' : 'Click to inspect full page'}
                         >
-                          <img
-                            src={item.dataUrl}
-                            alt={`Page ${item.page}`}
-                            referrerPolicy="no-referrer"
-                            style={{
-                              transform: `rotate(${item.rotation}deg)`,
-                              transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                            }}
-                            className="max-w-full max-h-full object-contain pointer-events-none"
-                          />
+                          {item.dataUrl ? (
+                            <img
+                              src={item.dataUrl}
+                              alt={`Page ${item.page}`}
+                              referrerPolicy="no-referrer"
+                              style={{
+                                transform: `rotate(${item.rotation}deg)`,
+                                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              }}
+                              className="max-w-full max-h-full object-contain pointer-events-none"
+                            />
+                          ) : (
+                            <span
+                              style={{
+                                transform: `rotate(${item.rotation}deg)`,
+                                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              }}
+                              className="text-xs font-bold text-slate-400 select-none"
+                            >
+                              Page {item.page}
+                            </span>
+                          )}
 
                           {/* Hover Zoom Overlay */}
                           <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[1px] opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
@@ -1131,7 +1167,9 @@ export const ReorderPdfPage: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1">
-              <span>{isBn ? 'রেজোলিউশন: অপ্টিমাইজড ভেক্টর' : 'Rendered via local HTML5 Canvas'}</span>
+              <span>
+                {isBn ? 'রেজোলিউশন: অপ্টিমাইজড ভেক্টর' : 'Rendered via local HTML5 Canvas'}
+              </span>
               <button
                 type="button"
                 onClick={() => setPreviewItem(null)}

@@ -21,6 +21,7 @@ export const AddBlankPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const operationTokenRef = React.useRef(0);
 
   React.useEffect(() => {
     return () => {
@@ -30,8 +31,15 @@ export const AddBlankPage: React.FC = () => {
     };
   }, [downloadUrl]);
 
+  React.useEffect(() => {
+    return () => {
+      operationTokenRef.current++;
+    };
+  }, []);
+
   const handleFilesSelected = async (files: File[]) => {
     if (files.length === 0) return;
+    const currentToken = ++operationTokenRef.current;
     setSelectedFile(files[0]);
     setError(null);
     setIsSuccess(false);
@@ -44,12 +52,15 @@ export const AddBlankPage: React.FC = () => {
       const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
         bytes,
       });
+      if (operationTokenRef.current !== currentToken) return;
       setTotalPages(count);
       if (customIndex > count + 1) setCustomIndex(count + 1);
     } catch {
-      setError(
-        t('addBlankPage.readError', { defaultValue: 'Failed to read PDF. It may be corrupted.' })
-      );
+      if (operationTokenRef.current === currentToken) {
+        setError(
+          t('addBlankPage.readError', { defaultValue: 'Failed to read PDF. It may be corrupted.' })
+        );
+      }
     }
   };
 
@@ -139,6 +150,7 @@ export const AddBlankPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => {
+                    operationTokenRef.current++;
                     setSelectedFile(null);
                     setTotalPages(0);
                     setCustomIndex(1); // Reset to default

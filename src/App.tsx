@@ -10,12 +10,17 @@ import { PWAController } from './components/PWAController';
 import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
 import { ROUTES } from './config/routes';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './i18n/config';
 import { HomePage } from './pages/HomePage';
-import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
-import { TermsOfServicePage } from './pages/TermsOfServicePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Lazy-loaded static pages
+const PrivacyPolicyPage = lazyWithRetry(() =>
+  import('./pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
+);
+const TermsOfServicePage = lazyWithRetry(() =>
+  import('./pages/TermsOfServicePage').then((m) => ({ default: m.TermsOfServicePage }))
+);
 const AboutUsPage = lazyWithRetry(() =>
   import('./pages/AboutUsPage').then((m) => ({ default: m.AboutUsPage }))
 );
@@ -122,11 +127,28 @@ const NotFoundPage = lazyWithRetry(() =>
 );
 
 const ScrollToTop: React.FC = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   React.useEffect(() => {
+    if (hash) {
+      const targetId = hash.replace(/^#/, '');
+      const scrollToHash = () => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return true;
+        }
+        return false;
+      };
+      if (!scrollToHash()) {
+        const timer = window.setTimeout(scrollToHash, 150);
+        return () => window.clearTimeout(timer);
+      }
+      return undefined;
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+    return undefined;
+  }, [pathname, hash]);
 
   return null;
 };
@@ -182,6 +204,31 @@ export const App: React.FC = () => {
                 </ErrorBoundary>
               }
             />
+            {SUPPORTED_LOCALES.filter((loc) => loc !== DEFAULT_LOCALE).map((loc) => (
+              <React.Fragment key={`loc-home-${loc}`}>
+                <Route
+                  path={`/${loc}/`}
+                  element={
+                    <ErrorBoundary resetKey={`home-${loc}`}>
+                      <HomePage />
+                    </ErrorBoundary>
+                  }
+                />
+                <Route path={`/${loc}`} element={<Navigate to={`/${loc}/`} replace />} />
+                <Route
+                  path={`/${loc}/merge-pdf/`}
+                  element={
+                    <ErrorBoundary resetKey={`merge-${loc}`}>
+                      <MergePage />
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path={`/${loc}/merge-pdf`}
+                  element={<Navigate to={`/${loc}/merge-pdf/`} replace />}
+                />
+              </React.Fragment>
+            ))}
             <Route
               path={ROUTES.MERGE}
               element={
@@ -549,10 +596,16 @@ export const App: React.FC = () => {
             <Route path="/contact" element={<Navigate to={ROUTES.CONTACT} replace />} />
             <Route path="/privacy" element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />} />
             <Route path="/privacy/" element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />} />
-            <Route path="/privacy-policy" element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />} />
+            <Route
+              path="/privacy-policy"
+              element={<Navigate to={ROUTES.PRIVACY_POLICY} replace />}
+            />
             <Route path="/terms" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/terms/" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
-            <Route path="/terms-of-service" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
+            <Route
+              path="/terms-of-service"
+              element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />}
+            />
             <Route path="/tos" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/tos/" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/edit-metadata" element={<Navigate to={ROUTES.EDIT_METADATA} replace />} />
@@ -566,7 +619,13 @@ export const App: React.FC = () => {
             <Route path="/page-numbers" element={<Navigate to={ROUTES.PAGE_NUMBERS} replace />} />
             <Route path="/add-blank" element={<Navigate to={ROUTES.ADD_BLANK} replace />} />
             <Route path="/img-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
+            <Route path="/jpg-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
+            <Route path="/jpeg-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
+            <Route path="/png-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
             <Route path="/pdf-to-img" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
+            <Route path="/pdf-to-jpg" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
+            <Route path="/pdf-to-jpeg" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
+            <Route path="/pdf-to-png" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
             <Route path="/grayscale" element={<Navigate to={ROUTES.GRAYSCALE} replace />} />
             <Route path="/flatten" element={<Navigate to={ROUTES.FLATTEN} replace />} />
             <Route path="/compress" element={<Navigate to={ROUTES.COMPRESS} replace />} />
@@ -619,6 +678,18 @@ export const App: React.FC = () => {
             <Route
               path="/blog/why-offline-pdf-editors-are-the-future-of-privacy"
               element={<Navigate to="/blog/why-privacy-first-pdf-tools-matter-in-2026/" replace />}
+            />
+            <Route
+              path="/blog/pdf-form-wont-let-you-type"
+              element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
+            />
+            <Route
+              path="/blog/cant-type-in-pdf-form"
+              element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
+            />
+            <Route
+              path="/blog/how-to-fill-out-a-pdf-form-that-is-not-fillable"
+              element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
             />
 
             {/* 404 fallback — shows real 404 page with noindex */}

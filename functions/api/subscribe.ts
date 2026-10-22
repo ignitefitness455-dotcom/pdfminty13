@@ -87,7 +87,28 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       name?: unknown;
     }
 
-    const rawData = (await request.json()) as SubscribePayload;
+    const rawBodyText = await request.text();
+    if (rawBodyText.length > MAX_BODY_BYTES) {
+      return new Response(JSON.stringify({ error: 'Payload too large.' }), {
+        status: 413,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
+      });
+    }
+    let rawData: SubscribePayload;
+    try {
+      rawData = JSON.parse(rawBodyText) as SubscribePayload;
+    } catch {
+      return new Response(JSON.stringify({ error: 'Malformed JSON body.' }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
+      });
+    }
     const email = sanitizeForStorage(typeof rawData.email === 'string' ? rawData.email : '');
     const name = sanitizeForStorage(
       typeof rawData.name === 'string' ? rawData.name : '',

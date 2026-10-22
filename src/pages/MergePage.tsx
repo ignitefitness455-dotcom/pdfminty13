@@ -263,6 +263,8 @@ export const MergePage: React.FC = () => {
             <div
               className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
               id="merge_success_banner"
+              role="status"
+              aria-live="polite"
             >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
@@ -322,8 +324,10 @@ export const MergePage: React.FC = () => {
               <div
                 className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg"
                 id="merge_error_box"
+                role="alert"
+                aria-live="assertive"
               >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}

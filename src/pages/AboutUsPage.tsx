@@ -25,6 +25,7 @@ export const AboutUsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface py-12 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
       <SEO
+        slug="about-us"
         titleOverride="About Us — Privacy-First PDF Tools | PdfMinty"
         descriptionOverride="Learn about PdfMinty: a fast, privacy-first PDF utility suite built to process files 100% locally in your web browser. Zero server uploads, zero signups."
       />
@@ -76,7 +77,7 @@ export const AboutUsPage: React.FC = () => {
               <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
                 {t('aboutUs.solutionDesc', {
                   defaultValue:
-                    'PdfMinty processes your files directly in your web browser for our 30+ standard PDF tools without server uploads. The two opt-in exceptions are the AI Analyze tool (which transmits extracted text to Google Gemini) and the OCR PDF tool (which transmits selected scanned page images to Google Gemini Multimodal Vision), both of which require your explicit consent before running.',
+                    'PdfMinty processes your files directly in your web browser across our 22 standard client-side PDF tools without server uploads. Our opt-in cloud AI features — the AI Analyze tool (which transmits extracted text to Google Gemini), the OCR PDF tool, and the optional AI Vision OCR mode in PDF to Markdown (which transmit selected page images to Google Gemini Multimodal Vision) — require your explicit consent before running.',
                 })}
               </p>
             </div>

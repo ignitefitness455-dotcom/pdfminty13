@@ -41,6 +41,12 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   '/rotate': '/rotate-pdf/',
   '/pdfminty-vs-smallpdf': '/compare/pdfminty-vs-smallpdf/',
   '/pdfminty-vs-ilovepdf': '/compare/pdfminty-vs-ilovepdf/',
+  '/pdf-diff': '/compare-pdf/',
+  '/account': '/dashboard/',
+  '/profile': '/dashboard/',
+  '/my-profile': '/dashboard/',
+  '/signin': '/login/',
+  '/register': '/signup/',
   '/blog/best-free-pdf-compressor-without-losing-quality':
     '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
   '/blog/how-to-compress-pdf-without-losing-quality-locally':
@@ -51,9 +57,12 @@ const LEGACY_REDIRECTS: Record<string, string> = {
     '/blog/secure-pdf-editing-without-uploading/',
   '/blog/why-offline-pdf-editors-are-the-future-of-privacy':
     '/blog/why-privacy-first-pdf-tools-matter-in-2026/',
+  '/blog/pdf-form-wont-let-you-type': '/blog/pdf-form-wont-let-me-type/',
+  '/blog/cant-type-in-pdf-form': '/blog/pdf-form-wont-let-me-type/',
+  '/blog/how-to-fill-out-a-pdf-form-that-is-not-fillable': '/blog/pdf-form-wont-let-me-type/',
 };
 
-// Static pages that are always valid
+// Static indexable pages that are always valid
 const STATIC_VALID_ROUTES = new Set([
   'blog',
   'about-us',
@@ -61,7 +70,11 @@ const STATIC_VALID_ROUTES = new Set([
   'privacy-policy',
   'terms-of-service',
   'adobe-acrobat-alternative',
+  'pricing',
 ]);
+
+// Valid interactive app routes that should return 200 OK but carry X-Robots-Tag: noindex, nofollow
+const NOINDEX_VALID_ROUTES = new Set(['login', 'signup', 'dashboard']);
 
 const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'bn', 'hi', 'zh'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -74,7 +87,11 @@ const NON_DEFAULT_LOCALES = new Set<SupportedLocale>(
 const LOCALIZED_VALID_SUBROUTES = new Set(['merge-pdf']);
 
 function checkValidRoute(cleanPath: string): boolean {
-  if (cleanPath === '' || STATIC_VALID_ROUTES.has(cleanPath)) {
+  if (
+    cleanPath === '' ||
+    STATIC_VALID_ROUTES.has(cleanPath) ||
+    NOINDEX_VALID_ROUTES.has(cleanPath)
+  ) {
     return true;
   }
 
@@ -140,15 +157,12 @@ export const onRequest: PagesFunction = async (context) => {
       (url.protocol ? url.protocol.replace(':', '') : 'https');
     const isPlainHttp = forwardedProto === 'http';
 
-    // 1. Canonical Hostname (www -> non-www) & Protocol (http -> https) normalization
-    if (url.hostname === 'www.pdfminty.com' || (url.hostname === 'pdfminty.com' && isPlainHttp)) {
-      const targetUrl = `https://pdfminty.com${rawPath}${url.search}`;
-      const redirect = createRedirectResponse(targetUrl, 301);
-      if (redirect) return redirect;
-    }
-
     // Guaranteed immediate handler for Google AdSense ads.txt
     if (rawPath === '/ads.txt') {
+      if (url.hostname === 'www.pdfminty.com' || (url.hostname === 'pdfminty.com' && isPlainHttp)) {
+        const redirect = createRedirectResponse(`https://pdfminty.com/ads.txt${url.search}`, 301);
+        if (redirect) return redirect;
+      }
       return new Response('google.com, pub-3862038139324053, DIRECT, f08c47fec0942fa0\n', {
         status: 200,
         headers: {
@@ -175,6 +189,10 @@ export const onRequest: PagesFunction = async (context) => {
       );
 
     if (isStaticAsset) {
+      if (url.hostname === 'www.pdfminty.com' || (url.hostname === 'pdfminty.com' && isPlainHttp)) {
+        const redirect = createRedirectResponse(`https://pdfminty.com${rawPath}${url.search}`, 301);
+        if (redirect) return redirect;
+      }
       return context.next();
     }
 
@@ -392,8 +410,13 @@ export const onRequest: PagesFunction = async (context) => {
         return newResponse;
       }
 
-      // Only valid routes with 2xx status codes get index, follow
-      newResponse.headers.set('X-Robots-Tag', 'index, follow');
+      // Auth/account utility routes serve 200 OK to users/SPA but are excluded from search indexing
+      if (NOINDEX_VALID_ROUTES.has(cleanPath)) {
+        newResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      } else {
+        // Only valid indexable routes with 2xx status codes get index, follow
+        newResponse.headers.set('X-Robots-Tag', 'index, follow');
+      }
     } else if (contentType.includes('application/json') || url.pathname.startsWith('/api/')) {
       newResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
     } else if (!isOkStatus) {

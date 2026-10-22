@@ -40,20 +40,31 @@ jobs:
           node-version: 18
 
       - name: Process Error Log
+        env:
+          INPUT_CODE: ${{ github.event.inputs.code }}
+          INPUT_MESSAGE: ${{ github.event.inputs.message }}
+          INPUT_URL: ${{ github.event.inputs.url }}
+          INPUT_REQUESTS: ${{ github.event.inputs.requests }}
+          INPUT_DATE: ${{ github.event.inputs.date }}
         run: |
-          DATE_ARG=""
-          if [ -n "${{ github.event.inputs.date }}" ]; then
-            DATE_ARG="--date=${{ github.event.inputs.date }}"
+          if [ -n "$INPUT_DATE" ]; then
+            node errors/scripts/log-processor.cjs \
+              --code="$INPUT_CODE" \
+              --message="$INPUT_MESSAGE" \
+              --url="$INPUT_URL" \
+              --requests="$INPUT_REQUESTS" \
+              --date="$INPUT_DATE"
+          else
+            node errors/scripts/log-processor.cjs \
+              --code="$INPUT_CODE" \
+              --message="$INPUT_MESSAGE" \
+              --url="$INPUT_URL" \
+              --requests="$INPUT_REQUESTS"
           fi
-          
-          node errors/scripts/log-processor.cjs \
-            --code="${{ github.event.inputs.code }}" \
-            --message="${{ github.event.inputs.message }}" \
-            --url="${{ github.event.inputs.url }}" \
-            --requests="${{ github.event.inputs.requests }}" \
-            $DATE_ARG
 
       - name: Commit and Push Changes
+        env:
+          INPUT_CODE: ${{ github.event.inputs.code }}
         run: |
           git config --global user.name 'GitHub Action Error Tracker'
           git config --global user.email 'error-tracker@github.com'
@@ -63,6 +74,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No new error log changes to commit."
           else
-            git commit -m "chore(telemetry): record HTTP ${{ github.event.inputs.code }} error to organized logs"
+            SAFE_CODE=$(printf '%s' "$INPUT_CODE" | tr -cd '0-9')
+            git commit -m "chore(telemetry): record HTTP ${SAFE_CODE:-500} error to organized logs"
             git push
           fi

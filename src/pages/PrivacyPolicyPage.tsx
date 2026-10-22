@@ -26,6 +26,7 @@ export const PrivacyPolicyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface py-12 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
       <SEO
+        slug="privacy-policy"
         titleOverride="Privacy Policy — 100% Zero-Data Collection & Google OAuth Compliance | PDFMinty"
         descriptionOverride="Read PDFMinty's comprehensive Privacy Policy. Standard PDF tools process files 100% locally in your browser with zero uploads. Includes complete Google OAuth Limited Use, Google Gemini AI, AdSense, GDPR, and CCPA disclosures."
       />
@@ -67,7 +68,7 @@ export const PrivacyPolicyPage: React.FC = () => {
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
             {t('privacyPolicy.summary', {
               defaultValue:
-                "PDFMinty's 30+ standard PDF tools process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI tools — the AI PDF Assistant (/ai-analyze-pdf/) or the OCR PDF tool (/ocr-pdf/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
+                "PDFMinty's 22 standard PDF tools process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI features — the AI PDF Assistant (/ai-analyze-pdf/), the OCR PDF tool (/ocr-pdf/), or the optional AI Vision OCR mode in PDF to Markdown (/pdf-to-markdown/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
             })}
           </p>
         </div>
@@ -95,7 +96,8 @@ export const PrivacyPolicyPage: React.FC = () => {
               <tbody className="divide-y divide-border-muted text-on-surface-variant">
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    30+ Standard PDF Tools (Merge, Split, Compress, Sign, Protect, Unlock, etc.)
+                    22 Standard PDF Tools (Merge, Split, Compress, Sign, Protect, Unlock, Compare,
+                    etc.)
                   </td>
                   <td className="py-3 px-4">
                     User-selected PDF/Image files in local browser memory only
@@ -109,11 +111,14 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    Opt-In Cloud AI Tools (/ai-analyze-pdf/ &amp; /ocr-pdf/)
+                    Opt-In Cloud AI Tools (/ai-analyze-pdf/, /ocr-pdf/, &amp; optional AI Vision
+                    mode in /pdf-to-markdown/)
                   </td>
                   <td className="py-3 px-4">
-                    Extracted document text (up to 12 pages) or rendered page images (up to 5 pages)
-                    after explicit user consent
+                    Extracted document text (up to 15 pages / 30,000 chars standard; 50 pages /
+                    60,000 chars Pro) or rendered page images (up to 5 pages standard / 15 pages Pro
+                    in OCR PDF; up to 6 pages in PDF to Markdown AI mode) after explicit user
+                    consent
                   </td>
                   <td className="py-3 px-4">
                     Encrypted HTTPS Proxy (/api/gemini-proxy) to Google Gemini API
@@ -237,8 +242,7 @@ export const PrivacyPolicyPage: React.FC = () => {
               <Shield className="w-5 h-5 text-emerald-500" />
               <span>
                 {t('privacyPolicy.sec3Title', {
-                  defaultValue:
-                    '3. Opt-In Cloud AI Features Disclosure (AI Analyze PDF & OCR PDF)',
+                  defaultValue: '3. Opt-In Cloud AI Features Disclosure (AI Analyze PDF & OCR PDF)',
                 })}
               </span>
             </h2>
@@ -262,18 +266,28 @@ export const PrivacyPolicyPage: React.FC = () => {
                 >
                   AI Analyze PDF
                 </Link>
-                , text is first extracted locally in your browser (up to 12 pages / 40,000
-                characters) and only the extracted plain text and your prompt are sent over a TLS
-                1.3 encrypted HTTPS connection to our serverless edge proxy (
-                <code>/api/gemini-proxy</code>) for processing by the Google Gemini API. For{' '}
+                , text is first extracted locally in your browser (up to 15 pages / 30,000
+                characters on standard tier, or up to 50 pages / 60,000 characters on Pro tier) and
+                only the extracted plain text and your prompt are sent over a TLS 1.3 encrypted
+                HTTPS connection to our serverless edge proxy (<code>/api/gemini-proxy</code>) for
+                processing by the Google Gemini API. For{' '}
                 <Link
                   to={ROUTES.OCR_PDF}
                   className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
                 >
                   OCR PDF
                 </Link>
-                , only the rendered page images you select (up to 5 pages per batch) are transmitted
-                for optical character recognition.
+                , only the rendered page images you select (up to 5 pages per batch on standard tier
+                or up to 15 pages per batch on Pro tier) are transmitted for optical character
+                recognition. Similarly, if you explicitly opt in to the AI Vision OCR mode inside{' '}
+                <Link
+                  to={ROUTES.PDF_TO_MARKDOWN}
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  PDF to Markdown
+                </Link>{' '}
+                for scanned documents, up to 6 rendered page images are transmitted after you check
+                the consent box.
               </li>
               <li>
                 <strong>Zero Retention &amp; Ephemeral Processing:</strong> PDFMinty&apos;s edge
@@ -504,7 +518,8 @@ export const PrivacyPolicyPage: React.FC = () => {
               <li>
                 <strong>Strict Firestore Security Rules:</strong> User profile records in Google
                 Cloud Firestore are protected by strict cryptographic security rules that enforce
-                strict user isolation (<code>request.auth != null &amp;&amp; request.auth.uid == userId</code>
+                strict user isolation (
+                <code>request.auth != null &amp;&amp; request.auth.uid == userId</code>
                 ), preventing any user from reading or modifying another user&apos;s profile, email,
                 or privilege tier.
               </li>
@@ -679,11 +694,10 @@ export const PrivacyPolicyPage: React.FC = () => {
             </p>
             <p>
               To protect our serverless API endpoints (<code>/api/gemini-proxy</code>,{' '}
-              <code>/api/contact</code>, <code>/api/subscribe</code>, and{' '}
-              <code>/api/feedback</code>) against automated DDoS attacks and quota abuse, our edge
-              middleware utilizes ephemeral rate-limiting counters via Cloudflare KV and
-              cryptographically signed HMAC-SHA256 state tokens that expire automatically within 60
-              seconds.
+              <code>/api/contact</code>, <code>/api/subscribe</code>, and <code>/api/feedback</code>
+              ) against automated DDoS attacks and quota abuse, our edge middleware utilizes
+              ephemeral rate-limiting counters via Cloudflare KV and cryptographically signed
+              HMAC-SHA256 state tokens that expire automatically within 60 seconds.
             </p>
           </section>
 
@@ -703,8 +717,9 @@ export const PrivacyPolicyPage: React.FC = () => {
                 hosting, DDoS protection, TLS termination, and serverless edge routing.
               </li>
               <li>
-                <strong>Google LLC (Firebase Authentication &amp; Cloud Firestore):</strong> Optional
-                user authentication, OAuth 2.0 session management, and user account tier storage.
+                <strong>Google LLC (Firebase Authentication &amp; Cloud Firestore):</strong>{' '}
+                Optional user authentication, OAuth 2.0 session management, and user account tier
+                storage.
               </li>
               <li>
                 <strong>Google LLC (Google Gemini API):</strong> Ephemeral cloud AI document
@@ -772,7 +787,9 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </li>
                 <li>
                   <strong>
-                    {t('privacyPolicy.sec6Li3Title', { defaultValue: 'Browser & Cookie Controls:' })}
+                    {t('privacyPolicy.sec6Li3Title', {
+                      defaultValue: 'Browser & Cookie Controls:',
+                    })}
                   </strong>{' '}
                   {t('privacyPolicy.sec6Li3', {
                     defaultValue:

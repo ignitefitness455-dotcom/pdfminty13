@@ -231,17 +231,21 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
     .map((r) => r.trim())
     .filter((r) => r.length > 0);
 
+  if (rangeSpecs.length === 0) {
+    throw new Error('Invalid range specification: no page ranges provided.');
+  }
+
   const results: Uint8Array[] = [];
 
   for (const spec of rangeSpecs) {
-    let startPage = 1;
-    let endPage = 1;
+    let startPage = NaN;
+    let endPage = NaN;
 
-    if (spec.includes('-')) {
+    if (/^\d+-\d+$/.test(spec)) {
       const parts = spec.split('-');
       startPage = parseInt(parts[0], 10);
       endPage = parseInt(parts[1], 10);
-    } else {
+    } else if (/^\d+$/.test(spec)) {
       startPage = parseInt(spec, 10);
       endPage = startPage;
     }
@@ -438,6 +442,10 @@ export async function watermarkPDF(
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
+    if (lines.length === 0) {
+      throw new Error('Watermark text cannot be empty.');
+    }
+
     for (const page of pages) {
       const { width, height } = page.getSize();
 
@@ -535,8 +543,8 @@ export async function addPageNumbersPDF(
       const ch = cropBox.height ?? page.getSize().height;
 
       const text = format
-        .replace('{n}', currentCount.toString())
-        .replace('{total}', total.toString());
+        .replace(/\{n\}/g, currentCount.toString())
+        .replace(/\{total\}/g, total.toString());
 
       const textWidth = font.widthOfTextAtSize(text, size);
 
@@ -648,7 +656,8 @@ export async function addBlankPagePDF(
     } else if (position === 'end') {
       pdfDoc.addPage([size[0], size[1]]);
     } else {
-      const targetIdx = Math.max(0, Math.min(position - 1, pdfDoc.getPageCount()));
+      const safePos = Number.isFinite(position) ? Math.trunc(position) : 1;
+      const targetIdx = Math.max(0, Math.min(safePos - 1, pdfDoc.getPageCount()));
       let insertSize = size;
       if (targetIdx < pdfDoc.getPageCount()) {
         const pageAtIdx = pdfDoc.getPages()[targetIdx];
@@ -681,11 +690,28 @@ export async function imagesToPDF(
   imageBlobs: { buf: Uint8Array; type: string; name?: string }[],
   options?: { pageSize?: keyof typeof PDF_PAGE_SIZES }
 ): Promise<Uint8Array> {
+  if (!imageBlobs || imageBlobs.length === 0) {
+    throw new Error('At least one image is required to build a PDF.');
+  }
+
   const pdfDoc = await PDFDocument.create();
   const selectedPageSize = options?.pageSize ? PDF_PAGE_SIZES[options.pageSize] : null;
 
   for (const file of imageBlobs) {
-    const normalizedType = (file.type || '').toLowerCase();
+    let normalizedType = (file.type || '').toLowerCase();
+    if (!normalizedType || normalizedType === 'application/octet-stream') {
+      if (file.buf.length >= 2 && file.buf[0] === 0xff && file.buf[1] === 0xd8) {
+        normalizedType = 'image/jpeg';
+      } else if (
+        file.buf.length >= 4 &&
+        file.buf[0] === 0x89 &&
+        file.buf[1] === 0x50 &&
+        file.buf[2] === 0x4e &&
+        file.buf[3] === 0x47
+      ) {
+        normalizedType = 'image/png';
+      }
+    }
 
     let embeddedImg;
     try {
@@ -806,9 +832,7 @@ class CustomCanvasFactory {
     }
     const canvas = this._createCanvas(width, height);
     const context = canvas.getContext('2d') as
-      | OffscreenCanvasRenderingContext2D
-      | CanvasRenderingContext2D
-      | null;
+      OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null;
 
     if (!context) {
       throw new Error('Canvas 2D context unavailable.');
@@ -853,28 +877,26 @@ class CustomCanvasFactory {
 
 /**
  * Compression levels:
- * - basic:    Object-stream packing + metadata strip + redundant whitespace removal.
- *             Fast, lossless, typically 5-15% reduction on text-heavy PDFs.
- * - medium:   All of basic + re-rasterize image-heavy pages to JPEG quality 0.7 at 1.5x scale.
- *             Good balance for typical office documents. Slower.
- * - maximum:  All of basic + re-rasterize ALL pages to JPEG quality 0.5 at 1.2x scale + drop
- *             bookmarks/thumbnails. Most aggressive. Visual quality may degrade on text.
+ * - basic / lossless: Object-stream packing + metadata/thumbnail cleanup + Flate stream compression.
+ * - low:              All of basic + in-place embedded raster image XObject recompression (~80% JPEG quality, max 2048px).
+ * - recommended:      All of basic + in-place embedded raster image XObject recompression (~70% JPEG quality, max 1600px).
+ * - extreme / maximum: All of basic + in-place embedded raster image XObject recompression (~60% JPEG quality, max 1280px).
  *
- * Image re-rasterization uses pdfjs-dist to render each page to a canvas, then re-embeds
- * the JPEG via @cantoo/pdf-lib. This is the only browser-side approach that actually
- * shrinks embedded images — pdf-lib alone cannot decode/recompress existing image XObjects.
+ * Vector text, fonts, form fields, annotations, links, and page geometry are 100% preserved.
  */
-export type CompressLevel = 'extreme' | 'recommended' | 'basic' | 'medium' | 'maximum';
+export type CompressLevel =
+  'extreme' | 'recommended' | 'basic' | 'lossless' | 'medium' | 'maximum' | 'low';
 
 export type CompressOptions =
   | CompressLevel
   | {
-      mode?: 'extreme' | 'recommended' | 'basic' | 'lossless' | 'lossy' | 'downsample';
+      mode?: 'extreme' | 'recommended' | 'basic' | 'low' | 'lossless' | 'lossy' | 'downsample';
       level?: CompressLevel;
       quality?: number;
       renderScale?: number;
       dpiThreshold?: number;
       grayscale?: boolean;
+      maxDimension?: number;
     };
 
 /**
@@ -951,7 +973,7 @@ async function createBitmapFromRgba(
 
   if (typeof ImageData !== 'undefined') {
     try {
-      return await createImageBitmap(new ImageData(clamped, width, height));
+      return await createImageBitmap(new ImageData(new Uint8ClampedArray(clamped), width, height));
     } catch {
       // Fallback to OffscreenCanvas below
     }
@@ -1008,7 +1030,10 @@ async function recompressImageStream(
     return { success: false, reason: 'Stream contains 0 bytes' };
   }
   if (rawBytes.length < 2048) {
-    return { success: false, reason: `Stream size (${rawBytes.length} B) below 2KB threshold (icon/glyph)` };
+    return {
+      success: false,
+      reason: `Stream size (${rawBytes.length} B) below 2KB threshold (icon/glyph)`,
+    };
   }
 
   // Use dict.lookup to safely resolve indirect references
@@ -1113,7 +1138,7 @@ async function recompressImageStream(
         if (isFlateFilter && isJpegFilter) {
           try {
             const decoded = decodePDFRawStream(streamObj);
-            jpegBytes = decoded.getBytes();
+            jpegBytes = new Uint8Array(decoded.getBytes(rawBytes.length * 4));
           } catch {
             // Keep rawBytes
           }
@@ -1128,7 +1153,9 @@ async function recompressImageStream(
         }
 
         try {
-          bitmap = await createImageBitmap(new Blob([jpegBytes], { type: 'image/jpeg' }));
+          bitmap = await createImageBitmap(
+            new Blob([new Uint8Array(jpegBytes)], { type: 'image/jpeg' })
+          );
         } catch {
           // createImageBitmap may fail on CMYK / YCCK JPEGs in browsers; fallback to pdfjs JpegImage decoder
           bitmap = null;
@@ -1136,9 +1163,7 @@ async function recompressImageStream(
 
         if (!bitmap) {
           try {
-            const { JpegImage } = await import(
-              'pdfjs-dist/image_decoders/pdf.image_decoders.mjs'
-            );
+            const { JpegImage } = await import('pdfjs-dist/image_decoders/pdf.image_decoders.mjs');
             const decoder = new JpegImage();
             decoder.parse(jpegBytes);
             if (decoder.width > 0 && decoder.height > 0) {
@@ -1171,7 +1196,9 @@ async function recompressImageStream(
       rawBytes[3] === 0x47
     ) {
       try {
-        bitmap = await createImageBitmap(new Blob([rawBytes], { type: 'image/png' }));
+        bitmap = await createImageBitmap(
+          new Blob([new Uint8Array(rawBytes)], { type: 'image/png' })
+        );
       } catch (pngErr) {
         decodeFailureReason = `createImageBitmap failed on PNG: ${pngErr instanceof Error ? pngErr.message : String(pngErr)}`;
       }
@@ -1183,7 +1210,7 @@ async function recompressImageStream(
         let pixelBytes = rawBytes;
         if (isFlateFilter) {
           const decoded = decodePDFRawStream(streamObj);
-          pixelBytes = decoded.getBytes();
+          pixelBytes = new Uint8Array(decoded.getBytes(origWidth * origHeight * 4));
         }
 
         // Check if decompressed bytes are a PNG container
@@ -1194,7 +1221,9 @@ async function recompressImageStream(
           pixelBytes[2] === 0x4e &&
           pixelBytes[3] === 0x47
         ) {
-          bitmap = await createImageBitmap(new Blob([pixelBytes], { type: 'image/png' }));
+          bitmap = await createImageBitmap(
+            new Blob([new Uint8Array(pixelBytes)], { type: 'image/png' })
+          );
         } else {
           // Check DecodeParms for PNG Predictor
           const decodeParms = dict.lookup(PDFName.of('DecodeParms'));
@@ -1303,7 +1332,9 @@ async function recompressImageStream(
     if (!bitmap || bitmap.width === 0 || bitmap.height === 0) {
       return {
         success: false,
-        reason: decodeFailureReason || `Decoder returned empty/null bitmap (filter=${filterStr}, length=${rawBytes.length} B)`,
+        reason:
+          decodeFailureReason ||
+          `Decoder returned empty/null bitmap (filter=${filterStr}, length=${rawBytes.length} B)`,
       };
     }
 
@@ -1436,29 +1467,21 @@ async function recompressImageStream(
     // Multi-step adaptive pass: if initial compression is not smaller and image is substantial (>15KB),
     // progressively adjust quality & dimension to guarantee size reduction while preserving clarity
     if ((!outBytes || outBytes.length >= rawBytes.length) && rawBytes.length > 15000) {
-      const step1Quality = Math.max(0.50, jpegQuality - 0.12);
+      const step1Quality = Math.max(0.5, jpegQuality - 0.12);
       const step1Scale = hasMask ? 1.0 : 0.85;
       const step1Width = Math.max(1, Math.round(targetWidth * step1Scale));
       const step1Height = Math.max(1, Math.round(targetHeight * step1Scale));
-      const step1Bytes = await renderBitmapToJpegBytes(
-        step1Width,
-        step1Height,
-        step1Quality
-      );
+      const step1Bytes = await renderBitmapToJpegBytes(step1Width, step1Height, step1Quality);
       if (step1Bytes && step1Bytes.length < rawBytes.length) {
         outBytes = step1Bytes;
         targetWidth = step1Width;
         targetHeight = step1Height;
       } else {
         const step2Quality = Math.max(0.42, jpegQuality - 0.22);
-        const step2Scale = hasMask ? 1.0 : 0.70;
+        const step2Scale = hasMask ? 1.0 : 0.7;
         const step2Width = Math.max(1, Math.round(targetWidth * step2Scale));
         const step2Height = Math.max(1, Math.round(targetHeight * step2Scale));
-        const step2Bytes = await renderBitmapToJpegBytes(
-          step2Width,
-          step2Height,
-          step2Quality
-        );
+        const step2Bytes = await renderBitmapToJpegBytes(step2Width, step2Height, step2Quality);
         if (step2Bytes && step2Bytes.length < rawBytes.length) {
           outBytes = step2Bytes;
           targetWidth = step2Width;
@@ -1482,172 +1505,6 @@ async function recompressImageStream(
   } finally {
     if (bitmap && typeof bitmap.close === 'function') {
       bitmap.close();
-    }
-  }
-}
-
-/**
- * Tier 2: Universal High-Fidelity Rendering & Compression Engine.
- * Engaged when Tier 1 in-place optimization cannot achieve meaningful reduction
- * (e.g. scanned multi-page documents, PDFs with non-replaceable stream layouts,
- * or vector-heavy files).
- *
- * Senior Engineering Guarantees:
- * 1. Visual perfection: Every page canvas is pre-filled with clean solid white (#ffffff),
- *    rendering on background 'rgb(255, 255, 255)'. Text and images NEVER turn black,
- *    never get washed out, and are 100% visible and razor-sharp.
- * 2. High-DPI resolution: Renders at ~120-150 DPI so fine print, text, and details stay sharp.
- * 3. Page Geometry: Preserves exact original physical page dimensions in PDF points.
- * 4. Size Reduction: Re-encodes each page with tuned high-efficiency JPEG, reliably
- *    achieving 30% to 75% file size reduction.
- */
-async function renderCompressPDF(
-  safeBytes: Uint8Array,
-  level: 'extreme' | 'recommended' | 'low',
-  customQuality?: number
-): Promise<Uint8Array | null> {
-  let pdf: {
-    getPage: (n: number) => Promise<unknown>;
-    numPages: number;
-    destroy: () => Promise<void>;
-  } | null = null;
-
-  try {
-    const pdf_js = await getPdfJs();
-    let loadingTask: { promise: Promise<typeof pdf> };
-
-    const baseOrigin = typeof location !== 'undefined' && location.origin ? location.origin : '';
-    try {
-      loadingTask = pdf_js.getDocument({
-        data: safeBytes,
-        standardFontDataUrl: baseOrigin ? `${baseOrigin}/standard_fonts/` : '/standard_fonts/',
-        cMapUrl: baseOrigin ? `${baseOrigin}/cmaps/` : '/cmaps/',
-        cMapPacked: true,
-      } as unknown as Parameters<typeof pdf_js.getDocument>[0]);
-      pdf = await loadingTask.promise;
-    } catch {
-      loadingTask = pdf_js.getDocument({
-        data: safeBytes,
-      } as unknown as Parameters<typeof pdf_js.getDocument>[0]);
-      pdf = await loadingTask.promise;
-    }
-
-    if (!pdf || pdf.numPages === 0) {
-      return null;
-    }
-
-    const origPdfDoc = await PDFDocument.load(safeBytes, { ignoreEncryption: true });
-    const outPdfDoc = await PDFDocument.create();
-
-    // High-fidelity rendering scale (DPI) tuned for effective file shrinkage and razor-sharp text:
-    // - extreme: scale ~1.25 (~90 DPI), quality 0.58 (massive ~75-85% size reduction)
-    // - recommended: scale ~1.45 (~105 DPI), quality 0.65 (balanced ~50-70% size reduction)
-    // - low: scale ~1.75 (~126 DPI), quality 0.75 (light ~30-50% size reduction)
-    const renderScale = level === 'extreme' ? 1.25 : level === 'low' ? 1.75 : 1.45;
-    const jpegQuality =
-      customQuality !== undefined
-        ? Math.min(Math.max(customQuality, 0.40), 0.95)
-        : level === 'extreme'
-          ? 0.58
-          : level === 'low'
-            ? 0.75
-            : 0.65;
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = (await pdf.getPage(pageNum)) as {
-        getViewport: (opts: { scale: number }) => { width: number; height: number };
-        render: (opts: {
-          canvasContext: CanvasRenderingContext2D;
-          viewport: { width: number; height: number };
-          canvasFactory?: unknown;
-          background?: string;
-        }) => { promise: Promise<void> };
-        cleanup: () => void;
-      };
-
-      const viewport = page.getViewport({ scale: renderScale });
-      const canvasFactory = new CustomCanvasFactory();
-      const { canvas, context } = canvasFactory.create(viewport.width, viewport.height);
-
-      // Guarantee clean opaque white background behind every page so text/images are 100% visible
-      context.fillStyle = '#ffffff';
-      context.fillRect(0, 0, viewport.width, viewport.height);
-
-      await page.render({
-        canvasContext: context as CanvasRenderingContext2D,
-        viewport,
-        canvasFactory,
-        background: 'rgb(255, 255, 255)',
-      }).promise;
-
-      let imageBuf: Uint8Array;
-      if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
-        let blob: Blob;
-        try {
-          blob = await canvas.convertToBlob({
-            type: 'image/jpeg',
-            quality: jpegQuality,
-          });
-        } catch {
-          blob = await canvas.convertToBlob({ type: 'image/png' });
-        }
-        imageBuf = new Uint8Array(await blob.arrayBuffer());
-      } else if (canvas instanceof HTMLCanvasElement) {
-        let blob: Blob;
-        try {
-          blob = await new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob(
-              (b) => (b ? resolve(b) : reject(new Error('Canvas blob failed'))),
-              'image/jpeg',
-              jpegQuality
-            )
-          );
-        } catch {
-          blob = await new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob(
-              (b) => (b ? resolve(b) : reject(new Error('Canvas blob failed'))),
-              'image/png'
-            )
-          );
-        }
-        imageBuf = new Uint8Array(await blob.arrayBuffer());
-      } else {
-        throw new Error('Unsupported canvas implementation');
-      }
-
-      const isJpg = imageBuf.length >= 2 && imageBuf[0] === 0xff && imageBuf[1] === 0xd8;
-      const embeddedImg = isJpg
-        ? await outPdfDoc.embedJpg(imageBuf)
-        : await outPdfDoc.embedPng(imageBuf);
-
-      // Match exact physical page size in points (e.g. A4, Letter)
-      const origPage = origPdfDoc.getPage(pageNum - 1);
-      const { width: origWidth, height: origHeight } = origPage.getSize();
-
-      const outPage = outPdfDoc.addPage([origWidth, origHeight]);
-      outPage.drawImage(embeddedImg, {
-        x: 0,
-        y: 0,
-        width: origWidth,
-        height: origHeight,
-      });
-
-      page.cleanup();
-      canvasFactory.destroy({ canvas, context });
-    }
-
-    const compiledBytes = await outPdfDoc.save({ useObjectStreams: true });
-    return compiledBytes;
-  } catch (err) {
-    logger.warn('renderCompressPDF encountered error:', err);
-    return null;
-  } finally {
-    if (pdf) {
-      try {
-        await pdf.destroy();
-      } catch (destroyErr) {
-        logger.error('pdf.destroy() error:', destroyErr);
-      }
     }
   }
 }
@@ -1695,7 +1552,7 @@ export async function compressPDF(
     } else if (target === 'basic' || target === 'lossless') {
       level = 'basic';
     } else if (target === 'downsample' || target === 'lossy') {
-      level = (optionsOrLevel.quality && optionsOrLevel.quality <= 0.55) ? 'extreme' : 'recommended';
+      level = optionsOrLevel.quality && optionsOrLevel.quality <= 0.55 ? 'extreme' : 'recommended';
     } else {
       level = 'recommended';
     }
@@ -1714,7 +1571,9 @@ export async function compressPDF(
       pdfDoc.setProducer('PDFMinty');
       pdfDoc.setCreator('PDFMinty');
 
-      const infoDict = pdfDoc.getInfoDict();
+      const infoDict = (
+        pdfDoc as unknown as { getInfoDict?: () => PDFDict | undefined }
+      ).getInfoDict?.();
       if (infoDict) {
         const metadataKeysToRemove = [
           'Title',
@@ -1736,7 +1595,11 @@ export async function compressPDF(
     }
 
     try {
-      const catalogDict = (pdfDoc.catalog as unknown as { dict: { keys(): Iterable<PDFName>; delete(k: PDFName): void } })?.dict;
+      const catalogDict = (
+        pdfDoc.catalog as unknown as {
+          dict: { keys(): Iterable<PDFName>; delete(k: PDFName): void };
+        }
+      )?.dict;
       if (catalogDict) {
         for (const key of catalogDict.keys()) {
           const str = key.asString();
@@ -1747,7 +1610,13 @@ export async function compressPDF(
       }
       const pages = pdfDoc.getPages();
       for (const page of pages) {
-        const pageDict = (page.node as unknown as { dict?: { keys(): Iterable<PDFName>; delete(k: PDFName): void } })?.dict || (page.node as unknown as { keys(): Iterable<PDFName>; delete(k: PDFName): void });
+        const pageDict =
+          (
+            page.node as unknown as {
+              dict?: { keys(): Iterable<PDFName>; delete(k: PDFName): void };
+            }
+          )?.dict ||
+          (page.node as unknown as { keys(): Iterable<PDFName>; delete(k: PDFName): void });
         if (pageDict && typeof pageDict.keys === 'function') {
           for (const key of pageDict.keys()) {
             const str = key.asString();
@@ -1785,12 +1654,12 @@ export async function compressPDF(
     // while keeping 100% of all vector text, fonts, boxes, lines, colors, and layout crisp, readable, and untouched!
     const jpegQuality =
       customQuality !== undefined
-        ? Math.min(Math.max(customQuality, 0.40), 0.95)
+        ? Math.min(Math.max(customQuality, 0.4), 0.95)
         : level === 'extreme'
-          ? 0.60
+          ? 0.6
           : level === 'low'
-            ? 0.80
-            : 0.70;
+            ? 0.8
+            : 0.7;
 
     const imageMaxDim =
       customMaxDimension !== undefined
@@ -1921,9 +1790,7 @@ export async function compressPDF(
           // Skip 1-bit monochrome stencil glyph masks (cannot be encoded as JPEG)
           const imageMask = dict.lookup(PDFName.of('ImageMask'));
           const isImageMask =
-            imageMask instanceof PDFBool
-              ? imageMask.asBoolean()
-              : imageMask === PDFName.of('true') || imageMask === true;
+            imageMask instanceof PDFBool ? imageMask.asBoolean() : imageMask === PDFName.of('true');
           if (isImageMask) {
             totalFinalImageBytes += origLen;
             logger.info(
@@ -2019,7 +1886,12 @@ export async function compressPDF(
             const contents = obj.getContents();
             if (contents && contents.length > 256) {
               try {
-                const compressed = pdfDoc.context.flateStream(contents, dict);
+                const compressed = pdfDoc.context.flateStream(contents);
+                for (const [k, v] of dict.entries()) {
+                  if (k !== PDFName.of('Length') && k !== PDFName.of('Filter')) {
+                    compressed.dict.set(k, v);
+                  }
+                }
                 pdfDoc.context.assign(ref, compressed);
                 replacedStreamsCount++;
               } catch {
@@ -2032,9 +1904,7 @@ export async function compressPDF(
 
       const totalSaved = totalInitialImageBytes - totalFinalImageBytes;
       const totalSavedPct =
-        totalInitialImageBytes > 0
-          ? Math.round((totalSaved / totalInitialImageBytes) * 100)
-          : 0;
+        totalInitialImageBytes > 0 ? Math.round((totalSaved / totalInitialImageBytes) * 100) : 0;
 
       logger.info(
         `[Stream Audit Summary] Examined ${totalImageObjects} image stream(s) (total ${totalInitialImageBytes} B / ${(totalInitialImageBytes / 1024 / 1024).toFixed(2)} MB). Recompressed images: ${replacedImagesCount}, deflated streams: ${replacedStreamsCount}. Post-compression image stream bytes: ${totalFinalImageBytes} B / ${(totalFinalImageBytes / 1024 / 1024).toFixed(2)} MB (Net image reduction: ${totalSaved} B / -${totalSavedPct}%).`
@@ -2053,39 +1923,6 @@ export async function compressPDF(
     let bestCandidate = bestLosslessBytes;
     if (imageOptimizedBytes && imageOptimizedBytes.length < bestCandidate.length) {
       bestCandidate = imageOptimizedBytes;
-    }
-
-    const tier1Savings = safeBytes.length - bestCandidate.length;
-    const tier1SavingsPct = safeBytes.length > 0 ? tier1Savings / safeBytes.length : 0;
-
-    // If Tier 1 didn't achieve substantial reduction (less than 20% savings)
-    // or if the user requested extreme compression, test Tier 2 Universal Engine
-    // to guarantee that the file size actually shrinks significantly!
-    const shouldEngageTier2 =
-      level !== 'basic' &&
-      safeBytes.length > 10240 &&
-      (tier1SavingsPct < 0.20 || level === 'extreme');
-
-    if (shouldEngageTier2) {
-      try {
-        logger.info(
-          `[Compress Engine] Tier 1 reduction is ${(tier1SavingsPct * 100).toFixed(1)}%. Testing Tier 2 Universal High-Fidelity Engine for maximum reduction...`
-        );
-        const tier2Bytes = await renderCompressPDF(safeBytes, level, customQuality);
-        if (tier2Bytes && tier2Bytes.length < bestCandidate.length) {
-          const tier2Saved = safeBytes.length - tier2Bytes.length;
-          const tier2Pct = Math.round((tier2Saved / safeBytes.length) * 100);
-          logger.info(
-            `[Compress Engine] Tier 2 SUCCESS: Reduced from ${safeBytes.length} B to ${tier2Bytes.length} B (-${tier2Pct}%, saved ${tier2Saved} B).`
-          );
-          bestCandidate = tier2Bytes;
-        }
-      } catch (tier2Err) {
-        logger.warn(
-          '[Compress Engine] Tier 2 fallback error, preserving Tier 1 candidate:',
-          tier2Err
-        );
-      }
     }
 
     // Strict Size Invariant: Output must NEVER exceed original safeBytes size.
@@ -2176,10 +2013,16 @@ export async function protectPDF(payload: {
   }
 
   const { bytes: safeBytes } = PDFSanitizer.sanitize(payload.fileBytes, {
-    skipEncryptionCheck: true,
+    skipEncryptionCheck: false,
   });
 
   try {
+    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
+    if (encrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+      );
+    }
     const pdfDoc = await PDFDocument.load(safeBytes);
     pdfDoc.encrypt({
       userPassword: payload.userPassword,
@@ -2190,7 +2033,11 @@ export async function protectPDF(payload: {
         copying: false,
       },
     });
-    return await pdfDoc.save({ useObjectStreams: true });
+    // Must save with useObjectStreams: false when encrypting: @cantoo/pdf-lib's
+    // second-pass decrypt parser attempts to decrypt all streams including
+    // /Type /XRef streams, which would corrupt an XRef stream into a PDFInvalidObject
+    // retaining /Encrypt. Standard xref + trailer avoids XRef stream corruption.
+    return await pdfDoc.save({ useObjectStreams: false });
   } catch (err) {
     handlePdfLibError(err, 'Failed to encrypt document with password.');
   }
@@ -2245,7 +2092,7 @@ export async function unlockPDF(payload: {
   }
 
   // Save with encryption explicitly removed.
-  const outputBytes = await pdfDoc.save({ useObjectStreams: true });
+  const outputBytes = await pdfDoc.save({ useObjectStreams: false });
 
   // Verify the output is actually unencrypted by scanning for the /Encrypt
   // dictionary marker. The marker can appear in either the trailer (most
@@ -2256,11 +2103,9 @@ export async function unlockPDF(payload: {
     const slice = outputBytes.subarray(offset, offset + len);
     return new TextDecoder('ascii', { fatal: false }).decode(slice).includes('/Encrypt');
   };
-  const headHasEncrypt = checkSliceForEncrypt(0, Math.min(200, outputBytes.length));
-  const tailHasEncrypt = checkSliceForEncrypt(
-    Math.max(0, outputBytes.length - 200),
-    Math.min(200, outputBytes.length)
-  );
+  const scanLen = Math.min(4096, outputBytes.length);
+  const headHasEncrypt = checkSliceForEncrypt(0, scanLen);
+  const tailHasEncrypt = checkSliceForEncrypt(Math.max(0, outputBytes.length - scanLen), scanLen);
   if (headHasEncrypt || tailHasEncrypt) {
     throw new Error(
       'Decryption verification failed: output still contains /Encrypt marker. ' +
@@ -2396,6 +2241,12 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
   } | null = null;
   try {
     const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
+    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
+    if (encrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+      );
+    }
     const pdf_js = await getPdfJs();
 
     const loadingTask = pdf_js.getDocument({
@@ -2414,19 +2265,25 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
           canvasContext: CanvasRenderingContext2D;
           viewport: { width: number; height: number };
           canvasFactory?: unknown;
+          background?: string;
         }) => { promise: Promise<void> };
         cleanup: () => void;
       };
+      const origViewport = page.getViewport({ scale: 1.0 });
       const viewport = page.getViewport({ scale });
 
       const canvasFactory = new CustomCanvasFactory();
       const { canvas, context } = canvasFactory.create(viewport.width, viewport.height);
 
       if (context) {
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, viewport.width, viewport.height);
+
         await page.render({
           canvasContext: context as CanvasRenderingContext2D,
           viewport,
           canvasFactory,
+          background: 'rgb(255, 255, 255)',
         }).promise;
 
         const imgData = context.getImageData(0, 0, viewport.width, viewport.height);
@@ -2463,12 +2320,12 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
         }
 
         const embeddedImg = await outPdfDoc.embedJpg(imageBuf);
-        const outPage = outPdfDoc.addPage([viewport.width, viewport.height]);
+        const outPage = outPdfDoc.addPage([origViewport.width, origViewport.height]);
         outPage.drawImage(embeddedImg, {
           x: 0,
           y: 0,
-          width: viewport.width,
-          height: viewport.height,
+          width: origViewport.width,
+          height: origViewport.height,
         });
 
         page.cleanup();
@@ -2576,24 +2433,26 @@ export async function repairPDF(
     }
 
     // 3. Rebuild XREF & Catalog Structure using pdf-lib
-    const pdfDoc = await PDFDocument.load(workingBytes, { ignoreEncryption: true });
-
-    if (pdfDoc.isEncrypted) {
-      repairs.push('Rebuilt cross-reference tables for encrypted PDF structure.');
-    } else {
-      repairs.push('Reconstructed damaged cross-reference tables and internal catalog tree.');
+    const encrypted = await PDFSanitizer.isEncrypted(workingBytes);
+    if (encrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+      );
     }
+
+    const pdfDoc = await PDFDocument.load(workingBytes);
+    repairs.push('Reconstructed damaged cross-reference tables and internal catalog tree.');
 
     const compiledBytes = await pdfDoc.save();
     return { bytes: compiledBytes, repairs };
   } catch (err: unknown) {
     logger.error('Repair PDF failed:', err);
-    if (repairs.length > 0) {
-      repairs.push('Rebuilding catalog failed, but applied byte-level alignment repairs.');
-      return { bytes, repairs };
-    }
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    throw new Error(message || 'Error occurred while repairing the PDF document structure.');
+    throw new Error(
+      formatUserFriendlyErrorMessage(
+        err,
+        'Error occurred while repairing the PDF document structure.'
+      )
+    );
   }
 }
 
@@ -2639,8 +2498,7 @@ async function extractImagesFromPage(
         try {
           const img: unknown = await new Promise((resolve) => {
             const objsRecord = p.objs as
-              | { get?: (id: string, cb: (data: unknown) => void) => unknown }
-              | undefined;
+              { get?: (id: string, cb: (data: unknown) => void) => unknown } | undefined;
             if (objsRecord && typeof objsRecord.get === 'function') {
               try {
                 const res = objsRecord.get(objId, (data: unknown) => resolve(data));

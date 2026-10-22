@@ -51,8 +51,8 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Determine basename for React Router based on current URL path prefix
-const getBasename = (): string => {
+// Sync initial i18n language and document lang from URL path prefix if present
+const syncInitialLocaleFromPath = (): void => {
   const path = window.location.pathname;
   const segments = path.split('/').filter(Boolean);
   const first = segments[0] as (typeof SUPPORTED_LOCALES)[number];
@@ -62,7 +62,7 @@ const getBasename = (): string => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = first;
     }
-    return `/${first}`;
+    return;
   }
 
   // Unprefixed routes default to DEFAULT_LOCALE (en)
@@ -70,15 +70,15 @@ const getBasename = (): string => {
   if (typeof document !== 'undefined') {
     document.documentElement.lang = DEFAULT_LOCALE;
   }
-  return '/';
 };
+
+syncInitialLocaleFromPath();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <I18nextProvider i18n={i18n}>
       <HelmetProvider>
         <BrowserRouter
-          basename={getBasename()}
           future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
         >
           <ThemeProvider>

@@ -101,7 +101,7 @@ export const PricingPage: React.FC = () => {
       const selected = COUNTRY_CURRENCY_MAP[countryCode];
       setGeo(selected);
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('pdfminty_user_geo_code', countryCode);
+        sessionStorage.setItem('pdfminty_manual_currency_code', countryCode);
       }
       setShowCurrencySelector(false);
       showToast(
@@ -143,11 +143,11 @@ export const PricingPage: React.FC = () => {
             : 'Start 100% free with all 23 browser PDF tools. Upgrade only if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.'}
         </p>
 
-        {/* Location & Local Currency Auto-Detection Indicator */}
+        {/* Currency Indicator & Switcher */}
         <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 p-1.5 px-3.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
           <Globe className="w-3.5 h-3.5 text-emerald-500" />
           <span>
-            {isBn ? 'লোকেশন অনুযায়ী স্বয়ংক্রিয় মূল্য:' : 'Auto-detected location:'}
+            {isBn ? 'নির্বাচিত মুদ্রা:' : 'Active currency:'}
           </span>
           <span className="font-bold inline-flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
             <span className="text-sm">{geo.flag}</span>
@@ -166,15 +166,15 @@ export const PricingPage: React.FC = () => {
               <ChevronDown className="w-3 h-3" />
             </button>
 
-            {/* Quick direct switch to USD $2.49/mo */}
-            {geo.currencyCode !== 'USD' && (
+            {/* Quick direct switch back to BDT 299.99/mo if another currency was selected */}
+            {geo.currencyCode !== 'BDT' && (
               <button
                 type="button"
-                onClick={() => handleManualCountryChange('US')}
+                onClick={() => handleManualCountryChange('BD')}
                 className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 transition-colors cursor-pointer ml-1.5"
-                title="View in USD ($2.49/month)"
+                title="View in BDT (BDT 299.99/month)"
               >
-                USD ($2.49/mo)
+                BDT (299.99/mo)
               </button>
             )}
 
@@ -223,7 +223,7 @@ export const PricingPage: React.FC = () => {
             >
               <span>{isBn ? 'মাসিক বিলিং' : 'Monthly Billing'}</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black">
-                $2.49/mo
+                { `${pricing.proMonthly.formatted}/mo`}
               </span>
             </button>
             <button
@@ -237,7 +237,9 @@ export const PricingPage: React.FC = () => {
             >
               <span>{isBn ? 'বার্ষিক বিলিং' : 'Annual Billing'}</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-wide uppercase">
-                {isBn ? '50% ছাড় ($1.25/মাস)' : 'Save 50% ($1.25/mo)'}
+                {isBn
+                  ? `50% ছাড় (${pricing.proAnnual.formattedMonthly}/মাস)`
+                  : `Save 50% (${pricing.proAnnual.formattedMonthly}/mo)`}
               </span>
             </button>
           </div>
@@ -339,9 +341,9 @@ export const PricingPage: React.FC = () => {
                 : 'High-speed 500MB batch limits, Gemini 2.5 AI quotas, and OCR automation.'}
             </p>
 
-            {/* Dynamic Localized Pricing */}
+            {/* Unified Pricing Header */}
             <div className="mt-6 mb-1 flex items-baseline">
-              <span className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+              <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                 {billingCycle === 'annual'
                   ? pricing.proAnnual.formattedMonthly
                   : pricing.proMonthly.formatted}
@@ -352,35 +354,26 @@ export const PricingPage: React.FC = () => {
                     ? `/ মাস (${pricing.proAnnual.formattedAnnual}/বছর)`
                     : `/ mo (${pricing.proAnnual.formattedAnnual}/year)`
                   : isBn
-                    ? '/ মাস ($2.49 USD/মাস)'
-                    : '/ month ($2.49 USD/mo)'}
+                    ? '/ মাস'
+                    : '/ month'}
               </span>
             </div>
 
-            {/* Clear Monthly $2.49 USD badge */}
+            {/* Clear Monthly Plan badge matching the exact currency */}
             <div className="mt-2 mb-4">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 <span>
                   {billingCycle === 'monthly'
                     ? (isBn
-                        ? 'মাসিক প্ল্যান: মাত্র $2.49 ডলার / মাস (যেকোনো সময় বাতিলযোগ্য)'
-                        : 'Monthly Plan: Just $2.49 USD / month (Cancel anytime)')
+                        ? `মাসিক প্ল্যান: মাত্র ${pricing.proMonthly.formatted} / মাস (যেকোনো সময় বাতিলযোগ্য)`
+                        : `Monthly Plan: Just ${pricing.proMonthly.formatted} / month (Cancel anytime)`)
                     : (isBn
-                        ? 'বার্ষিক প্ল্যান: মাত্র $1.25/মাস ($14.99/বছর • 50% সাশ্রয়)'
-                        : 'Annual Plan: Just $1.25/mo ($14.99/yr • Save 50%)')}
+                        ? `বার্ষিক প্ল্যান: মাত্র ${pricing.proAnnual.formattedMonthly}/মাস (${pricing.proAnnual.formattedAnnual}/বছর • 50% সাশ্রয়)`
+                        : `Annual Plan: Just ${pricing.proAnnual.formattedMonthly}/mo (${pricing.proAnnual.formattedAnnual}/yr • Save 50%)`)}
                 </span>
               </div>
             </div>
-
-            {/* Secondary USD reference if local currency is different */}
-            {geo.currencyCode !== 'USD' && (
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mb-3">
-                {billingCycle === 'annual'
-                  ? '(Equivalent to ~$1.25/mo USD • $14.99/yr)'
-                  : '(Equivalent to ~$2.49/mo USD)'}
-              </p>
-            )}
 
             <div className="space-y-3.5 text-xs text-slate-800 dark:text-slate-200 mt-4">
               <div className="flex items-center gap-2.5 font-semibold">
@@ -453,7 +446,7 @@ export const PricingPage: React.FC = () => {
                 <span>
                   {isProcessingCheckout
                     ? 'Redirecting to Checkout...'
-                    : 'Upgrade to Pro (BDT 299.99/month)'}
+                    : `Upgrade to Pro (${billingCycle === 'annual' ? `${pricing.proAnnual.formattedMonthly}/month` : `${pricing.proMonthly.formatted}/month`})`}
                 </span>
               </button>
             )}

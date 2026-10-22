@@ -1,6 +1,13 @@
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
+
+let cleanupFn: (() => void) | undefined;
+try {
+  await import('@testing-library/jest-dom/vitest');
+  const rtl = await import('@testing-library/react');
+  cleanupFn = rtl.cleanup;
+} catch {
+  // Peer dependency @testing-library/dom may not be present in minimal environments
+}
 
 // matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -116,7 +123,7 @@ global.fetch = vi.fn().mockResolvedValue({
 HTMLAnchorElement.prototype.click = vi.fn();
 
 afterEach(() => {
-  cleanup();
+  cleanupFn?.();
   vi.clearAllMocks();
   try {
     window.localStorage.clear();

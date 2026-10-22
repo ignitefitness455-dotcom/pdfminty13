@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import {
   scrubPII,
@@ -11,6 +11,7 @@ import {
   formatBytes,
   extractFileProcessingContext,
   formatFileContextForLog,
+  reportErrorToTelemetry,
   FileProcessingErrorBoundary,
   FileProcessingProvider,
   useFileProcessingContext,
@@ -104,6 +105,40 @@ describe('error-handler', () => {
       expect(screen.getByTestId('ctx-name')).toHaveTextContent('none');
       fireEvent.click(screen.getByText('Update'));
       expect(screen.getByTestId('ctx-name')).toHaveTextContent('updated.pdf');
+    });
+
+    it('anonymizes fileContext and strips raw fileName from fileContextLog before sending to /api/error', () => {
+      const fetchSpy = vi.fn().mockResolvedValue({ ok: true });
+      vi.stubGlobal('fetch', fetchSpy);
+
+      setFileProcessingContext({
+        fileName: 'confidential_patient_record_2026.pdf',
+        fileSize: 3 * 1024 * 1024,
+        pdfVersion: '1.6',
+        isEncrypted: false,
+        pageCount: 12,
+        processingStep: 'sanitize',
+        toolName: 'Sanitize PDF',
+      });
+
+      reportErrorToTelemetry(
+        'Unexpected parse error',
+        'Error: Unexpected parse error\n  at worker'
+      );
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      const [url, options] = fetchSpy.mock.calls[0];
+      expect(url).toBe('/api/error');
+      const body = JSON.parse(options.body as string);
+
+      // Ensure raw fileName is never transmitted in either structured fileContext or stringified fileContextLog
+      expect(body.fileContext.fileName).toBeUndefined();
+      expect(body.fileContext.toolName).toBe('Sanitize PDF');
+      expect(body.fileContextLog).not.toContain('confidential_patient_record_2026.pdf');
+      expect(body.fileContextLog).toContain('Tool: Sanitize PDF');
+
+      clearFileProcessingContext();
+      vi.unstubAllGlobals();
     });
   });
 });

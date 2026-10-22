@@ -282,7 +282,9 @@ export function reportErrorToTelemetry(
       message: cleanMessage,
       stack: cleanStack,
       fileContext: anonymizedContext,
-      fileContextLog: formatFileContextForLog(fileContext),
+      fileContextLog: fileContext
+        ? formatFileContextForLog({ ...fileContext, fileName: undefined })
+        : undefined,
       timestamp: new Date().toISOString(),
       url: typeof window !== 'undefined' ? window.location.href : '',
     }),

@@ -39,24 +39,36 @@ export const FaqSection: React.FC = () => {
       <div className="space-y-4">
         {faqItems.map((faq, index) => {
           const isOpen = openIndex === index;
+          const questionId = `home-faq-question-${index}`;
+          const answerId = `home-faq-answer-${index}`;
           return (
             <div
               key={index}
               className="border border-white/50 dark:border-white/10 rounded-2xl bg-white/40 dark:bg-black/30 backdrop-blur-xl overflow-hidden shadow-sm transition-all duration-200"
             >
               <button
+                type="button"
+                id={questionId}
+                aria-expanded={isOpen}
+                aria-controls={answerId}
                 onClick={() => toggleFaq(index)}
                 className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-base md:text-lg text-primary hover:text-emerald-500 transition-colors cursor-pointer"
               >
                 <span>{faq.q}</span>
                 <ChevronDown
+                  aria-hidden="true"
                   className={`w-5 h-5 text-on-surface-variant shrink-0 transition-transform duration-200 ${
                     isOpen ? 'rotate-180 text-emerald-500' : ''
                   }`}
                 />
               </button>
               {isOpen && (
-                <div className="px-5 pb-5 pt-2 text-sm md:text-base text-on-surface-variant leading-relaxed border-t border-border-muted/50 font-normal">
+                <div
+                  id={answerId}
+                  role="region"
+                  aria-labelledby={questionId}
+                  className="px-5 pb-5 pt-2 text-sm md:text-base text-on-surface-variant leading-relaxed border-t border-border-muted/50 font-normal"
+                >
                   {faq.a}
                 </div>
               )}

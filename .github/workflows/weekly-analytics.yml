@@ -26,13 +26,15 @@ jobs:
           node-version: 18
 
       - name: Run Weekly Aggregator
+        env:
+          INPUT_DAYS: ${{ github.event.inputs.days }}
         run: |
           DAYS_ARG="7"
-          if [ -n "${{ github.event.inputs.days }}" ]; then
-            DAYS_ARG="${{ github.event.inputs.days }}"
+          if [ -n "$INPUT_DAYS" ]; then
+            DAYS_ARG=$(printf '%s' "$INPUT_DAYS" | tr -cd '0-9')
           fi
           
-          node errors/scripts/weekly-aggregator.cjs --days=$DAYS_ARG
+          node errors/scripts/weekly-aggregator.cjs --days="${DAYS_ARG:-7}"
 
       - name: Commit and Push Weekly Report
         run: |

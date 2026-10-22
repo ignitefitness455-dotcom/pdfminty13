@@ -127,8 +127,11 @@ export const LanguageSuggestionBanner: React.FC = () => {
     }
 
     i18n.changeLanguage(suggestedLocale);
-    const targetPath = getSwitchLocalePath(window.location.pathname, suggestedLocale);
-    window.location.assign(targetPath);
+    const currentFull = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const targetPath = getSwitchLocalePath(currentFull, suggestedLocale);
+    if (targetPath !== currentFull) {
+      window.location.assign(targetPath);
+    }
   };
 
   if (!visible || !suggestedLocale) return null;

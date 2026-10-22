@@ -37,15 +37,21 @@ export const PdfToImgPage: React.FC = () => {
 
   React.useEffect(() => {
     return () => {
-      // Clean up all generated URLs when leaving page
-      urlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
     };
   }, [downloadUrl]);
+
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+      urlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
@@ -92,74 +98,99 @@ export const PdfToImgPage: React.FC = () => {
 
       const collected: { page: number; dataUrl: string; format: string }[] = [];
       const zipEntries: { filename: string; blob: Blob }[] = [];
+      const revokeCollected = () => {
+        collected.forEach((item) => URL.revokeObjectURL(item.dataUrl));
+      };
 
-      for (let pageNum = 1; pageNum <= total; pageNum++) {
+      try {
+        for (let pageNum = 1; pageNum <= total; pageNum++) {
+          if (myToken !== operationTokenRef.current) {
+            revokeCollected();
+            return;
+          }
+
+          // SINGLE worker roundtrip per page — render this page directly from
+          // the source PDF. The sanitizer inside pdfToImage copies the buffer,
+          // so fileBytes is never detached and can be reused across iterations.
+          const rendered = await WorkerManager.getInstance().runOperation<
+            { page: number; imageBytes: Uint8Array }[]
+          >(
+            'pdfToImage',
+            {
+              bytes: fileBytes,
+              originalName: selectedFile.name,
+              scale,
+              maxPages: 1,
+              format: exportFormat,
+              startPage: pageNum,
+            }
+            // NOTE: do NOT transfer fileBytes.buffer — we need it for the next iteration.
+          );
+
+          if (rendered.length === 0) break;
+
+          const item = rendered[0];
+          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: exportFormat });
+          const url = URL.createObjectURL(blob);
+          collected.push({ page: pageNum, dataUrl: url, format: exportFormat });
+
+          const ext = exportFormat === 'image/jpeg' ? 'jpeg' : 'png';
+          const filename = `pdfminty_page_${pageNum}_${selectedFile.name.replace(/\.pdf$/i, '')}.${ext}`;
+          zipEntries.push({ filename, blob });
+
+          if (myToken !== operationTokenRef.current) {
+            revokeCollected();
+            return;
+          }
+          setProgress({ current: pageNum, total });
+          // Yield to the event loop so the UI can repaint the progress bar.
+          await new Promise((r) => setTimeout(r, 0));
+        }
+
         if (myToken !== operationTokenRef.current) {
+          revokeCollected();
           return;
         }
 
-        // SINGLE worker roundtrip per page — render this page directly from
-        // the source PDF. The sanitizer inside pdfToImage copies the buffer,
-        // so fileBytes is never detached and can be reused across iterations.
-        const rendered = await WorkerManager.getInstance().runOperation<
-          { page: number; imageBytes: Uint8Array }[]
-        >(
-          'pdfToImage',
-          {
-            bytes: fileBytes,
-            originalName: selectedFile.name,
-            scale,
-            maxPages: 1,
-            format: exportFormat,
-            startPage: pageNum,
-          }
-          // NOTE: do NOT transfer fileBytes.buffer — we need it for the next iteration.
-        );
-
-        if (rendered.length === 0) break;
-
-        const item = rendered[0];
-        const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: exportFormat });
-        const url = URL.createObjectURL(blob);
-        collected.push({ page: pageNum, dataUrl: url, format: exportFormat });
-
-        const ext = exportFormat === 'image/jpeg' ? 'jpeg' : 'png';
-        const filename = `pdfminty_page_${pageNum}_${selectedFile.name.replace(/\.pdf$/i, '')}.${ext}`;
-        zipEntries.push({ filename, blob });
-
-        if (myToken !== operationTokenRef.current) return;
-        setProgress({ current: pageNum, total });
-        // Yield to the event loop so the UI can repaint the progress bar.
-        await new Promise((r) => setTimeout(r, 0));
-      }
-
-      if (myToken !== operationTokenRef.current) return;
-
-      // Package all images into a single ZIP for one-shot download.
-      // This avoids Chrome's "1 download per user gesture" popup-blocker rule.
-      let finalBlob: Blob;
-      let finalFilename: string;
-
-      if (zipEntries.length === 1) {
-        finalBlob = zipEntries[0].blob;
-        finalFilename = zipEntries[0].filename;
-      } else {
-        const { default: JSZip } = await import('jszip');
-        const zip = new JSZip();
-        for (const entry of zipEntries) {
-          zip.file(entry.filename, entry.blob);
+        if (zipEntries.length === 0) {
+          revokeCollected();
+          throw new Error('No pages could be rendered from this document.');
         }
-        finalBlob = await zip.generateAsync({ type: 'blob' });
-        finalFilename = `pdfminty_${selectedFile.name.replace(/\.pdf$/i, '')}_images.zip`;
+
+        // Package all images into a single ZIP for one-shot download.
+        // This avoids Chrome's "1 download per user gesture" popup-blocker rule.
+        let finalBlob: Blob;
+        let finalFilename: string;
+
+        if (zipEntries.length === 1) {
+          finalBlob = zipEntries[0].blob;
+          finalFilename = zipEntries[0].filename;
+        } else {
+          const { default: JSZip } = await import('jszip');
+          const zip = new JSZip();
+          for (const entry of zipEntries) {
+            zip.file(entry.filename, entry.blob);
+          }
+          finalBlob = await zip.generateAsync({ type: 'blob' });
+          finalFilename = `pdfminty_${selectedFile.name.replace(/\.pdf$/i, '')}_images.zip`;
+        }
+
+        if (myToken !== operationTokenRef.current) {
+          revokeCollected();
+          return;
+        }
+
+        const url = URL.createObjectURL(finalBlob);
+        setDownloadUrl(url);
+        setDownloadName(finalFilename);
+
+        await downloadBlob(finalBlob, finalFilename);
+        setImageUrls(collected);
+        setIsSuccess(true);
+      } catch (innerErr) {
+        revokeCollected();
+        throw innerErr;
       }
-
-      const url = URL.createObjectURL(finalBlob);
-      setDownloadUrl(url);
-      setDownloadName(finalFilename);
-
-      await downloadBlob(finalBlob, finalFilename);
-      setImageUrls(collected);
-      setIsSuccess(true);
     } catch (err: unknown) {
       if (myToken !== operationTokenRef.current) return;
       logger.error('Export images failed:', err);

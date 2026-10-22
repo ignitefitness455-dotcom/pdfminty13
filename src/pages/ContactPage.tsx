@@ -33,6 +33,7 @@ export const ContactPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -55,11 +56,10 @@ export const ContactPage: React.FC = () => {
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) return;
 
     setLoading(true);
+    setSubmitError(null);
     try {
-      const taggedSubject = isPro
-        ? `[PRO PRIORITY] ${formData.subject}`
-        : formData.subject;
-      await fetch('/api/contact', {
+      const taggedSubject = isPro ? `[PRO PRIORITY] ${formData.subject}` : formData.subject;
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -69,17 +69,34 @@ export const ContactPage: React.FC = () => {
           message: formData.message.trim(),
         }),
       });
+
+      if (response.ok || response.status === 404) {
+        // 404 only occurs in local static Vite preview where Cloudflare Pages Functions aren't mounted
+        setSubmitted(true);
+      } else {
+        const data = (await response.json().catch(() => ({}))) as {
+          error?: string;
+          errors?: Record<string, string>;
+        };
+        const firstFieldError = data.errors ? Object.values(data.errors)[0] : undefined;
+        setSubmitError(
+          firstFieldError ||
+            data.error ||
+            'Unable to send message right now. Please email us directly at support@pdfminty.com.'
+        );
+      }
     } catch {
       // Fallback to local confirmation if edge endpoint is offline in preview
+      setSubmitted(true);
     } finally {
       setLoading(false);
-      setSubmitted(true);
     }
   };
 
   return (
     <div className="min-h-screen bg-surface py-12 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
       <SEO
+        slug="contact"
         titleOverride="Contact Us | PdfMinty"
         descriptionOverride="Have questions, feature requests, or feedback about PdfMinty? Get in touch with us at support@pdfminty.com. We usually respond within 24-48 hours."
       />
@@ -292,6 +309,15 @@ export const ContactPage: React.FC = () => {
                   ></textarea>
                 </div>
 
+                {submitError && (
+                  <div
+                    role="alert"
+                    className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-semibold text-rose-600 dark:text-rose-400"
+                  >
+                    {submitError}
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -327,6 +353,38 @@ export const ContactPage: React.FC = () => {
                 >
                   {t('contact.aboutBoxLink')}
                 </Link>
+              </div>
+            </div>
+
+            <div className="bg-surface-container-low border border-border-muted p-6 rounded-2xl space-y-4 shadow-sm">
+              <h3 className="text-base font-extrabold text-on-surface">
+                {t('contact.faqTitle', { defaultValue: 'Frequently Asked Questions' })}
+              </h3>
+              <div className="space-y-3 text-xs">
+                <div className="space-y-1">
+                  <h4 className="font-bold text-on-surface">How can I contact PdfMinty support?</h4>
+                  <p className="text-on-surface-variant leading-relaxed">
+                    You can reach our team directly by emailing support@pdfminty.com or by using the
+                    contact form on this page.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-on-surface">
+                    How long does it take to get a response?
+                  </h4>
+                  <p className="text-on-surface-variant leading-relaxed">
+                    We review all inquiries and typically respond within 24 to 48 business hours.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-on-surface">
+                    Should I attach my confidential PDF when reporting a bug?
+                  </h4>
+                  <p className="text-on-surface-variant leading-relaxed">
+                    No. For your privacy, never send confidential or sensitive documents via email.
+                    Describe the issue and browser version instead.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -31,19 +31,23 @@ export const ExtractPagesPdfPage: React.FC = () => {
   }, [thumbnails]);
 
   React.useEffect(() => {
-    const currentUrls = urlsRef.current;
-    const token = operationTokenRef;
     return () => {
-      token.current++;
-      // Clean up all generated URLs when leaving page
-      currentUrls.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
     };
   }, [downloadUrl]);
+
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+      // Clean up all generated URLs when leaving page
+      urlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length > 0) {
@@ -83,6 +87,19 @@ export const ExtractPagesPdfPage: React.FC = () => {
       } catch (err: unknown) {
         if (myToken !== operationTokenRef.current) return;
         logger.error('Failed to render previews:', err);
+        try {
+          const fallbackBytes = new Uint8Array(await file.arrayBuffer());
+          if (myToken !== operationTokenRef.current) return;
+          const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
+            bytes: fallbackBytes,
+          });
+          if (myToken !== operationTokenRef.current) return;
+          if (count > 0) {
+            setThumbnails(Array.from({ length: count }, (_, i) => ({ page: i + 1, dataUrl: '' })));
+          }
+        } catch {
+          // Ignore secondary error
+        }
         setError(
           t('extractPages.previewWarning', {
             defaultValue:
@@ -322,12 +339,18 @@ export const ExtractPagesPdfPage: React.FC = () => {
                         </div>
 
                         <div className="w-full h-[85%] bg-white rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
-                          <img
-                            src={item.dataUrl}
-                            alt={`Page ${item.page}`}
-                            referrerPolicy="no-referrer"
-                            className="max-w-full max-h-full object-contain"
-                          />
+                          {item.dataUrl ? (
+                            <img
+                              src={item.dataUrl}
+                              alt={`Page ${item.page}`}
+                              referrerPolicy="no-referrer"
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          ) : (
+                            <span className="text-xs font-bold text-slate-400">
+                              Page {item.page}
+                            </span>
+                          )}
                         </div>
 
                         <div className="w-full flex items-center justify-center pt-1">

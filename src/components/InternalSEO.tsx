@@ -59,7 +59,9 @@ export const Breadcrumbs: React.FC = () => {
     cleanSlug === 'about-us' ||
     cleanSlug === 'contact' ||
     cleanSlug === 'privacy-policy' ||
-    cleanSlug === 'terms-of-service'
+    cleanSlug === 'terms-of-service' ||
+    cleanSlug === 'pricing' ||
+    cleanSlug === 'adobe-acrobat-alternative'
   ) {
     const title =
       cleanSlug === 'about-us'
@@ -68,7 +70,11 @@ export const Breadcrumbs: React.FC = () => {
           ? t('header.nav.contact', { defaultValue: 'Contact Us' })
           : cleanSlug === 'privacy-policy'
             ? t('footer.links.privacyPolicy', { defaultValue: 'Privacy Policy' })
-            : t('footer.links.termsOfService', { defaultValue: 'Terms of Service' });
+            : cleanSlug === 'terms-of-service'
+              ? t('footer.links.termsOfService', { defaultValue: 'Terms of Service' })
+              : cleanSlug === 'pricing'
+                ? t('header.nav.pricing', { defaultValue: 'Pricing' })
+                : 'Adobe Acrobat Alternative';
 
     return (
       <nav
@@ -250,7 +256,7 @@ export default function InternalSEO() {
           featureList: [
             '100% client-side processing for standard tools',
             'Zero file uploads for our standard PDF tools',
-            'The AI Analyze tool only sends extracted text to Google Gemini after you explicitly check a consent box',
+            'The AI Analyze and OCR PDF tools only send extracted text or page images to Google Gemini after you explicitly check a consent box',
             'Free to use',
             'No registration required',
           ],
@@ -501,8 +507,17 @@ export default function InternalSEO() {
               existingTypes.add(String(item['@type']));
             }
           });
-        } else if (parsed && typeof parsed === 'object' && parsed['@type']) {
-          existingTypes.add(String(parsed['@type']));
+        } else if (parsed && typeof parsed === 'object') {
+          if (parsed['@type']) {
+            existingTypes.add(String(parsed['@type']));
+          }
+          if (Array.isArray(parsed['@graph'])) {
+            parsed['@graph'].forEach((item: unknown) => {
+              if (item && typeof item === 'object' && '@type' in item) {
+                existingTypes.add(String((item as Record<string, unknown>)['@type']));
+              }
+            });
+          }
         }
       } catch {
         // Ignore parse errors from malformed scripts

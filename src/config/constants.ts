@@ -14,7 +14,7 @@ export const tools: Tool[] = [
     description:
       'Combine multiple PDF files into a single, clean document in any order you choose.',
     category: 'page-operations',
-    path: '/merge-pdf',
+    path: '/merge-pdf/',
     icon: 'Merge',
   },
   {
@@ -23,7 +23,7 @@ export const tools: Tool[] = [
     description:
       'Extract ranges of pages or split custom pages into multi-part individual documents.',
     category: 'page-operations',
-    path: '/split-pdf',
+    path: '/split-pdf/',
     icon: 'Scissors',
   },
   {
@@ -32,7 +32,7 @@ export const tools: Tool[] = [
     description:
       'Rotate single pages or the entire document pages 90, 180, or 270 degrees clockwise.',
     category: 'page-operations',
-    path: '/rotate-pdf',
+    path: '/rotate-pdf/',
     icon: 'RotateCw',
   },
   {
@@ -41,7 +41,7 @@ export const tools: Tool[] = [
     description:
       'Selectively strip out unwanted, trailing, or confidential pages from your master files.',
     category: 'organize',
-    path: '/delete-pages-pdf',
+    path: '/delete-pages-pdf/',
     icon: 'Trash2',
   },
   {
@@ -50,7 +50,7 @@ export const tools: Tool[] = [
     description:
       'Superimpose elegant, custom diagonal text stamps with configurable size and transparency.',
     category: 'security-edit',
-    path: '/watermark-pdf',
+    path: '/watermark-pdf/',
     icon: 'Bookmark',
   },
   {
@@ -58,7 +58,7 @@ export const tools: Tool[] = [
     title: 'Page Numbers',
     description: 'Stitch standard page indices automatically onto document page footer panels.',
     category: 'security-edit',
-    path: '/add-page-numbers',
+    path: '/add-page-numbers/',
     icon: 'Hash',
   },
   {
@@ -67,7 +67,7 @@ export const tools: Tool[] = [
     description:
       'Incorporate empty page spacing into start, middle, or end of your document flows.',
     category: 'organize',
-    path: '/add-blank-page',
+    path: '/add-blank-page/',
     icon: 'FilePlus',
   },
   {
@@ -75,7 +75,7 @@ export const tools: Tool[] = [
     title: 'Protect PDF',
     description: 'Encrypt and secure sensitive PDFs using client-side AES standard algorithms.',
     category: 'security-edit',
-    path: '/protect-pdf',
+    path: '/protect-pdf/',
     icon: 'Shield',
   },
   {
@@ -84,7 +84,7 @@ export const tools: Tool[] = [
     description:
       'Strip document lock credentials from your standard user files for clear, unlocked reading.',
     category: 'security-edit',
-    path: '/unlock-pdf',
+    path: '/unlock-pdf/',
     icon: 'Lock',
   },
   {
@@ -92,7 +92,7 @@ export const tools: Tool[] = [
     title: 'Image to PDF',
     description: 'Convert multiple PNG or JPG photos into clean formatted PDF pages instantly.',
     category: 'convert',
-    path: '/image-to-pdf',
+    path: '/image-to-pdf/',
     icon: 'Image',
   },
   {
@@ -101,7 +101,7 @@ export const tools: Tool[] = [
     description:
       'Convert multiple pages from document directly into portable standard image canvases.',
     category: 'convert',
-    path: '/pdf-to-image',
+    path: '/pdf-to-image/',
     icon: 'Eye',
   },
   {
@@ -110,7 +110,7 @@ export const tools: Tool[] = [
     description:
       'Convert PDF files into clean structured Markdown text offline and extract embedded figures.',
     category: 'convert',
-    path: '/pdf-to-markdown',
+    path: '/pdf-to-markdown/',
     icon: 'FileCode2',
   },
   {
@@ -119,7 +119,7 @@ export const tools: Tool[] = [
     description:
       'Summarize, analyze, and inspect your PDF document content using secure offline local text parsing boosted by premium AI assistance.',
     category: 'intelligence',
-    path: '/ai-analyze-pdf',
+    path: '/ai-analyze-pdf/',
     icon: 'Sparkles',
   },
   {
@@ -127,7 +127,7 @@ export const tools: Tool[] = [
     title: 'Grayscale PDF',
     description: 'Convert colored PDF documents to beautiful grayscale/monochrome layouts locally.',
     category: 'convert',
-    path: '/grayscale-pdf',
+    path: '/grayscale-pdf/',
     icon: 'Printer',
   },
   {
@@ -136,7 +136,7 @@ export const tools: Tool[] = [
     description:
       'Selectively extract and export individual pages into a separate, clean PDF document instantly.',
     category: 'organize',
-    path: '/extract-pages-pdf',
+    path: '/extract-pages-pdf/',
     icon: 'CheckSquare',
   },
   {
@@ -145,7 +145,7 @@ export const tools: Tool[] = [
     description:
       'Sort, rearrange, or shuffle PDF pages interactively with real-time thumbnail previews.',
     category: 'organize',
-    path: '/reorder-pdf',
+    path: '/reorder-pdf/',
     icon: 'Move',
   },
   {
@@ -153,7 +153,7 @@ export const tools: Tool[] = [
     title: 'Flatten PDF',
     description: 'Make fillable form fields and annotations permanent and non-editable locally.',
     category: 'security',
-    path: '/flatten-pdf',
+    path: '/flatten-pdf/',
     icon: 'FileText',
   },
   {
@@ -162,7 +162,7 @@ export const tools: Tool[] = [
     description:
       'Fix corrupt cross-reference tables (XREFs), strip trailing junk bytes, and align headers locally.',
     category: 'security-edit',
-    path: '/repair-pdf',
+    path: '/repair-pdf/',
     icon: 'Wrench',
   },
   {
@@ -170,7 +170,7 @@ export const tools: Tool[] = [
     title: 'Edit Metadata',
     description: 'Change PDF title, author, subject, and keywords securely without uploading.',
     category: 'security-edit',
-    path: '/edit-pdf-metadata',
+    path: '/edit-pdf-metadata/',
     icon: 'FilePenLine',
   },
   {
@@ -179,7 +179,7 @@ export const tools: Tool[] = [
     description:
       'Remove embedded scripts, hidden metadata, and malicious actions for secure sharing.',
     category: 'security-edit',
-    path: '/sanitize-pdf',
+    path: '/sanitize-pdf/',
     icon: 'ShieldBan',
   },
   {
@@ -187,7 +187,7 @@ export const tools: Tool[] = [
     title: 'Sign PDF',
     description: 'Draw, type, or upload custom electronic signatures onto PDF pages locally.',
     category: 'security-edit',
-    path: '/sign-pdf',
+    path: '/sign-pdf/',
     icon: 'FilePenLine',
   },
   {
@@ -196,8 +196,26 @@ export const tools: Tool[] = [
     description:
       'Extract clean, searchable text or Markdown from scanned and image-only PDFs with AI Vision.',
     category: 'intelligence',
-    path: '/ocr-pdf',
+    path: '/ocr-pdf/',
     icon: 'Sparkles',
+  },
+  {
+    id: 'compress-pdf',
+    title: 'Compress PDF',
+    description:
+      'Reduce PDF file size locally in your browser without uploading or losing readable text quality.',
+    category: 'optimize',
+    path: '/compress-pdf/',
+    icon: 'Minimize2',
+  },
+  {
+    id: 'compare-pdf',
+    title: 'Compare PDF',
+    description:
+      'Compare two PDF documents side-by-side to highlight text and visual changes offline.',
+    category: 'security-edit',
+    path: '/compare-pdf/',
+    icon: 'GitCompare',
   },
 ];
 
@@ -241,15 +259,19 @@ export const TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?
   'pdf-to-image': { maxSingleMB: 50 },
   'pdf-to-markdown': { maxSingleMB: 50 },
   'ai-analyze': { maxSingleMB: 25 },
+  'ai-analyze-pdf': { maxSingleMB: 25 },
   'extract-pages-pdf': { maxSingleMB: 100 },
   'reorder-pdf': { maxSingleMB: 100 },
   'grayscale-pdf': { maxSingleMB: 50 },
   'flatten-pdf': { maxSingleMB: 100 },
   'repair-pdf': { maxSingleMB: 100 },
   'edit-metadata': { maxSingleMB: 100 },
+  'edit-pdf-metadata': { maxSingleMB: 100 },
   'sanitize-pdf': { maxSingleMB: 100 },
   'sign-pdf': { maxSingleMB: 100 },
   'ocr-pdf': { maxSingleMB: 50 },
+  'compress-pdf': { maxSingleMB: 100 },
+  'compare-pdf': { maxSingleMB: 100, maxTotalMB: 200 },
 };
 
 export const FREE_TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?: number }> = {
@@ -266,15 +288,19 @@ export const FREE_TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTot
   'pdf-to-image': { maxSingleMB: 100 },
   'pdf-to-markdown': { maxSingleMB: 100 },
   'ai-analyze': { maxSingleMB: 50 },
+  'ai-analyze-pdf': { maxSingleMB: 50 },
   'extract-pages-pdf': { maxSingleMB: 150 },
   'reorder-pdf': { maxSingleMB: 150 },
   'grayscale-pdf': { maxSingleMB: 100 },
   'flatten-pdf': { maxSingleMB: 150 },
   'repair-pdf': { maxSingleMB: 150 },
   'edit-metadata': { maxSingleMB: 150 },
+  'edit-pdf-metadata': { maxSingleMB: 150 },
   'sanitize-pdf': { maxSingleMB: 150 },
   'sign-pdf': { maxSingleMB: 150 },
   'ocr-pdf': { maxSingleMB: 100 },
+  'compress-pdf': { maxSingleMB: 150 },
+  'compare-pdf': { maxSingleMB: 150, maxTotalMB: 300 },
 };
 
 export const PRO_TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?: number }> = {
@@ -291,15 +317,19 @@ export const PRO_TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTota
   'pdf-to-image': { maxSingleMB: 200 },
   'pdf-to-markdown': { maxSingleMB: 200 },
   'ai-analyze': { maxSingleMB: 100 },
+  'ai-analyze-pdf': { maxSingleMB: 100 },
   'extract-pages-pdf': { maxSingleMB: 500 },
   'reorder-pdf': { maxSingleMB: 500 },
   'grayscale-pdf': { maxSingleMB: 300 },
   'flatten-pdf': { maxSingleMB: 500 },
   'repair-pdf': { maxSingleMB: 500 },
   'edit-metadata': { maxSingleMB: 500 },
+  'edit-pdf-metadata': { maxSingleMB: 500 },
   'sanitize-pdf': { maxSingleMB: 500 },
   'sign-pdf': { maxSingleMB: 500 },
   'ocr-pdf': { maxSingleMB: 200 },
+  'compress-pdf': { maxSingleMB: 500 },
+  'compare-pdf': { maxSingleMB: 500, maxTotalMB: 1000 },
 };
 
 export const getToolLimit = (

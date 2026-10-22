@@ -1,48 +1,99 @@
-import { Shield, AlertTriangle, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import {
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Clock,
+} from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { AuthorBio } from '../components/AuthorBio';
+import { RelatedBlogs } from '../components/RelatedBlogs';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import SEO from '../components/SEO';
 import { ROUTES } from '../config/routes';
+import { TOOLS } from '../config/seo-data';
 
 export const IsSafePdfArticlePage: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const trustArticle = TOOLS.find((item) => item.id === 'trust-article');
+  const isDefaultLocale =
+    !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
+
+  const cleanBody = React.useMemo(() => {
+    const raw = trustArticle?.longFormBody || '';
+    return raw
+      .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
+      .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>');
+  }, [trustArticle]);
+
   return (
     <div className="min-h-screen bg-surface py-12 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
       <SEO
-        titleOverride="Are Online PDF Converters Safe? The Privacy Hazards Explained"
-        descriptionOverride="Sending PDFs to remote servers poses real privacy hazards. Learn why in-browser PDF processing is the safest way to edit sensitive documents online."
+        slug="blog/is-it-safe-to-upload-pdf-to-online-tools"
+        titleOverride={
+          isDefaultLocale
+            ? trustArticle?.metaTitle || 'Is It Safe to Upload PDFs to Online Tools? | PDFMinty'
+            : t('isSafePdf.title', {
+                defaultValue: 'Is It Safe to Upload PDFs to Online Tools? | PDFMinty',
+              })
+        }
+        descriptionOverride={
+          trustArticle?.metaDescription ||
+          'Sending PDFs to remote servers poses real privacy hazards. Learn why in-browser PDF processing is the safest way to edit sensitive documents online.'
+        }
       />
 
       <div className="max-w-4xl mx-auto space-y-12" id="is-safe-article-container">
         {/* Navigation back link */}
         <Link
-          to={ROUTES.HOME}
+          to={ROUTES.BLOG}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface-variant hover:text-emerald-500 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{t('isSafePdf.backToTools', { defaultValue: 'Back to All PDF Tools' })}</span>
+          <span>{t('isSafePdf.backToTools', { defaultValue: 'Back to Knowledge Hub' })}</span>
         </Link>
 
         {/* Article Header */}
         <header className="space-y-6 border-b border-border-muted pb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold tracking-wide uppercase">
-            <Shield className="w-4 h-4" />
-            <span>
-              {t('isSafePdf.securityAnalysis', { defaultValue: 'Document Security Analysis' })}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold tracking-wide uppercase">
+              <Shield className="w-4 h-4" />
+              <span>
+                {t('isSafePdf.securityAnalysis', { defaultValue: 'Document Security Analysis' })}
+              </span>
+            </div>
+            <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Published {trustArticle?.datePublished || '2026-09-21'}</span>
+            </span>
+            {trustArticle?.dateModified && (
+              <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                <span>• Updated {trustArticle.dateModified}</span>
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
+              <Clock className="w-3.5 h-3.5" />
+              <span>8 min read</span>
             </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-on-surface tracking-tight leading-tight">
-            {t('isSafePdf.title', {
-              defaultValue: 'Are Online PDF Converters Safe? The Privacy Hazards Explained',
-            })}
+            {isDefaultLocale
+              ? trustArticle?.h1 ||
+                'Is It Safe to Upload PDF Files to Online Tools? An In-Depth Safety Analysis'
+              : t('isSafePdf.title', {
+                  defaultValue:
+                    'Is It Safe to Upload PDF Files to Online Tools? An In-Depth Safety Analysis',
+                })}
           </h1>
 
           <p className="text-base sm:text-xl font-medium text-on-surface-variant leading-relaxed">
-            {t('isSafePdf.headerDesc')}
+            {isDefaultLocale ? trustArticle?.shortDescription : t('isSafePdf.headerDesc')}
           </p>
         </header>
 
@@ -82,57 +133,19 @@ export const IsSafePdfArticlePage: React.FC = () => {
           </p>
         </section>
 
-        {/* Comparison Table */}
-        <section className="space-y-6 bg-surface-container-low border border-border-muted p-6 sm:p-8 rounded-3xl shadow-sm">
-          <h2 className="text-xl font-extrabold text-on-surface">{t('isSafePdf.compTitle')}</h2>
-          <div className="overflow-x-auto rounded-2xl border border-border-muted bg-surface">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-border-muted bg-surface-container-high/60">
-                  <th className="py-3.5 px-4 font-bold text-on-surface">
-                    {t('isSafePdf.featCol')}
-                  </th>
-                  <th className="py-3.5 px-4 font-bold text-rose-500">{t('isSafePdf.tradCol')}</th>
-                  <th className="py-3.5 px-4 font-bold text-emerald-500 bg-emerald-500/5">
-                    {t('isSafePdf.colMinty')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-muted text-on-surface-variant font-medium">
-                <tr>
-                  <td className="py-3 px-4 font-semibold text-on-surface">
-                    {t('isSafePdf.uploadReq')}
-                  </td>
-                  <td className="py-3 px-4 text-rose-500 font-bold">{t('isSafePdf.yesRemote')}</td>
-                  <td className="py-3 px-4 text-emerald-500 font-bold bg-emerald-500/5">
-                    {t('isSafePdf.noLocal')}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-4 font-semibold text-on-surface">
-                    {t('isSafePdf.dataPriv')}
-                  </td>
-                  <td className="py-3 px-4">{t('isSafePdf.reliesPromises')}</td>
-                  <td className="py-3 px-4 text-emerald-500 font-bold bg-emerald-500/5">
-                    {t('isSafePdf.guaranteedArch')}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-4 font-semibold text-on-surface">
-                    {t('isSafePdf.offlineAvail')}
-                  </td>
-                  <td className="py-3 px-4">{t('isSafePdf.noInternet')}</td>
-                  <td className="py-3 px-4 text-emerald-500 font-bold bg-emerald-500/5">
-                    {t('isSafePdf.yesOffline')}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        {/* Full In-Depth Analysis from seo-data.ts */}
+        {cleanBody && (
+          <div
+            className="blog-prose prose dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: cleanBody }}
+          />
+        )}
 
         {/* Recommended Security Partner */}
         <SecurityAffiliateBanner variant="editorial" />
+
+        {/* Author Bio */}
+        <AuthorBio />
 
         {/* CTA */}
         <section className="text-center bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-3xl p-8 sm:p-12 space-y-6 shadow-xl">
@@ -154,6 +167,8 @@ export const IsSafePdfArticlePage: React.FC = () => {
             </Link>
           </div>
         </section>
+
+        <RelatedBlogs />
       </div>
     </div>
   );

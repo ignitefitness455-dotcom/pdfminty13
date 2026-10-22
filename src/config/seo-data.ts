@@ -14,15 +14,15 @@ export const HOMEPAGE_META = {
 export const FAQS = [
   {
     q: 'How does PdfMinty process my PDF files privately?',
-    a: 'PdfMinty executes our standard PDF tools (merging, splitting, protecting, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box.',
+    a: 'PdfMinty executes our 30+ standard PDF tools (merging, splitting, protecting, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box.',
   },
   {
     q: 'Is PdfMinty completely free to use?',
-    a: 'Yes, 100% free with no hidden fees, subscriptions, usage limits, or account registration required.',
+    a: 'Yes — Guests receive 5 free daily tasks with no account or credit card required, Free registered users receive 10 daily tasks, and outputs never carry watermarks.',
   },
   {
     q: 'Do my files ever leave my computer or mobile device?',
-    a: 'For our standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box.',
+    a: 'For our 30+ standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exceptions are the opt-in AI Analyze and OCR PDF tools, which send extracted text or page images to Google Gemini only after you explicitly check a consent box.',
   },
   {
     q: 'What file formats and PDF versions are supported?',
@@ -193,13 +193,8 @@ export const RELATED_TOOL_MAPPING: Record<string, string[]> = {
     'edit-pdf-metadata',
     'add-page-numbers',
   ],
-  'ocr-pdf': [
-    'pdf-to-markdown',
-    'ai-analyze-pdf',
-    'pdf-to-image',
-    'image-to-pdf',
-    'extract-pages-pdf',
-  ],
+  'ocr-pdf': ['pdf-to-markdown', 'ai-analyze-pdf', 'pdf-to-image', 'image-to-pdf', 'compare-pdf'],
+  'compare-pdf': ['pdf-to-markdown', 'ai-analyze-pdf', 'sanitize-pdf', 'flatten-pdf', 'merge-pdf'],
 };
 
 export const TOOLS: ToolSEOInfo[] = [
@@ -3566,7 +3561,7 @@ export const TOOLS: ToolSEOInfo[] = [
 
 <p>Consider what's typically inside a PDF: tax returns with Social Security numbers, medical records with diagnoses, financial statements with account numbers, legal contracts with confidential terms, business plans with proprietary information, resumes with personal contact details. Now consider that you're handing this data to an unknown server, possibly in a different country with different privacy laws, possibly run by a company that monetizes user data, possibly with poor security practices that could lead to data breaches.</p>
 
-<p>A 2023 study by the Electronic Frontier Foundation found that 67% of free online PDF tools retain uploaded files for at least 24 hours, and 23% retain them indefinitely. Many of these services explicitly state in their privacy policies (buried in fine print) that they may analyze file contents for "service improvement" — which often means training AI models or selling aggregated data to third parties.</p>
+<p>Many free cloud-based PDF services retain uploaded files in temporary server storage for hours or days, and some include broad "service improvement" clauses in their terms of service that permit automated content analysis or third-party sub-processor access.</p>
 
 <h3>Common Security Threats with Online PDF Tools</h3>
 <ul>
@@ -3581,7 +3576,7 @@ export const TOOLS: ToolSEOInfo[] = [
 <h2>Why Browser-Side (Client-Side) Processing is Safer</h2>
 <p>Browser-side processing, also called client-side processing, fundamentally changes the security model. Instead of uploading your file to a server, the entire operation happens inside your web browser. The file is loaded into your browser's memory, processed by JavaScript and WebAssembly running on your device, and the result is generated locally. The file never travels across the network.</p>
 
-<p>This is the approach PDFMinty takes with all of its PDF tools. When you use <a href="/merge-pdf/">Merge PDF</a> or <a href="/split-pdf/">Split PDF</a>, your files are processed entirely on your computer. Even if you disconnect your internet after loading the page, the tools continue to work because they don't need a server connection.</p>
+<p>This is the approach PDFMinty takes with all 30+ of its standard PDF tools. When you use <a href="/merge-pdf/">Merge PDF</a> or <a href="/split-pdf/">Split PDF</a>, your files are processed entirely on your computer. Even if you disconnect your internet after loading the page, the tools continue to work because they don't need a server connection.</p>
 
 <p>The technical foundation of this approach is WebAssembly (WASM), a binary instruction format that allows high-performance code to run in web browsers at near-native speed. PDF processing libraries like pdf-lib and pdfjs-dist are compiled to WebAssembly, enabling them to manipulate PDF files directly in your browser without any server roundtrips.</p>
 
@@ -3613,7 +3608,7 @@ export const TOOLS: ToolSEOInfo[] = [
 <li>Disconnect your internet (turn off WiFi or unplug ethernet)</li>
 <li>Try to process a PDF file</li>
 <li>If it works, the tool is truly client-side. If it fails, files are being uploaded.</li>
-<li>All PDFMinty tools continue working offline after the page loads</li>
+<li>All standard PDFMinty tools continue working offline after the page loads</li>
 </ol>
 
 <h3>Method 3: Check the URL Bar</h3>
@@ -3623,7 +3618,7 @@ export const TOOLS: ToolSEOInfo[] = [
 <p>Beyond choosing the right tool, here are additional practices to protect your PDF documents:</p>
 
 <h3>1. Use Privacy-First Tools Like PDFMinty</h3>
-<p>PDFMinty offers a complete, growing suite of PDF tools that all process files locally: <a href="/edit-pdf-metadata/">Edit Metadata</a>, <a href="/sanitize-pdf/">Sanitize PDF</a>, <a href="/merge-pdf/">Merge PDF</a>, <a href="/split-pdf/">Split PDF</a>, <a href="/rotate-pdf/">Rotate PDF</a>, <a href="/delete-pages-pdf/">Delete Pages</a>, <a href="/extract-pages-pdf/">Extract PDF Pages</a>, <a href="/reorder-pdf/">Reorder PDF Pages</a>, <a href="/watermark-pdf/">Watermark PDF</a>, <a href="/add-page-numbers/">Page Numbers</a>, <a href="/add-blank-page/">Add Blank Page</a>, <a href="/protect-pdf/">Protect PDF</a>, <a href="/unlock-pdf/">Unlock PDF</a>, <a href="/image-to-pdf/">Image to PDF</a>, <a href="/pdf-to-image/">PDF to Image</a>, <a href="/pdf-to-markdown/">PDF to Markdown</a>, <a href="/ai-analyze-pdf/">AI Analyze</a>, <a href="/grayscale-pdf/">Grayscale PDF</a>, <a href="/flatten-pdf/">Flatten PDF</a>, and <a href="/repair-pdf/">Repair PDF</a>.</p>
+<p>PDFMinty offers a complete, growing suite of 30+ standard PDF tools that all process files locally: <a href="/edit-pdf-metadata/">Edit Metadata</a>, <a href="/sanitize-pdf/">Sanitize PDF</a>, <a href="/merge-pdf/">Merge PDF</a>, <a href="/split-pdf/">Split PDF</a>, <a href="/rotate-pdf/">Rotate PDF</a>, <a href="/delete-pages-pdf/">Delete Pages</a>, <a href="/extract-pages-pdf/">Extract PDF Pages</a>, <a href="/reorder-pdf/">Reorder PDF Pages</a>, <a href="/watermark-pdf/">Watermark PDF</a>, <a href="/add-page-numbers/">Page Numbers</a>, <a href="/add-blank-page/">Add Blank Page</a>, <a href="/protect-pdf/">Protect PDF</a>, <a href="/unlock-pdf/">Unlock PDF</a>, <a href="/image-to-pdf/">Image to PDF</a>, <a href="/pdf-to-image/">PDF to Image</a>, <a href="/pdf-to-markdown/">PDF to Markdown</a>, <a href="/grayscale-pdf/">Grayscale PDF</a>, <a href="/flatten-pdf/">Flatten PDF</a>, and <a href="/repair-pdf/">Repair PDF</a>. Separate opt-in AI features (<a href="/ai-analyze-pdf/">AI Analyze</a> and <a href="/ocr-pdf/">OCR PDF</a>) transmit extracted text or page images via encrypted proxy to Google Gemini only after you check an explicit consent box.</p>
 
 <h3>2. Password-Protect Sensitive PDFs Before Sharing</h3>
 <p>If you must share a PDF externally, encrypt it first. PDFMinty's <a href="/protect-pdf/">Protect PDF</a> tool adds AES-256 encryption — even if the file is intercepted, it can't be opened without the password.</p>
@@ -3644,17 +3639,17 @@ export const TOOLS: ToolSEOInfo[] = [
       <h2>Corporate Compliance: HIPAA and Legal Confidentiality</h2>
       <p>For healthcare professionals bound by HIPAA, or legal teams dealing with attorney-client privilege, uploading unencrypted documents to random internet servers is a severe compliance violation. Browser-side processing guarantees that no protected health information (PHI) or confidential case files ever leave the local network environment.</p>
   
-      <h2>Real-World Consequences of PDF Data Breaches</h2>
-<p>The risks of server-side PDF processing aren't theoretical. Here are real incidents:</p>
+      <h2>Common Failure Modes of Cloud Document Processing</h2>
+<p>The risks of server-side PDF processing stem from recurring cloud infrastructure failure patterns:</p>
 
 <ul>
-<li><strong>2019 — Online PDF Tool Breach:</strong> A popular free PDF service exposed 12 million uploaded documents due to a misconfigured AWS S3 bucket. The documents included contracts, tax forms, and medical records.</li>
-<li><strong>2020 — Adobe Acrobat Online:</strong> A vulnerability allowed attackers to access files uploaded to Adobe's cloud processing service for up to 72 hours after upload.</li>
-<li><strong>2021 — Smallpdf Data Leak:</strong> A database misconfiguration exposed user email addresses and file metadata for 2 million users.</li>
-<li><strong>2022 — iLovePDF Incident:</strong> Internal logs containing file names and IP addresses were inadvertently accessible for 6 months.</li>
+<li><strong>Misconfigured Cloud Storage Buckets:</strong> Cloud conversion services temporarily store uploaded documents in object storage (such as S3 buckets); permission misconfigurations have repeatedly exposed confidential contracts, tax forms, and medical records to public indexing.</li>
+<li><strong>Unexpired Temporary Download Links:</strong> Cloud worker pipelines often generate shareable download URLs or temporary cache objects that remain accessible for hours after a user closes their browser tab.</li>
+<li><strong>Database &amp; Metadata Exposure:</strong> Even when raw PDF binaries are purged, server databases frequently retain user email addresses, IP addresses, and document filenames.</li>
+<li><strong>Diagnostic &amp; Worker Log Retention:</strong> Server-side PDF crashes often dump file paths, metadata, or document fragments into centralized logging systems accessible to third-party sub-processors.</li>
 </ul>
 
-<p>These incidents highlight a fundamental truth: any service that receives your files can lose them. Client-side processing eliminates this risk entirely because there's nothing to lose.</p>
+<p>These failure modes highlight a fundamental truth: any service that receives your files can lose them. Client-side processing eliminates this risk for standard PDF operations because the document never leaves your browser.</p>
 
 <h2>The Future of Private PDF Processing</h2>
 <p>The web is moving toward privacy-first architectures. Browser capabilities have advanced to the point where complex operations like PDF manipulation can happen entirely client-side. WebAssembly enables near-native performance, the File System Access API allows direct file access, and Service Workers enable offline functionality.</p>
@@ -3663,7 +3658,7 @@ export const TOOLS: ToolSEOInfo[] = [
 
 <h2>Frequently Asked Questions</h2>
 <h3>Is PDFMinty really 100% client-side?</h3>
-<p>Yes. All of our PDF tools process files entirely in your browser. The only server interaction is loading the initial webpage. You can verify this by checking browser Developer Tools network activity during any operation.</p>
+<p>Yes for all 30+ standard PDF tools (merge, split, compress, protect, sign, sanitize, metadata, and conversions), which process files entirely in your browser. The only exceptions are the two opt-in AI tools (<a href="/ai-analyze-pdf/">AI Analyze</a> and <a href="/ocr-pdf/">OCR PDF</a>), which transmit extracted text or page images to Google Gemini only after you grant explicit consent.</p>
 
 <h3>Can PDFMinty access my files?</h3>
 <p>No. PDFMinty's code runs in your browser sandbox. It can only access files you explicitly select. The code cannot access other files on your device, and it never transmits file contents over the network.</p>
@@ -4037,7 +4032,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <li><strong>No server exposure:</strong> Your file never touches a remote server.</li>
         <li><strong>No data retention risk:</strong> No data is ever transmitted, so there is nothing to store or leak.</li>
         <li><strong>Works offline:</strong> Once the tool is loaded, you can disconnect completely and continue processing files.</li>
-        <li><strong>Compliance by design:</strong> Fully compliant with GDPR, HIPAA, and other strict regulations out of the box.</li>
+        <li><strong>Compliance-friendly architecture:</strong> Supports GDPR and HIPAA compliance workflows by keeping standard document processing local to your device.</li>
         <li><strong>Complete anonymity:</strong> No accounts, tracking cookies, or data harvesting required.</li>
       </ul>
 
@@ -4056,8 +4051,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <p>Browser-side processing requires significant engineering investment. It's easier and cheaper to build a server-based tool. Many companies also want access to your files — the data is valuable. So they build server-dependent tools and bury the data usage terms in a 40-page privacy policy.</p>
 
       <h2>Introducing PDFMinty: The No-Upload PDF Editor</h2>
-      <p>PDFMinty.com was built from the ground up with one non-negotiable principle: <strong>100% browser-side processing, no upload needed.</strong></p>
-      <p>Every single feature on PDFMinty — from merging and splitting PDFs to converting, flattening, and editing — runs entirely within your browser. When you open a PDF on PDFMinty, it never leaves your computer. Not even for a millisecond.</p>
+      <p>PDFMinty.com was built from the ground up with a clear privacy principle: <strong>100% browser-side processing for all standard PDF tools, with no upload needed.</strong></p>
+      <p>Every standard PDF tool on PDFMinty — from merging and splitting PDFs to converting, flattening, and editing — runs entirely within your browser (while opt-in AI Analyze and OCR tools require explicit user consent). When you open a PDF in any standard PDFMinty utility, it never leaves your computer.</p>
 
       <h3>What You Can Do with PDFMinty</h3>
       <ul>
@@ -4671,15 +4666,6 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <p>Removing metadata hides who made the file and how. It does not stop someone from opening or copying the file itself. For documents that also need access control — contracts, financial statements, HR files — pair metadata removal with encryption using the <a href="/protect-pdf/" class="hover:text-emerald-500 transition-colors">Protect PDF tool</a>, which adds AES-GCM password protection, also fully offline. Metadata removal handles the invisible fingerprint; password protection handles who gets in at all.</p>
 
       
-      <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg my-8">
-        <h3 className="text-xl font-bold mb-4">Ready to clean your PDF?</h3>
-        <p className="mb-4">Use our 100% offline, browser-side tools to protect your privacy.</p>
-        <div className="flex gap-4">
-          <a href="/sanitize-pdf/" className="bg-security-green text-white px-4 py-2 rounded font-bold hover:bg-green-700">Sanitize PDF (Remove All Hidden Scripts)</a>
-          <a href="/edit-pdf-metadata/" className="border border-security-green text-security-green px-4 py-2 rounded font-bold hover:bg-green-50">Edit Metadata Manually</a>
-        </div>
-      </div>
-  
       <h2>A Quick Pre-Send Checklist</h2>
       <p>Before sharing any PDF externally, it's worth a 30-second habit check:</p>
       <ul>
@@ -4725,7 +4711,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       'Learn about PdfMinty — a privacy-first, 100% client-side PDF toolkit created and engineered by Mohammed Tanveer Munshi (Dhaka, Bangladesh).',
     metaTitle: 'About Us | PdfMinty — Free Online PDF Tools',
     metaDescription:
-      'Learn about PdfMinty, a privacy-first, 100% client-side PDF toolkit engineered by Mohammed Tanveer Munshi in Dhaka, Bangladesh. Explore our mission, 22+ free tools, and private document processing.',
+      'Learn about PdfMinty, a privacy-first, 100% client-side PDF toolkit engineered by Mohammed Tanveer Munshi in Dhaka, Bangladesh. Explore our mission, 30+ free tools, and private document processing.',
     h1: 'About Us | PdfMinty — Free Online PDF Tools',
     icon: 'ShieldCheck',
     category: 'info',
@@ -4741,10 +4727,10 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       
       <p>When you upload a confidential document to a remote server, control over your personal data vanishes. The document travels across public networks, gets stored on unfamiliar servers, and becomes exposed to unexpected data breaches, unauthorized logging, or vague cloud retention policies. We built PdfMinty to fix this major security risk.</p>
 
-      <p>PdfMinty was engineered from the ground up as a zero-upload, client-side PDF platform. PdfMinty executes all standard document operations directly inside your web browser without server uploads. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box.</p>
+      <p>PdfMinty was engineered from the ground up as a zero-upload, client-side PDF platform. PdfMinty executes all 30+ standard document operations directly inside your web browser without server uploads. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box.</p>
 
-      <h2>What We Offer: 22+ Free Online PDF Tools</h2>
-      <p>PdfMinty provides a comprehensive, growing suite of 22 powerful PDF tools designed for speed, accuracy, and absolute confidentiality:</p>
+      <h2>What We Offer: 30+ Free Online PDF Tools</h2>
+      <p>PdfMinty provides a comprehensive, growing suite of 30+ powerful PDF tools designed for speed, accuracy, and confidentiality:</p>
       <ul>
         <li><strong>PDF Organization:</strong> <a href="/merge-pdf/">Merge PDF</a>, <a href="/split-pdf/">Split PDF</a>, <a href="/rotate-pdf/">Rotate PDF</a>, <a href="/delete-pages-pdf/">Delete Pages</a>, <a href="/extract-pages-pdf/">Extract Pages</a>, <a href="/reorder-pdf/">Reorder Pages</a>, and <a href="/add-blank-page/">Add Blank Page</a>.</li>
         <li><strong>Privacy & Security:</strong> <a href="/sanitize-pdf/">Sanitize PDF</a> (remove hidden author details, timestamps, and GPS/XMP data), <a href="/edit-pdf-metadata/">Edit Metadata</a>, <a href="/protect-pdf/">Protect PDF</a> (AES-GCM encryption), <a href="/unlock-pdf/">Unlock PDF</a>, and <a href="/sign-pdf/">Free e-Signatures</a>.</li>
@@ -6070,8 +6056,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-28',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'September 4, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'Converting PDFs directly to .docx often results in horribly broken tables, invisible text boxes, and massive formatting headaches. This guide offers a cleaner, safer text-extraction workaround.',
     relatedLinks: [
@@ -6138,7 +6124,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         If your PDF was created by a physical paper scanner, direct text extraction will return empty results because the file contains only bitmap images.
       </p>
       <p>
-        In this scenario, execute our <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">OCR PDF Tool</a> before converting. The local WebAssembly engine analyzes the raster pixel contours, identifies letterforms, and outputs editable text that you can immediately import into Word.
+        In this scenario, execute our opt-in <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">OCR PDF Tool</a> before converting. With your explicit consent, our AI Vision OCR engine analyzes the rendered page images via encrypted proxy and outputs editable text and Markdown that you can immediately import into Word.
       </p>
 
       <h2>4. Conversion Workflow Comparison Matrix</h2>
@@ -6238,7 +6224,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       },
       {
         q: 'Does PDFMinty have AI features like SmallPDF?',
-        a: 'Not currently. If you specifically need AI summarization or "chat with your PDF," that\'s a real gap — SmallPDF (and PDFMinty\'s own /ai-analyze-pdf tool) covers that differently.',
+        a: 'Yes — PDFMinty offers opt-in AI Analyze (/ai-analyze-pdf/) and AI Vision OCR (/ocr-pdf/) tools powered by Google Gemini, which only transmit extracted text or page images after you explicitly grant consent. All 30+ standard PDF tools remain 100% local in your browser.',
       },
       {
         q: 'Which is better for very large files?',
@@ -6246,7 +6232,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       },
       {
         q: 'Is PDFMinty really free with no catch?',
-        a: 'Yes — no account, no watermark, no daily limits on the core tools.',
+        a: 'Yes — Guests get 5 free daily tasks with no account required, Free registered accounts get 10 daily tasks, and outputs never carry watermarks.',
       },
     ],
     longFormBody: `
@@ -6256,7 +6242,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <h2>The Core Difference</h2>
       <p>SmallPDF operates on a centralized cloud architecture across both free and paid tiers. When you merge, compress, or convert a document, the binary payload is transmitted over the network to remote worker servers for processing. Similarly, cloud-based summarization and query features send extracted document text to external model servers.</p>
 
-      <p>PDFMinty processes our standard PDF tools locally inside your browser with zero server uploads (and includes the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box).</p>
+      <p>PDFMinty processes our 30+ standard PDF tools locally inside your browser with zero server uploads (and includes opt-in <a href="/ai-analyze-pdf/">AI Analyze</a> and <a href="/ocr-pdf/">OCR PDF</a> tools, which only send extracted text or page images to Google Gemini after you explicitly check a consent box).</p>
 
       <p>Neither approach is "wrong" — SmallPDF's cloud processing is what lets it handle very large files and heavier operations. But if privacy matters more to you than that, the architecture difference is the whole story.</p>
 
@@ -6275,18 +6261,18 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Free Plan</td>
-              <td class="p-4">Yes, with daily task limits + ads</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Yes, unlimited, no ads</td>
+              <td class="p-4">Yes, strict daily task limits + ads</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Yes (5 guest / 10 free acct daily tasks, 0 watermarks)</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Pro Price</td>
               <td class="p-4">~$15/mo (~$10/mo billed annually)</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Free ($0 / forever)</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Free core tier ($0) / Pro unlimited</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Files Processed</td>
               <td class="p-4">On SmallPDF's cloud servers</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Locally in browser (0 uploads)</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Locally in browser (0 uploads for standard tools)</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Account Required</td>
@@ -6296,12 +6282,12 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">AI Features (Summarize, Q&A)</td>
               <td class="p-4">Yes — requires uploading file to cloud AI</td>
-              <td class="p-4 bg-emerald-500/5">Not currently offered</td>
+              <td class="p-4 bg-emerald-500/5">Yes — opt-in AI Analyze (requires explicit consent)</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">OCR / Compression</td>
               <td class="p-4">Pro only for OCR / strong compression</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Compression: free. OCR: free browser-based</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Compression: 100% local. OCR: opt-in AI Vision</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Merge, Split, Rotate, Watermark, Protect</td>
@@ -6318,7 +6304,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       </div>
 
       <p class="text-xs text-slate-500 dark:text-slate-400 italic">
-        *Honesty note: SmallPDF's server-side processing handles very large files on cloud servers, whereas PDFMinty processes everything privately right inside your browser without uploading, and offers integrated AI features. PDFMinty focuses strictly on client-side privacy, instant offline tools, and $0 cost.
+        *Honesty note: SmallPDF's server-side processing handles very large files on cloud servers, whereas PDFMinty processes all 30+ standard tools privately right inside your browser without uploading, and gates AI Analyze and OCR behind explicit user consent.
       </p>
 
       <h2>Where Does Your File Actually Go?</h2>
@@ -6365,7 +6351,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
           <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">Does PDFMinty have AI features like SmallPDF?</h3>
           <p class="text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
-            Not currently. If you specifically need AI summarization or "chat with your PDF," that's a real gap — SmallPDF (and PDFMinty's own <a href="/ai-analyze-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">/ai-analyze-pdf</a> tool, where applicable) covers that differently.
+            Yes — PDFMinty offers opt-in <a href="/ai-analyze-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">AI Analyze</a> and <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">OCR PDF</a> tools powered by Google Gemini, which only send extracted text or page images after you explicitly grant consent. All 30+ standard PDF tools run 100% locally in your browser.
           </p>
         </div>
 
@@ -6379,7 +6365,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
           <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">Is PDFMinty really free with no catch?</h3>
           <p class="text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
-            Yes — no account, no watermark, no daily limits on the core tools.
+            Yes — Guests get 5 free daily tasks with no account required, Free registered accounts get 10 daily tasks, and outputs never carry watermarks.
           </p>
         </div>
       </div>
@@ -6447,16 +6433,16 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         a: "Yes — like any browser-based cloud tool, files are sent to iLovePDF's servers for processing, free or paid.",
       },
       {
-        q: "Why does iLovePDF show ads on the free plan and PDFMinty doesn't, ever?",
-        a: "iLovePDF's ads help fund the server infrastructure that processes your file. PDFMinty doesn't need that infrastructure, since processing happens on your own device.",
+        q: 'Why does iLovePDF show heavy ads on tool pages while PDFMinty keeps workspaces clean?',
+        a: "iLovePDF's ads help fund the server infrastructure that processes your file. PDFMinty doesn't need server-side processing clusters for standard tools, since processing happens on your own device.",
       },
       {
         q: 'Does PDFMinty offer e-signatures or OCR like iLovePDF Premium?',
-        a: "Not currently — that's a genuine gap if those are must-haves for your workflow.",
+        a: 'Yes — PDFMinty includes a free 100% client-side Sign PDF tool (/sign-pdf/) for electronic signatures, plus an opt-in AI Vision OCR tool (/ocr-pdf/) that transcribes scanned PDFs after explicit user consent.',
       },
       {
         q: 'Is there a catch to PDFMinty being free?',
-        a: "No account, no watermark, no task limits on the core tools — it's free the same way it's private: because there's no server-side cost per file to recover.",
+        a: 'Guests get 5 free daily tasks with no account or watermark, Free registered users get 10 daily tasks, and Pro unlocks unlimited tasks — because standard tools run locally on your device without server processing overhead.',
       },
     ],
     longFormBody: `
@@ -6466,7 +6452,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
       <h2>The Core Difference</h2>
       <p>iLovePDF's free tier is genuinely capable — it covers most common PDF tasks. Two tradeoffs come with it: the free web version shows ads, and every file you process is uploaded to iLovePDF's servers, the same as any cloud-based tool. Removing the ads means moving to their Premium plan (~$7–9/mo).</p>
 
-      <p>PDFMinty runs our standard PDF tools locally in your browser without file uploads (and includes the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box).</p>
+      <p>PDFMinty runs our 30+ standard PDF tools locally in your browser without file uploads (and includes opt-in <a href="/ai-analyze-pdf/">AI Analyze</a> and <a href="/ocr-pdf/">OCR PDF</a> tools, which only send extracted text or page images to Google Gemini after you explicitly check a consent box).</p>
 
       <h2>Side-by-Side Comparison</h2>
       <p>Compare key capabilities, ads, pricing, and privacy between iLovePDF and PDFMinty:</p>
@@ -6484,27 +6470,27 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Free Plan</td>
               <td class="p-4">Yes, with ads + task/file-size limits</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Yes, unlimited, no ads</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Yes (5 guest / 10 free acct daily tasks, 0 watermarks)</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Premium Price</td>
               <td class="p-4">~$7–9/mo</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Free ($0 / forever)</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Free core tier ($0) / Pro unlimited</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Files Processed</td>
               <td class="p-4">On iLovePDF's cloud servers</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Locally in browser (0 uploads)</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Locally in browser (0 uploads for standard tools)</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
-              <td class="p-4 font-semibold text-slate-900 dark:text-white">Ads on Free Tier</td>
-              <td class="p-4 font-medium text-slate-900 dark:text-slate-200">Yes (display ads)</td>
-              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">N/A — zero ads on any tier</td>
+              <td class="p-4 font-semibold text-slate-900 dark:text-white">Tool Workspace Experience</td>
+              <td class="p-4 font-medium text-slate-900 dark:text-slate-200">Display ads &amp; upsell popups</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">Clean, distraction-free workspace</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
-              <td class="p-4 font-semibold text-slate-900 dark:text-white">Digital Signatures</td>
-              <td class="p-4">✅ Included (Premium)</td>
-              <td class="p-4 bg-emerald-500/5">Not currently offered</td>
+              <td class="p-4 font-semibold text-slate-900 dark:text-white">Electronic Signatures</td>
+              <td class="p-4">✅ Included (Cloud / Premium)</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">✅ Included Free (100% client-side Sign PDF)</td>
             </tr>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">Desktop / Mobile Apps</td>
@@ -6519,20 +6505,20 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40">
               <td class="p-4 font-semibold text-slate-900 dark:text-white">OCR Engine</td>
               <td class="p-4 font-medium text-slate-900 dark:text-slate-200">✅ Included (Premium)</td>
-              <td class="p-4 bg-emerald-500/5">Not currently offered</td>
+              <td class="p-4 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">✅ Included (Opt-in AI Vision OCR)</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <p class="text-xs text-slate-500 dark:text-slate-400 italic">
-        *Honesty note: If you require advanced e-signatures or server OCR workflows, iLovePDF Premium covers those features. PDFMinty focuses on core document manipulation with absolute browser-side privacy and zero ads.
+        *Honesty note: If you require multi-party cloud signature routing or server-side bulk queues, iLovePDF Premium covers those features. PDFMinty focuses on core document manipulation, local e-signing, and opt-in AI OCR with browser-first privacy.
       </p>
 
       <h2>What "Free" Actually Costs on Each</h2>
       <p>iLovePDF's free tier isn't free of tradeoffs — it's ad-supported and rate-limited, which is a completely standard way to run a freemium product. The question is just whether that tradeoff works for you.</p>
 
-      <p>PDFMinty doesn't run ads or limits because it doesn't have server costs to offset in the first place — there's no processing infrastructure behind each file, since it never leaves your device.</p>
+      <p>PDFMinty keeps standard PDF processing free because it doesn't have remote conversion server costs to offset for every merge, split, or signature — your own device handles the work in browser memory.</p>
 
       <h2>Frequently Asked Questions</h2>
 
@@ -6545,23 +6531,23 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         </div>
 
         <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
-          <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">Why does iLovePDF show ads on the free plan and PDFMinty doesn't, ever?</h3>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">Why does iLovePDF show heavy ads on tool pages while PDFMinty keeps workspaces clean?</h3>
           <p class="text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
-            iLovePDF's ads help fund the server infrastructure that processes your file. PDFMinty doesn't need that infrastructure, since processing happens on your own device.
+            iLovePDF's ads help fund the server infrastructure that processes your file. PDFMinty doesn't need server-side processing clusters for standard tools, since processing happens on your own device.
           </p>
         </div>
 
         <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
           <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">Does PDFMinty offer e-signatures or OCR like iLovePDF Premium?</h3>
           <p class="text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
-            Not currently — that's a genuine gap if those are must-haves for your workflow.
+            Yes — PDFMinty includes a free 100% client-side <a href="/sign-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">Sign PDF</a> tool for electronic signatures, plus an opt-in <a href="/ocr-pdf/" class="text-emerald-600 dark:text-emerald-400 font-bold underline">OCR PDF</a> tool that transcribes scanned PDFs after explicit user consent.
           </p>
         </div>
 
         <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
           <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">Is there a catch to PDFMinty being free?</h3>
           <p class="text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
-            No account, no watermark, no task limits on the core tools — it's free the same way it's private: because there's no server-side cost per file to recover.
+            Guests get 5 free daily tasks with no account or watermark, Free registered users get 10 daily tasks, and Pro unlocks unlimited tasks — because standard tools run locally on your device without server processing overhead.
           </p>
         </div>
       </div>
@@ -6610,10 +6596,10 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     name: 'Best Offline PDF Tools for Sensitive Documents (2026 Ranking Guide)',
     ogImage: '/og-image.png',
     shortDescription:
-      'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools never upload your files — PDFMinty ranks #1.',
+      'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools process files locally without cloud uploads.',
     metaTitle: 'Best Offline PDF Tools for Sensitive Docs 2026 | PDFMinty',
     metaDescription:
-      'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools never upload your files — PDFMinty ranks #1.',
+      'Compare the top offline PDF tools for legal, healthcare & finance teams in 2026. See which tools process files locally without cloud uploads.',
     h1: 'Best Offline PDF Tools for Sensitive Documents (2026 Ranking Guide)',
     icon: 'Shield',
     category: 'blog',
@@ -7112,8 +7098,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-26',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'August 12, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-26',
     relatedLinks: [
       {
         title: 'Privacy-First PDF Toolkit',
@@ -7351,11 +7337,6 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
           </p>
         </div>
       </div>
-
-      <div class="my-8 p-5 bg-slate-100 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs text-slate-600 dark:text-slate-400">
-        <strong class="block mb-1 text-slate-800 dark:text-slate-200 font-bold">Editorial Note</strong>
-        Before publishing this article, verify every product capability and privacy statement against the current implementation of each PdfMinty tool. Add a last-reviewed date, a named technical reviewer, and an accurate list of supported operations. Update the article whenever the product architecture or privacy policy changes.
-      </div>
     `,
   },
   {
@@ -7378,8 +7359,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-26',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'August 18, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-26',
     relatedLinks: [
       {
         title: 'Add Page Numbers Tool',
@@ -7615,8 +7596,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-28',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'September 4, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'Users have an image-only PDF and need to extract the text out of it so they can paste it into Word, edit it, or search it—without relying on privacy-invasive cloud OCR services.',
     relatedLinks: [
@@ -7778,9 +7759,9 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
           </p>
         </div>
         <div>
-          <h4 class="font-bold text-slate-900 dark:text-white mb-1">What languages are supported by in-browser OCR?</h4>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-1">What languages are supported by PDFMinty's AI Vision OCR?</h4>
           <p class="text-sm text-slate-600 dark:text-slate-300">
-            Our WebAssembly engine natively processes standard Latin character sets (English, Spanish, French, German, Italian, Portuguese) and standard technical/financial numbering systems.
+            Our opt-in AI Vision OCR engine supports major Latin, European, and CJK character sets as well as standard technical and financial numbering systems.
           </p>
         </div>
       </div>
@@ -7797,7 +7778,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
         </div>
         <div class="flex items-start gap-2">
           <span class="text-emerald-600 font-bold">✓</span>
-          <span><strong>Client-Side Execution Confirmed:</strong> Processing occurred entirely in local browser RAM without cloud server transmission.</span>
+          <span><strong>Explicit Consent Verified:</strong> Page rendering occurred locally in browser RAM, and opt-in OCR transcription used encrypted transit with zero server retention.</span>
         </div>
         <div class="flex items-start gap-2">
           <span class="text-emerald-600 font-bold">✓</span>
@@ -7826,8 +7807,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-26',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'August 26, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-26',
     relatedLinks: [
       {
         title: 'Split PDF Tool',
@@ -8078,8 +8059,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-27',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'August 26, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-27',
     relatedLinks: [
       {
         title: 'Protect PDF Tool',
@@ -8282,7 +8263,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
             Ready to Protect Your PDF with a Password?
           </h3>
           <p class="text-base sm:text-lg text-emerald-50 m-0 leading-relaxed font-semibold drop-shadow-sm">
-            Encrypt your sensitive documents offline with military-grade algorithms directly in your browser.
+            Encrypt your sensitive documents offline with standard AES-256 encryption directly in your browser.
           </p>
           <div class="pt-2 flex flex-wrap items-center justify-center gap-4">
             <a href="/protect-pdf/" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 dark:!bg-white dark:!text-emerald-950 hover:dark:!bg-emerald-50 font-black text-base rounded-2xl shadow-2xl shadow-black/20 transition-all duration-300 hover:scale-105 active:scale-95 no-underline border-0 cursor-pointer">
@@ -8323,8 +8304,8 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     datePublished: '2026-09-21',
     dateModified: '2026-09-27',
     author: 'Mohammed Tanveer Munshi',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'August 26, 2026',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-27',
     relatedLinks: [
       {
         title: 'Repair PDF Tool',
@@ -8835,7 +8816,7 @@ qpdf --linearize --strip-metadata input.pdf output_clean.pdf</code></pre>
     priority: 0.5,
     changefreq: 'yearly',
     type: 'article',
-    datePublished: '2026-01-01',
+    datePublished: '2026-09-21',
     dateModified: '2026-10-18',
     longFormBody: `
       <h2>Privacy Policy — 100% Zero-Data Collection &amp; Google OAuth Compliance | PDFMinty</h2>
@@ -10060,9 +10041,9 @@ Scale = 300 / 72 = 4.167 -> Canvas: 2,550 × 3,300 px (~8.4 Megapixels)</code></
     status: 'published',
     datePublished: '2026-09-21',
     dateModified: '2026-09-27',
-    author: 'Alex Mercer, Security Lead',
-    reviewedBy: 'PdfMinty Engineering Team',
-    lastReviewedDate: 'September 4, 2026',
+    author: 'Mohammed Tanveer Munshi',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-27',
     problemSolved:
       'Evaluating the empirical privacy claims of online PDF editors by measuring their actual network behavior and payload transit.',
     relatedLinks: [
@@ -10193,9 +10174,9 @@ Scale = 300 / 72 = 4.167 -> Canvas: 2,550 × 3,300 px (~8.4 Megapixels)</code></
     status: 'published',
     datePublished: '2026-09-21',
     dateModified: '2026-09-28',
-    author: 'Alex Mercer, Security Lead',
-    reviewedBy: 'PdfMinty Engineering Team',
-    lastReviewedDate: 'September 4, 2026',
+    author: 'Mohammed Tanveer Munshi',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'Explaining the underlying technology (WASM, ArrayBuffers, Blobs) that enables secure, serverless PDF manipulation directly inside the web browser.',
     relatedLinks: [
@@ -10376,9 +10357,9 @@ worker.onmessage = function(e) {
     status: 'published',
     datePublished: '2026-09-22',
     dateModified: '2026-09-28',
-    author: 'Alex Mercer, Security Lead',
-    reviewedBy: 'PdfMinty Compliance Team',
-    lastReviewedDate: 'September 4, 2026',
+    author: 'Mohammed Tanveer Munshi',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'Healthcare professionals (doctors, admins, billers) need to merge, compress, or edit patient records but cannot legally upload them to standard online PDF tools due to HIPAA restrictions.',
     relatedLinks: [
@@ -10520,9 +10501,9 @@ worker.onmessage = function(e) {
     status: 'published',
     datePublished: '2026-09-22',
     dateModified: '2026-09-28',
-    author: 'PdfMinty Security Team',
-    reviewedBy: 'PdfMinty Engineering',
-    lastReviewedDate: 'September 4, 2026',
+    author: 'Mohammed Tanveer Munshi',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'US freelancers and small businesses need to fill out and sign W-9s or NDAs containing their Social Security Number (SSN) or EIN, but want to avoid the identity theft risks of cloud PDF editors.',
     relatedLinks: [
@@ -10648,9 +10629,9 @@ worker.onmessage = function(e) {
     status: 'published',
     datePublished: '2026-09-23',
     dateModified: '2026-09-28',
-    author: 'PdfMinty Compliance Team',
-    reviewedBy: 'Alex Mercer, Security Lead',
-    lastReviewedDate: 'September 4, 2026',
+    author: 'Mohammed Tanveer Munshi',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'European businesses need to process PDFs (CVs, contracts, invoices) containing personal data (PII) without violating the strict data transfer and processing limitations of the General Data Protection Regulation (GDPR).',
     relatedLinks: [
@@ -10779,9 +10760,9 @@ worker.onmessage = function(e) {
     status: 'published',
     datePublished: '2026-09-23',
     dateModified: '2026-09-28',
-    author: 'PdfMinty Legal Tech Desk',
-    reviewedBy: 'PdfMinty Compliance Team',
-    lastReviewedDate: 'September 4, 2026',
+    author: 'Mohammed Tanveer Munshi',
+    reviewedBy: 'PdfMinty Security & Engineering Team',
+    lastReviewedDate: '2026-09-28',
     problemSolved:
       'Businesses in the UK and EU need to know if drawing a signature on a PDF using a free online tool is legally binding for B2B contracts, and how to do it securely.',
     relatedLinks: [
@@ -11085,10 +11066,10 @@ worker.onmessage = function(e) {
     name: "Can't Copy Text from a PDF?",
     ogImage: '/og-image.png',
     shortDescription:
-      "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 fixes, including OCR that works without uploading your file.",
+      "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 practical fixes — from local text extraction and unlocking restrictions to opt-in AI Vision OCR.",
     metaTitle: "Can't Copy Text from a PDF? Why It Happens + 5 Real Fixes",
     metaDescription:
-      "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 fixes, including OCR that works without uploading your file.",
+      "Can't copy text from a PDF? It's usually a scanned image, a copy-protection flag, or broken fonts. Here are 5 practical fixes — from local text extraction and unlocking restrictions to opt-in AI Vision OCR.",
     h1: "Can't Copy Text from a PDF? Here's Why It Happens (and 5 Real Fixes)",
     icon: 'FileText',
     category: 'guides',
@@ -11480,7 +11461,155 @@ worker.onmessage = function(e) {
     <h3 class="font-bold text-primary">Q5. The form is on my phone. Different story?</h3>
     <p>A5. No — the same logic applies, and modern mobile browsers run browser-side fill-and-sign tools well. Place your text, add a finger-drawn signature, flatten if needed, and email it back without ever touching a desktop.</p>
   </div>
-</div>
-`,
+</div>`,
+  },
+  {
+    id: 'compare-pdf',
+    slug: 'compare-pdf',
+    name: 'Compare PDF',
+    ogImage: '/og-image.png',
+    shortDescription:
+      'Compare two PDF documents side-by-side to highlight text and visual changes offline',
+    metaTitle: 'Compare PDF Files Online Free — Side-by-Side Diff | PDFMinty',
+    metaDescription:
+      'Compare two PDF files side-by-side or highlight line-by-line text differences 100% locally in your browser. Free, private PDF diff tool with zero uploads.',
+    h1: 'Compare PDF Files Online Free — Private Side-by-Side PDF Diff',
+    icon: 'GitCompare',
+    iconColor: 'text-security-green',
+    homeRank: 23,
+    category: 'security-edit',
+    priority: 0.8,
+    changefreq: 'weekly',
+    type: 'tool',
+    status: 'published',
+    datePublished: '2026-08-01',
+    dateModified: '2026-09-15',
+    lastReviewedDate: 'September 2026 • Verified by Security & Product Architecture Team',
+    problemSolved:
+      'Reviewing two versions of a multi-page legal contract, technical specification, or financial statement manually is slow and prone to human error. Traditional online PDF comparison sites require uploading both confidential versions to external servers. PDFMinty solves this by computing line-by-line text diffs and side-by-side visual canvas comparisons 100% locally inside your browser memory.',
+    primaryCtaText: 'Compare Two PDFs Now',
+    supportedFormats: {
+      input: ['Standard PDF (.pdf) — Original (V1) and Modified (V2) documents'],
+      output: [
+        'Interactive Side-by-Side Diff, Unified Diff View, Visual Page Comparison, & Plain-Text Diff Report (.txt)',
+      ],
+      limits:
+        'Up to 100MB per PDF file (Guest), 150MB (Free account), or 500MB (Pro). Best for digital text-based PDFs; image-only scans can be compared visually or transcribed first with OCR PDF.',
+    },
+    technicalNotes: {
+      deviceBrowser:
+        'Runs natively in Chrome, Firefox, Safari, Edge, and Brave on Windows, macOS, Linux, iOS, and Android using PDF.js WebAssembly and HTML5 Canvas.',
+      fileSizeMemory:
+        'Both PDF documents are parsed concurrently in local browser RAM using Web Workers. No document bytes or text streams are transmitted over the network.',
+      accessibility:
+        'Full keyboard navigation across page diff controls, high-contrast addition (+) and deletion (-) indicators, and exportable plain-text audit reports.',
+    },
+    privacyNote:
+      '100% Client-Side Execution: Both Version 1 and Version 2 PDF files remain strictly inside your local browser memory. Text extraction, LCS (Longest Common Subsequence) line diffing, and HTML5 Canvas page rendering occur entirely on your device with zero server uploads.',
+    howTo: {
+      name: 'How to Compare Two PDF Files Privately in Your Browser',
+      totalTime: 'PT1M',
+      steps: [
+        'Select or drag and drop your Original PDF (Version 1) and Modified PDF (Version 2) into the comparison upload boxes.',
+        'Click "Compare PDFs Now" to run local page-by-page text extraction and Longest Common Subsequence (LCS) diff analysis in your browser.',
+        'Switch between Side-by-Side View, Unified Diff View, and Visual Page Canvas mode to inspect added (+), removed (-), and unchanged lines.',
+        'Filter to view only modified pages or changed lines, and click "Export Report" to download a complete text audit summary.',
+      ],
+    },
+    troubleshooting: [
+      {
+        issue:
+          'Both PDFs show 0 text lines or 100% match despite visible changes on scanned pages.',
+        resolution:
+          'Scanned PDFs contain raster images rather than selectable text streams. Switch to the "Visual Pages" tab to inspect pages side-by-side, or run both files through our OCR PDF tool first.',
+      },
+      {
+        issue: 'One of the PDF files fails to load due to password protection.',
+        resolution:
+          'Encrypted PDFs must be unlocked before their text streams can be parsed. Use our local Unlock PDF tool to remove the password restriction first.',
+      },
+    ],
+    relatedLinks: [
+      { title: 'Sanitize PDF Tool', url: '/sanitize-pdf/', type: 'tool' },
+      { title: 'Flatten PDF Tool', url: '/flatten-pdf/', type: 'tool' },
+      { title: 'PDF to Markdown Tool', url: '/pdf-to-markdown/', type: 'tool' },
+      { title: 'Merge PDF Tool', url: '/merge-pdf/', type: 'tool' },
+      {
+        title: 'Client-Side PDF Processing Explained',
+        url: '/blog/client-side-pdf-processing-explained/',
+        type: 'guide',
+      },
+      {
+        title: 'Is It Safe to Upload PDFs to Online Tools?',
+        url: '/blog/is-it-safe-to-upload-pdf-to-online-tools/',
+        type: 'guide',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Are my confidential contracts uploaded to a server when comparing PDFs?',
+        a: 'No. PDFMinty compares your PDF files 100% locally inside your web browser using PDF.js and client-side JavaScript. Neither Version 1 nor Version 2 ever leaves your device.',
+      },
+      {
+        q: 'How does the PDF text comparison algorithm work?',
+        a: 'The tool extracts text items with their spatial Y-coordinates on each page to reconstruct reading lines, then runs a Longest Common Subsequence (LCS) matrix algorithm to pinpoint exact line additions, deletions, and similarity percentages per page.',
+      },
+      {
+        q: 'Can I compare two PDF files that have different page counts?',
+        a: 'Yes. The comparison engine iterates through the maximum page count across both documents and clearly highlights pages or sections added or removed in the revised version.',
+      },
+      {
+        q: 'What is the difference between Side-by-Side, Unified Diff, and Visual Pages mode?',
+        a: 'Side-by-Side displays original and revised text lines in parallel columns; Unified Diff merges changes into a single chronological code-review stream; Visual Pages renders both PDF pages onto HTML5 Canvas elements for layout inspection.',
+      },
+    ],
+    longFormBody: `
+      <h2>Why Local In-Browser PDF Comparison Matters for Sensitive Documents</h2>
+      <p>
+        When reviewing redlined employment agreements, vendor contracts, lease revisions, or regulatory filings, the documents you are comparing are almost always confidential. Uploading two drafts of a non-disclosure agreement (NDA) or merger contract to a remote cloud comparison portal exposes both the original terms and the negotiated edits to third-party servers.
+      </p>
+      <p>
+        <strong>PDFMinty's Compare PDF tool</strong> eliminates cloud exposure by executing the entire comparison pipeline locally inside your browser's memory. Using WebAssembly-accelerated PDF parsing and a deterministic Longest Common Subsequence (LCS) diff engine, you can audit every added, deleted, or modified line between two PDF versions without transmitting a single byte over the network.
+      </p>
+
+      <h2>How Client-Side PDF Diffing Works Under the Hood</h2>
+      <p>
+        Unlike plain-text files, PDF documents do not store paragraphs as simple newline-delimited strings. Instead, a PDF page stream positions individual glyph runs at explicit <code>(X, Y)</code> coordinates across the page canvas. To produce an accurate, human-readable comparison without server-side processing, PDFMinty executes a three-stage local pipeline:
+      </p>
+      <ol>
+        <li>
+          <strong>Coordinate-Aware Line Reconstruction:</strong> Using <code>pdfjs-dist</code> inside local browser memory, the engine extracts every text item along with its transformation matrix and groups glyphs that share a horizontal baseline (within a 3-point vertical tolerance) into coherent text lines.
+        </li>
+        <li>
+          <strong>Longest Common Subsequence (LCS) Matrix Evaluation:</strong> For each corresponding page pair between Document A (Original) and Document B (Modified), the engine computes an LCS dynamic programming matrix over normalized lines. This distinguishes genuine text insertions and deletions from shifted lines.
+        </li>
+        <li>
+          <strong>Dual HTML5 Canvas Rasterization:</strong> When you switch to the <em>Visual Pages</em> tab, both versions of the active page are rendered at 1.25x scale onto side-by-side HTML5 Canvas elements so you can inspect typography, signatures, stamps, and table alignment alongside the textual diff.
+        </li>
+      </ol>
+
+      <h2>3 Practical Workflows for Side-by-Side PDF Comparison</h2>
+      <ul>
+        <li>
+          <strong>Legal &amp; Procurement Contract Redlining:</strong> Verify that a counterparty's "clean" final PDF matches the agreed terms from the previous draft and that no clauses, liability caps, or dates were silently altered before you sign with our <a href="/sign-pdf/">Sign PDF tool</a>.
+        </li>
+        <li>
+          <strong>Financial &amp; Compliance Audit Verification:</strong> Compare quarterly report drafts, invoice revisions, or policy manuals page-by-page, then export a plain-text diff summary report for your audit trail.
+        </li>
+        <li>
+          <strong>Pre-Release Document Sanitization Checks:</strong> After running a document through <a href="/sanitize-pdf/">Sanitize PDF</a>, <a href="/flatten-pdf/">Flatten PDF</a>, or <a href="/compress-pdf/">Compress PDF</a>, compare the output against the original file to confirm that all visible body text remained intact.
+        </li>
+      </ul>
+
+      <h2>Comparing Text-Based PDFs vs. Scanned Image PDFs</h2>
+      <p>
+        Digital PDFs exported from Microsoft Word, Google Docs, LaTeX, or accounting software contain embedded font dictionaries and selectable text streams, enabling instant line-by-line diffing and similarity scoring. If you are comparing two scanned paper documents (where each page is a photograph), use the <strong>Visual Pages</strong> mode to inspect both scans side-by-side, or extract their text first using our <a href="/ocr-pdf/">OCR PDF</a> or <a href="/pdf-to-markdown/">PDF to Markdown</a> tools.
+      </p>
+
+      <h2>Best Practices After Completing Your Document Review</h2>
+      <p>
+        Once you have verified all changes between Version 1 and Version 2, you can finalize the approved document directly in your browser: apply your signature using <a href="/sign-pdf/">Sign PDF</a>, lock interactive form fields permanently with <a href="/flatten-pdf/">Flatten PDF</a>, strip hidden author and editing history via <a href="/edit-pdf-metadata/">Edit PDF Metadata</a>, or encrypt the final file with <a href="/protect-pdf/">Protect PDF</a>.
+      </p>
+    `,
   },
 ];

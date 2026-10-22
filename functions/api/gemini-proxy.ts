@@ -15,7 +15,21 @@ interface Env {
 
 const MAX_TEXT_LENGTH = 60000;
 const MAX_QUERY_LENGTH = 2000;
+const MAX_OCR_IMAGES = 15;
+const MAX_SINGLE_IMAGE_BASE64_LENGTH = 4 * 1024 * 1024; // ~3 MB binary per page
+const MAX_CHAT_MESSAGES = 30;
+const MAX_MESSAGE_CONTENT_LENGTH = 4000;
 const DEFAULT_MODEL = 'gemini-2.5-flash';
+
+function redactSecretsFromMessage(input: unknown, secrets: string[]): string {
+  let text = String(input instanceof Error ? input.message : input || '');
+  for (const secret of secrets) {
+    if (secret && secret.length >= 6) {
+      text = text.split(secret).join('[REDACTED_KEY]');
+    }
+  }
+  return text.replace(/key=[A-Za-z0-9_-]+/gi, 'key=[REDACTED_KEY]');
+}
 
 /**
  * Parses space/comma/newline/semicolon/pipe separated API keys from secret variables.
@@ -147,9 +161,38 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       mode?: unknown;
       imagesBase64?: unknown;
       messages?: unknown;
+      language?: unknown;
     }
-    const rawData = (await request.json()) as GeminiProxyPayload;
-    const { textContent, query, mode, imagesBase64, messages } = rawData;
+
+    const rawBodyText = await request.text();
+    if (rawBodyText.length > MAX_BODY_BYTES) {
+      return new Response(
+        JSON.stringify({
+          error: 'Request body too large. Reduce document size or number of pages.',
+        }),
+        {
+          status: 413,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          } as HeadersInit,
+        }
+      );
+    }
+
+    let rawData: GeminiProxyPayload;
+    try {
+      rawData = JSON.parse(rawBodyText) as GeminiProxyPayload;
+    } catch {
+      return new Response(JSON.stringify({ error: 'Malformed JSON body.' }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
+      });
+    }
+    const { textContent, query, mode, imagesBase64, messages, language } = rawData;
 
     if (mode !== 'summary' && mode !== 'qa' && mode !== 'ocr' && mode !== 'chat') {
       return new Response(
@@ -174,22 +217,82 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Validate query in 'qa' or 'chat' mode
-    if ((mode === 'qa' || mode === 'chat') && !query && (!Array.isArray(messages) || messages.length === 0)) {
-      return new Response(
-        JSON.stringify({ error: 'A query or message history is required.' }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          } as HeadersInit,
+    const validatedImages: string[] = [];
+    if (mode === 'ocr') {
+      if (!Array.isArray(imagesBase64) || imagesBase64.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'At least one page image is required for OCR mode.' }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            } as HeadersInit,
+          }
+        );
+      }
+      if (imagesBase64.length > MAX_OCR_IMAGES) {
+        return new Response(
+          JSON.stringify({
+            error: `Too many images in a single OCR request (maximum ${MAX_OCR_IMAGES} pages per batch).`,
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            } as HeadersInit,
+          }
+        );
+      }
+      for (const item of imagesBase64) {
+        if (typeof item !== 'string' || item.trim().length === 0) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid image payload in imagesBase64 array.' }),
+            {
+              status: 400,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              } as HeadersInit,
+            }
+          );
         }
-      );
+        if (item.length > MAX_SINGLE_IMAGE_BASE64_LENGTH) {
+          return new Response(
+            JSON.stringify({ error: 'Individual page image exceeds maximum allowed size.' }),
+            {
+              status: 413,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              } as HeadersInit,
+            }
+          );
+        }
+        validatedImages.push(item);
+      }
+    }
+
+    // Validate query in 'qa' or 'chat' mode
+    if (
+      (mode === 'qa' || mode === 'chat') &&
+      !query &&
+      (!Array.isArray(messages) || messages.length === 0)
+    ) {
+      return new Response(JSON.stringify({ error: 'A query or message history is required.' }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
+      });
     }
 
     const truncated = typeof textContent === 'string' ? textContent.slice(0, MAX_TEXT_LENGTH) : '';
     const safeQuery = typeof query === 'string' ? query.slice(0, MAX_QUERY_LENGTH) : '';
+    const groqKeys = new Set(parseApiKeys(env.GROQ_API_KEY));
+    const grokKeys = new Set(parseApiKeys(env.GROK_API_KEY, env.GORK_API_KEY));
     const apiKeys = parseApiKeys(
       env.GEMINI_API_KEY,
       env.GROQ_API_KEY,
@@ -220,22 +323,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     let contentsPayload: unknown = '';
 
     if (mode === 'ocr') {
-      systemInstruction =
-        'You are an expert Document Parsing & OCR engine. Your sole task is to transcribe the provided scanned PDF page image into high-fidelity, cleanly structured Markdown. Preserve headers (#, ##), lists (- or 1.), bold (**), italics (*), and format all tables accurately as Markdown tables (| col |). Do not include conversational introductory or concluding text.';
+      const langHint =
+        typeof language === 'string' && language.trim() && language !== 'auto'
+          ? ` Primary document language hint: ${language.trim().slice(0, 16)}.`
+          : '';
+      systemInstruction = `You are an expert Document Parsing & OCR engine. Your sole task is to transcribe the provided scanned PDF page image into high-fidelity, cleanly structured Markdown. Preserve headers (#, ##), lists (- or 1.), bold (**), italics (*), and format all tables accurately as Markdown tables (| col |). Do not include conversational introductory or concluding text.${langHint}`;
       const parts: unknown[] = [
-        'Transcribe this document image accurately into well-formatted Markdown:',
+        `Transcribe this document image accurately into well-formatted Markdown:${langHint}`,
       ];
-      if (Array.isArray(imagesBase64)) {
-        for (const imgStr of imagesBase64) {
-          if (typeof imgStr === 'string') {
-            parts.push({
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: imgStr.replace(/^data:image\/\w+;base64,/, ''),
-              },
-            });
-          }
-        }
+      for (const imgStr of validatedImages) {
+        parts.push({
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: imgStr.replace(/^data:image\/\w+;base64,/, ''),
+          },
+        });
       }
       contentsPayload = parts;
     } else if (mode === 'summary') {
@@ -250,15 +352,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         content?: string;
         text?: string;
       }
-      const msgsArray = Array.isArray(messages) ? (messages as ChatHistoryItem[]) : [];
+      const msgsArray = Array.isArray(messages)
+        ? (messages as ChatHistoryItem[]).slice(-MAX_CHAT_MESSAGES)
+        : [];
       const historyText = msgsArray
-        .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content || m.text || ''}`)
+        .map((m) => {
+          const rawMsg =
+            typeof m.content === 'string' ? m.content : typeof m.text === 'string' ? m.text : '';
+          return `${m.role === 'user' ? 'User' : 'Assistant'}: ${rawMsg.slice(0, MAX_MESSAGE_CONTENT_LENGTH)}`;
+        })
         .join('\n\n');
       contentsPayload = `DOCUMENT CONTEXT:\n${truncated}\n\nCONVERSATION HISTORY:\n${historyText}\n\nLATEST USER QUERY:\n${safeQuery}\n\nPlease respond directly to the user based on the document context and conversation history:`;
     } else {
       systemInstruction +=
         " Your task is to answer user queries accurately based exclusively on the provided document text context. If the answer cannot be found or deduced, reply with 'This information could not be found in the document.'";
-      contentsPayload = `Use the provided document text below to answer the user's specific query.\n\nUSER SPECIFIC QUERY:\n${query}\n\nDOCUMENT TEXT CONTEXT:\n${truncated}`;
+      contentsPayload = `Use the provided document text below to answer the user's specific query.\n\nUSER SPECIFIC QUERY:\n${safeQuery}\n\nDOCUMENT TEXT CONTEXT:\n${truncated}`;
     }
 
     let lastError: unknown = null;
@@ -267,148 +375,129 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     for (let i = 0; i < apiKeys.length; i++) {
       const currentKey = apiKeys[i];
       try {
-        const isGeminiKey = currentKey.startsWith('AIza');
-        const isExplicitGrokKey = currentKey.startsWith('xai-');
-        const isGroqKey = currentKey.startsWith('gsk_') || currentKey === env.GROQ_API_KEY;
+        const isExplicitGrokKey = currentKey.startsWith('xai-') || grokKeys.has(currentKey);
+        const isGroqKey = currentKey.startsWith('gsk_') || groqKeys.has(currentKey);
 
-        // 1. Try Groq API (console.groq.com)
-        if (isGroqKey || (!isGeminiKey && !isExplicitGrokKey)) {
-          try {
-            const groqModel =
-              env.GROQ_MODEL ||
-              env.GROK_MODEL ||
-              env.GORK_MODEL ||
-              (mode === 'ocr' ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile');
-            let userMessageContent: unknown = '';
+        // 1. Try Groq API (console.groq.com) only when an explicit Groq key is configured
+        if (isGroqKey) {
+          const groqModel =
+            env.GROQ_MODEL ||
+            env.GROK_MODEL ||
+            env.GORK_MODEL ||
+            (mode === 'ocr' ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile');
+          let userMessageContent: unknown = '';
 
-            if (mode === 'ocr') {
-              const contentParts: unknown[] = [
-                {
-                  type: 'text',
-                  text: 'Transcribe this document image accurately into well-formatted Markdown:',
-                },
-              ];
-              if (Array.isArray(imagesBase64)) {
-                for (const imgStr of imagesBase64) {
-                  if (typeof imgStr === 'string') {
-                    const cleanBase64 = imgStr.startsWith('data:')
-                      ? imgStr
-                      : `data:image/jpeg;base64,${imgStr}`;
-                    contentParts.push({
-                      type: 'image_url',
-                      image_url: { url: cleanBase64 },
-                    });
-                  }
-                }
-              }
-              userMessageContent = contentParts;
-            } else {
-              userMessageContent = contentsPayload as string;
-            }
-
-            const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${currentKey}`,
-                'Content-Type': 'application/json',
+          if (mode === 'ocr') {
+            const contentParts: unknown[] = [
+              {
+                type: 'text',
+                text: 'Transcribe this document image accurately into well-formatted Markdown:',
               },
-              body: JSON.stringify({
-                model: groqModel,
-                messages: [
-                  { role: 'system', content: systemInstruction },
-                  { role: 'user', content: userMessageContent },
-                ],
-                temperature: mode === 'ocr' ? 0.1 : 0.2,
-              }),
-            });
-
-            if (groqRes.ok) {
-              const json = (await groqRes.json()) as {
-                choices?: Array<{ message?: { content?: string } }>;
-              };
-              const text = json.choices?.[0]?.message?.content;
-              if (text) {
-                aiText = text;
-              }
-            } else if (isGroqKey) {
-              const errText = await groqRes.text();
-              throw new Error(`Groq API Error (${groqRes.status}): ${errText}`);
+            ];
+            for (const imgStr of validatedImages) {
+              const cleanBase64 = imgStr.startsWith('data:')
+                ? imgStr
+                : `data:image/jpeg;base64,${imgStr}`;
+              contentParts.push({
+                type: 'image_url',
+                image_url: { url: cleanBase64 },
+              });
             }
-          } catch (groqErr) {
-            if (isGroqKey) throw groqErr;
-            // Fallback to other providers below
+            userMessageContent = contentParts;
+          } else {
+            userMessageContent = contentsPayload as string;
+          }
+
+          const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${currentKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: groqModel,
+              messages: [
+                { role: 'system', content: systemInstruction },
+                { role: 'user', content: userMessageContent },
+              ],
+              temperature: mode === 'ocr' ? 0.1 : 0.2,
+            }),
+          });
+
+          if (groqRes.ok) {
+            const json = (await groqRes.json()) as {
+              choices?: Array<{ message?: { content?: string } }>;
+            };
+            const text = json.choices?.[0]?.message?.content;
+            if (text) {
+              aiText = text;
+            }
+          } else {
+            const errText = await groqRes.text();
+            throw new Error(`Groq API Error (${groqRes.status}): ${errText}`);
           }
         }
 
-        // 2. Try xAI Grok API (x.ai) if not handled by Groq
-        if (!aiText && (isExplicitGrokKey || (!isGeminiKey && !isGroqKey))) {
-          try {
-            const grokModel = env.GORK_MODEL || env.GROK_MODEL || 'grok-2-latest';
-            let userMessageContent: unknown = '';
+        // 2. Try xAI Grok API (x.ai) only when an explicit xAI Grok key is configured
+        if (!aiText && isExplicitGrokKey) {
+          const grokModel = env.GORK_MODEL || env.GROK_MODEL || 'grok-2-latest';
+          let userMessageContent: unknown = '';
 
-            if (mode === 'ocr') {
-              const contentParts: unknown[] = [
-                {
-                  type: 'text',
-                  text: 'Transcribe this document image accurately into well-formatted Markdown:',
-                },
-              ];
-              if (Array.isArray(imagesBase64)) {
-                for (const imgStr of imagesBase64) {
-                  if (typeof imgStr === 'string') {
-                    const cleanBase64 = imgStr.startsWith('data:')
-                      ? imgStr
-                      : `data:image/jpeg;base64,${imgStr}`;
-                    contentParts.push({
-                      type: 'image_url',
-                      image_url: { url: cleanBase64 },
-                    });
-                  }
-                }
-              }
-              userMessageContent = contentParts;
-            } else {
-              userMessageContent = contentsPayload as string;
-            }
-
-            const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${currentKey}`,
-                'Content-Type': 'application/json',
+          if (mode === 'ocr') {
+            const contentParts: unknown[] = [
+              {
+                type: 'text',
+                text: 'Transcribe this document image accurately into well-formatted Markdown:',
               },
-              body: JSON.stringify({
-                model: grokModel,
-                messages: [
-                  { role: 'system', content: systemInstruction },
-                  { role: 'user', content: userMessageContent },
-                ],
-                temperature: mode === 'ocr' ? 0.1 : 0.2,
-              }),
-            });
-
-            if (grokRes.ok) {
-              const json = (await grokRes.json()) as {
-                choices?: Array<{ message?: { content?: string } }>;
-              };
-              const text = json.choices?.[0]?.message?.content;
-              if (text) {
-                aiText = text;
-              }
-            } else if (isExplicitGrokKey) {
-              const errText = await grokRes.text();
-              throw new Error(`Grok API Error (${grokRes.status}): ${errText}`);
+            ];
+            for (const imgStr of validatedImages) {
+              const cleanBase64 = imgStr.startsWith('data:')
+                ? imgStr
+                : `data:image/jpeg;base64,${imgStr}`;
+              contentParts.push({
+                type: 'image_url',
+                image_url: { url: cleanBase64 },
+              });
             }
-          } catch (grokErr) {
-            if (isExplicitGrokKey) throw grokErr;
-            // Fallback to Gemini below
+            userMessageContent = contentParts;
+          } else {
+            userMessageContent = contentsPayload as string;
+          }
+
+          const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${currentKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: grokModel,
+              messages: [
+                { role: 'system', content: systemInstruction },
+                { role: 'user', content: userMessageContent },
+              ],
+              temperature: mode === 'ocr' ? 0.1 : 0.2,
+            }),
+          });
+
+          if (grokRes.ok) {
+            const json = (await grokRes.json()) as {
+              choices?: Array<{ message?: { content?: string } }>;
+            };
+            const text = json.choices?.[0]?.message?.content;
+            if (text) {
+              aiText = text;
+            }
+          } else {
+            const errText = await grokRes.text();
+            throw new Error(`Grok API Error (${grokRes.status}): ${errText}`);
           }
         }
 
-        // If not explicit Grok key and Grok attempt did not set aiText, try Google Gemini REST API
+        // 3. Google Gemini REST API (pass key via x-goog-api-key header, never in URL query string)
         if (!aiText) {
           const modelName = env.GEMINI_MODEL || DEFAULT_MODEL;
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(currentKey)}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent`;
 
           let partsPayload: unknown[] = [];
           if (mode === 'ocr') {
@@ -421,6 +510,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'x-goog-api-key': currentKey,
             },
             body: JSON.stringify({
               systemInstruction: {
@@ -462,7 +552,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         break;
       } catch (keyErr: unknown) {
         lastError = keyErr;
-        console.warn(`API Key #${i + 1} failed during AI analysis:`, keyErr);
+        console.warn(
+          `API Key #${i + 1} failed during AI analysis:`,
+          redactSecretsFromMessage(keyErr, apiKeys)
+        );
         if (i < apiKeys.length - 1) {
           console.log(`Failing over to API key #${i + 2}...`);
         }
@@ -488,7 +581,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }
     );
   } catch (err: unknown) {
-    console.error('Gemini API Proxy Exception:', err);
+    console.error('Gemini API Proxy Exception:', redactSecretsFromMessage(err, []));
     const safeMsg = mapGeminiError(err);
     return new Response(JSON.stringify({ error: safeMsg }), {
       status: 500,

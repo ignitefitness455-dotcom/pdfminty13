@@ -1,11 +1,12 @@
 import { Download, FilePenLine, AlertCircle } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getMetadataPDF } from '../core/metadata-operations';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 
@@ -17,6 +18,7 @@ export default function EditMetadataPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const operationTokenRef = useRef(0);
 
   const [metadata, setMetadata] = useState({
     title: '',
@@ -35,10 +37,49 @@ export default function EditMetadataPage() {
     };
   }, [downloadUrl]);
 
+  React.useEffect(() => {
+    return () => {
+      operationTokenRef.current++;
+    };
+  }, []);
+
   const limitMB = TOOL_SIZE_LIMITS['edit-metadata']?.maxSingleMB || 100;
+
+  const handleFileSelected = async (selectedFile: File) => {
+    const currentToken = ++operationTokenRef.current;
+    setFile(selectedFile);
+    setError(null);
+    setIsSuccess(false);
+    setMetadata({
+      title: '',
+      author: '',
+      subject: '',
+      keywords: '',
+      creator: '',
+      producer: '',
+    });
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+
+    try {
+      const bytes = new Uint8Array(await selectedFile.arrayBuffer());
+      const existing = await getMetadataPDF(bytes);
+      if (operationTokenRef.current === currentToken) {
+        setMetadata(existing);
+      }
+    } catch (err: unknown) {
+      if (operationTokenRef.current === currentToken) {
+        const message = err instanceof Error ? err.message : 'Failed to read existing metadata.';
+        setError(message);
+      }
+    }
+  };
 
   const handleProcess = async () => {
     if (!file) return;
+    const currentToken = ++operationTokenRef.current;
     setIsSuccess(false);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
@@ -53,6 +94,7 @@ export default function EditMetadataPage() {
         'editMetadataPDF',
         { bytes, metadata }
       );
+      if (operationTokenRef.current !== currentToken) return;
 
       const blob = new Blob([resultBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = file.name.replace(/\.pdf$/i, '') + '-metadata.pdf';
@@ -62,10 +104,14 @@ export default function EditMetadataPage() {
       await downloadBlob(blob, name);
       setIsSuccess(true);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message || 'Failed to edit metadata.');
+      if (operationTokenRef.current === currentToken) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        setError(message || 'Failed to edit metadata.');
+      }
     } finally {
-      setIsProcessing(false);
+      if (operationTokenRef.current === currentToken) {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -93,13 +139,7 @@ export default function EditMetadataPage() {
               <FileUploader
                 onFilesSelected={(files) => {
                   if (files && files.length > 0) {
-                    setFile(files[0]);
-                    setError(null);
-                    setIsSuccess(false);
-                    if (downloadUrl) {
-                      URL.revokeObjectURL(downloadUrl);
-                      setDownloadUrl(null);
-                    }
+                    void handleFileSelected(files[0]);
                   }
                 }}
                 accept=".pdf,application/pdf"
@@ -119,9 +159,18 @@ export default function EditMetadataPage() {
                 </div>
                 <button
                   onClick={() => {
+                    operationTokenRef.current++;
                     setFile(null);
                     setError(null);
                     setIsSuccess(false);
+                    setMetadata({
+                      title: '',
+                      author: '',
+                      subject: '',
+                      keywords: '',
+                      creator: '',
+                      producer: '',
+                    });
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);
                       setDownloadUrl(null);

@@ -23,11 +23,12 @@ import {
   ShieldBan,
   GitCompare,
 } from 'lucide-react';
-import React, { useState, createContext, useContext, useEffect, useMemo } from 'react';
+import React, { useState, createContext, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
 import { TOOLS } from '../config/seo-data';
+import { useTheme } from '../contexts/ThemeContext';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
 
 import { ConsentManager } from './ConsentManager';
@@ -37,7 +38,6 @@ import { Header } from './Header';
 import InternalSEO, { Breadcrumbs } from './InternalSEO';
 import LanguageSuggestionBanner from './LanguageSuggestionBanner';
 import { MobileDrawer } from './MobileDrawer';
-import { PWAInstallTopBanner } from './PWAInstallTopBanner';
 
 const ToolContentSection = React.lazy(() =>
   import('./ToolContentSection').then((m) => ({ default: m.ToolContentSection }))
@@ -78,38 +78,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation('common');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { isDark, setTheme: setThemeSetting } = useTheme();
+  const theme: 'light' | 'dark' = isDark ? 'dark' : 'light';
 
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-
-  // Theme management logic - Default to light mode (unless user explicitly selected dark)
-  const [theme, setThemeSetting] = useState<'light' | 'dark'>(() => {
-    try {
-      const saved = localStorage.getItem('theme-preference') || localStorage.getItem('theme');
-      if (saved === 'dark' || saved === 'light') return saved;
-    } catch {
-      // localStorage may throw in private browsing mode or old webviews
-    }
-    return 'light';
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-      root.style.colorScheme = 'dark';
-    } else {
-      root.classList.remove('dark');
-      root.classList.add('light');
-      root.style.colorScheme = 'light';
-    }
-    try {
-      localStorage.setItem('theme-preference', theme);
-      localStorage.setItem('theme', theme);
-    } catch {
-      // Ignore write errors
-    }
-  }, [theme]);
 
   const iconMap = useMemo<Record<string, React.ComponentType<{ className?: string }>>>(
     () => ({
@@ -173,7 +145,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] rounded-full bg-blue-300/20 dark:bg-blue-900/20 blur-[100px] sm:blur-[140px]" />
         </div>
         <LanguageSuggestionBanner />
-        <PWAInstallTopBanner />
         <Header
           theme={theme}
           setThemeSetting={setThemeSetting}

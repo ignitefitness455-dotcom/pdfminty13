@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ROUTES } from '../config/routes';
+import { useModal } from '../hooks/useModal';
 
 export interface ConsentSettings {
   ad_storage: 'granted' | 'denied';
@@ -71,6 +72,12 @@ export const ConsentManager: React.FC = () => {
   const [adUserDataGranted, setAdUserDataGranted] = useState<boolean>(false);
   const [adPersonalizationGranted, setAdPersonalizationGranted] = useState<boolean>(false);
 
+  const closePreferences = useCallback(() => {
+    setPreferencesOpen(false);
+  }, []);
+
+  const { modalRef, onKeyDown } = useModal(preferencesOpen, closePreferences);
+
   // Check storage on client-side mount
   useEffect(() => {
     setMounted(true);
@@ -108,17 +115,6 @@ export const ConsentManager: React.FC = () => {
       delete (window as unknown as { openCookiePreferences?: () => void }).openCookiePreferences;
     };
   }, []);
-
-  // Handle Escape key to close preferences modal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && preferencesOpen) {
-        setPreferencesOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [preferencesOpen]);
 
   // Actions
   const handleAcceptAll = useCallback(() => {
@@ -250,11 +246,15 @@ export const ConsentManager: React.FC = () => {
 
       {/* 2. Granular Preferences Dialog (Accessible Modal) */}
       {preferencesOpen && (
+        /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
         <div
+          ref={modalRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="cmp-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+          onKeyDown={onKeyDown}
+          tabIndex={-1}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in outline-none"
         >
           <div className="bg-white dark:bg-zinc-900 border border-border-default dark:border-zinc-700 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden text-on-surface">
             {/* Modal Header */}

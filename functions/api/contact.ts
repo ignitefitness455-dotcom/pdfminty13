@@ -89,7 +89,28 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       subject?: unknown;
       message?: unknown;
     }
-    const rawData = (await request.json()) as ContactPayload;
+    const rawBodyText = await request.text();
+    if (rawBodyText.length > MAX_BODY_BYTES) {
+      return new Response(JSON.stringify({ error: 'Request body too large.' }), {
+        status: 413,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
+      });
+    }
+    let rawData: ContactPayload;
+    try {
+      rawData = JSON.parse(rawBodyText) as ContactPayload;
+    } catch {
+      return new Response(JSON.stringify({ error: 'Malformed JSON body.' }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        } as HeadersInit,
+      });
+    }
     // Strip CR/LF to prevent email header injection. sanitizeForStorage preserves
     // \r and \r\n because they're legal inside message bodies, but they MUST NOT
     // appear in any field that becomes an email header (subject, from, to).

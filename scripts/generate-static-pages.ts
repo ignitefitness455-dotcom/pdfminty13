@@ -175,6 +175,8 @@ async function run(): Promise<void> {
     { slug: 'ocr-pdf', name: 'OCR PDF' },
     { slug: 'edit-pdf-metadata', name: 'Edit PDF Metadata' },
     { slug: 'sanitize-pdf', name: 'Sanitize PDF' },
+    { slug: 'compress-pdf', name: 'Compress PDF' },
+    { slug: 'compare-pdf', name: 'Compare PDF' },
   ];
 
   // Helper to build semantic lightweight static header for pre-rendered pages
@@ -188,7 +190,7 @@ async function run(): Promise<void> {
           <nav aria-label="Main Navigation">
             <ul>
               <li><a href="${homeHref}">Home</a></li>
-              <li><a href="#all-tools">All Tools</a></li>
+              <li><a href="${homeHref}#all-tools">All Tools</a></li>
               <li><a href="/blog/">Blog</a></li>
               <li><a href="/compare/pdfminty-vs-smallpdf/">Compare</a></li>
               <li><a href="/about-us/">About</a></li>
@@ -594,6 +596,25 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
     if (item.type !== 'article') {
       finalBody += getRelatedToolsHtml(item.slug);
     } else {
+      if (item.faqs && item.faqs.length > 0) {
+        const firstQuestionProbe = item.faqs[0].q.slice(0, 28).toLowerCase();
+        if (!finalBody.toLowerCase().includes(firstQuestionProbe)) {
+          finalBody += `
+<section aria-label="Frequently Asked Questions" class="my-10 space-y-4">
+  <h2>Frequently Asked Questions</h2>
+  ${item.faqs
+    .map(
+      (f) => `
+  <div>
+    <h3>${f.q}</h3>
+    <p>${f.a}</p>
+  </div>`
+    )
+    .join('\n')}
+</section>
+`;
+        }
+      }
       // Append Rich Author Bio box in pre-rendered static HTML for AdSense and search engine crawlers
       finalBody += `
 <div class="not-prose my-10 p-6 sm:p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
@@ -749,7 +770,17 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
     fs.mkdirSync(blogTargetFolder, { recursive: true });
   }
 
-  const articles = TOOLS.filter((t: ToolSEOInfo) => t.type === 'article');
+  const staticPageIds = [
+    'blog',
+    'about-us',
+    'contact',
+    'privacy-policy',
+    'terms-of-service',
+    'adobe-acrobat-alternative',
+  ];
+  const articles = TOOLS.filter(
+    (t: ToolSEOInfo) => t.type === 'article' && !staticPageIds.includes(t.id)
+  );
   const articlesListHtml = articles
     .map(
       (a: ToolSEOInfo) => `
@@ -867,7 +898,7 @@ ${toolsListHtml}
     <p>Yes, PDFMinty is 100% free to use. All ${toolsCount} tools are available without subscription, payment, or registration.</p>
  
     <h3>Are my files uploaded to your server?</h3>
-    <p>For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box.</p>
+    <p>For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box.</p>
  
     <h3>What is the maximum file size?</h3>
     <p>PDFMinty can handle individual PDF files up to 100MB and combined operations up to 150MB total. Performance depends on your device's memory and processing power.</p>
@@ -906,7 +937,7 @@ ${toolsListHtml}
       {
         "@type": "Question",
         "name": "Are my files uploaded to your server?",
-        "acceptedAnswer": {"@type": "Answer", "text": "For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box."}
+        "acceptedAnswer": {"@type": "Answer", "text": "For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box."}
       },
       {
         "@type": "Question",

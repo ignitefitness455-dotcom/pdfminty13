@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { ROUTES } from '../src/config/routes';
 import { TOOLS } from '../src/config/seo-data';
-import { SUPPORTED_LOCALES } from '../src/i18n/config';
+import { SUPPORTED_LOCALES, isI18nToolSlug } from '../src/i18n/config';
 
 console.log('🔍 Running Comprehensive Website Link Audit...');
 
@@ -11,30 +11,33 @@ const validPaths = new Set<string>();
 
 // 1. All fixed routes
 Object.values(ROUTES).forEach((route) => {
+  if (route.includes(':')) return;
   const clean = route.startsWith('/') ? route : `/${route}`;
-  validPaths.add(clean);
-  if (!clean.endsWith('/')) validPaths.add(`${clean}/`);
-  // Also localized paths for all supported locales
-  SUPPORTED_LOCALES.forEach((locale) => {
-    if (locale !== 'en') {
-      const locClean = `/${locale}${clean.startsWith('/') ? clean : `/${clean}`}`;
-      validPaths.add(locClean);
-      if (!locClean.endsWith('/')) validPaths.add(`${locClean}/`);
-    }
-  });
+  const withSlash = clean === '/' ? '/' : clean.endsWith('/') ? clean : `${clean}/`;
+  validPaths.add(withSlash);
+  const slugOnly = withSlash.replace(/^\/+|\/+$/g, '');
+  if (!slugOnly || isI18nToolSlug(slugOnly)) {
+    SUPPORTED_LOCALES.forEach((locale) => {
+      if (locale !== 'en') {
+        const locPath = slugOnly ? `/${locale}/${slugOnly}/` : `/${locale}/`;
+        validPaths.add(locPath);
+      }
+    });
+  }
 });
 
 // 2. All items from TOOLS
 TOOLS.forEach((item) => {
-  const slug = item.slug.startsWith('/') ? item.slug : `/${item.slug}`;
-  validPaths.add(slug);
-  validPaths.add(`${slug}/`);
-  SUPPORTED_LOCALES.forEach((locale) => {
-    if (locale !== 'en') {
-      validPaths.add(`/${locale}${slug}`);
-      validPaths.add(`/${locale}${slug}/`);
-    }
-  });
+  const cleanSlug = item.slug.replace(/^\/+|\/+$/g, '');
+  const withSlash = `/${cleanSlug}/`;
+  validPaths.add(withSlash);
+  if (isI18nToolSlug(cleanSlug)) {
+    SUPPORTED_LOCALES.forEach((locale) => {
+      if (locale !== 'en') {
+        validPaths.add(`/${locale}/${cleanSlug}/`);
+      }
+    });
+  }
 });
 
 // 3. Root paths for all locales
@@ -43,7 +46,6 @@ SUPPORTED_LOCALES.forEach((locale) => {
     validPaths.add('/');
   } else {
     validPaths.add(`/${locale}/`);
-    validPaths.add(`/${locale}`);
   }
 });
 
@@ -56,6 +58,7 @@ const legacyRedirects = [
   '/extract-pages', '/extract-pages/', '/reorder', '/reorder/', '/watermark', '/watermark/',
   '/page-numbers', '/page-numbers/', '/add-blank', '/add-blank/', '/img-to-pdf', '/img-to-pdf/',
   '/pdf-to-img', '/pdf-to-img/', '/grayscale', '/grayscale/', '/flatten', '/flatten/',
+  '/compress', '/compress/', '/pdf-diff', '/pdf-diff/',
   '/repair', '/repair/', '/sign', '/sign/', '/ocr', '/ocr/', '/sanitize', '/sanitize/',
   '/merge', '/merge/', '/split', '/split/', '/rotate', '/rotate/',
   '/jpg-to-pdf', '/jpg-to-pdf/', '/jpeg-to-pdf', '/jpeg-to-pdf/', '/png-to-pdf', '/png-to-pdf/',

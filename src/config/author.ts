@@ -44,6 +44,6 @@ export const PRIMARY_AUTHOR: AuthorProfile = {
   ],
   email: 'support@pdfminty.com',
   github: 'https://github.com/ignitefitness455-dotcom/pdfminty13',
-  avatarUrl: '/authors/tanveer-munshi.png',
+  avatarUrl: '/logo-192.png',
   profileUrl: 'https://pdfminty.com/about-us/#creator',
 };

@@ -47,7 +47,7 @@ export const RelatedBlogs: React.FC = () => {
   };
 
   const getFormattedDate = (post: ToolSEOInfo): string => {
-    const dateStr = post.datePublished || '2026-07-16';
+    const dateStr = post.dateModified || post.datePublished || '2026-09-21';
     try {
       const locale = i18n.language === 'bn' ? 'bn-BD' : i18n.language === 'de' ? 'de-DE' : 'en-US';
       return new Date(dateStr).toLocaleDateString(locale, {
@@ -65,13 +65,18 @@ export const RelatedBlogs: React.FC = () => {
     return t(`blog.categories.${catKey}`, { defaultValue: category || 'Guide' });
   };
 
+  const isDefaultLocale =
+    !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
+
   const getArticleTitle = (post: ToolSEOInfo) => {
+    if (isDefaultLocale) return post.name;
     return t(`articles.${post.id}.name`, {
       defaultValue: t(`articles.${post.slug}.name`, { defaultValue: post.name }),
     });
   };
 
   const getArticleDesc = (post: ToolSEOInfo) => {
+    if (isDefaultLocale) return post.shortDescription;
     return t(`articles.${post.id}.shortDesc`, {
       defaultValue: t(`articles.${post.slug}.shortDesc`, { defaultValue: post.shortDescription }),
     });
@@ -81,7 +86,8 @@ export const RelatedBlogs: React.FC = () => {
     pathname === '/' ||
     SUPPORTED_LOCALES.some((loc) => pathname === `/${loc}` || pathname === `/${loc}/`);
 
-  if (isHomePage || pathname === '/blog' || pathname.endsWith('/blog') || relatedBlogs.length === 0) return null;
+  if (isHomePage || pathname === '/blog' || pathname.endsWith('/blog') || relatedBlogs.length === 0)
+    return null;
 
   return (
     <div className="mt-12 pt-8 border-t border-border-muted" id="related_blogs_box">

@@ -4,6 +4,7 @@ import { UPLOAD_LIMITS } from '../config/constants';
 
 export interface SanitizeOptions {
   skipEncryptionCheck?: boolean;
+  maxBytes?: number;
 }
 
 export interface SanitizeResult {
@@ -15,7 +16,7 @@ export interface SanitizeResult {
  * Validate and sanitize a PDF byte buffer.
  *
  * Validation:
- * 1. Enforce maximum file size limit.
+ * 1. Enforce maximum file size limit (defaults to PRO_MAX_SINGLE_FILE ceiling; tier-specific 100MB/250MB checks are enforced at upload boundary).
  * 2. Check for `%PDF-` header.
  * 3. Check for `%%EOF` trailer (warning if missing).
  *
@@ -28,12 +29,13 @@ export interface SanitizeResult {
  * byte-scanning, which misses encrypted dicts hidden in compressed object streams).
  */
 export class PDFSanitizer {
-  public static sanitize(bytes: Uint8Array, _options?: SanitizeOptions): SanitizeResult {
+  public static sanitize(bytes: Uint8Array, options?: SanitizeOptions): SanitizeResult {
     const warnings: string[] = [];
+    const maxAllowedBytes = options?.maxBytes ?? UPLOAD_LIMITS.MAX_SINGLE_FILE;
 
-    if (bytes.byteLength > UPLOAD_LIMITS.MAX_SINGLE_FILE) {
+    if (bytes.byteLength > maxAllowedBytes) {
       throw new Error(
-        `File exceeds the maximum allowed size of ${UPLOAD_LIMITS.MAX_SINGLE_FILE / (1024 * 1024)}MB.`
+        `File exceeds the maximum allowed size of ${maxAllowedBytes / (1024 * 1024)}MB.`
       );
     }
 

@@ -31,7 +31,10 @@ const message = args.message || 'Unknown error occurred during processing';
 const url = args.url || 'N/A';
 const stack = args.stack || 'No stack trace provided';
 const userAgent = args.userAgent || 'Mozilla/5.0 (Node Log Processor)';
-const dateStr = args.date || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+const rawDate = args.date || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+  ? rawDate
+  : new Date().toISOString().slice(0, 10);
 
 // Define paths
 const errorsDir = path.join(__dirname, '..');

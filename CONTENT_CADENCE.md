@@ -2,7 +2,7 @@
 
 **Effective Date:** September 21, 2026  
 **Last Audited:** October 1, 2026  
-**Auditor & Editorial Lead:** Sayed Sunny, Lead Software Architect & Privacy Engineer  
+**Auditor & Editorial Lead:** Mohammed Tanveer Munshi, Lead Software Architect & Privacy Engineer  
 **Entity:** PDFMinty (https://pdfminty.com)
 
 ---

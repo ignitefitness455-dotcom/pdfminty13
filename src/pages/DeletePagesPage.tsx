@@ -40,19 +40,23 @@ export const DeletePagesPage: React.FC = () => {
   }, [thumbnails]);
 
   React.useEffect(() => {
-    const currentUrls = urlsRef.current;
-    const token = operationTokenRef;
     return () => {
-      token.current++;
-      // Clean up all generated URLs when leaving page
-      currentUrls.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
     };
   }, [downloadUrl]);
+
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+      // Clean up all generated URLs when leaving page
+      urlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length > 0) {

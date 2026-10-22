@@ -97,7 +97,6 @@ export const LOCALE_METADATA: Record<SupportedLocale, LocaleMetadata> = {
 
 // Tool slugs configured with localized routing enabled (Option B: only tools with complete 7-locale translations)
 export const I18N_TOOL_SLUGS = ['merge-pdf'] as const;
-export type I18nToolSlug = (typeof I18N_TOOL_SLUGS)[number];
 
 export function isI18nToolSlug(slug: string): boolean {
   const clean = slug.replace(/^\//, '').replace(/\/$/, '');
@@ -105,11 +104,11 @@ export function isI18nToolSlug(slug: string): boolean {
 }
 
 export function getLocalizedPath(baseSlug: string, locale: SupportedLocale): string {
-  const clean = baseSlug.replace(/^\//, '').replace(/\/$/, '');
+  const clean = baseSlug.replace(/^\/+|\/+$/g, '');
   if (!clean) {
     return locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
   }
-  if (locale === DEFAULT_LOCALE) {
+  if (locale === DEFAULT_LOCALE || !isI18nToolSlug(clean)) {
     return `/${clean}/`;
   }
   return `/${locale}/${clean}/`;
@@ -117,8 +116,8 @@ export function getLocalizedPath(baseSlug: string, locale: SupportedLocale): str
 
 /**
  * Derives the target navigation path when switching language from the current pathname.
- * If the current page is an i18n-enabled route (e.g. merge-pdf), it preserves the page under the new locale.
- * Otherwise, it falls back to that locale's homepage (e.g. /de/ or /).
+ * If the current page is an i18n-enabled route (e.g. homepage or merge-pdf), it preserves the page under the new locale.
+ * Otherwise, it keeps the canonical non-prefixed route path so switching UI language never navigates to a 404 URL.
  */
 export function getSwitchLocalePath(
   currentPathname: string,
@@ -135,7 +134,7 @@ export function getSwitchLocalePath(
 
   const baseSegments = hasLocalePrefix ? segments.slice(1) : segments;
   const baseSlug = baseSegments.join('/');
-  const cleanSlug = baseSlug.replace(/^\//, '').replace(/\/$/, '');
+  const cleanSlug = baseSlug.replace(/^\/+|\/+$/g, '');
 
   let basePath = '';
   if (cleanSlug) {
@@ -163,16 +162,20 @@ export interface HreflangEntry {
 }
 
 export function getHreflangs(baseSlug: string, siteUrl = 'https://pdfminty.com'): HreflangEntry[] {
+  const clean = baseSlug.replace(/^\/+|\/+$/g, '');
+  if (clean && !isI18nToolSlug(clean)) {
+    return [];
+  }
   const entries: HreflangEntry[] = [];
   for (const locale of SUPPORTED_LOCALES) {
     entries.push({
       hreflang: locale,
-      href: getCanonicalUrl(baseSlug, locale, siteUrl),
+      href: getCanonicalUrl(clean, locale, siteUrl),
     });
   }
   entries.push({
     hreflang: 'x-default',
-    href: getCanonicalUrl(baseSlug, DEFAULT_LOCALE, siteUrl),
+    href: getCanonicalUrl(clean, DEFAULT_LOCALE, siteUrl),
   });
   return entries;
 }
@@ -190,23 +193,21 @@ export function getInitialLocale(): SupportedLocale {
 
 const initialLocale = getInitialLocale();
 
-const dynamicResourceBackend = resourcesToBackend(
-  (language: string, namespace: string) => {
-    if (language === 'en') {
-      const enMap: Record<string, unknown> = {
-        common: enCommon,
-        faq: enFaq,
-        'merge-pdf': enMergePdf,
-      };
-      return Promise.resolve(enMap[namespace] || {});
-    }
-    const loader = localeLoaders[language]?.[namespace];
-    if (loader) {
-      return loader().then((m) => (m as { default?: unknown }).default || m);
-    }
-    return Promise.reject(new Error(`Locale ${language}/${namespace} not found`));
+const dynamicResourceBackend = resourcesToBackend((language: string, namespace: string) => {
+  if (language === 'en') {
+    const enMap: Record<string, unknown> = {
+      common: enCommon,
+      faq: enFaq,
+      'merge-pdf': enMergePdf,
+    };
+    return Promise.resolve(enMap[namespace] || {});
   }
-);
+  const loader = localeLoaders[language]?.[namespace];
+  if (loader) {
+    return loader().then((m) => (m as { default?: unknown }).default || m);
+  }
+  return Promise.reject(new Error(`Locale ${language}/${namespace} not found`));
+});
 
 i18n
   .use(dynamicResourceBackend)

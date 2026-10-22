@@ -55,19 +55,31 @@ export const BlogPostPage: React.FC = () => {
     return false;
   });
 
+  const isDefaultLocale =
+    !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
+
   // Clean HTML to guarantee strictly only ONE <h1> tag on the page
   const cleanArticleBody = React.useMemo(() => {
     if (!article) return '';
-    const localizedBody = t(`articles.${article.id}.body`, {
-      defaultValue: t(`articles.${article.slug}.body`, {
-        defaultValue: article.longFormBody || article.shortDescription || '',
-      }),
-    });
+    const canonicalBody = article.longFormBody || article.shortDescription || '';
+    const localizedBody = isDefaultLocale
+      ? canonicalBody
+      : t(`articles.${article.id}.body`, {
+          defaultValue: t(`articles.${article.slug}.body`, {
+            defaultValue: canonicalBody,
+          }),
+        });
     const raw = localizedBody;
     return raw
       .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
       .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>');
-  }, [article, t]);
+  }, [article, isDefaultLocale, t]);
+
+  const shouldRenderStructuredFaqs = React.useMemo(() => {
+    if (!article || !article.faqs || article.faqs.length === 0) return false;
+    const firstQuestionProbe = article.faqs[0].q.slice(0, 28).toLowerCase();
+    return !cleanArticleBody.toLowerCase().includes(firstQuestionProbe);
+  }, [article, cleanArticleBody]);
 
   if (!article) {
     return (
@@ -109,7 +121,7 @@ export const BlogPostPage: React.FC = () => {
   };
 
   const getFormattedDate = (dateStr?: string): string => {
-    const d = dateStr || '2026-07-16';
+    const d = dateStr || '2026-09-21';
     try {
       const locale = i18n.language === 'bn' ? 'bn-BD' : i18n.language === 'de' ? 'de-DE' : 'en-US';
       return new Date(d).toLocaleDateString(locale, {
@@ -130,27 +142,43 @@ export const BlogPostPage: React.FC = () => {
     }
   };
 
-  const localizedArticleName = t(`articles.${article.id}.name`, {
-    defaultValue: t(`articles.${article.slug}.name`, { defaultValue: article.h1 || article.name }),
-  });
+  const localizedArticleName = isDefaultLocale
+    ? article.h1 || article.name
+    : t(`articles.${article.id}.name`, {
+        defaultValue: t(`articles.${article.slug}.name`, {
+          defaultValue: article.h1 || article.name,
+        }),
+      });
 
-  const localizedArticleDesc = t(`articles.${article.id}.shortDesc`, {
-    defaultValue: t(`articles.${article.slug}.shortDesc`, {
-      defaultValue: article.shortDescription,
-    }),
-  });
+  const localizedArticleDesc = isDefaultLocale
+    ? article.shortDescription
+    : t(`articles.${article.id}.shortDesc`, {
+        defaultValue: t(`articles.${article.slug}.shortDesc`, {
+          defaultValue: article.shortDescription,
+        }),
+      });
 
   const catKey = (article.category || 'guides').toLowerCase();
   const localizedCategory = t(`blog.categories.${catKey}`, {
     defaultValue: article.category || 'Guide',
   });
 
+  const isAiOrOcrArticle =
+    article.id === 'how-to-make-a-scanned-pdf-searchable' ||
+    article.slug.includes('scanned-pdf-searchable');
+
   return (
     <div className="min-h-screen bg-surface py-10 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
       <SEO
         slug={article.slug}
-        titleOverride={`${localizedArticleName} | PdfMinty Knowledge Hub`}
-        descriptionOverride={article.metaDescription || localizedArticleDesc}
+        titleOverride={
+          isDefaultLocale ? article.metaTitle : `${localizedArticleName} | PdfMinty Knowledge Hub`
+        }
+        descriptionOverride={
+          isDefaultLocale
+            ? article.metaDescription || localizedArticleDesc
+            : localizedArticleDesc || article.metaDescription
+        }
       />
 
       <article className="max-w-4xl mx-auto space-y-10" id="blog-post-container">
@@ -184,12 +212,26 @@ export const BlogPostPage: React.FC = () => {
               </span>
               <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
                 <Calendar className="w-3.5 h-3.5" />
-                {getFormattedDate(article.datePublished)}
+                <span>
+                  {t('blog.publishedLabel', { defaultValue: 'Published' })}{' '}
+                  {getFormattedDate(article.datePublished)}
+                </span>
               </span>
+              {article.dateModified && article.dateModified !== article.datePublished && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                  <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                    <span>
+                      {t('blog.updatedLabel', { defaultValue: 'Updated' })}{' '}
+                      {getFormattedDate(article.dateModified)}
+                    </span>
+                  </span>
+                </>
+              )}
               <span className="text-slate-300 dark:text-slate-700">•</span>
               <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
                 <Clock className="w-3.5 h-3.5" />
-                {getReadingTime(article.longFormBody || article.shortDescription)}
+                {getReadingTime(cleanArticleBody)}
               </span>
             </div>
 
@@ -255,7 +297,13 @@ export const BlogPostPage: React.FC = () => {
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-4 h-4 shrink-0" />
               <span>
-                {t('blog.privacyBadge', { defaultValue: '100% In-Browser Privacy Guarantee' })}
+                {isAiOrOcrArticle
+                  ? t('blog.optInAiPrivacyBadge', {
+                      defaultValue: 'Explicit Consent AI OCR • Zero Server Retention',
+                    })
+                  : t('blog.privacyBadge', {
+                      defaultValue: '100% Local Processing (Standard Tools)',
+                    })}
               </span>
             </div>
           </div>
@@ -268,7 +316,8 @@ export const BlogPostPage: React.FC = () => {
           article.slug.includes('large') ||
           article.slug.includes('batch-process') ||
           article.slug.includes('scanned-documents') ||
-          (article.relatedLinks && article.relatedLinks.some((l) => l.url.includes('compress-pdf')))) && (
+          (article.relatedLinks &&
+            article.relatedLinks.some((l) => l.url.includes('compress-pdf')))) && (
           <div className="not-prose my-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border-2 border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-emerald-500/10">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
@@ -276,11 +325,14 @@ export const BlogPostPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-base font-black text-slate-900 dark:text-white m-0 tracking-tight">
-                  {t('blog.compressToolPromptTitle', { defaultValue: 'Need to compress a PDF right now?' })}
+                  {t('blog.compressToolPromptTitle', {
+                    defaultValue: 'Need to compress a PDF right now?',
+                  })}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 m-0 mt-0.5 font-medium">
                   {t('blog.compressToolPromptSubtitle', {
-                    defaultValue: 'Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.',
+                    defaultValue:
+                      'Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.',
                   })}
                 </p>
               </div>
@@ -289,7 +341,9 @@ export const BlogPostPage: React.FC = () => {
               to={ROUTES.COMPRESS}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md shadow-emerald-600/25 shrink-0 hover:scale-[1.03] active:scale-[0.98] no-underline"
             >
-              <span>{t('blog.openCompressTool', { defaultValue: 'Open Compress PDF Tool →' })}</span>
+              <span>
+                {t('blog.openCompressTool', { defaultValue: 'Open Compress PDF Tool →' })}
+              </span>
             </Link>
           </div>
         )}
@@ -300,31 +354,63 @@ export const BlogPostPage: React.FC = () => {
           dangerouslySetInnerHTML={{ __html: cleanArticleBody }}
         />
 
-        {/* Related Tools Box */}
-        {article.relatedLinks && article.relatedLinks.filter((l) => l.type === 'tool').length > 0 && (
-          <div className="my-8 p-6 rounded-2xl bg-surface-container-low border border-border-muted space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-base">
-              <Wrench className="w-4 h-4 text-emerald-500" />
-              <span>{t('blog.relatedToolsTitle', { defaultValue: 'Related Free PDF Tools Mentioned in this Guide' })}</span>
+        {/* Visible Structured FAQs when defined in seo-data.ts but not already embedded in longFormBody */}
+        {shouldRenderStructuredFaqs && article.faqs && (
+          <section
+            aria-label="Frequently Asked Questions"
+            className="my-10 p-6 sm:p-8 rounded-2xl bg-surface-container-low border border-border-muted space-y-5"
+          >
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white m-0">
+              {t('blog.faqHeading', { defaultValue: 'Frequently Asked Questions' })}
+            </h2>
+            <div className="space-y-4">
+              {article.faqs.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 sm:p-5 rounded-xl bg-surface border border-border-muted space-y-2"
+                >
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white m-0">
+                    {faq.q}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {article.relatedLinks
-                .filter((l) => l.type === 'tool')
-                .map((toolLink, idx) => (
-                  <Link
-                    key={idx}
-                    to={toolLink.url}
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high border border-border-muted hover:border-emerald-500/40 transition-all group no-underline"
-                  >
-                    <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                      {toolLink.title}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                ))}
-            </div>
-          </div>
+          </section>
         )}
+
+        {/* Related Tools Box */}
+        {article.relatedLinks &&
+          article.relatedLinks.filter((l) => l.type === 'tool').length > 0 && (
+            <div className="my-8 p-6 rounded-2xl bg-surface-container-low border border-border-muted space-y-4">
+              <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-base">
+                <Wrench className="w-4 h-4 text-emerald-500" />
+                <span>
+                  {t('blog.relatedToolsTitle', {
+                    defaultValue: 'Related Free PDF Tools Mentioned in this Guide',
+                  })}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {article.relatedLinks
+                  .filter((l) => l.type === 'tool')
+                  .map((toolLink, idx) => (
+                    <Link
+                      key={idx}
+                      to={toolLink.url}
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high border border-border-muted hover:border-emerald-500/40 transition-all group no-underline"
+                    >
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        {toolLink.title}
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          )}
 
         {/* Real Author Bio Box - Fix for AdSense E-E-A-T */}
         <div className="my-10">

@@ -75,17 +75,38 @@ function runRefresh(fromYear: string, toYear: string, dryRun: boolean): void {
     let fileModified = false;
 
     const updatedLines = lines.map((line) => {
-      // We safely update titles, headings, and review dates
-      // BUT do NOT break URL slugs, IDs, or permalinks
-      const isSlugOrRoute = /slug:|id:|path:|href:|route|ROUTES\./i.test(line);
-      if (isSlugOrRoute && !/metaTitle|metaDescription|name:|h1:|title:/i.test(line)) {
+      // Never mutate historical publication dates, route slugs, IDs, or standalone URL mapping lines
+      if (
+        /datePublished|slug:|id:|path:|url:|route|ROUTES\.|'blog\/|"blog\/|\/blog\/[^"'\s]*20\d{2}/i.test(
+          line
+        ) &&
+        !/metaTitle|metaDescription|name:|h1:|lastReviewedDate|dateModified/i.test(line)
+      ) {
         return line;
       }
 
       if (line.includes(fromYear)) {
+        // Protect any inline href="/..." or url: '/...' substrings on the same line
+        const protectedUrls: string[] = [];
+        const maskedLine = line.replace(
+          /(?:href|to|url)\s*[:=]\s*["'][^"']+["']/gi,
+          (match) => {
+            protectedUrls.push(match);
+            return `__PROTECTED_URL_${protectedUrls.length - 1}__`;
+          }
+        );
+
+        if (!maskedLine.includes(fromYear)) {
+          return line;
+        }
+
         fileModified = true;
         totalUpdatedLines++;
-        return line.replaceAll(fromYear, toYear);
+        const replaced = maskedLine.replaceAll(fromYear, toYear);
+        return replaced.replace(
+          /__PROTECTED_URL_(\d+)__/g,
+          (_, idx) => protectedUrls[Number(idx)]
+        );
       }
       return line;
     });

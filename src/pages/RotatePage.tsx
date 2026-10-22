@@ -31,11 +31,16 @@ export const RotatePage: React.FC = () => {
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
+    };
+  }, [downloadUrl]);
+
+  React.useEffect(() => {
+    return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [downloadUrl, previewUrl]);
+  }, [previewUrl]);
 
   // Extract first page preview image
   React.useEffect(() => {

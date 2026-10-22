@@ -155,4 +155,59 @@ describe('Cloudflare Pages Middleware - Redirect & Routing Tests', () => {
     expect(res.status).toBe(404);
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
+
+  it('redirects /pricing to /pricing/ (301) and serves /pricing/ with 200 and index, follow', async () => {
+    const redirectCtx = createMockContext('https://pdfminty.com/pricing');
+    const redirectRes = await onRequest(redirectCtx);
+    expect(redirectRes.status).toBe(301);
+    expect(redirectRes.headers.get('Location')).toBe('https://pdfminty.com/pricing/');
+
+    const okCtx = createMockContext('https://pdfminty.com/pricing/');
+    const okRes = await onRequest(okCtx);
+    expect(okRes.status).toBe(200);
+    expect(okRes.headers.get('X-Robots-Tag')).toBe('index, follow');
+  });
+
+  it('redirects /compare-pdf and /pdf-diff to /compare-pdf/ (301) and serves /compare-pdf/ with 200', async () => {
+    const slashCtx = createMockContext('https://pdfminty.com/compare-pdf');
+    const slashRes = await onRequest(slashCtx);
+    expect(slashRes.status).toBe(301);
+    expect(slashRes.headers.get('Location')).toBe('https://pdfminty.com/compare-pdf/');
+
+    const legacyCtx = createMockContext('http://www.pdfminty.com/pdf-diff');
+    const legacyRes = await onRequest(legacyCtx);
+    expect(legacyRes.status).toBe(301);
+    expect(legacyRes.headers.get('Location')).toBe('https://pdfminty.com/compare-pdf/');
+
+    const okCtx = createMockContext('https://pdfminty.com/compare-pdf/');
+    const okRes = await onRequest(okCtx);
+    expect(okRes.status).toBe(200);
+    expect(okRes.headers.get('X-Robots-Tag')).toBe('index, follow');
+  });
+
+  it('redirects /grayscale-pdf to /grayscale-pdf/ (301) and serves /grayscale-pdf/ with 200', async () => {
+    const slashCtx = createMockContext('https://pdfminty.com/grayscale-pdf');
+    const slashRes = await onRequest(slashCtx);
+    expect(slashRes.status).toBe(301);
+    expect(slashRes.headers.get('Location')).toBe('https://pdfminty.com/grayscale-pdf/');
+
+    const okCtx = createMockContext('https://pdfminty.com/grayscale-pdf/');
+    const okRes = await onRequest(okCtx);
+    expect(okRes.status).toBe(200);
+    expect(okRes.headers.get('X-Robots-Tag')).toBe('index, follow');
+  });
+
+  it('serves auth and account routes (/login/, /signup/, /dashboard/) with 200 OK and X-Robots-Tag: noindex, nofollow', async () => {
+    for (const route of ['/login/', '/signup/', '/dashboard/']) {
+      const ctx = createMockContext(`https://pdfminty.com${route}`);
+      const res = await onRequest(ctx);
+      expect(res.status).toBe(200);
+      expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+    }
+
+    const legacyAuthCtx = createMockContext('https://pdfminty.com/account');
+    const legacyAuthRes = await onRequest(legacyAuthCtx);
+    expect(legacyAuthRes.status).toBe(301);
+    expect(legacyAuthRes.headers.get('Location')).toBe('https://pdfminty.com/dashboard/');
+  });
 });

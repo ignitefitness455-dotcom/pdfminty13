@@ -41,6 +41,7 @@ const isToolInCategory = (slug: string, categoryId: string): boolean => {
         'sign-pdf',
         'reorder-pdf',
         'extract-pages-pdf',
+        'compare-pdf',
       ].includes(slug);
     case 'organize':
       return [
@@ -61,7 +62,13 @@ const isToolInCategory = (slug: string, categoryId: string): boolean => {
     case 'convert':
       return ['image-to-pdf', 'pdf-to-image', 'pdf-to-markdown'].includes(slug);
     case 'edit':
-      return ['watermark-pdf', 'add-page-numbers', 'edit-pdf-metadata', 'sign-pdf'].includes(slug);
+      return [
+        'watermark-pdf',
+        'add-page-numbers',
+        'edit-pdf-metadata',
+        'sign-pdf',
+        'compare-pdf',
+      ].includes(slug);
     case 'security':
       return ['protect-pdf', 'unlock-pdf', 'flatten-pdf', 'sanitize-pdf'].includes(slug);
     case 'intelligence':
@@ -120,11 +127,7 @@ export const HomePage: React.FC = () => {
 
       {/* Decorative Glow Elements */}
       <div
-        className="absolute top-[-150px] left-1/2 -translate-x-1/2 -z-10 w-[800px] h-[450px] pointer-events-none opacity-10"
-        style={{
-          background:
-            'radial-gradient(ellipse at center, var(--custom-security-green) 0%, transparent 60%)',
-        }}
+        className="absolute top-[-150px] left-1/2 -translate-x-1/2 -z-10 w-[800px] h-[450px] pointer-events-none opacity-10 bg-[radial-gradient(ellipse_at_center,var(--custom-security-green)_0%,transparent_60%)]"
         aria-hidden="true"
       />
 
@@ -151,6 +154,7 @@ export const HomePage: React.FC = () => {
                 <button
                   key={category.id}
                   type="button"
+                  aria-pressed={isActive}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`whitespace-nowrap flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer border active:scale-95 shrink-0 sm:shrink ${
                     isActive
@@ -183,6 +187,7 @@ export const HomePage: React.FC = () => {
                 <button
                   key={category.id}
                   type="button"
+                  aria-pressed={isActive}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`whitespace-nowrap flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer border active:scale-95 shrink-0 sm:shrink ${
                     isActive

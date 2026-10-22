@@ -503,6 +503,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
       <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 max-w-lg mx-auto flex flex-col justify-center animate-fadein">
         <Helmet>
           <title>{isBn ? 'ইমেইল ভেরিফাই করুন — PDFMinty' : 'Verify Your Email — PDFMinty'}</title>
+          <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <div className="space-y-6">
           <div className="text-center">
@@ -703,6 +704,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
           name="description"
           content="Sign in or create a PDFMinty account to manage Pro features, sync offline settings, and process documents securely."
         />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="space-y-6">

@@ -55,7 +55,6 @@ import {
   removeActivityItem,
   PDFActivity,
 } from '../utils/activityStore';
-import { getStoredGeoPricing } from '../utils/geoPricing';
 
 function exportJsonDownload(data: unknown, filename: string) {
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -173,12 +172,6 @@ export const DashboardPage: React.FC = () => {
       setNewName(user.displayName);
     }
   }, [user?.displayName]);
-
-  // Pricing info for the user's localized currency
-  const pricingInfo = useMemo(() => {
-    const { geo, pricing } = getStoredGeoPricing();
-    return { geo, pricing };
-  }, []);
 
   // Filtered activities
   const filteredActivities = useMemo(() => {
@@ -517,71 +510,69 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-8 px-4 sm:px-6 lg:px-8 animate-fadein">
+    <div className="min-h-screen bg-slate-50/60 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-5 sm:py-8 px-3 sm:px-6 lg:px-8 animate-fadein">
       <Helmet>
         <title>
           {isBn ? 'ইউজার ড্যাশবোর্ড ও প্রোফাইল — PDFMinty' : 'My Dashboard & Profile — PDFMinty'}
         </title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6">
         {/* ========================================================= */}
-        {/* TOP EXECUTIVE HERO & IDENTITY BAR                        */}
+        {/* TOP WORKSPACE ACCOUNT BAR (CLEAN SAAS STANDARD)           */}
         {/* ========================================================= */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-emerald-50/40 dark:from-slate-900 dark:via-slate-900/90 dark:to-emerald-950/20 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 sm:p-8 transition-all">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-4 sm:p-6 transition-all">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* User Identity Details */}
-            <div className="flex items-start sm:items-center gap-4 sm:gap-5">
-              <div className="relative">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shadow-lg shadow-emerald-500/25 ring-4 ring-white dark:ring-slate-800">
+            <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+              <div className="relative shrink-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-white font-black text-lg sm:text-xl flex items-center justify-center shadow-md shadow-emerald-500/20 ring-2 ring-white dark:ring-slate-800">
                   {user?.displayName ? user.displayName[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
                 </div>
                 {stats.isPro && (
                   <span
                     title="Active Pro Subscriber"
-                    className="absolute -bottom-1 -right-1 p-1 bg-amber-400 text-slate-950 rounded-full ring-2 ring-white dark:ring-slate-900 shadow-md"
+                    className="absolute -bottom-1 -right-1 p-1 bg-amber-400 text-slate-950 rounded-full ring-2 ring-white dark:ring-slate-900 shadow-xs"
                   >
-                    <Crown className="w-3.5 h-3.5 fill-amber-950 text-amber-950" />
+                    <Crown className="w-3 h-3 fill-amber-950 text-amber-950" />
                   </span>
                 )}
               </div>
 
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
                   {isEditingName ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <input
                         type="text"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
-                        className="py-1 px-3 text-base font-bold bg-white dark:bg-slate-800 border border-emerald-500 rounded-xl focus:outline-none ring-2 ring-emerald-500/20 text-slate-900 dark:text-white"
+                        className="py-1 px-2.5 text-sm font-bold bg-white dark:bg-slate-800 border border-emerald-500 rounded-lg focus:outline-none ring-2 ring-emerald-500/20 text-slate-900 dark:text-white w-40 sm:w-52"
                         placeholder="Enter your name"
                       />
                       <button
                         onClick={handleSaveName}
                         disabled={isSavingName}
-                        className="py-1 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors cursor-pointer"
+                        className="py-1 px-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors cursor-pointer"
                       >
-                        {isSavingName ? '...' : isBn ? 'সংরক্ষণ' : 'Save'}
+                        {isSavingName ? '...' : isBn ? 'সেভ' : 'Save'}
                       </button>
                       <button
                         onClick={() => setIsEditingName(false)}
-                        className="py-1 px-2.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-xl cursor-pointer"
+                        className="py-1 px-2 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg cursor-pointer"
                       >
                         ✕
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <h1 className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
                         {user?.displayName || (isBn ? 'পিডিএফমিন্টি ব্যবহারকারী' : 'PDFMinty Member')}
                       </h1>
                       <button
                         onClick={() => setIsEditingName(true)}
-                        className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                        className="p-1 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors cursor-pointer shrink-0"
                         title={isBn ? 'নাম পরিবর্তন করুন' : 'Edit display name'}
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -589,29 +580,24 @@ export const DashboardPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Plan Identifier */}
+                  {/* Clean Plan Badge */}
                   {stats.isPro ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-amber-600 dark:text-amber-400 tracking-wide uppercase">
-                      <Crown className="w-3.5 h-3.5 fill-current" />
-                      <span>{isBn ? 'প্রো মেম্বার ($2.49/mo)' : 'Pro Subscriber ($2.49/mo)'}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] sm:text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider shrink-0">
+                      <Crown className="w-3 h-3 fill-current" />
+                      <span>{isBn ? 'প্রো প্ল্যান' : 'Pro Plan'}</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wide uppercase">
-                      <span>{isBn ? 'ফ্রি প্ল্যান' : 'Free Explorer'}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider shrink-0">
+                      <span>{isBn ? 'ফ্রি প্ল্যান' : 'Free Plan'}</span>
                     </span>
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                  <span>{user?.email || 'authenticated-user@pdfminty.local'}</span>
-                  <span>&bull;</span>
-                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    {isBn ? 'ক্লায়েন্ট-সাইড সেশন সক্রিয়' : 'Client-Side Session Active'}
-                  </span>
-                  <span>&bull;</span>
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="truncate max-w-[200px] sm:max-w-none">{user?.email || 'authenticated-user@pdfminty.local'}</span>
+                  <span className="hidden sm:inline">&bull;</span>
                   <span
-                    className={`inline-flex items-center gap-1 font-semibold text-xs ${
+                    className={`inline-flex items-center gap-1 font-semibold text-[11px] ${
                       user?.emailVerified
                         ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-amber-600 dark:text-amber-400'
@@ -620,12 +606,12 @@ export const DashboardPage: React.FC = () => {
                     {user?.emailVerified ? (
                       <>
                         <Check className="w-3 h-3 text-emerald-500" />
-                        <span>{isBn ? 'ইমেইল ভেরিফাইড' : 'Email Verified'}</span>
+                        <span>{isBn ? 'ভেরিফাইড' : 'Verified'}</span>
                       </>
                     ) : (
                       <>
                         <AlertTriangle className="w-3 h-3 text-amber-500" />
-                        <span>{isBn ? 'ইমেইল আনভেরিফাইড' : 'Unverified Email'}</span>
+                        <span>{isBn ? 'আনভেরিফাইড' : 'Unverified'}</span>
                       </>
                     )}
                   </span>
@@ -639,68 +625,40 @@ export const DashboardPage: React.FC = () => {
                     <span>{copiedUid ? (isBn ? 'কপি হয়েছে' : 'Copied') : 'ID'}</span>
                   </button>
                 </div>
-
-                <div className="pt-1 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                  <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    {isBn ? '100% গোপনীয়তা সুরক্ষিত (জিরো ক্লাউড স্টোরেজ)' : 'Zero-Knowledge Privacy Sandbox'}
-                  </span>
-                  <span>&bull;</span>
-                  <span>{isBn ? 'লোকেশন:' : 'Region:'} {pricingInfo.geo.flag} {pricingInfo.geo.countryName}</span>
-                </div>
               </div>
             </div>
 
-            {/* Quick Actions in Hero */}
-            <div className="flex flex-wrap items-center gap-2.5 sm:self-center">
+            {/* Clean Workspace Actions */}
+            <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800/80 shrink-0">
               {!stats.isPro ? (
                 <button
                   type="button"
                   onClick={handleActivatePro}
                   disabled={isUpgrading}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+                  className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
                 >
-                  <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
-                  <span>{isBn ? 'প্রো আপগ্রেড করুন (BDT 299.99/month)' : 'Upgrade to Pro (BDT 299.99/month)'}</span>
+                  <Crown className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
+                  <span>{isBn ? 'প্রো আপগ্রেড (৳২৯৯.৯৯/মাস)' : 'Upgrade to Pro (BDT 299.99/mo)'}</span>
                 </button>
               ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowRenewModal(true)}
-                    className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
-                    title={isBn ? 'সাবস্ক্রিপশন রিনিউ করুন' : 'Renew Pro Subscription'}
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>{isBn ? 'রিনিউ করুন' : 'Renew'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('billing')}
-                    className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>{isBn ? 'সাবস্ক্রিপশন' : 'Subscription'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCancelModal(true)}
-                    className="px-2.5 py-2 rounded-xl border border-red-300 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 font-bold text-xs transition-colors cursor-pointer"
-                    title={isBn ? 'সাবস্ক্রিপশন বাতিল করুন' : 'Cancel subscription'}
-                  >
-                    {isBn ? 'বাতিল' : 'Cancel'}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('billing')}
+                  className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>{isBn ? 'সাবস্ক্রিপশন ও বিলিং' : 'Manage Subscription'}</span>
+                </button>
               )}
 
               <button
                 type="button"
                 onClick={logout}
-                className="p-2.5 rounded-xl border border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer shrink-0"
                 title={isBn ? 'সাইন আউট করুন' : 'Sign out'}
               >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">{isBn ? 'সাইন আউট' : 'Sign Out'}</span>
+                <LogOut className="w-3.5 h-3.5" />
+                <span>{isBn ? 'লগআউট' : 'Sign Out'}</span>
               </button>
             </div>
           </div>
@@ -708,7 +666,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* Unverified Email Alert Banner */}
         {user && !user.emailVerified && (
-          <div className="p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm animate-fadein">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs animate-fadein">
             <div className="flex items-start gap-2.5">
               <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0">
                 <Mail className="w-4 h-4" />
@@ -733,7 +691,7 @@ export const DashboardPage: React.FC = () => {
               >
                 {resendingVerification
                   ? (isBn ? 'পাঠানো হচ্ছে...' : 'Sending...')
-                  : (isBn ? 'ভেরিফিকেশন লিংক পুনরায় পাঠান' : 'Resend Verification Link')}
+                  : (isBn ? 'ভেরিফিকেশন লিংক পাঠান' : 'Resend Link')}
               </button>
               <button
                 type="button"
@@ -755,39 +713,34 @@ export const DashboardPage: React.FC = () => {
         )}
 
         {/* ========================================================= */}
-        {/* EXECUTIVE METRICS & CAPACITY GAUGES                       */}
+        {/* COMPACT 2x2 MOBILE / 4-COL DESKTOP STATUS METRICS         */}
         {/* ========================================================= */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           {/* Card 1: Daily Remaining Tasks */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {isBn ? 'দৈনিক বাকি থাকা টাস্ক' : 'Daily Remaining Tasks'}
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                {isBn ? 'দৈনিক টাস্ক কোটা' : 'Daily Tasks'}
               </span>
-              <div className={`p-2 rounded-xl ${
+              <div className={`p-1.5 rounded-lg shrink-0 ${
                 stats.isPro
                   ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                   : stats.remainingNum === 0
                   ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
                   : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
               }`}>
-                {stats.isPro ? <Crown className="w-4 h-4 fill-current" /> : <Clock className="w-4 h-4" />}
+                {stats.isPro ? <Crown className="w-3.5 h-3.5 fill-current" /> : <Clock className="w-3.5 h-3.5" />}
               </div>
             </div>
             <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-slate-900 dark:text-white">
+              <div className="flex items-baseline gap-1.5 tabular-nums">
+                <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
                   {stats.isPro
                     ? (isBn ? 'আনলিমিটেড' : 'Unlimited')
-                    : `${stats.remainingNum}`}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                  {stats.isPro
-                    ? '(∞ Tasks/Day)'
-                    : `/ ${stats.dailyLimitNum} ${isBn ? 'টাস্ক বাকি' : 'tasks left'}`}
+                    : `${stats.remainingNum}/${stats.dailyLimitNum}`}
                 </span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     stats.isPro
@@ -802,130 +755,85 @@ export const DashboardPage: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-              <span>
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              <span className="truncate">
                 {stats.isPro
-                  ? (isBn ? 'প্রো সদস্য: কোনো সীমা নেই' : 'Pro Tier: Zero limits')
-                  : `${tasksUsed} ${isBn ? 'টি ব্যবহৃত' : 'used'} • ${isBn ? 'রিসেট: রাত ১২টা' : 'Resets at 00:00'}`}
+                  ? (isBn ? 'কোনো দৈনিক সীমা নেই' : 'No daily limits')
+                  : `${tasksUsed} ${isBn ? 'ব্যবহৃত' : 'used today'}`}
               </span>
-              {!stats.isPro && (
-                <button
-                  type="button"
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
-                >
-                  {isBn ? 'আনলিমিটেড নিন' : 'Go Unlimited'}
-                </button>
-              )}
             </div>
           </div>
 
-          {/* Card 2: Professional Status & File Limit */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {isBn ? 'প্রফেশনাল স্ট্যাটাস' : 'Professional Status'}
+          {/* Card 2: Max File Size & Batch Limit */}
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                {isBn ? 'সর্বোচ্চ ফাইল সাইজ' : 'Max File Limit'}
               </span>
-              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
-                <Layers className="w-4 h-4" />
+              <div className="p-1.5 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 shrink-0">
+                <Layers className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-black text-slate-900 dark:text-white">
-                  {stats.isPro ? 'Pro Member' : 'Free Explorer'}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                  ({maxFileSizeMB} MB)
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 mt-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>
-                  {stats.isPro
-                    ? `${isBn ? '৫০টি ফাইল ব্যাচ' : '50 files batch'} • SIMD`
-                    : `${isBn ? '১০টি টাস্ক/দিন' : '10 tasks/day'} • Standard`}
-                </span>
-              </div>
+            <div className="tabular-nums">
+              <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
+                {maxFileSizeMB} MB
+              </span>
+              <p className="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 truncate">
+                {stats.isPro
+                  ? (isBn ? '৫০টি ফাইল ব্যাচ ও এআই' : '50-file batch + AI OCR')
+                  : (isBn ? 'স্ট্যান্ডার্ড ফাইল সীমা' : 'Standard upload limit')}
+              </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
               {stats.isPro
-                ? isBn
-                  ? `পরবর্তী রিনিউয়াল: ${renewalDate}`
-                  : `Next Renewal: ${renewalDate}`
-                : isBn
-                ? '৫০০ এমবি ফাইল ও আনলিমিটেড টাস্কের জন্য প্রো নিন'
-                : 'Upgrade for 500MB batch files & Gemini AI'}
+                ? (isBn ? `রিনিউয়াল: ${renewalDate}` : `Renews: ${renewalDate}`)
+                : (isBn ? 'প্রো-তে ৫০০ এমবি সীমা' : '500 MB limit with Pro')}
             </p>
           </div>
 
-          {/* Card 3: Privacy & Zero Knowledge Guarantee */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {isBn ? 'জিরো-নলেজ প্রাইভেসি' : 'Privacy Sandbox'}
+          {/* Card 3: Local Processing Engine */}
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                {isBn ? 'ফাইল নিরাপত্তা' : 'File Security'}
               </span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <ShieldCheck className="w-4 h-4" />
+              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5" />
               </div>
             </div>
             <div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                  100%
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                  Client-Side
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
-                {isBn ? 'সার্ভারে 0 বাইট ডেটা পাঠানো হয়' : '0 Bytes Stored on Cloud'}
+              <span className="text-lg sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                100% Local
+              </span>
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium truncate">
+                {isBn ? 'ব্রাউজারেই ফাইল প্রসেসিং' : 'Processed in browser'}
               </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {isBn
-                ? 'আইল্যাভপিডিএফ বা স্মলপিডিএফ থেকে অধিক নিরাপদ'
-                : '100% confidential offline browser engine'}
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              {isBn ? 'কোনো ফাইল সার্ভারে জমা থাকে না' : 'Zero cloud file storage'}
             </p>
           </div>
 
-          {/* Card 4: Data Processed & Space Saved */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {isBn ? 'প্রসেস করা ডেটা ও ব্যান্ডউইথ' : 'Processed Bandwidth'}
+          {/* Card 4: Data Processed */}
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                {isBn ? 'প্রসেসড ফাইল' : 'Processed Data'}
               </span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                <Cpu className="w-4 h-4" />
+              <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
+                <Cpu className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-slate-900 dark:text-white">
-                  {stats.storageProcessedMB} MB
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                  ({stats.totalPages} pages)
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
-                {stats.totalOps === 0
-                  ? isBn
-                    ? 'এখনো কোনো ফাইল প্রসেস করা হয়নি'
-                    : 'No documents processed yet'
-                  : isBn
-                  ? 'লোকাল মেমোরিতে সরাসরি এক্সিকিউটেড'
-                  : 'Processed directly on your CPU'}
+            <div className="tabular-nums">
+              <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
+                {stats.storageProcessedMB} MB
+              </span>
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium truncate">
+                {stats.totalOps} {isBn ? 'টি ফাইল' : 'files'} &bull; {stats.totalPages} {isBn ? 'পেজ' : 'pages'}
               </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {stats.totalOps === 0
-                ? isBn
-                  ? 'টুলস ব্যবহার করলে পরিসংখ্যান যুক্ত হবে'
-                  : 'Metrics update as you process PDFs'
-                : isBn
-                ? '100% ক্লায়েন্ট-সাইড মেমোরি প্রসেসিং'
-                : '100% confidential in-memory processing'}
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              {isBn ? 'আপনার ডিভাইসের লোকাল রেকর্ড' : 'Recorded on this device'}
             </p>
           </div>
         </section>
@@ -934,65 +842,75 @@ export const DashboardPage: React.FC = () => {
         {/* INTERACTIVE NAVIGATION TABS                               */}
         {/* ========================================================= */}
         <div className="border-b border-slate-200 dark:border-slate-800">
-          <nav className="flex space-x-2 sm:space-x-4 overflow-x-auto pb-1 no-scrollbar">
+          <nav className="flex space-x-1.5 sm:space-x-3 overflow-x-auto pb-2 no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab('overview')}
-              className={`py-3 px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`py-2 px-3 sm:py-2.5 sm:px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === 'overview'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              <Zap className="w-4 h-4" />
-              <span>{isBn ? 'ড্যাশবোর্ড ও লঞ্চপ্যাড' : 'Workspace Overview'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('history')}
-              className={`py-3 px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeTab === 'history'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <History className="w-4 h-4" />
-              <span>{isBn ? 'সাম্প্রতিক হিস্ট্রি' : 'Recent Activity'}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold">
-                {activities.length}
-              </span>
+              <Zap className="w-3.5 h-3.5" />
+              <span>{isBn ? 'ওভারভিউ' : 'Overview'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('tools')}
-              className={`py-3 px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`py-2 px-3 sm:py-2.5 sm:px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === 'tools'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              <FolderOpen className="w-4 h-4" />
-              <span>{isBn ? 'সব টুলস' : 'All Tools Hub'}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+              <FolderOpen className="w-3.5 h-3.5" />
+              <span>{isBn ? 'সব টুলস' : 'All Tools'}</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                activeTab === 'tools'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              }`}>
                 {allTools.length}
               </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab('billing')}
-              className={`py-3 px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeTab === 'billing'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+              onClick={() => setActiveTab('history')}
+              className={`py-2 px-3 sm:py-2.5 sm:px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === 'history'
+                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              <CreditCard className="w-4 h-4" />
-              <span>{isBn ? 'সাবস্ক্রিপশন ও বিলিং' : 'Subscription & Billing'}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                stats.isPro
+              <History className="w-3.5 h-3.5" />
+              <span>{isBn ? 'হিস্ট্রি' : 'History'}</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                activeTab === 'history'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
+              }`}>
+                {activities.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('billing')}
+              className={`py-2 px-3 sm:py-2.5 sm:px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === 'billing'
+                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>{isBn ? 'বিলিং' : 'Billing'}</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                activeTab === 'billing'
+                  ? 'bg-white/20 text-white'
+                  : stats.isPro
                   ? 'bg-amber-400/20 text-amber-600 dark:text-amber-400'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
               }`}>
@@ -1003,14 +921,14 @@ export const DashboardPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('settings')}
-              className={`py-3 px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`py-2 px-3 sm:py-2.5 sm:px-4 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === 'settings'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              <Settings className="w-4 h-4" />
-              <span>{isBn ? 'প্রোফাইল ও সেটিংস' : 'Profile & Preferences'}</span>
+              <Settings className="w-3.5 h-3.5" />
+              <span>{isBn ? 'সেটিংস' : 'Settings'}</span>
             </button>
           </nav>
         </div>
@@ -1019,58 +937,57 @@ export const DashboardPage: React.FC = () => {
         {/* TAB 1: WORKSPACE OVERVIEW                                 */}
         {/* ========================================================= */}
         {activeTab === 'overview' && (
-          <div className="space-y-8 animate-fadein">
-            {/* Quick Action Tool Launchpad */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="space-y-6 sm:space-y-8 animate-fadein">
+            {/* Quick Action Tool Launchpad (2-Col Mobile / 4-Col Desktop) */}
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
-                    {isBn ? 'দ্রুত অ্যাক্সেস টুল লঞ্চপ্যাড' : 'Quick Launchpad'}
+                  <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white">
+                    {isBn ? 'কুইক টুলস লঞ্চপ্যাড' : 'Quick Tools Launchpad'}
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                     {isBn
-                      ? 'আন্তর্জাতিক সাইটগুলোর চেয়ে দ্রুত ও সুরক্ষিত উপায়ে কাজ শুরু করুন'
-                      : 'Launch top productivity PDF operations in 1-click (100% offline & confidential)'}
+                      ? 'সবচেয়ে বেশি ব্যবহৃত পিডিএফ টুলস এক ক্লিকে ওপেন করুন'
+                      : 'Instant 1-click access to your core PDF workflow tools'}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setActiveTab('tools')}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer shrink-0"
                 >
-                  <span>{isBn ? `সকল ${allTools.length} টুল দেখুন` : `Explore all ${allTools.length} tools`}</span>
+                  <span>{isBn ? `সব টুলস (${allTools.length})` : `All ${allTools.length} tools`}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {allTools.slice(0, 4).map((tool) => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                {allTools.slice(0, 8).map((tool) => {
                   const IconComponent = tool.icon;
                   return (
                     <Link
                       key={tool.id}
                       to={tool.route}
-                      className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/90 hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group flex flex-col justify-between space-y-4"
+                      className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/90 hover:border-emerald-500/60 hover:shadow-md hover:shadow-emerald-500/5 transition-all group flex flex-col justify-between gap-2.5"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
-                          <IconComponent className="w-6 h-6" />
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+                          <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] font-bold text-slate-600 dark:text-slate-300 truncate">
                           {tool.badge}
                         </span>
                       </div>
                       <div>
-                        <h3 className="font-black text-base text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                          {tool.name}
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                        <div className="flex items-center justify-between gap-1">
+                          <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                            {tool.name}
+                          </h3>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                           {tool.desc}
                         </p>
-                      </div>
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        <span>{isBn ? 'টুল খুলুন' : 'Open Workspace'}</span>
-                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </div>
                     </Link>
                   );
@@ -1130,7 +1047,7 @@ export const DashboardPage: React.FC = () => {
                     </div>
 
                     {/* Quick-start Action Cards */}
-                    <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-w-lg mx-auto">
+                    <div className="pt-2 grid grid-cols-3 gap-2.5 max-w-lg mx-auto">
                       <Link
                         to={ROUTES.MERGE}
                         className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-slate-800 transition-all text-center group"
@@ -1228,7 +1145,7 @@ export const DashboardPage: React.FC = () => {
                       <span>{stats.isPro ? (isBn ? 'প্রো মেম্বার অ্যাক্টিভ' : 'Pro Member Active') : (isBn ? 'ফ্রি অ্যাকাউন্ট' : 'Free Explorer')}</span>
                     </div>
                     <span className="text-[11px] font-bold bg-white/15 px-2.5 py-0.5 rounded-full">
-                      {stats.isPro ? '$2.49/mo' : '$0/mo'}
+                      {stats.isPro ? 'BDT 299.99/mo' : 'Free'}
                     </span>
                   </div>
 
@@ -1314,7 +1231,7 @@ export const DashboardPage: React.FC = () => {
                       className="w-full py-3 px-4 rounded-xl bg-white text-slate-950 font-black text-xs sm:text-sm hover:bg-emerald-50 transition-all shadow-lg text-center flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Sparkles className="w-4 h-4 text-emerald-600" />
-                      <span>{isBn ? 'প্রো আপগ্রেড ($2.49/mo)' : 'Upgrade to Pro — $2.49/mo'}</span>
+                      <span>{isBn ? 'প্রো আপগ্রেড (৳২৯৯.৯৯/মাস)' : 'Upgrade to Pro — BDT 299.99/mo'}</span>
                     </button>
                   )}
                 </div>
@@ -1511,17 +1428,17 @@ export const DashboardPage: React.FC = () => {
         {/* TAB 3: ALL TOOLS HUB & WORKFLOW LAUNCHER                  */}
         {/* ========================================================= */}
         {activeTab === 'tools' && (
-          <div className="space-y-6 animate-fadein">
-            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-5 animate-fadein">
+            <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                    {isBn ? `সকল ${allTools.length}+ প্রফেশনাল পিডিএফ টুলস` : `Complete ${allTools.length}+ PDF Power Tools Suite`}
+                  <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white">
+                    {isBn ? `সকল ${allTools.length}+ প্রফেশনাল পিডিএফ টুলস` : `All ${allTools.length}+ PDF Workspace Tools`}
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                     {isBn
-                      ? 'প্রতিটি টুল আপনার ব্রাউজারের ভেতর মেমোরিতে চলে — দ্রুততম স্পিড ও 100% গোপনীয়তা'
-                      : 'Every single tool executes 100% locally on your machine with zero server file exposure'}
+                      ? 'যেকোনো টুলে ক্লিক করে সাথে সাথে কাজ শুরু করুন'
+                      : 'Select any tool below to process your PDFs directly in your browser'}
                   </p>
                 </div>
 
@@ -1534,7 +1451,7 @@ export const DashboardPage: React.FC = () => {
                       onClick={() => setToolCategory(cat)}
                       className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
                         toolCategory === cat
-                          ? 'bg-emerald-600 text-white shadow-sm'
+                          ? 'bg-emerald-600 text-white shadow-xs'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                       }`}
                     >
@@ -1545,34 +1462,33 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {filteredLauncherTools.map((tool) => {
                 const IconComponent = tool.icon;
                 return (
                   <Link
                     key={tool.id}
                     to={tool.route}
-                    className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group flex flex-col justify-between space-y-4"
+                    className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:shadow-md hover:shadow-emerald-500/5 transition-all group flex flex-col justify-between gap-2.5"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
-                        <IconComponent className="w-6 h-6" />
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+                        <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] font-bold text-slate-600 dark:text-slate-300 truncate">
                         {tool.badge}
                       </span>
                     </div>
                     <div>
-                      <h3 className="font-black text-base text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                        {tool.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                      <div className="flex items-center justify-between gap-1">
+                        <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                          {tool.name}
+                        </h3>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                         {tool.desc}
                       </p>
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      <span>{isBn ? 'টুল শুরু করুন' : 'Launch Tool'}</span>
-                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </div>
                   </Link>
                 );
@@ -1611,14 +1527,14 @@ export const DashboardPage: React.FC = () => {
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}
                       >
-                        {stats.isPro ? 'Active ($2.49/mo)' : 'Active (Free)'}
+                        {stats.isPro ? 'Active (BDT 299.99/mo)' : 'Active (Free)'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {stats.isPro
                         ? isBn
-                          ? `পরবর্তী নবায়ন তারিখ: ${renewalDate} • বিলিং সাইকেল: মাসিক ($2.49/মাস) • অটো-রিনিউ: ${autoRenew ? 'চালু' : 'বন্ধ'}`
-                          : `Next billing date: ${renewalDate} • Billed at $2.49/month • Auto-renew: ${autoRenew ? 'ON' : 'OFF'}`
+                          ? `পরবর্তী নবায়ন তারিখ: ${renewalDate} • বিলিং সাইকেল: মাসিক (BDT 299.99/মাস) • অটো-রিনিউ: ${autoRenew ? 'চালু' : 'বন্ধ'}`
+                          : `Next billing date: ${renewalDate} • Billed at BDT 299.99/month • Auto-renew: ${autoRenew ? 'ON' : 'OFF'}`
                         : isBn
                           ? `দৈনিক ১০টি টাস্ক ও ১৫০ এমবি ফাইল ক্যাপাসিটি • সীমাহীন টাস্ক পেতে প্রো আপগ্রেড করুন`
                           : `10 tasks/day limit • 150MB per file • Upgrade to Pro for unlimited batch processing`}
@@ -1729,7 +1645,7 @@ export const DashboardPage: React.FC = () => {
                     <span className="font-black text-sm text-slate-800 dark:text-slate-200">
                       {isBn ? 'ফ্রি ফিচারসমূহ' : 'Free Plan Features'}
                     </span>
-                    <span className="text-xs font-bold text-slate-500">$0 / month</span>
+                    <span className="text-xs font-bold text-slate-500">BDT 0 / month</span>
                   </div>
                   <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
@@ -1757,7 +1673,7 @@ export const DashboardPage: React.FC = () => {
                       </span>
                     </div>
                     <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">
-                      $2.49 / month
+                      BDT 299.99 / month
                     </span>
                   </div>
                   <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
@@ -1792,7 +1708,7 @@ export const DashboardPage: React.FC = () => {
                       <FileText className="w-4 h-4 text-emerald-500" />
                       <div>
                         <span className="font-bold text-slate-800 dark:text-slate-200 block">
-                          PDFMinty Pro Subscription — $2.49 USD / Month
+                          PDFMinty Pro Subscription — BDT 299.99 / Month
                         </span>
                         <span className="text-slate-500 text-[11px]">
                           {isBn ? 'স্ট্যাটাস: সক্রিয় &bull; আনলিমিটেড অ্যাক্সেস' : 'Status: Active &bull; Unlimited Access'}
@@ -2056,12 +1972,9 @@ export const DashboardPage: React.FC = () => {
                 {isBn ? 'মাসিক আনলিমিটেড প্ল্যান' : 'Monthly Unlimited Pro'}
               </span>
               <div className="text-3xl font-black text-slate-900 dark:text-white">
-                $2.49 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ month</span>
+                BDT 299.99 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ month</span>
               </div>
               <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                {pricingInfo.geo.currencyCode !== 'USD' && (
-                  <span>~ {pricingInfo.pricing.proMonthly.formatted} / month &bull; </span>
-                )}
                 <span>Cancel anytime &bull; 100% Confidential</span>
               </p>
             </div>
@@ -2099,7 +2012,7 @@ export const DashboardPage: React.FC = () => {
                 disabled={isUpgrading}
                 className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                {isUpgrading ? '...' : isBn ? 'নিশ্চিত করুন ($2.49)' : 'Confirm & Upgrade ($2.49)'}
+                {isUpgrading ? '...' : isBn ? 'নিশ্চিত করুন (BDT 299.99)' : 'Confirm & Upgrade (BDT 299.99)'}
               </button>
             </div>
           </div>
@@ -2139,7 +2052,7 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-center text-slate-700 dark:text-slate-300">
                 <span>{isBn ? 'নবায়ন সাইকেল:' : 'Billing Term:'}</span>
-                <span className="font-bold">+30 Days ($2.49 USD)</span>
+                <span className="font-bold">+30 Days (BDT 299.99)</span>
               </div>
               <div className="flex justify-between items-center text-emerald-800 dark:text-emerald-300 font-bold pt-1 border-t border-emerald-500/20">
                 <span>{isBn ? 'দৈনিক টাস্ক সুবিধা:' : 'Task Limits:'}</span>

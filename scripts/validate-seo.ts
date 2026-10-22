@@ -424,6 +424,9 @@ try {
     { input: 'https://pdfminty.com/sign', expected: 'https://pdfminty.com/sign-pdf/' },
     { input: 'https://pdfminty.com/ocr', expected: 'https://pdfminty.com/ocr-pdf/' },
     { input: 'https://pdfminty.com/sanitize', expected: 'https://pdfminty.com/sanitize-pdf/' },
+    { input: 'https://pdfminty.com/compare-pdf', expected: 'https://pdfminty.com/compare-pdf/' },
+    { input: 'https://pdfminty.com/pricing', expected: 'https://pdfminty.com/pricing/' },
+    { input: 'https://pdfminty.com/pdf-diff', expected: 'https://pdfminty.com/compare-pdf/' },
   ];
 
   testCases.forEach(({ input, expected }) => {

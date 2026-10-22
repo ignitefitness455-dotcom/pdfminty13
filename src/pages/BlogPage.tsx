@@ -40,41 +40,62 @@ export const BlogPage: React.FC = () => {
     const posts = TOOLS.filter((t) => t.type === 'article' && !staticPageIds.includes(t.id));
     return [...posts].sort((a, b) => {
       const todayStr = new Date().toISOString().split('T')[0];
-      const dateA = new Date(a.datePublished || todayStr).getTime();
-      const dateB = new Date(b.datePublished || todayStr).getTime();
+      const dateA = new Date(a.dateModified || a.datePublished || todayStr).getTime();
+      const dateB = new Date(b.dateModified || b.datePublished || todayStr).getTime();
       if (dateB !== dateA) {
-        return dateB - dateA; // Newest date first
+        return dateB - dateA; // Newest updated/published date first
       }
       return posts.indexOf(b) - posts.indexOf(a); // Higher array index (newest added) first if dates are identical
     });
   }, []);
 
-  // Map post IDs to clean user-facing categories
+  // Map post IDs to clean user-facing categories across all 37 articles
   const getPostCategory = (id: string): 'Security' | 'Privacy' | 'Optimization' | 'Tutorials' => {
     switch (id) {
       case 'trust-article':
       case 'blog-protect-pdf-password':
+      case 'how-to-password-protect-a-pdf-offline':
+      case 'blog-adobe-security-vulnerabilities-offline-pdf-tools':
+      case 'blog-electronic-vs-digital-signature':
+      case 'blog-sign-without-adobe-or-docusign':
+      case 'blog-us-tax-legal-forms-w9':
+      case 'blog-eidas-compliant-pdf-signatures':
         return 'Security';
       case 'blog-privacy':
       case 'blog-privacy-2026':
       case 'blog-free-esignature':
       case 'blog-remove-metadata':
+      case 'blog-metadata':
       case 'blog-ilovepdf-vs-smallpdf-vs-pdfminty':
       case 'compare-pdfminty-vs-smallpdf':
       case 'compare-pdfminty-vs-ilovepdf':
+      case 'best-offline-pdf-tools-sensitive-documents':
+      case 'secure-pdf-editing-without-uploading':
+      case 'blog-pdf-privacy-benchmark-2026':
+      case 'blog-client-side-pdf-processing-explained':
+      case 'blog-hipaa-compliant-pdf-tools':
+      case 'blog-gdpr-compliant-pdf-processing':
         return 'Privacy';
       case 'blog-compress':
       case 'blog-batch-processing':
       case 'blog-best-free-pdf-compressor':
       case 'blog-how-to-compress-a-pdf-without-losing-quality-2026':
       case 'blog-pdf-size-limit-email-upload':
+      case 'blog-why-is-my-pdf-so-large':
+      case 'blog-how-to-combine-scanned-documents-into-one-pdf':
         return 'Optimization';
-      case 'blog-metadata':
       case 'blog-merge-pdf':
       case 'blog-pdf-form-wont-let-me-type':
       case 'blog-how-to-convert-pdf-to-word-for-free-2026':
       case 'how-to-add-page-numbers-to-a-pdf-for-free':
-        return 'Tutorials';
+      case 'how-to-make-a-pdf-online-free':
+      case 'how-to-make-a-scanned-pdf-searchable':
+      case 'how-to-split-pdf-by-page-range-and-extract-pages':
+      case 'how-to-repair-a-corrupted-pdf':
+      case 'pdf-wont-open':
+      case 'blog-how-to-rearrange-pdf-pages-offline':
+      case 'blog-how-to-convert-pdf-to-jpg-high-resolution':
+      case 'cant-copy-text-from-pdf':
       default:
         return 'Tutorials';
     }
@@ -120,9 +141,12 @@ export const BlogPage: React.FC = () => {
     return t('blog.readTime', { count: time, defaultValue: `${time} min read` });
   };
 
+  const isDefaultLocale =
+    !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
+
   // Format the publication dates beautifully
   const getFormattedDate = (post: ToolSEOInfo): string => {
-    const dateStr = post.datePublished || '2026-07-16';
+    const dateStr = post.dateModified || post.datePublished || '2026-09-21';
     try {
       const locale = i18n.language === 'bn' ? 'bn-BD' : i18n.language === 'de' ? 'de-DE' : 'en-US';
       return new Date(dateStr).toLocaleDateString(locale, {
@@ -137,20 +161,22 @@ export const BlogPage: React.FC = () => {
 
   const getArticleTitle = useCallback(
     (post: ToolSEOInfo) => {
+      if (isDefaultLocale) return post.name;
       return t(`articles.${post.id}.name`, {
         defaultValue: t(`articles.${post.slug}.name`, { defaultValue: post.name }),
       });
     },
-    [t]
+    [isDefaultLocale, t]
   );
 
   const getArticleDesc = useCallback(
     (post: ToolSEOInfo) => {
+      if (isDefaultLocale) return post.shortDescription;
       return t(`articles.${post.id}.shortDesc`, {
         defaultValue: t(`articles.${post.slug}.shortDesc`, { defaultValue: post.shortDescription }),
       });
     },
-    [t]
+    [isDefaultLocale, t]
   );
 
   const getCategoryLabel = (category: string) => {
@@ -459,10 +485,12 @@ export const BlogPage: React.FC = () => {
             })}
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-            {t('blog.privacyCalloutDesc', {
-              defaultValue:
-                'All PDFMinty tools process your documents completely inside your browser memory using client-side WebAssembly. No registration required, zero tracking, and no cloud uploads.',
-            })}
+            {isDefaultLocale
+              ? 'All 30+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side WebAssembly with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).'
+              : t('blog.privacyCalloutDesc', {
+                  defaultValue:
+                    'All 30+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side WebAssembly with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).',
+                })}
           </p>
         </div>
 

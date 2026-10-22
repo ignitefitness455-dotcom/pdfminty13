@@ -81,8 +81,24 @@ export function SignPdfTool() {
     return () => observer.disconnect();
   }, [doc]);
 
+  const docRef = useRef<PDFDocumentProxy | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (docRef.current) {
+        docRef.current.destroy().catch(() => {
+          /* ignore */
+        });
+        docRef.current = null;
+      }
+    };
+  }, []);
+
   const reset = useCallback(() => {
-    doc?.destroy();
+    docRef.current?.destroy().catch(() => {
+      /* ignore */
+    });
+    docRef.current = null;
     setFile(null);
     setBytes(null);
     setDoc(null);
@@ -92,7 +108,7 @@ export function SignPdfTool() {
     setPendingKind(null);
     setError(null);
     setZoom(1);
-  }, [doc]);
+  }, []);
 
   const openFile = useCallback(
     async (nextFile: File) => {
@@ -111,9 +127,16 @@ export function SignPdfTool() {
       }
       setError(null);
       try {
+        if (docRef.current) {
+          await docRef.current.destroy().catch(() => {
+            /* ignore */
+          });
+          docRef.current = null;
+        }
         const nextBytes = await nextFile.arrayBuffer();
         const nextDoc = await loadPdfDocument(nextBytes);
         const nextPages = await readPageInfos(nextDoc);
+        docRef.current = nextDoc;
         setFile(nextFile);
         setBytes(nextBytes);
         setDoc(nextDoc);
@@ -223,7 +246,7 @@ export function SignPdfTool() {
                 id: crypto.randomUUID(),
                 kind: 'signature',
                 pageIndex: pIdx,
-                x: Math.min(nx + (itemW / info.width) + 0.02, 0.72),
+                x: Math.min(nx + itemW / info.width + 0.02, 0.72),
                 y: Math.max(0, ny - 0.01),
                 w: 0.24,
                 h: 0.075,
@@ -233,7 +256,7 @@ export function SignPdfTool() {
                 id: crypto.randomUUID(),
                 kind: 'date',
                 pageIndex: pIdx,
-                x: Math.min(nx + (itemW / info.width) + 0.02, 0.76),
+                x: Math.min(nx + itemW / info.width + 0.02, 0.76),
                 y: Math.max(0, ny),
                 w: 0.2,
                 h: 0.045,

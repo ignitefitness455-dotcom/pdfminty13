@@ -174,73 +174,18 @@ export const COUNTRY_CURRENCY_MAP: Record<string, GeoLocationInfo> = {
   },
 };
 
-export const DEFAULT_GEO: GeoLocationInfo = COUNTRY_CURRENCY_MAP.US;
-
-// Timezone to Country Code mapping for instant client-side detection without network calls
-const TIMEZONE_TO_COUNTRY: Record<string, string> = {
-  'Asia/Dhaka': 'BD',
-  'Asia/Kolkata': 'IN',
-  'Asia/Calcutta': 'IN',
-  'Europe/London': 'GB',
-  'Europe/Berlin': 'DE',
-  'Europe/Paris': 'FR',
-  'Europe/Madrid': 'ES',
-  'Europe/Rome': 'IT',
-  'Asia/Tokyo': 'JP',
-  'Asia/Dubai': 'AE',
-  'Asia/Riyadh': 'SA',
-  'Asia/Karachi': 'PK',
-  'America/Toronto': 'CA',
-  'America/Vancouver': 'CA',
-  'America/Montreal': 'CA',
-  'America/Edmonton': 'CA',
-  'America/Winnipeg': 'CA',
-  'America/Halifax': 'CA',
-  'Australia/Sydney': 'AU',
-  'Australia/Melbourne': 'AU',
-  'Australia/Brisbane': 'AU',
-  'Australia/Perth': 'AU',
-  'Australia/Adelaide': 'AU',
-  'America/Sao_Paulo': 'BR',
-  'Asia/Singapore': 'SG',
-  'Asia/Kuala_Lumpur': 'MY',
-  'America/New_York': 'US',
-  'America/Chicago': 'US',
-  'America/Denver': 'US',
-  'America/Los_Angeles': 'US',
-  'America/Phoenix': 'US',
-};
+export const DEFAULT_GEO: GeoLocationInfo = COUNTRY_CURRENCY_MAP.BD;
 
 /**
- * Detect user country synchronously from browser environment (Timezone & Locale)
+ * Detect user country synchronously — defaults to Bangladesh (BDT 299.99)
+ * unless the user explicitly selected another currency in sessionStorage.
  */
 export function detectCountrySync(): GeoLocationInfo {
   try {
-    // 1. Check cached preference
     if (typeof window !== 'undefined') {
-      const cached = sessionStorage.getItem('pdfminty_user_geo_code');
+      const cached = sessionStorage.getItem('pdfminty_manual_currency_code');
       if (cached && COUNTRY_CURRENCY_MAP[cached]) {
         return COUNTRY_CURRENCY_MAP[cached];
-      }
-    }
-
-    // 2. Check timezone
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (tz && TIMEZONE_TO_COUNTRY[tz]) {
-      const code = TIMEZONE_TO_COUNTRY[tz];
-      if (COUNTRY_CURRENCY_MAP[code]) {
-        return COUNTRY_CURRENCY_MAP[code];
-      }
-    }
-
-    // 3. Check browser locale (e.g. "en-BD", "bn-BD", "en-IN", "hi-IN", "en-GB")
-    if (typeof navigator !== 'undefined' && navigator.language) {
-      const parts = navigator.language.split('-');
-      if (parts.length > 1) {
-        const countryCandidate = parts[1].toUpperCase();
-        if (COUNTRY_CURRENCY_MAP[countryCandidate]) {
-          return COUNTRY_CURRENCY_MAP[countryCandidate];
-        }
       }
     }
   } catch {
@@ -251,44 +196,10 @@ export function detectCountrySync(): GeoLocationInfo {
 }
 
 /**
- * Asynchronously refine user country using free IP lookup API with 2.5s timeout
+ * Returns the active country/currency preference (defaults to BDT 299.99)
  */
 export async function detectCountryAsync(): Promise<GeoLocationInfo> {
-  const syncFallback = detectCountrySync();
-
-  if (typeof window === 'undefined') {
-    return syncFallback;
-  }
-
-  // If already verified in sessionStorage, reuse
-  const cachedCode = sessionStorage.getItem('pdfminty_user_geo_code');
-  if (cachedCode && COUNTRY_CURRENCY_MAP[cachedCode]) {
-    return COUNTRY_CURRENCY_MAP[cachedCode];
-  }
-
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
-
-    // Primary: api.country.is (very lightweight, CORS-friendly)
-    const res = await fetch('https://api.country.is', {
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const data = (await res.json()) as { country?: string };
-      const code = data.country?.toUpperCase();
-      if (code && COUNTRY_CURRENCY_MAP[code]) {
-        sessionStorage.setItem('pdfminty_user_geo_code', code);
-        return COUNTRY_CURRENCY_MAP[code];
-      }
-    }
-  } catch {
-    // Fail silently to syncFallback
-  }
-
-  return syncFallback;
+  return detectCountrySync();
 }
 
 /**
@@ -300,31 +211,31 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
   // Free plan is always 0
   const free = {
     amount: 0,
-    formatted: `${currencySymbol}0`,
+    formatted: geo.countryCode === 'BD' ? 'BDT 0' : `${currencySymbol}0`,
   };
 
-  // USD baseline:
-  // Pro Annual: $14.99/year (~$1.25/month)
-  // Pro Monthly: $2.49/month
-  // Lifetime: $29 one-time
+  // Official BDT baseline:
+  // Pro Monthly: BDT 299.99/month
+  // Pro Annual: BDT 1,799/year (BDT 149.99/month)
+  // Lifetime: BDT 3,490 one-time
 
   // Special optimized commercial pricing for popular regions:
   if (geo.countryCode === 'BD') {
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 149,
-        annualTotal: 1790,
-        formattedMonthly: '৳149',
-        formattedAnnual: '৳1,790',
+        monthlyEquivalent: 149.99,
+        annualTotal: 1799,
+        formattedMonthly: 'BDT 149.99',
+        formattedAnnual: 'BDT 1,799',
       },
       proMonthly: {
-        amount: 299,
-        formatted: '৳299',
+        amount: 299.99,
+        formatted: 'BDT 299.99',
       },
       lifetime: {
         amount: 3490,
-        formatted: '৳3,490',
+        formatted: 'BDT 3,490',
       },
     };
   }

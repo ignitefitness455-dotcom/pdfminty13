@@ -75,10 +75,15 @@ function MarkdownView({ content }: { content: string }) {
   const flushTable = (keyIndex: number) => {
     if (tableRows.length === 0) return;
     const headerRow = tableRows[0];
-    const dataRows = tableRows.slice(1).filter((row) => !row.every((cell) => /^[-:| ]+$/.test(cell)));
+    const dataRows = tableRows
+      .slice(1)
+      .filter((row) => !row.every((cell) => /^[-:| ]+$/.test(cell)));
 
     renderedElements.push(
-      <div key={`table-${keyIndex}`} className="overflow-x-auto my-3 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs">
+      <div
+        key={`table-${keyIndex}`}
+        className="overflow-x-auto my-3 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs"
+      >
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
@@ -93,7 +98,11 @@ function MarkdownView({ content }: { content: string }) {
             {dataRows.map((row, rIdx) => (
               <tr
                 key={rIdx}
-                className={rIdx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/60 dark:bg-slate-800/40'}
+                className={
+                  rIdx % 2 === 0
+                    ? 'bg-white dark:bg-slate-900'
+                    : 'bg-slate-50/60 dark:bg-slate-800/40'
+                }
               >
                 {row.map((cell, cIdx) => (
                   <td key={cIdx} className="p-2.5 text-slate-700 dark:text-slate-300">
@@ -143,10 +152,7 @@ function MarkdownView({ content }: { content: string }) {
     // Handle Markdown tables: lines with pipes
     if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
       inTable = true;
-      const cells = line
-        .trim()
-        .slice(1, -1)
-        .split('|');
+      const cells = line.trim().slice(1, -1).split('|');
       tableRows.push(cells);
       return;
     } else if (inTable) {
@@ -164,7 +170,10 @@ function MarkdownView({ content }: { content: string }) {
     }
     if (line.startsWith('## ')) {
       renderedElements.push(
-        <h3 key={index} className="text-base font-bold text-slate-900 dark:text-slate-100 mt-4 mb-1.5 border-b border-slate-100 dark:border-slate-800 pb-1">
+        <h3
+          key={index}
+          className="text-base font-bold text-slate-900 dark:text-slate-100 mt-4 mb-1.5 border-b border-slate-100 dark:border-slate-800 pb-1"
+        >
           {line.replace(/^## /, '')}
         </h3>
       );
@@ -172,7 +181,10 @@ function MarkdownView({ content }: { content: string }) {
     }
     if (line.startsWith('# ')) {
       renderedElements.push(
-        <h2 key={index} className="text-lg font-extrabold text-slate-900 dark:text-slate-100 mt-4 mb-2">
+        <h2
+          key={index}
+          className="text-lg font-extrabold text-slate-900 dark:text-slate-100 mt-4 mb-2"
+        >
           {line.replace(/^# /, '')}
         </h2>
       );
@@ -183,11 +195,12 @@ function MarkdownView({ content }: { content: string }) {
     if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
       const bulletText = line.trim().replace(/^[-*]\s+/, '');
       renderedElements.push(
-        <div key={index} className="flex items-start space-x-2 my-1 text-slate-700 dark:text-slate-300 text-sm">
+        <div
+          key={index}
+          className="flex items-start space-x-2 my-1 text-slate-700 dark:text-slate-300 text-sm"
+        >
           <span className="text-emerald-500 font-bold mt-1 text-xs">•</span>
-          <span className="flex-1 leading-relaxed">
-            {formatInlineMarkdown(bulletText)}
-          </span>
+          <span className="flex-1 leading-relaxed">{formatInlineMarkdown(bulletText)}</span>
         </div>
       );
       return;
@@ -197,8 +210,13 @@ function MarkdownView({ content }: { content: string }) {
     const numMatch = line.trim().match(/^(\d+)\.\s+(.*)$/);
     if (numMatch) {
       renderedElements.push(
-        <div key={index} className="flex items-start space-x-2 my-1 text-slate-700 dark:text-slate-300 text-sm">
-          <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-0.5">{numMatch[1]}.</span>
+        <div
+          key={index}
+          className="flex items-start space-x-2 my-1 text-slate-700 dark:text-slate-300 text-sm"
+        >
+          <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-0.5">
+            {numMatch[1]}.
+          </span>
           <span className="flex-1 leading-relaxed">{formatInlineMarkdown(numMatch[2])}</span>
         </div>
       );
@@ -290,7 +308,7 @@ export const AiAnalyzePage: React.FC = () => {
   const [extractedText, setExtractedText] = useState<string>('');
   const [totalPages, setTotalPages] = useState<number>(0);
   const [pagesMeta, setPagesMeta] = useState<PageMeta[]>([]);
-  const [hasConsented, setHasConsented] = useState(true); // Default true with clear disclosure
+  const [hasConsented, setHasConsented] = useState(false); // Require explicit opt-in consent
   const [activePagePreview, setActivePagePreview] = useState<number | null>(null);
 
   // Conversational Chat state
@@ -365,7 +383,9 @@ export const AiAnalyzePage: React.FC = () => {
 
   const handleFilesSelected = async (files: File[]) => {
     if (!isPro) {
-      setError('AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.');
+      setError(
+        'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.'
+      );
       return;
     }
     if (files.length === 0) return;
@@ -500,7 +520,15 @@ export const AiAnalyzePage: React.FC = () => {
    */
   const submitChat = async (userPrompt: string, presetTitle?: string) => {
     if (!isPro) {
-      setError('AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.');
+      setError(
+        'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.'
+      );
+      return;
+    }
+    if (!hasConsented) {
+      setError(
+        'Please acknowledge the Cloud AI consent checkbox before sending document text to Google Gemini.'
+      );
       return;
     }
     const trimmed = userPrompt.trim();
@@ -764,7 +792,8 @@ export const AiAnalyzePage: React.FC = () => {
             <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-amber-500/30 shadow-xs">
               <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
               <span className="font-bold text-amber-700 dark:text-amber-400">
-                Pro ({Math.max(0, PRO_DAILY_AI_LIMIT - proAiUsed)}/{PRO_DAILY_AI_LIMIT} AI Queries • 50 Pages/PDF)
+                Pro ({Math.max(0, PRO_DAILY_AI_LIMIT - proAiUsed)}/{PRO_DAILY_AI_LIMIT} AI Queries •
+                50 Pages/PDF)
               </span>
             </div>
           ) : (
@@ -805,7 +834,9 @@ export const AiAnalyzePage: React.FC = () => {
               Unlock AI Document Analysis with PDFMinty Pro
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
-              Summarize complex contracts, extract financial tables into Markdown, and ask deep questions across up to 50 pages per PDF with 500MB file-size limits using Google Gemini 2.5 Flash.
+              Summarize complex contracts, extract financial tables into Markdown, and ask deep
+              questions across up to 50 pages per PDF with 500MB file-size limits using Google
+              Gemini 2.5 Flash.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
@@ -825,7 +856,9 @@ export const AiAnalyzePage: React.FC = () => {
         </div>
       )}
 
-      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${!isPro ? 'opacity-60 pointer-events-none select-none' : ''}`}>
+      <div
+        className={`grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${!isPro ? 'opacity-60 pointer-events-none select-none' : ''}`}
+      >
         {/* Left Column (5 cols): File Upload, Document Inspector & Page Thumbnails */}
         <div className="lg:col-span-5 space-y-4">
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
@@ -912,7 +945,8 @@ export const AiAnalyzePage: React.FC = () => {
                       <div className="flex items-start space-x-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl text-xs text-amber-800 dark:text-amber-300">
                         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         <span>
-                          Analysis is anchored on the first {maxAllowedPages} of {totalPages} pages for rapid response.
+                          Analysis is anchored on the first {maxAllowedPages} of {totalPages} pages
+                          for rapid response.
                           {!isPro && ' Upgrade to Pro to index up to 50 pages per document!'}
                         </span>
                       </div>
@@ -974,12 +1008,13 @@ export const AiAnalyzePage: React.FC = () => {
                           </span>
                           <button
                             type="button"
+                            disabled={!hasConsented || aiLoading}
                             onClick={() =>
                               submitChat(
                                 `What is the main information and data on Page ${activePagePreview}? Summarize it thoroughly.`
                               )
                             }
-                            className="text-[11px] text-emerald-600 hover:underline font-bold"
+                            className="text-[11px] text-emerald-600 hover:underline font-bold disabled:opacity-50 disabled:pointer-events-none"
                           >
                             Ask AI about this page →
                           </button>

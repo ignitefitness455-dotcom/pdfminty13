@@ -82,7 +82,7 @@ function hexToRgb(hex: string) {
 }
 
 export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
-  const pdf = await PDFDocument.load(input.bytes, { ignoreEncryption: true });
+  const pdf = await PDFDocument.load(input.bytes);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const pdfPages = pdf.getPages();
   const imageCache = new Map<string, PDFImage>();

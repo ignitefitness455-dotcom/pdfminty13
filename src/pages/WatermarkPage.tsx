@@ -33,11 +33,16 @@ export const WatermarkPage: React.FC = () => {
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
+    };
+  }, [downloadUrl]);
+
+  React.useEffect(() => {
+    return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [downloadUrl, previewUrl]);
+  }, [previewUrl]);
 
   // Extract first page preview image
   React.useEffect(() => {
@@ -198,8 +203,13 @@ export const WatermarkPage: React.FC = () => {
                   </div>
                   <button
                     onClick={() => {
+                      operationTokenRef.current++;
                       setSelectedFile(null);
                       setIsSuccess(false);
+                      if (previewUrl) {
+                        URL.revokeObjectURL(previewUrl);
+                        setPreviewUrl(null);
+                      }
                       if (downloadUrl) {
                         URL.revokeObjectURL(downloadUrl);
                         setDownloadUrl(null);

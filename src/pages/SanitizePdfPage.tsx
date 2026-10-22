@@ -30,6 +30,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { getPdfJs } from '../core';
+import { PDFSanitizer } from '../core/PDFSanitizer';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 import { recordDailyTask } from '../utils/usageLimit';
@@ -98,6 +99,8 @@ export default function SanitizePdfPage() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const pdfJsDocRef = useRef<PDFDocumentProxy | null>(null);
+  const operationTokenRef = useRef(0);
 
   const limitMB = TOOL_SIZE_LIMITS['sanitize-pdf']?.maxSingleMB || 100;
 
@@ -109,8 +112,21 @@ export default function SanitizePdfPage() {
     };
   }, [downloadUrl]);
 
+  useEffect(() => {
+    return () => {
+      operationTokenRef.current++;
+      if (pdfJsDocRef.current) {
+        pdfJsDocRef.current.destroy().catch(() => {
+          /* ignore */
+        });
+        pdfJsDocRef.current = null;
+      }
+    };
+  }, []);
+
   // Load PDF and run PII detection
   const handleFileSelected = async (selectedFile: File) => {
+    const currentToken = ++operationTokenRef.current;
     setFile(selectedFile);
     setError(null);
     setWarnings([]);
@@ -126,14 +142,28 @@ export default function SanitizePdfPage() {
 
     try {
       setIsScanning(true);
+      if (pdfJsDocRef.current) {
+        await pdfJsDocRef.current.destroy().catch(() => {
+          /* ignore */
+        });
+        pdfJsDocRef.current = null;
+      }
       const arrayBuffer = await selectedFile.arrayBuffer();
+      if (operationTokenRef.current !== currentToken) return;
       const uint8 = new Uint8Array(arrayBuffer);
       setFileBytes(uint8);
       recordLocalProcessing(uint8.byteLength, `Sanitize/Redact: ${selectedFile.name}`);
 
       const pdfjs = await getPdfJs();
-      const loadingTask = pdfjs.getDocument({ data: uint8 });
+      const loadingTask = pdfjs.getDocument({ data: uint8.slice() });
       const loadedDoc = await loadingTask.promise;
+      if (operationTokenRef.current !== currentToken) {
+        await loadedDoc.destroy().catch(() => {
+          /* ignore */
+        });
+        return;
+      }
+      pdfJsDocRef.current = loadedDoc;
       setPdfJsDoc(loadedDoc);
       setTotalPages(loadedDoc.numPages);
 
@@ -193,15 +223,23 @@ export default function SanitizePdfPage() {
           checkRegex(EMAIL_REGEX, 'email');
           checkRegex(SECRET_REGEX, 'secret');
         }
+        page.cleanup();
+        if (operationTokenRef.current !== currentToken) return;
       }
 
-      setPageDimensions(dims);
-      setEntities(detected);
+      if (operationTokenRef.current === currentToken) {
+        setPageDimensions(dims);
+        setEntities(detected);
+      }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to scan document.';
-      setError(message);
+      if (operationTokenRef.current === currentToken) {
+        const message = err instanceof Error ? err.message : 'Failed to scan document.';
+        setError(message);
+      }
     } finally {
-      setIsScanning(false);
+      if (operationTokenRef.current === currentToken) {
+        setIsScanning(false);
+      }
     }
   };
 
@@ -209,14 +247,21 @@ export default function SanitizePdfPage() {
   useEffect(() => {
     if (!pdfJsDoc || totalPages === 0) return;
     let cancelled = false;
+    let activeRenderTask: { cancel: () => void; promise: Promise<void> } | null = null;
 
     const render = async () => {
       try {
         const page = await pdfJsDoc.getPage(currentPage);
-        if (cancelled) return;
+        if (cancelled) {
+          page.cleanup();
+          return;
+        }
 
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas) {
+          page.cleanup();
+          return;
+        }
 
         const containerWidth = overlayRef.current?.clientWidth || 700;
         const unscaledViewport = page.getViewport({ scale: 1.0 });
@@ -226,25 +271,43 @@ export default function SanitizePdfPage() {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (!ctx) {
+          page.cleanup();
+          return;
+        }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const renderContext = {
           canvasContext: ctx,
           viewport,
         };
-        await page.render(renderContext).promise;
-        if (!cancelled) {
-          setCanvasSize({ width: viewport.width, height: viewport.height });
+        const task = page.render(renderContext);
+        activeRenderTask = task;
+        try {
+          await task.promise;
+          if (!cancelled) {
+            setCanvasSize({ width: viewport.width, height: viewport.height });
+          }
+        } finally {
+          page.cleanup();
         }
       } catch (e) {
-        console.error('Failed to render page', e);
+        if ((e as { name?: string })?.name !== 'RenderingCancelledException') {
+          console.error('Failed to render page', e);
+        }
       }
     };
 
     render();
     return () => {
       cancelled = true;
+      if (activeRenderTask) {
+        try {
+          activeRenderTask.cancel();
+        } catch {
+          // ignore
+        }
+      }
     };
   }, [pdfJsDoc, currentPage, totalPages]);
 
@@ -389,7 +452,7 @@ export default function SanitizePdfPage() {
         setDownloadUrl(null);
       }
 
-      const pdfDoc = await PDFDocument.load(fileBytes, { ignoreEncryption: true });
+      const pdfDoc = await PDFDocument.load(fileBytes);
       const pages = pdfDoc.getPages();
       const helvetica = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
@@ -450,16 +513,110 @@ export default function SanitizePdfPage() {
         }
       }
 
-      // Purge metadata & identifiers
-      pdfDoc.setTitle('');
-      pdfDoc.setAuthor('');
-      pdfDoc.setSubject('');
-      pdfDoc.setKeywords([]);
-      pdfDoc.setProducer('PDFMinty Privacy AI Shield');
-      pdfDoc.setCreator('PDFMinty Client-Side Engine');
-      pdfDoc.setModificationDate(new Date());
+      // Permanently burn redaction masks by rasterizing modified pages so underlying
+      // selectable text streams on redacted pages are completely destroyed.
+      let finalDoc = pdfDoc;
+      if (modifiedPages.size > 0 && pdfJsDoc && typeof document !== 'undefined') {
+        try {
+          const flattenedDoc = await PDFDocument.create();
+          const redactScale = 2.0;
+          for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+            if (!modifiedPages.has(pIdx)) {
+              const [copiedPage] = await flattenedDoc.copyPages(pdfDoc, [pIdx]);
+              flattenedDoc.addPage(copiedPage);
+              continue;
+            }
 
-      const savedBytes = await pdfDoc.save({ useObjectStreams: true });
+            const origPage = pages[pIdx];
+            const { width: origW, height: origH } = origPage.getSize();
+            const dim = pageDimensions[pIdx] || { width: origW, height: origH };
+            const jsPage = await pdfJsDoc.getPage(pIdx + 1);
+            const viewport = jsPage.getViewport({ scale: redactScale });
+            const redactCanvas = document.createElement('canvas');
+            redactCanvas.width = viewport.width;
+            redactCanvas.height = viewport.height;
+            const rCtx = redactCanvas.getContext('2d');
+
+            if (!rCtx) {
+              jsPage.cleanup();
+              const [copiedPage] = await flattenedDoc.copyPages(pdfDoc, [pIdx]);
+              flattenedDoc.addPage(copiedPage);
+              continue;
+            }
+
+            rCtx.fillStyle = '#ffffff';
+            rCtx.fillRect(0, 0, viewport.width, viewport.height);
+            await jsPage.render({
+              canvasContext: rCtx,
+              viewport,
+            }).promise;
+            jsPage.cleanup();
+
+            const pageBoxes = allRedactBoxes.filter((b) => b.pageIndex === pIdx);
+            for (const box of pageBoxes) {
+              const sx = ((box.x - 2) / dim.width) * viewport.width;
+              const sy = ((dim.height - (box.y - 2) - (box.height + 4)) / dim.height) * viewport.height;
+              const sw = ((box.width + 4) / dim.width) * viewport.width;
+              const sh = ((box.height + 4) / dim.height) * viewport.height;
+
+              if (redactStyle === 'blackout') {
+                rCtx.fillStyle = '#000000';
+                rCtx.fillRect(sx, sy, sw, sh);
+              } else if (redactStyle === 'whiteout') {
+                rCtx.fillStyle = '#ffffff';
+                rCtx.fillRect(sx, sy, sw, sh);
+              } else {
+                rCtx.fillStyle = '#1a1a1a';
+                rCtx.fillRect(sx, sy, sw, sh);
+                const pxFontSize = Math.max(10, Math.min(18, sh * 0.55));
+                rCtx.fillStyle = '#ffffff';
+                rCtx.font = `bold ${pxFontSize}px sans-serif`;
+                rCtx.textBaseline = 'middle';
+                rCtx.fillText('[REDACTED]', sx + 4, sy + sh / 2, Math.max(10, sw - 8));
+              }
+            }
+
+            const pageBlob = await new Promise<Blob | null>((resolve) =>
+              redactCanvas.toBlob(resolve, 'image/jpeg', 0.92)
+            );
+            redactCanvas.width = 0;
+            redactCanvas.height = 0;
+
+            if (pageBlob) {
+              const imgBytes = new Uint8Array(await pageBlob.arrayBuffer());
+              const embeddedJpg = await flattenedDoc.embedJpg(imgBytes);
+              const newPage = flattenedDoc.addPage([origW, origH]);
+              newPage.drawImage(embeddedJpg, {
+                x: 0,
+                y: 0,
+                width: origW,
+                height: origH,
+              });
+            } else {
+              const [copiedPage] = await flattenedDoc.copyPages(pdfDoc, [pIdx]);
+              flattenedDoc.addPage(copiedPage);
+            }
+          }
+          finalDoc = flattenedDoc;
+        } catch {
+          // Fallback to pdfDoc with vector overlays if canvas rasterization fails
+          finalDoc = pdfDoc;
+        }
+      }
+
+      // Purge metadata & identifiers
+      finalDoc.setTitle('');
+      finalDoc.setAuthor('');
+      finalDoc.setSubject('');
+      finalDoc.setKeywords([]);
+      finalDoc.setProducer('PDFMinty Privacy AI Shield');
+      finalDoc.setCreator('PDFMinty Client-Side Engine');
+      finalDoc.setModificationDate(new Date());
+
+      const rawSavedBytes = await finalDoc.save({ useObjectStreams: true });
+      const { bytes: savedBytes } = PDFSanitizer.sanitize(rawSavedBytes, {
+        skipEncryptionCheck: true,
+      });
       recordLocalProcessing(savedBytes.byteLength, 'Redacted & Sanitized PDF');
       recordDailyTask(null, 'sanitize_pdf');
 
@@ -663,6 +820,13 @@ export default function SanitizePdfPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
+                  operationTokenRef.current++;
+                  if (pdfJsDocRef.current) {
+                    pdfJsDocRef.current.destroy().catch(() => {
+                      /* ignore */
+                    });
+                    pdfJsDocRef.current = null;
+                  }
                   setFile(null);
                   setFileBytes(null);
                   setPdfJsDoc(null);

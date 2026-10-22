@@ -99,9 +99,12 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
     i18n.changeLanguage(targetLocale);
 
-    // Navigate to target path using hard reload to load correct static HTML and reset React Router basename
-    const targetPath = getSwitchLocalePath(window.location.pathname, targetLocale);
-    window.location.assign(targetPath);
+    // Navigate only if the URL path changes (e.g. localized homepage or i18n-enabled tool route)
+    const currentFull = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const targetPath = getSwitchLocalePath(currentFull, targetLocale);
+    if (targetPath !== currentFull) {
+      window.location.assign(targetPath);
+    }
   };
 
   // Mobile list view variant (e.g. within MobileDrawer)

@@ -21,13 +21,17 @@ export async function readPageInfos(doc: PDFDocumentProxy): Promise<PageInfo[]> 
   const infos: PageInfo[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
-    const viewport = page.getViewport({ scale: 1 });
-    infos.push({
-      index: i - 1,
-      width: viewport.width,
-      height: viewport.height,
-      rotation: page.rotate,
-    });
+    try {
+      const viewport = page.getViewport({ scale: 1 });
+      infos.push({
+        index: i - 1,
+        width: viewport.width,
+        height: viewport.height,
+        rotation: page.rotate,
+      });
+    } finally {
+      page.cleanup();
+    }
   }
   return infos;
 }
@@ -40,26 +44,39 @@ export async function renderPageToCanvas(
   pageIndex: number,
   canvas: HTMLCanvasElement,
   cssWidth: number,
-  signal?: { cancelled: boolean }
+  signal?: { cancelled: boolean; cancel?: () => void }
 ) {
   const page = await doc.getPage(pageIndex + 1);
-  if (signal?.cancelled) return;
-  const base = page.getViewport({ scale: 1 });
-  const scale = cssWidth / base.width;
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  const viewport = page.getViewport({ scale: scale * dpr });
-
-  canvas.width = Math.floor(viewport.width);
-  canvas.height = Math.floor(viewport.height);
-  canvas.style.width = `${cssWidth}px`;
-  canvas.style.height = `${(cssWidth * base.height) / base.width}px`;
-
-  const ctx = canvas.getContext('2d', { alpha: false });
-  if (!ctx) return;
-  const task = page.render({ canvasContext: ctx, viewport });
   try {
-    await task.promise;
-  } catch (err) {
-    if ((err as { name?: string })?.name !== 'RenderingCancelledException') throw err;
+    if (signal?.cancelled) return;
+    const base = page.getViewport({ scale: 1 });
+    const scale = cssWidth / base.width;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const viewport = page.getViewport({ scale: scale * dpr });
+
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${(cssWidth * base.height) / base.width}px`;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) return;
+    const task = page.render({ canvasContext: ctx, viewport });
+    if (signal) {
+      signal.cancel = () => {
+        try {
+          task.cancel();
+        } catch {
+          // ignore
+        }
+      };
+    }
+    try {
+      await task.promise;
+    } catch (err) {
+      if ((err as { name?: string })?.name !== 'RenderingCancelledException') throw err;
+    }
+  } finally {
+    page.cleanup();
   }
 }

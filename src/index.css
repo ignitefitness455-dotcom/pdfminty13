@@ -448,8 +448,18 @@ html.dark select {
 /* Respect reduced motion preference. */
 @media (prefers-reduced-motion: reduce) {
   .animate-fadein,
-  .animate-fadeIn {
-    animation: none;
+  .animate-fadeIn,
+  .pulse-mint,
+  .animate-scanbeam,
+  .animate-byteflow,
+  .animate-compress-squeeze,
+  .animate-shimmer-slide,
+  .animate-float-gentle,
+  .animate-pulse,
+  .animate-bounce,
+  .animate-ping {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -691,7 +701,8 @@ textarea {
 }
 
 @keyframes compress-squeeze {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -717,7 +728,8 @@ textarea {
 }
 
 @keyframes float-gentle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -728,4 +740,3 @@ textarea {
 .animate-float-gentle {
   animation: float-gentle 2.8s ease-in-out infinite;
 }
-

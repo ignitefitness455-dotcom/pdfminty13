@@ -10,10 +10,15 @@ export const RecommendedToolsSection: React.FC = () => {
   return (
     <section className="my-16 max-w-6xl mx-auto px-4" id="recommended-tools">
       <div className="text-center space-y-2 mb-8">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
-          <Shield className="w-3.5 h-3.5" />
-          {t('home.recommended.badge', { defaultValue: 'Recommended Security' })}
-        </span>
+        <div className="inline-flex flex-wrap items-center justify-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <Shield className="w-3.5 h-3.5" />
+            {t('home.recommended.badge', { defaultValue: 'Recommended Security' })}
+          </span>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300/60 dark:border-slate-700">
+            {t('affiliate.sponsored', { defaultValue: 'Sponsored • Affiliate Partner' })}
+          </span>
+        </div>
         <h2 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight">
           {t('home.recommended.title', { defaultValue: 'Recommended Tools' })}
         </h2>

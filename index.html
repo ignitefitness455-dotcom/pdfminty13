@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Preload Critical Local Fonts -->
     <link rel="preload" href="/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin />
@@ -57,13 +57,20 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        'ad_storage': 'denied',
-        'ad_user_data': 'denied',
-        'ad_personalization': 'denied',
-        'analytics_storage': 'granted',
-        'wait_for_update': 500
-      });
+      (function() {
+        var stored = null;
+        try {
+          var raw = localStorage.getItem('pdfminty_consent_v2');
+          stored = raw ? JSON.parse(raw) : null;
+        } catch (e) {}
+        gtag('consent', 'default', {
+          'ad_storage': stored && stored.ad_storage === 'granted' ? 'granted' : 'denied',
+          'ad_user_data': stored && stored.ad_user_data === 'granted' ? 'granted' : 'denied',
+          'ad_personalization': stored && stored.ad_personalization === 'granted' ? 'granted' : 'denied',
+          'analytics_storage': stored && stored.analytics_storage === 'granted' ? 'granted' : 'denied',
+          'wait_for_update': 500
+        });
+      })();
     </script>
 
     <!-- Google-Certified CMP (Cookiebot / Usercentrics, CMP ID: 134) & IAB TCF v2.2 Integration -->
@@ -282,12 +289,18 @@
           gtag('js', new Date());
           gtag('config', GA_ID);
 
-          // Google AdSense (loaded non-blocking on idle/interaction)
-          var ads = document.createElement('script');
-          ads.async = true;
-          ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053';
-          ads.crossOrigin = 'anonymous';
-          document.head.appendChild(ads);
+          // Google AdSense (loaded non-blocking on idle/interaction; skipped for Pro ad-free tier)
+          var isProUser = false;
+          try {
+            isProUser = localStorage.getItem('pdfminty_pro_synced') === 'true';
+          } catch (e) {}
+          if (!isProUser) {
+            var ads = document.createElement('script');
+            ads.async = true;
+            ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053';
+            ads.crossOrigin = 'anonymous';
+            document.head.appendChild(ads);
+          }
         }
 
         var events = ['touchstart', 'scroll', 'pointermove', 'keydown', 'click'];
@@ -309,11 +322,25 @@
         }
 
         // Fallback beacon: if user leaves before gtag loads, fire a minimal
-        // page_view event via navigator.sendBeacon to GA4 collect endpoint.
-        // This captures fast-bounce pageviews that the delayed loader misses.
+        // page_view event via navigator.sendBeacon to GA4 collect endpoint
+        // ONLY when analytics consent has been explicitly granted.
         window.addEventListener('pagehide', function() {
           if (loaded) return; // gtag already loaded — it handles this natively
           if (!navigator.sendBeacon) return;
+          try {
+            var v2Raw = localStorage.getItem('pdfminty_consent_v2');
+            var legacyConsent = localStorage.getItem('pdfminty_analytics_consent');
+            var analyticsGranted = false;
+            if (v2Raw) {
+              var parsed = JSON.parse(v2Raw);
+              analyticsGranted = parsed && parsed.analytics_storage === 'granted';
+            } else if (legacyConsent === 'granted') {
+              analyticsGranted = true;
+            }
+            if (!analyticsGranted) return;
+          } catch (e) {
+            return;
+          }
           var cid = localStorage.getItem('_ga_cid');
           if (!cid) {
             cid = 'xxxxxxxxxxxx.xxxxxxxxxxxx'.replace(/x/g, function() {
@@ -373,7 +400,7 @@
             "height": 512
           },
           "image": "https://pdfminty.com/og-image.png",
-          "description": "Privacy-first, client-side PDF toolkit with 23 free tools.",
+          "description": "Privacy-first, client-side PDF toolkit with 24 free tools.",
           "foundingDate": "2025",
           "contactPoint": {
             "@type": "ContactPoint",
@@ -399,9 +426,9 @@
           "@type": "FAQPage",
           "@id": "https://pdfminty.com/#faq",
           "mainEntity": [
-            { "@type": "Question", "name": "Is PDFMinty really free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, PDFMinty is 100% free to use. All PDF processing happens locally in your browser — no subscription, no upload limits, no hidden fees." } },
-            { "@type": "Question", "name": "Are my files uploaded to your server?", "acceptedAnswer": { "@type": "Answer", "text": "For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exception is the AI Analyze tool, which only sends extracted text to Google Gemini after you explicitly check a consent box." } },
-            { "@type": "Question", "name": "What is the maximum file size?", "acceptedAnswer": { "@type": "Answer", "text": "Most tools accept PDF files up to 50MB each, with a 150MB combined batch limit. Protect and Unlock support files up to 100MB, while AI Analyze accepts up to 15MB. Each tool's page shows its current limit. Performance also depends on your device's memory." } }
+            { "@type": "Question", "name": "Is PDFMinty really free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, PDFMinty is 100% free to use. All standard PDF processing happens locally in your browser — no subscription, no watermarks, and no hidden fees." } },
+            { "@type": "Question", "name": "Are my files uploaded to your server?", "acceptedAnswer": { "@type": "Answer", "text": "For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box." } },
+            { "@type": "Question", "name": "What is the maximum file size?", "acceptedAnswer": { "@type": "Answer", "text": "Most tools accept PDF files up to 100MB each for guests (150MB for free accounts, 500MB for Pro). Image and OCR tools support up to 50MB per file, and AI Analyze accepts up to 25MB on the guest tier. Performance also depends on your device's memory." } }
           ]
         }
       ]

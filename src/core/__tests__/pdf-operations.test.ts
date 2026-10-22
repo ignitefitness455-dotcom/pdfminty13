@@ -1,6 +1,7 @@
 import { PDFDocument as PlainPDFDocument } from '@cantoo/pdf-lib';
 import { describe, it, expect } from 'vitest';
 
+import { getMetadataPDF, editMetadataPDF } from '../metadata-operations';
 import {
   mergePDFs,
   splitPDF,
@@ -15,6 +16,8 @@ import {
   deletePagesPDF,
   compressPDF,
   imagesToPDF,
+  flattenPDF,
+  repairPDF,
 } from '../pdf-operations';
 import { PDFSanitizer } from '../PDFSanitizer';
 
@@ -399,10 +402,13 @@ describe('pdf-operations - Edge Cases', () => {
       const doc = await PlainPDFDocument.create();
       for (let i = 1; i <= 4; i++) {
         const p = doc.addPage([500, 500]);
-        p.drawText(`Invoice and Report Document Section ${i} with detailed text content and description`, {
-          x: 50,
-          y: 450,
-        });
+        p.drawText(
+          `Invoice and Report Document Section ${i} with detailed text content and description`,
+          {
+            x: 50,
+            y: 450,
+          }
+        );
       }
 
       // Embed a test 1x1 JPEG image
@@ -433,7 +439,9 @@ describe('pdf-operations - Edge Cases', () => {
 
       // Valid JPEG base64 padded with valid JPEG comment marker to exceed 2KB threshold
       const baseJpg = Uint8Array.from(
-        atob('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='),
+        atob(
+          '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='
+        ),
         (c) => c.charCodeAt(0)
       );
       const commentLen = 5000;
@@ -452,8 +460,10 @@ describe('pdf-operations - Edge Cases', () => {
       expect(initialBytes.length).toBeGreaterThan(5000);
 
       // Mock browser createImageBitmap & OffscreenCanvas for this test
-      const originalCreateImageBitmap = (globalThis as unknown as { createImageBitmap?: unknown }).createImageBitmap;
-      const originalOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown }).OffscreenCanvas;
+      const originalCreateImageBitmap = (globalThis as unknown as { createImageBitmap?: unknown })
+        .createImageBitmap;
+      const originalOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown })
+        .OffscreenCanvas;
 
       // The recompressed smaller JPEG (baseJpg is ~134 bytes)
       const smallerJpeg = baseJpg;
@@ -484,7 +494,11 @@ describe('pdf-operations - Edge Cases', () => {
         }
         async convertToBlob() {
           return {
-            arrayBuffer: async () => smallerJpeg.buffer.slice(smallerJpeg.byteOffset, smallerJpeg.byteOffset + smallerJpeg.byteLength),
+            arrayBuffer: async () =>
+              smallerJpeg.buffer.slice(
+                smallerJpeg.byteOffset,
+                smallerJpeg.byteOffset + smallerJpeg.byteLength
+              ),
           };
         }
       }
@@ -502,8 +516,10 @@ describe('pdf-operations - Edge Cases', () => {
         expect(reloaded.getPageCount()).toBe(1);
         expect(reloaded.getPages()[0].getWidth()).toBe(600);
       } finally {
-        (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap = originalCreateImageBitmap;
-        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = originalOffscreenCanvas;
+        (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap =
+          originalCreateImageBitmap;
+        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+          originalOffscreenCanvas;
       }
     });
 
@@ -524,6 +540,131 @@ describe('pdf-operations - Edge Cases', () => {
 
       const reloaded = await PlainPDFDocument.load(compressed);
       expect(reloaded.getPageCount()).toBe(5);
+    });
+
+    it('preserves vector structure without rasterizing pages on >12KB text documents', async () => {
+      const doc = await PlainPDFDocument.create();
+      for (let i = 1; i <= 18; i++) {
+        const page = doc.addPage([595, 842]);
+        for (let line = 0; line < 20; line++) {
+          page.drawText(
+            `Page ${i} Line ${line}: Vector text preservation check for legal and technical contracts.`,
+            { x: 40, y: 800 - line * 30, size: 11 }
+          );
+        }
+      }
+      const initialBytes = await doc.save({ useObjectStreams: false });
+      expect(initialBytes.length).toBeGreaterThan(12000);
+
+      const compressedRec = await compressPDF(initialBytes, {
+        level: 'recommended',
+        mode: 'recommended',
+      });
+      const compressedExt = await compressPDF(initialBytes, { level: 'extreme', mode: 'extreme' });
+      const compressedLow = await compressPDF(initialBytes, { level: 'low', mode: 'low' });
+
+      expect(compressedRec.length).toBeLessThan(initialBytes.length);
+      expect(compressedExt.length).toBeLessThan(initialBytes.length);
+      expect(compressedLow.length).toBeLessThan(initialBytes.length);
+
+      const reloaded = await PlainPDFDocument.load(compressedExt);
+      expect(reloaded.getPageCount()).toBe(18);
+      expect(reloaded.getPage(0).getWidth()).toBe(595);
+      expect(reloaded.getPage(0).getHeight()).toBe(842);
+
+      // Verify page 1 retains its vector /Font resource dictionary and has 0 raster image /XObject entries
+      const page1Resources = reloaded.getPage(0).node.Resources();
+      const fontDict = page1Resources?.lookup(reloaded.context.obj('Font')) as
+        | { entries?: () => unknown[] }
+        | undefined;
+      const xObjectDict = page1Resources?.lookup(reloaded.context.obj('XObject')) as
+        | { entries?: () => unknown[] }
+        | undefined;
+      expect(fontDict?.entries?.().length).toBeGreaterThanOrEqual(1);
+      expect(xObjectDict?.entries?.().length ?? 0).toBe(0);
+    });
+  });
+
+  describe('metadata-operations (getMetadataPDF & editMetadataPDF)', () => {
+    it('extracts, updates, and clears metadata fields including Producer and Creator without overwriting', async () => {
+      const doc = await PlainPDFDocument.create();
+      doc.addPage([200, 200]);
+      doc.setTitle('Original Title');
+      doc.setAuthor('Original Author');
+      doc.setSubject('Original Subject');
+      doc.setKeywords(['alpha', 'beta']);
+      doc.setCreator('Custom Creator');
+      doc.setProducer('Custom Producer');
+      const bytes = await doc.save();
+
+      const extracted = await getMetadataPDF(bytes);
+      expect(extracted.title).toBe('Original Title');
+      expect(extracted.author).toBe('Original Author');
+      expect(extracted.creator).toBe('Custom Creator');
+      expect(extracted.producer).toBe('Custom Producer');
+
+      const updatedBytes = await editMetadataPDF(bytes, {
+        title: '',
+        author: 'Updated Author',
+        subject: '',
+        keywords: '',
+        creator: 'Updated Creator',
+        producer: 'Updated Producer',
+      });
+
+      const afterMeta = await getMetadataPDF(updatedBytes);
+      expect(afterMeta.title).toBe('');
+      expect(afterMeta.author).toBe('Updated Author');
+      expect(afterMeta.subject).toBe('');
+      expect(afterMeta.keywords).toBe('');
+      expect(afterMeta.creator).toBe('Updated Creator');
+      expect(afterMeta.producer).toBe('Updated Producer');
+    });
+
+    it('rejects password-protected PDFs in getMetadataPDF and editMetadataPDF', async () => {
+      const pdfBytes = await createCustomPdf(1);
+      const encrypted = await protectPDF({ fileBytes: pdfBytes, userPassword: 'secretPassword' });
+
+      await expect(getMetadataPDF(encrypted)).rejects.toThrow(/encrypted/i);
+      await expect(editMetadataPDF(encrypted, { title: 'Test' })).rejects.toThrow(/encrypted/i);
+    });
+  });
+
+  describe('repairPDF and flattenPDF', () => {
+    it('repairs leading and trailing junk bytes around a valid PDF', async () => {
+      const cleanBytes = await createCustomPdf(2);
+      const junkPrefix = new TextEncoder().encode('JUNK_HEADER_BYTES_12345\n');
+      const junkSuffix = new TextEncoder().encode('\nTRAILING_GARBAGE_98765');
+      const damaged = new Uint8Array(junkPrefix.length + cleanBytes.length + junkSuffix.length);
+      damaged.set(junkPrefix, 0);
+      damaged.set(cleanBytes, junkPrefix.length);
+      damaged.set(junkSuffix, junkPrefix.length + cleanBytes.length);
+
+      const { bytes: repairedBytes, repairs } = await repairPDF(damaged);
+      expect(repairs.length).toBeGreaterThanOrEqual(2);
+      const doc = await PlainPDFDocument.load(repairedBytes);
+      expect(doc.getPageCount()).toBe(2);
+    });
+
+    it('rejects password-protected PDF in repairPDF instead of corrupting streams', async () => {
+      const cleanBytes = await createCustomPdf(1);
+      const encrypted = await protectPDF({ fileBytes: cleanBytes, userPassword: 'secretPassword' });
+      await expect(repairPDF(encrypted)).rejects.toThrow(/password protected/i);
+    });
+
+    it('flattens AcroForm fields in flattenPDF and preserves page count', async () => {
+      const doc = await PlainPDFDocument.create();
+      const page = doc.addPage([400, 400]);
+      const form = doc.getForm();
+      const textField = form.createTextField('sample.field');
+      textField.setText('Filled Value');
+      textField.addToPage(page, { x: 50, y: 300, width: 150, height: 30 });
+      const bytesWithForm = await doc.save();
+
+      const flattenedBytes = await flattenPDF(bytesWithForm);
+      const reloaded = await PlainPDFDocument.load(flattenedBytes);
+      expect(reloaded.getPageCount()).toBe(1);
+      expect(reloaded.getForm().getFields()).toHaveLength(0);
     });
   });
 

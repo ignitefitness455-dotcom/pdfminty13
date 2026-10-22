@@ -252,7 +252,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                     PDFMinty Pro
                   </span>
                   <span className="px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase">
-                    $2.49/mo
+                    BDT 299.99/mo
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate font-medium">

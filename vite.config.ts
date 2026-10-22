@@ -52,8 +52,19 @@ function injectSwVersion() {
 function devApiPlugin() {
   return {
     name: 'pdfminty-dev-api',
-    configureServer(server: any) {
-      server.middlewares.use('/api/subscribe', async (req: any, res: any, next: any) => {
+    configureServer(server: {
+      middlewares: {
+        use: (
+          route: string,
+          handler: (
+            req: import('node:http').IncomingMessage,
+            res: import('node:http').ServerResponse,
+            next: () => void
+          ) => void | Promise<void>
+        ) => void;
+      };
+    }) {
+      server.middlewares.use('/api/subscribe', async (req, res, next) => {
         if (req.method !== 'POST') return next();
         let body = '';
         req.on('data', (chunk: Buffer) => {
@@ -61,7 +72,7 @@ function devApiPlugin() {
         });
         req.on('end', async () => {
           try {
-            const { email, name } = JSON.parse(body || '{}');
+            const { email, name } = JSON.parse(body || '{}') as { email?: string; name?: string };
             const apiKey = process.env.RESEND_API_KEY;
             const audienceId = process.env.RESEND_AUDIENCE_ID;
             const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
@@ -100,7 +111,11 @@ function devApiPlugin() {
                         Authorization: `Bearer ${apiKey}`,
                         'Content-Type': 'application/json',
                       },
-                      body: JSON.stringify({ email, first_name: name || undefined, unsubscribed: false }),
+                      body: JSON.stringify({
+                        email,
+                        first_name: name || undefined,
+                        unsubscribed: false,
+                      }),
                     }
                   );
                   if (audRes.ok) resendSuccess = true;
@@ -127,7 +142,11 @@ function devApiPlugin() {
                 console.error('[dev-api] Welcome email error:', e);
               }
             } else {
-              console.log('[dev-api] /api/subscribe received:', { email, name }, '(Set RESEND_API_KEY in .env to send via Resend)');
+              console.log(
+                '[dev-api] /api/subscribe received:',
+                { email, name },
+                '(Set RESEND_API_KEY in .env to send via Resend)'
+              );
             }
 
             res.statusCode = 200;
@@ -148,7 +167,7 @@ function devApiPlugin() {
         });
       });
 
-      server.middlewares.use('/api/gemini-proxy', async (req: any, res: any, next: any) => {
+      server.middlewares.use('/api/gemini-proxy', async (req, res, next) => {
         if (req.method !== 'POST') return next();
         let body = '';
         req.on('data', (chunk: Buffer) => {
@@ -156,7 +175,16 @@ function devApiPlugin() {
         });
         req.on('end', async () => {
           try {
-            const { textContent, query, mode, messages, imagesBase64 } = JSON.parse(body || '{}');
+            const { textContent, query, mode, messages, imagesBase64, language } = JSON.parse(
+              body || '{}'
+            ) as {
+              textContent?: string;
+              query?: string;
+              mode?: string;
+              messages?: { role?: string; content?: string }[];
+              imagesBase64?: unknown[];
+              language?: string;
+            };
             const apiKey = process.env.GEMINI_API_KEY;
 
             if (!apiKey) {
@@ -183,13 +211,25 @@ function devApiPlugin() {
             let systemInstruction =
               'You are PdfMinty AI Assistant, an elite document intelligence and PDF chat system powered by Gemini. You analyze uploaded PDF documents accurately to answer user questions, explain specific clauses, summarize key points, extract structured data and financial tables into Markdown format, and provide clear explanations. If asked in Bengali (বাংলা), answer naturally in Bengali. Always cite page numbers or sections when available. When extracting data or numbers, format them cleanly as Markdown tables.';
 
-            let promptContent: any = '';
+            let promptContent:
+              | string
+              | { parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] } =
+              '';
 
             if (mode === 'ocr') {
+              const langHint =
+                typeof language === 'string' && language.trim() && language !== 'auto'
+                  ? ` Primary document language hint: ${language.trim().slice(0, 16)}.`
+                  : '';
               systemInstruction =
-                'You are an expert Document Parsing & OCR engine. Your sole task is to transcribe the provided scanned PDF page image into high-fidelity, cleanly structured Markdown. Preserve headers (#, ##), lists, bold, italics, and format all tables accurately as Markdown tables (| col |). Do not include conversational introductory or concluding text.';
-              const parts: any[] = [
-                { text: 'Transcribe this document image accurately into well-formatted Markdown:' },
+                `You are an expert Document Parsing & OCR engine. Your sole task is to transcribe the provided scanned PDF page image into high-fidelity, cleanly structured Markdown. Preserve headers (#, ##), lists, bold, italics, and format all tables accurately as Markdown tables (| col |). Do not include conversational introductory or concluding text.${langHint}`;
+              const parts: (
+                | { text: string }
+                | { inlineData: { mimeType: string; data: string } }
+              )[] = [
+                {
+                  text: `Transcribe this document image accurately into well-formatted Markdown:${langHint}`,
+                },
               ];
               if (Array.isArray(imagesBase64)) {
                 for (const imgStr of imagesBase64) {
@@ -210,7 +250,7 @@ function devApiPlugin() {
             } else if (mode === 'chat' && Array.isArray(messages) && messages.length > 0) {
               const truncated = typeof textContent === 'string' ? textContent.slice(0, 40000) : '';
               const historyText = messages
-                .map((m: any) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+                .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content || ''}`)
                 .join('\n\n');
               promptContent = `DOCUMENT CONTEXT:\n${truncated}\n\nCONVERSATION HISTORY:\n${historyText}\n\nLATEST USER QUERY:\n${query || messages[messages.length - 1]?.content || ''}\n\nPlease respond directly to the latest query based on the document context and conversation history:`;
             } else {
@@ -221,7 +261,7 @@ function devApiPlugin() {
 
             const response = await ai.models.generateContent({
               model: 'gemini-3.8-flash',
-              contents: typeof promptContent === 'string' ? promptContent : promptContent,
+              contents: promptContent,
               config: {
                 systemInstruction,
                 temperature: mode === 'ocr' ? 0.1 : 0.3,
@@ -237,13 +277,16 @@ function devApiPlugin() {
                 result: resultText,
               })
             );
-          } catch (apiErr: any) {
+          } catch (apiErr: unknown) {
             console.error('[dev-api] Gemini proxy error:', apiErr);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
             res.end(
               JSON.stringify({
-                error: apiErr?.message || 'Failed to process AI document query.',
+                error:
+                  apiErr instanceof Error
+                    ? apiErr.message
+                    : 'Failed to process AI document query.',
               })
             );
           }
@@ -261,7 +304,7 @@ function generateSitemapPlugin() {
       const outDir = options.dir || resolve(process.cwd(), 'dist');
       const publicDir = resolve(process.cwd(), 'public');
       try {
-        const { generateSitemapXml } = await import('./scripts/generate-sitemap');
+        const { generateSitemapXml } = await import('./scripts/generate-sitemap.ts');
         const { sitemaps } = generateSitemapXml();
 
         [outDir, publicDir].forEach((dir) => {
@@ -304,9 +347,10 @@ export default defineConfig({
     modulePreload: {
       polyfill: false,
       resolveDependencies: (_filename, deps) => {
-        // Prevent preloading 4MB+ of non-English translation JSON on index.html
+        // Prevent preloading 4MB+ of non-English translation JSON and 2.4MB+ PDF engine on index.html
         return deps.filter((dep) => {
           if (
+            dep.includes('vendor-pdf') ||
             dep.includes('locales-de') ||
             dep.includes('locales-fr') ||
             dep.includes('locales-es') ||
@@ -334,14 +378,22 @@ export default defineConfig({
             ) {
               return 'vendor-pdf';
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'vendor-react';
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
             }
             if (id.includes('i18next') || id.includes('react-i18next')) {
               return 'vendor-i18n';
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
+            if (id.includes('firebase') || id.includes('@firebase')) {
+              return 'vendor-firebase';
+            }
+            if (
+              id.includes('react') ||
+              id.includes('react-dom') ||
+              id.includes('react-router') ||
+              id.includes('scheduler')
+            ) {
+              return 'vendor-react';
             }
             if (id.includes('signature_pad')) {
               return 'vendor-sigpad';

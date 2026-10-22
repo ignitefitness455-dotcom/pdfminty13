@@ -103,13 +103,30 @@ export const ComparePdfPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [pageDiffs, setPageDiffs] = useState<PageDiff[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [viewMode, setViewMode] = useState<'side_by_side' | 'unified' | 'visual_canvas'>('side_by_side');
+  const [viewMode, setViewMode] = useState<'side_by_side' | 'unified' | 'visual_canvas'>(
+    'side_by_side'
+  );
   const [showChangesOnly, setShowChangesOnly] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   // Visual canvas comparison refs
   const canvasARef = useRef<HTMLCanvasElement>(null);
   const canvasBRef = useRef<HTMLCanvasElement>(null);
+  const docARef = useRef<PDFDocumentProxy | null>(null);
+  const docBRef = useRef<PDFDocumentProxy | null>(null);
+
+  useEffect(() => {
+    return () => {
+      docARef.current?.destroy().catch(() => {
+        /* ignore */
+      });
+      docBRef.current?.destroy().catch(() => {
+        /* ignore */
+      });
+      docARef.current = null;
+      docBRef.current = null;
+    };
+  }, []);
 
   // Swap documents
   const handleSwap = () => {
@@ -134,13 +151,29 @@ export const ComparePdfPage: React.FC = () => {
     setCurrentPage(1);
 
     try {
+      if (docARef.current) {
+        await docARef.current.destroy().catch(() => {
+          /* ignore */
+        });
+        docARef.current = null;
+      }
+      if (docBRef.current) {
+        await docBRef.current.destroy().catch(() => {
+          /* ignore */
+        });
+        docBRef.current = null;
+      }
+
       const pdfjs = await getPdfJs();
 
       const [bufA, bufB] = await Promise.all([fA.arrayBuffer(), fB.arrayBuffer()]);
       const bytesA = new Uint8Array(bufA);
       const bytesB = new Uint8Array(bufB);
 
-      recordLocalProcessing(bytesA.byteLength + bytesB.byteLength, `PDF Diff: ${fA.name} vs ${fB.name}`);
+      recordLocalProcessing(
+        bytesA.byteLength + bytesB.byteLength,
+        `PDF Diff: ${fA.name} vs ${fB.name}`
+      );
       recordDailyTask(null, 'compare_pdf');
 
       const [loadedA, loadedB] = await Promise.all([
@@ -148,6 +181,8 @@ export const ComparePdfPage: React.FC = () => {
         pdfjs.getDocument({ data: bytesB }).promise,
       ]);
 
+      docARef.current = loadedA;
+      docBRef.current = loadedB;
       setDocA(loadedA);
       setDocB(loadedB);
 
@@ -165,6 +200,7 @@ export const ComparePdfPage: React.FC = () => {
             .map((it) => ('str' in it ? it.str : ''))
             .filter((s) => s.trim().length > 0)
             .join('\n');
+          pageA.cleanup();
         }
 
         if (p <= loadedB.numPages) {
@@ -174,6 +210,7 @@ export const ComparePdfPage: React.FC = () => {
             .map((it) => ('str' in it ? it.str : ''))
             .filter((s) => s.trim().length > 0)
             .join('\n');
+          pageB.cleanup();
         }
 
         const linesA = textA ? textA.split('\n') : [];
@@ -214,46 +251,70 @@ export const ComparePdfPage: React.FC = () => {
   useEffect(() => {
     if (viewMode !== 'visual_canvas' || !docA || !docB) return;
     let cancelled = false;
+    let taskA: { cancel: () => void; promise: Promise<void> } | null = null;
+    let taskB: { cancel: () => void; promise: Promise<void> } | null = null;
 
     const renderCanvases = async () => {
       try {
         if (currentPage <= docA.numPages && canvasARef.current) {
           const pA = await docA.getPage(currentPage);
-          if (cancelled) return;
-          const vpA = pA.getViewport({ scale: 1.0 });
-          const scaleA = Math.min(1.5, 360 / vpA.width);
-          const scaledVpA = pA.getViewport({ scale: scaleA });
-          canvasARef.current.width = scaledVpA.width;
-          canvasARef.current.height = scaledVpA.height;
-          const ctxA = canvasARef.current.getContext('2d');
-          if (ctxA) {
-            ctxA.clearRect(0, 0, scaledVpA.width, scaledVpA.height);
-            await pA.render({ canvasContext: ctxA, viewport: scaledVpA }).promise;
+          try {
+            if (cancelled) return;
+            const vpA = pA.getViewport({ scale: 1.0 });
+            const scaleA = Math.min(1.5, 360 / vpA.width);
+            const scaledVpA = pA.getViewport({ scale: scaleA });
+            canvasARef.current.width = scaledVpA.width;
+            canvasARef.current.height = scaledVpA.height;
+            const ctxA = canvasARef.current.getContext('2d');
+            if (ctxA) {
+              ctxA.clearRect(0, 0, scaledVpA.width, scaledVpA.height);
+              taskA = pA.render({ canvasContext: ctxA, viewport: scaledVpA });
+              await taskA.promise;
+            }
+          } finally {
+            pA.cleanup();
           }
         }
 
         if (currentPage <= docB.numPages && canvasBRef.current) {
           const pB = await docB.getPage(currentPage);
-          if (cancelled) return;
-          const vpB = pB.getViewport({ scale: 1.0 });
-          const scaleB = Math.min(1.5, 360 / vpB.width);
-          const scaledVpB = pB.getViewport({ scale: scaleB });
-          canvasBRef.current.width = scaledVpB.width;
-          canvasBRef.current.height = scaledVpB.height;
-          const ctxB = canvasBRef.current.getContext('2d');
-          if (ctxB) {
-            ctxB.clearRect(0, 0, scaledVpB.width, scaledVpB.height);
-            await pB.render({ canvasContext: ctxB, viewport: scaledVpB }).promise;
+          try {
+            if (cancelled) return;
+            const vpB = pB.getViewport({ scale: 1.0 });
+            const scaleB = Math.min(1.5, 360 / vpB.width);
+            const scaledVpB = pB.getViewport({ scale: scaleB });
+            canvasBRef.current.width = scaledVpB.width;
+            canvasBRef.current.height = scaledVpB.height;
+            const ctxB = canvasBRef.current.getContext('2d');
+            if (ctxB) {
+              ctxB.clearRect(0, 0, scaledVpB.width, scaledVpB.height);
+              taskB = pB.render({ canvasContext: ctxB, viewport: scaledVpB });
+              await taskB.promise;
+            }
+          } finally {
+            pB.cleanup();
           }
         }
       } catch (e) {
-        console.error('Error rendering visual diff canvases', e);
+        if ((e as { name?: string })?.name !== 'RenderingCancelledException') {
+          console.error('Error rendering visual diff canvases', e);
+        }
       }
     };
 
     renderCanvases();
     return () => {
       cancelled = true;
+      try {
+        taskA?.cancel();
+      } catch {
+        // ignore
+      }
+      try {
+        taskB?.cancel();
+      } catch {
+        // ignore
+      }
     };
   }, [viewMode, currentPage, docA, docB]);
 
@@ -355,7 +416,8 @@ ${pageDiffs
               Compare Two PDF Documents
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Upload original Version 1 and revised Version 2 to instantly highlight added clauses (green) and deleted terms (red). 100% private in your browser.
+              Upload original Version 1 and revised Version 2 to instantly highlight added clauses
+              (green) and deleted terms (red). 100% private in your browser.
             </p>
           </div>
 
@@ -393,8 +455,12 @@ ${pageDiffs
                 <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
                   <FileText className="w-6 h-6 text-rose-500 flex-shrink-0" />
                   <div className="truncate">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{fileA.name}</p>
-                    <p className="text-[11px] text-slate-400">{(fileA.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {fileA.name}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {(fileA.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
               )}
@@ -433,8 +499,12 @@ ${pageDiffs
                 <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
                   <FileText className="w-6 h-6 text-emerald-500 flex-shrink-0" />
                   <div className="truncate">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{fileB.name}</p>
-                    <p className="text-[11px] text-slate-400">{(fileB.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {fileB.name}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {(fileB.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
               )}
@@ -501,13 +571,15 @@ ${pageDiffs
                   </button>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-500">
-                  <span className="font-semibold text-emerald-600">
-                    {totals.similarity}% Match
+                  <span className="font-semibold text-emerald-600">{totals.similarity}% Match</span>
+                  <span>•</span>
+                  <span className="text-emerald-700 font-mono font-bold">
+                    +{totals.added} Added
                   </span>
                   <span>•</span>
-                  <span className="text-emerald-700 font-mono font-bold">+{totals.added} Added</span>
-                  <span>•</span>
-                  <span className="text-rose-700 font-mono font-bold">-{totals.removed} Deleted</span>
+                  <span className="text-rose-700 font-mono font-bold">
+                    -{totals.removed} Deleted
+                  </span>
                 </div>
               </div>
             </div>
@@ -555,7 +627,11 @@ ${pageDiffs
                 className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition cursor-pointer"
                 title="Copy comparison summary"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                {copied ? (
+                  <Check className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
               </button>
 
               <button
@@ -610,6 +686,14 @@ ${pageDiffs
 
               <button
                 onClick={() => {
+                  docARef.current?.destroy().catch(() => {
+                    /* ignore */
+                  });
+                  docBRef.current?.destroy().catch(() => {
+                    /* ignore */
+                  });
+                  docARef.current = null;
+                  docBRef.current = null;
                   setFileA(null);
                   setFileB(null);
                   setDocA(null);
@@ -633,7 +717,9 @@ ${pageDiffs
                   <div className="p-4 space-y-1 bg-slate-50/40 dark:bg-slate-950/20 max-h-[600px] overflow-y-auto">
                     <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 py-1 px-2 border-b border-rose-200 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 font-bold font-sans flex items-center justify-between text-xs mb-2">
                       <span>Original Document (V1)</span>
-                      <span className="text-[10px] font-mono">-{activePageDiff.removedCount} lines</span>
+                      <span className="text-[10px] font-mono">
+                        -{activePageDiff.removedCount} lines
+                      </span>
                     </div>
 
                     {activePageDiff.lines
@@ -652,7 +738,9 @@ ${pageDiffs
                             <span className="w-5 text-[10px] text-slate-400 select-none text-right">
                               {l.lineA || ''}
                             </span>
-                            <span className="font-bold select-none">{l.type === 'removed' ? '-' : ' '}</span>
+                            <span className="font-bold select-none">
+                              {l.type === 'removed' ? '-' : ' '}
+                            </span>
                             <span className="flex-1 break-words whitespace-pre-wrap">{l.text}</span>
                           </div>
                         );
@@ -663,7 +751,9 @@ ${pageDiffs
                   <div className="p-4 space-y-1 bg-slate-50/40 dark:bg-slate-950/20 max-h-[600px] overflow-y-auto">
                     <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 py-1 px-2 border-b border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold font-sans flex items-center justify-between text-xs mb-2">
                       <span>Revised Document (V2)</span>
-                      <span className="text-[10px] font-mono">+{activePageDiff.addedCount} lines</span>
+                      <span className="text-[10px] font-mono">
+                        +{activePageDiff.addedCount} lines
+                      </span>
                     </div>
 
                     {activePageDiff.lines
@@ -682,7 +772,9 @@ ${pageDiffs
                             <span className="w-5 text-[10px] text-slate-400 select-none text-right">
                               {l.lineB || ''}
                             </span>
-                            <span className="font-bold select-none">{l.type === 'added' ? '+' : ' '}</span>
+                            <span className="font-bold select-none">
+                              {l.type === 'added' ? '+' : ' '}
+                            </span>
                             <span className="flex-1 break-words whitespace-pre-wrap">{l.text}</span>
                           </div>
                         );

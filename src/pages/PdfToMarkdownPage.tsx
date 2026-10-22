@@ -230,8 +230,16 @@ export const PdfToMarkdownPage: React.FC = () => {
 
   const operationTokenRef = useRef<number>(0);
 
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+    };
+  }, []);
+
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
+      operationTokenRef.current++;
       setSelectedFile(files[0]);
       setError(null);
       setIsEncryptedError(false);
@@ -462,9 +470,14 @@ export const PdfToMarkdownPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => {
+                    operationTokenRef.current++;
                     setSelectedFile(null);
                     setMarkdownText('');
                     setImages([]);
+                    setError(null);
+                    setIsEncryptedError(false);
+                    setIsScannedResult(false);
+                    setProgress(null);
                   }}
                   disabled={loading}
                   className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white border border-slate-200 py-1.5 px-3 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 cursor-pointer"
@@ -602,16 +615,31 @@ export const PdfToMarkdownPage: React.FC = () => {
 
             <button
               onClick={handleRunAiOcr}
-              disabled={!selectedFile || loading}
+              disabled={!selectedFile || loading || !hasOcrConsent}
               className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all border ${
-                selectedFile && !loading
+                selectedFile && !loading && hasOcrConsent
                   ? 'bg-amber-50 hover:bg-amber-100/80 text-amber-800 border-amber-300 cursor-pointer'
-                  : 'bg-slate-50 text-slate-400 border-slate-200 pointer-events-none'
+                  : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
               }`}
             >
               <Sparkles className="w-4 h-4 text-amber-600" />
               <span>{t('pdfToMarkdown.aiVisionMode')}</span>
             </button>
+
+            {selectedFile && !isScannedResult && (
+              <label className="flex items-start space-x-2 cursor-pointer select-none px-1 pt-0.5">
+                <input
+                  type="checkbox"
+                  checked={hasOcrConsent}
+                  onChange={(e) => setHasOcrConsent(e.target.checked)}
+                  className="mt-0.5 accent-amber-600 rounded cursor-pointer"
+                />
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-snug">
+                  I consent to sending rendered page images (up to 6 pages) to Google Gemini AI
+                  Vision for optional OCR extraction.
+                </span>
+              </label>
+            )}
           </div>
         </div>
       </div>

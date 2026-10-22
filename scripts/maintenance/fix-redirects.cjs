@@ -1,5 +1,7 @@
 const fs = require("fs");
-let content = fs.readFileSync("./src/App.tsx", "utf8");
+const isApply = process.argv.includes("--apply");
+const original = fs.readFileSync("./src/App.tsx", "utf8");
+let content = original;
 
 content = content.replace(
   /to="\/blog\/how-to-compress-a-pdf-without-losing-quality-2026"/g,
@@ -18,5 +20,11 @@ content = content.replace(
   'to="/blog/why-privacy-first-pdf-tools-matter-in-2026/"'
 );
 
-fs.writeFileSync("./src/App.tsx", content, "utf8");
-console.log("App.tsx redirects fixed.");
+if (content === original) {
+  console.log("[NO-OP] App.tsx redirects already canonical.");
+} else if (isApply) {
+  fs.writeFileSync("./src/App.tsx", content, "utf8");
+  console.log("[APPLIED] App.tsx redirects fixed.");
+} else {
+  console.log("[DRY-RUN] App.tsx has non-canonical blog links. Re-run with --apply to write changes.");
+}

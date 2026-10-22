@@ -1,10 +1,16 @@
 import { Sparkles, ArrowRight } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { iconMap, badgeColors, badgeLabels, prefetchToolChunk } from '../../config/homeConfig';
 import { TOOLS } from '../../config/seo-data';
+import {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  SupportedLocale,
+  getLocalizedPath,
+} from '../../i18n/config';
 
 interface ToolInfo {
   name: string;
@@ -17,7 +23,7 @@ interface ToolCardProps {
 }
 
 export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
-  const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('common');
   if (!tool || !tool.slug) return null;
   const toolSEO = TOOLS.find((t) => t.slug === tool.slug);
@@ -37,10 +43,15 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
     };
   }
 
-  const handleLaunch = () => {
-    window.scrollTo(0, 0);
-    navigate(`/${tool.slug}/`);
-  };
+  const rawPath = (location?.pathname || '/').replace(/^\/+|\/+$/g, '');
+  const firstSegment = rawPath.split('/')[0];
+  const activeLocale: SupportedLocale =
+    firstSegment &&
+    firstSegment !== DEFAULT_LOCALE &&
+    (SUPPORTED_LOCALES as readonly string[]).includes(firstSegment)
+      ? (firstSegment as SupportedLocale)
+      : DEFAULT_LOCALE;
+  const targetPath = getLocalizedPath(tool.slug, activeLocale);
 
   const isHighlighted = [
     'sign-pdf',
@@ -51,13 +62,13 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
   ].includes(tool.slug);
 
   return (
-    <button
-      type="button"
+    <Link
+      to={targetPath}
       id={`tool-card-${toolId}`}
-      onClick={handleLaunch}
+      onClick={() => window.scrollTo(0, 0)}
       onMouseEnter={() => prefetchToolChunk(tool.slug)}
       onFocus={() => prefetchToolChunk(tool.slug)}
-      className={`page-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between text-left group transition-all duration-300 transform hover:-translate-y-1 relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 border ${
+      className={`page-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between text-left group transition-all duration-300 transform hover:-translate-y-1 relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 no-underline border ${
         isHighlighted
           ? 'border-emerald-500/30 dark:border-emerald-500/30 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 bg-white/60 dark:bg-black/40 backdrop-blur-lg'
           : 'border-white/50 dark:border-white/10 hover:border-emerald-500/40 shadow-sm hover:shadow-lg bg-white/50 dark:bg-slate-900/40 backdrop-blur-md'
@@ -105,6 +116,6 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
           aria-hidden="true"
         />
       </div>
-    </button>
+    </Link>
   );
 };
