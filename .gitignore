@@ -40,3 +40,11 @@ __pycache__/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# AI Studio artifacts, chat attachments & local agent skill directories
+.aistudio/
+public/assets/aistudio/
+.agents/
+.gemini/
+skills/
+

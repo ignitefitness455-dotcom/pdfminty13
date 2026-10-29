@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
 import { ROUTES } from '../config/routes';
-import { TOOLS, ToolSEOInfo } from '../config/seo-data';
+import { TOOLS_CATALOG as TOOLS, ToolCatalogItem } from '../config/seo-catalog';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
 
 export const RelatedBlogs: React.FC = () => {
@@ -14,7 +14,12 @@ export const RelatedBlogs: React.FC = () => {
   const relatedBlogs = useMemo(() => {
     const articles = TOOLS.filter(
       (t) =>
-        t.type === 'article' && t.id !== 'blog' && t.id !== 'trust-article' && t.id !== 'about-us'
+        t.type === 'article' &&
+        t.category !== 'info' &&
+        t.category !== 'static' &&
+        t.id !== 'blog' &&
+        t.id !== 'trust-article' &&
+        t.id !== 'about-us'
     );
     let currentSlug = (pathname || '').replace(/^\//, '').replace(/\/$/, '');
     for (const loc of SUPPORTED_LOCALES) {
@@ -24,11 +29,44 @@ export const RelatedBlogs: React.FC = () => {
       }
     }
 
+    const currentItem = TOOLS.find((t) => t.slug === currentSlug);
+    const currentTokens = currentSlug
+      .replace(/^(blog|compare)\//, '')
+      .split('-')
+      .filter((w) => w.length > 2 && !['pdf', 'how', 'the', 'for', 'and', 'free', '2026', 'guide', 'online', 'with', 'without'].includes(w));
+
+    const scoreArticle = (a: ToolCatalogItem): number => {
+      let score = 0;
+      if (currentItem) {
+        if (currentItem.type === 'tool' && a.relatedTools?.includes(currentItem.slug)) {
+          score += 12;
+        }
+        if (a.category && currentItem.category && a.category === currentItem.category) {
+          score += 5;
+        }
+        if (currentItem.relatedTools && a.relatedTools) {
+          const shared = a.relatedTools.filter((rt) => currentItem.relatedTools?.includes(rt)).length;
+          score += shared * 3;
+        }
+      }
+      if (currentTokens.length > 0) {
+        const hay = `${a.slug} ${a.name} ${a.keywords?.join(' ') || ''}`.toLowerCase();
+        for (const tok of currentTokens) {
+          if (hay.includes(tok)) {
+            score += 4;
+          }
+        }
+      }
+      return score;
+    };
+
     // Filter out current article if viewing a blog post
     const filtered = articles.filter((a) => a.slug !== currentSlug);
 
-    // Sort newest date first
+    // Sort by topical relevance score first, then newest date
     const sorted = [...filtered].sort((a, b) => {
+      const scoreDiff = scoreArticle(b) - scoreArticle(a);
+      if (scoreDiff !== 0) return scoreDiff;
       const dateA = new Date(a.datePublished || '2026-07-15').getTime();
       const dateB = new Date(b.datePublished || '2026-07-15').getTime();
       if (dateB !== dateA) return dateB - dateA;
@@ -39,14 +77,12 @@ export const RelatedBlogs: React.FC = () => {
     return sorted.slice(0, 3);
   }, [pathname]);
 
-  const getReadingTime = (html: string): string => {
-    const text = html ? html.replace(/<[^>]*>/g, '') : '';
-    const words = text.trim().split(/\s+/).length;
-    const time = Math.max(1, Math.ceil(words / 225));
+  const getReadingTime = (post: ToolCatalogItem): string => {
+    const time = post.readingTimeMinutes || 1;
     return t('relatedBlogs.readTime', { count: time, defaultValue: `${time} min read` });
   };
 
-  const getFormattedDate = (post: ToolSEOInfo): string => {
+  const getFormattedDate = (post: ToolCatalogItem): string => {
     const dateStr = post.dateModified || post.datePublished || '2026-09-21';
     try {
       const locale = i18n.language === 'bn' ? 'bn-BD' : i18n.language === 'de' ? 'de-DE' : 'en-US';
@@ -68,14 +104,14 @@ export const RelatedBlogs: React.FC = () => {
   const isDefaultLocale =
     !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
 
-  const getArticleTitle = (post: ToolSEOInfo) => {
+  const getArticleTitle = (post: ToolCatalogItem) => {
     if (isDefaultLocale) return post.name;
     return t(`articles.${post.id}.name`, {
       defaultValue: t(`articles.${post.slug}.name`, { defaultValue: post.name }),
     });
   };
 
-  const getArticleDesc = (post: ToolSEOInfo) => {
+  const getArticleDesc = (post: ToolCatalogItem) => {
     if (isDefaultLocale) return post.shortDescription;
     return t(`articles.${post.id}.shortDesc`, {
       defaultValue: t(`articles.${post.slug}.shortDesc`, { defaultValue: post.shortDescription }),
@@ -135,7 +171,7 @@ export const RelatedBlogs: React.FC = () => {
             <div className="pt-4 mt-4 border-t border-border-muted flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <span className="flex items-center gap-1 text-[11px] text-slate-400 font-mono font-normal">
                 <Clock className="w-3 h-3" />
-                {getReadingTime(post.longFormBody)}
+                {getReadingTime(post)}
               </span>
               <span className="inline-flex items-center gap-1 font-bold">
                 <span>{t('relatedBlogs.read', { defaultValue: 'Read' })}</span>

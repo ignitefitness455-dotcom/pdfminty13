@@ -40,6 +40,7 @@ import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { getPdfJs } from '../core/index';
 import { PDFSanitizer } from '../core/PDFSanitizer';
+import { sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 import { recordDailyTask } from '../utils/usageLimit';
 
@@ -680,9 +681,12 @@ export const AiAnalyzePage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${selectedFile ? selectedFile.name.replace(/\.pdf$/i, '') : 'document'}-chat-notes.md`;
+    a.download = sanitizeDownloadFilename(
+      `${selectedFile ? selectedFile.name.replace(/\.pdf$/i, '') : 'document'}-chat-notes.md`,
+      'document-chat-notes.md'
+    );
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   };
 
   const handleClearChat = () => {

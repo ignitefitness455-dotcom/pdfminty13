@@ -5,6 +5,12 @@ import { Link } from 'react-router-dom';
 
 import { NORD_AFFILIATE_LINKS } from '../config/constants';
 import { ROUTES } from '../config/routes';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -12,36 +18,41 @@ export interface FooterProps {
   setShowFeedbackModal?: (show: boolean) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
-  const { t } = useTranslation('common');
+export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal }) => {
+  const { t, i18n } = useTranslation('common');
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
+  const mergePath = getLocalizedPath('merge-pdf', activeLocale);
 
   return (
-    <footer className="bg-white/30 dark:bg-black/20 backdrop-blur-md border-t border-white/50 dark:border-white/10 pt-12 pb-8 font-sans text-on-surface-variant transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    <footer className="bg-slate-50/90 dark:bg-slate-950/90 border-t border-slate-200/60 dark:border-slate-800/60 pt-14 pb-10 font-sans text-slate-600 dark:text-slate-400 transition-colors duration-200 content-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Col 1: Brand & Security Statement */}
           <div className="space-y-4 md:col-span-1">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 p-0.5 shadow-md shadow-emerald-500/20 flex items-center justify-center overflow-hidden">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 p-0.5 shadow-sm shadow-emerald-500/20 flex items-center justify-center overflow-hidden">
                 <img
                   src="/logo.svg"
                   alt="PdfMinty Logo"
                   className="w-full h-full object-contain p-0.5"
                 />
               </div>
-              <span className="font-black text-xl text-on-surface">
+              <span className="font-extrabold text-lg text-slate-900 dark:text-white">
                 {t('header.siteName', { defaultValue: 'PdfMinty' })}
               </span>
             </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed font-medium">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
               {t('footer.brandDescription', {
                 defaultValue:
                   'Free, privacy-first PDF utility suite. Core document tools run 100% locally in your browser without uploads. AI and OCR features utilize secure, encrypted API processing.',
               })}
             </p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>
                 {t('footer.badges.privacyFirst', { defaultValue: 'In-Browser Privacy First' })}
               </span>
@@ -55,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               <li>
-                <Link to={ROUTES.MERGE} className="hover:text-emerald-500 transition-colors">
+                <Link to={mergePath} className="hover:text-emerald-500 transition-colors">
                   {t('footer.links.mergePdf', { defaultValue: 'Merge PDF Files' })}
                 </Link>
               </li>
@@ -270,6 +281,8 @@ export const Footer: React.FC<FooterProps> = ({ setShowFeedbackModal }) => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = 'Footer';
 
 export default Footer;

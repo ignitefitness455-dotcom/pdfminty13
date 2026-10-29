@@ -154,6 +154,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     );
   }
 
+  const groqKeys = new Set(parseApiKeys(env.GROQ_API_KEY));
+  const grokKeys = new Set(parseApiKeys(env.GROK_API_KEY, env.GORK_API_KEY));
+  const apiKeys = parseApiKeys(
+    env.GEMINI_API_KEY,
+    env.GROQ_API_KEY,
+    env.GROK_API_KEY,
+    env.GORK_API_KEY
+  );
+
   try {
     interface GeminiProxyPayload {
       textContent?: unknown;
@@ -291,14 +300,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     const truncated = typeof textContent === 'string' ? textContent.slice(0, MAX_TEXT_LENGTH) : '';
     const safeQuery = typeof query === 'string' ? query.slice(0, MAX_QUERY_LENGTH) : '';
-    const groqKeys = new Set(parseApiKeys(env.GROQ_API_KEY));
-    const grokKeys = new Set(parseApiKeys(env.GROK_API_KEY, env.GORK_API_KEY));
-    const apiKeys = parseApiKeys(
-      env.GEMINI_API_KEY,
-      env.GROQ_API_KEY,
-      env.GROK_API_KEY,
-      env.GORK_API_KEY
-    );
 
     if (apiKeys.length === 0) {
       console.error(
@@ -581,7 +582,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }
     );
   } catch (err: unknown) {
-    console.error('Gemini API Proxy Exception:', redactSecretsFromMessage(err, []));
+    console.error('Gemini API Proxy Exception:', redactSecretsFromMessage(err, apiKeys));
     const safeMsg = mapGeminiError(err);
     return new Response(JSON.stringify({ error: safeMsg }), {
       status: 500,

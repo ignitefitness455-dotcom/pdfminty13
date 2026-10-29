@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { PDFSanitizer } from '../../core/PDFSanitizer';
+import { downloadBlob, sanitizeDownloadFilename } from '../../utils/download';
 import { recordDailyTask } from '../../utils/usageLimit';
 import { Button } from '../ui/button';
 
@@ -116,6 +118,14 @@ export function SignPdfTool() {
         setError(t('signPdf.errors.choosePdf', { defaultValue: 'Please choose a PDF file.' }));
         return;
       }
+      if (nextFile.size === 0) {
+        setError(
+          t('signPdf.errors.emptyPdf', {
+            defaultValue: 'This PDF file is empty (0 bytes). Please choose a valid PDF.',
+          })
+        );
+        return;
+      }
       if (nextFile.size > limitMB * 1024 * 1024) {
         setError(
           t('signPdf.errors.fileTooLarge', {
@@ -134,22 +144,48 @@ export function SignPdfTool() {
           docRef.current = null;
         }
         const nextBytes = await nextFile.arrayBuffer();
-        const nextDoc = await loadPdfDocument(nextBytes);
+        const rawUint8 = new Uint8Array(nextBytes);
+        // Validate %PDF- magic header and non-empty structural boundary
+        const { bytes: sanitizedUint8 } = PDFSanitizer.sanitize(rawUint8);
+        if (await PDFSanitizer.isEncrypted(sanitizedUint8)) {
+          setError(
+            t('signPdf.errors.encryptedPdf', {
+              defaultValue:
+                'This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.',
+            })
+          );
+          return;
+        }
+        const sanitizedBuffer = sanitizedUint8.buffer.slice(
+          sanitizedUint8.byteOffset,
+          sanitizedUint8.byteOffset + sanitizedUint8.byteLength
+        ) as ArrayBuffer;
+        const nextDoc = await loadPdfDocument(sanitizedBuffer);
         const nextPages = await readPageInfos(nextDoc);
         docRef.current = nextDoc;
         setFile(nextFile);
-        setBytes(nextBytes);
+        setBytes(sanitizedBuffer);
         setDoc(nextDoc);
         setPages(nextPages);
         setFields([]);
         setSelectedId(null);
       } catch (err) {
         console.error('[v0] PDF load failed', err);
-        setError(
-          t('signPdf.errors.cannotOpen', {
-            defaultValue: 'This file could not be opened. Please try another PDF.',
-          })
-        );
+        const msg = err instanceof Error ? err.message.toLowerCase() : '';
+        if (msg.includes('password') || msg.includes('encrypt') || msg.includes('secured_locked')) {
+          setError(
+            t('signPdf.errors.encryptedPdf', {
+              defaultValue:
+                'This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.',
+            })
+          );
+        } else {
+          setError(
+            t('signPdf.errors.cannotOpen', {
+              defaultValue: 'This file could not be opened. Please try another PDF.',
+            })
+          );
+        }
       }
     },
     [limitMB, t]
@@ -317,20 +353,16 @@ export function SignPdfTool() {
     setExporting(true);
     try {
       const output = await exportSignedPdf({ bytes, pages, fields, signatures, dateText });
-      const filename = `${file?.name.replace(/\.pdf$/i, '') || 'document'}-signed.pdf`;
+      const filename = sanitizeDownloadFilename(
+        `${file?.name.replace(/\.pdf$/i, '') || 'document'}-signed.pdf`
+      );
       try {
-        recordDailyTask(user, filename);
+        recordDailyTask(user, 'sign_pdf');
       } catch {
         // Non-blocking
       }
-      const url = URL.createObjectURL(
-        new Blob([output as unknown as BlobPart], { type: 'application/pdf' })
-      );
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(url);
+      const blob = new Blob([output as unknown as BlobPart], { type: 'application/pdf' });
+      await downloadBlob(blob, filename);
     } catch (err) {
       console.error('[v0] PDF export failed', err);
       setError(

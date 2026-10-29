@@ -4,9 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { getToolLimit } from '../config/constants';
-import { ROUTES } from '../config/routes';
-import { TOOLS } from '../config/seo-data';
+import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 interface ToolHeaderProps {
   slug: string;
@@ -21,12 +26,18 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
   overrideTitle,
   overrideDesc,
 }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { user } = useAuth();
   const isPro = user?.plan === 'pro';
   const isLoggedIn = !!user;
   const tool = TOOLS.find((item) => item.slug === slug);
   const sizeLimit = limitMB || getToolLimit(slug, isPro, isLoggedIn).maxSingleMB;
+
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
+  const homePath = getLocalizedPath('', activeLocale);
 
   const title =
     overrideTitle ||
@@ -42,11 +53,13 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
       defaultValue: tool?.shortDescription || '',
     });
 
+  const isCloudAiTool = slug === 'ai-analyze-pdf' || slug === 'ocr-pdf';
+
   return (
-    <div className="space-y-4 mb-6" id={`tool_header_${slug}`}>
+    <div className="space-y-3 mb-6" id={`tool_header_${slug}`}>
       <Link
-        to={ROUTES.HOME}
-        className="inline-flex items-center space-x-1 text-xs font-bold text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
+        to={homePath}
+        className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 min-h-[36px] py-1.5 px-2.5 -ml-2.5 rounded-lg hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>{t('toolCommon.returnToDashboard', { defaultValue: 'Return to Dashboard' })}</span>
@@ -59,7 +72,7 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
           </h1>
           <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">·</span>
           <span
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold ${
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold tabular-nums ${
               isPro
                 ? 'text-amber-600 dark:text-amber-400 font-bold'
                 : 'text-slate-500 dark:text-slate-400'
@@ -72,9 +85,23 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
                 : t('toolCommon.limit', { limit: sizeLimit, defaultValue: `Limit: ${sizeLimit}MB` })}
             </span>
           </span>
+          <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">·</span>
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-semibold ${
+              isCloudAiTool
+                ? 'text-amber-600 dark:text-amber-400'
+                : 'text-emerald-600 dark:text-emerald-400'
+            }`}
+          >
+            <span>
+              {isCloudAiTool
+                ? t('toolHeader.optInCloud', { defaultValue: 'Opt-in Gemini AI Proxy' })
+                : t('toolHeader.localOnly', { defaultValue: '100% Local In-Browser' })}
+            </span>
+          </span>
         </div>
         {desc && (
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{desc}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">{desc}</p>
         )}
       </div>
     </div>

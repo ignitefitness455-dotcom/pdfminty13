@@ -8,7 +8,7 @@ export const SignPdfPage: React.FC = () => {
   useSignatureFonts();
 
   return (
-    <div className="w-full flex flex-col bg-[#f8fafc]" id="pdf_editor_main_suite">
+    <div className="w-full flex flex-col bg-[#f8fafc] dark:bg-slate-950" id="pdf_editor_main_suite">
       <SEO slug="sign-pdf" />
       <SignPdfTool />
     </div>

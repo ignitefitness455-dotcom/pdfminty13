@@ -40,6 +40,10 @@ export function useHreflang(
       (SUPPORTED_LOCALES as readonly string[]).includes(segments[0]) &&
       segments[0] !== DEFAULT_LOCALE;
 
+    const pathLocale: SupportedLocale = hasLocalePrefix
+      ? (segments[0] as SupportedLocale)
+      : DEFAULT_LOCALE;
+
     const currentLocale: SupportedLocale = hasLocalePrefix
       ? (segments[0] as SupportedLocale)
       : (SUPPORTED_LOCALES as readonly string[]).includes(i18n.language)
@@ -55,10 +59,10 @@ export function useHreflang(
 
     const isI18nEnabled = cleanSlug === '' || isI18nToolSlug(cleanSlug);
     const canonicalUrl = cleanSlug
-      ? getCanonicalUrl(cleanSlug, currentLocale, siteUrl)
-      : currentLocale === DEFAULT_LOCALE
+      ? getCanonicalUrl(cleanSlug, pathLocale, siteUrl)
+      : pathLocale === DEFAULT_LOCALE
         ? `${siteUrl}/`
-        : `${siteUrl}/${currentLocale}/`;
+        : `${siteUrl}/${pathLocale}/`;
 
     const hreflangs = isI18nEnabled ? getHreflangs(cleanSlug, siteUrl) : [];
 

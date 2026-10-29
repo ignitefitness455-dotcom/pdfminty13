@@ -1,7 +1,6 @@
 import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { getPdfJs } from '../core/index';
 import { logger } from '../utils/logger';
 
 interface LazyPDFPageProps {
@@ -54,6 +53,17 @@ export const LazyPDFPage: React.FC<LazyPDFPageProps> = ({
     return () => observer.disconnect();
   }, []);
 
+  // Release canvas backing store on unmount to avoid accumulating GPU memory across large PDFs.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    return () => {
+      if (canvas) {
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+    };
+  }, []);
+
   // Render when visible or rotation changes. Cancel any in-flight render first.
   useEffect(() => {
     if (!visible || !canvasRef.current) return;
@@ -61,7 +71,6 @@ export const LazyPDFPage: React.FC<LazyPDFPageProps> = ({
     let cancelled = false;
 
     const render = async () => {
-      await getPdfJs();
       const page = await pdfDoc.getPage(pageNumber);
       if (cancelled) return;
 

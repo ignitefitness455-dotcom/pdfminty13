@@ -1,5 +1,3 @@
-import { TOOLS } from '../../src/config/seo-data';
-
 export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body: string }> = {
   'trust-article': {
     name: 'পিডিএফমিন্টি কি নিরাপদ? ১০০% ব্রাউজার-ভিত্তিক পিডিএফ প্রসেসিং ব্যাখ্যা',
@@ -35,7 +33,7 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
 <h3>আইনি ও প্রাতিষ্ঠানিক ঝুঁকি</h3>
 <p>আদালতের নথি, সরকারি টেন্ডার বা কর্পোরেট প্রেস রিলিজ প্রকাশের আগে মেটাডেটা পরিষ্কার না করলে অসাবধানতাবশত গোপন তথ্য ফাঁস হতে পারে।</p>
 <h3>কীভাবে পিডিএফমিন্টি দিয়ে মেটাডেটা মুছবেন?</h3>
-<p>আমাদের <a href="/sanitize-pdf/">Sanitize PDF</a> অথবা <a href="/edit-metadata/">Edit Metadata</a> টুল ব্যবহার করে কয়েক সেকেন্ডে সব অদৃশ্য মেটাডেটা সম্পূর্ণ লোকাল ব্রাউজারে পরিষ্কার করে নিতে পারেন।</p>`
+<p>আমাদের <a href="/sanitize-pdf/">Sanitize PDF</a> অথবা <a href="/edit-pdf-metadata/">Edit Metadata</a> টুল ব্যবহার করে কয়েক সেকেন্ডে সব অদৃশ্য মেটাডেটা সম্পূর্ণ লোকাল ব্রাউজারে পরিষ্কার করে নিতে পারেন।</p>`
   },
   'blog-privacy-2026': {
     name: '২০২৬ সালে গোপনীয়তা-কেন্দ্রিক পিডিএফ টুলের গুরুত্ব কেন এত বেশি?',
@@ -270,7 +268,7 @@ export const BN_ARTICLES: Record<string, { name: string; shortDesc: string; body
     name: 'টেক্সট অস্পষ্ট না করে হাই-রেজোলিউশনে পিডিএফ থেকে JPG কনভার্ট করার নিয়ম',
     shortDesc: '৩০০ DPI কোয়ালিটিতে পিডিএফ পেজগুলোকে ছবিতে রূপান্তর করার সহজ উপায়।',
     body: `<h2>হাই-কোয়ালিটি ইমেজ কনভার্সন</h2>
-<p>ডকুমেন্টের শার্পনেস অক্ষুণ্ণ রেখে ছবি তৈরি করতে ব্যবহার করুন আমাদের <a href="/pdf-to-img/">PDF to Image</a> কনভার্টার।</p>`
+<p>ডকুমেন্টের শার্পনেস অক্ষুণ্ণ রেখে ছবি তৈরি করতে ব্যবহার করুন আমাদের <a href="/pdf-to-image/">PDF to Image</a> কনভার্টার।</p>`
   },
   'blog-pdf-privacy-benchmark-2026': {
     name: 'পিডিএফ প্রাইভেসি বেঞ্চমার্ক ২০২৬: ক্লাউড বনাম লোকাল প্রসেসিং',

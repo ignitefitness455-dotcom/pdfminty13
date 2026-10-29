@@ -1,10 +1,10 @@
 import { Sparkles, ArrowRight } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { iconMap, badgeColors, badgeLabels, prefetchToolChunk } from '../../config/homeConfig';
-import { TOOLS } from '../../config/seo-data';
+import { TOOLS_CATALOG as TOOLS } from '../../config/seo-catalog';
 import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
@@ -20,13 +20,15 @@ interface ToolInfo {
 
 interface ToolCardProps {
   tool: ToolInfo;
+  variant?: 'featured' | 'studio';
 }
 
-export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
-  const location = useLocation();
-  const { t } = useTranslation('common');
+const TOOLS_BY_SLUG = new Map(TOOLS.map((item) => [item.slug, item]));
+
+export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, variant = 'studio' }) => {
+  const { t, i18n } = useTranslation('common');
   if (!tool || !tool.slug) return null;
-  const toolSEO = TOOLS.find((t) => t.slug === tool.slug);
+  const toolSEO = TOOLS_BY_SLUG.get(tool.slug);
   if (!toolSEO) return null;
 
   const Icon = iconMap[toolSEO.icon] || Sparkles;
@@ -43,14 +45,10 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
     };
   }
 
-  const rawPath = (location?.pathname || '/').replace(/^\/+|\/+$/g, '');
-  const firstSegment = rawPath.split('/')[0];
-  const activeLocale: SupportedLocale =
-    firstSegment &&
-    firstSegment !== DEFAULT_LOCALE &&
-    (SUPPORTED_LOCALES as readonly string[]).includes(firstSegment)
-      ? (firstSegment as SupportedLocale)
-      : DEFAULT_LOCALE;
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
   const targetPath = getLocalizedPath(tool.slug, activeLocale);
 
   const isHighlighted = [
@@ -59,63 +57,78 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
     'ai-analyze-pdf',
     'merge-pdf',
     'split-pdf',
+    'compress-pdf',
   ].includes(tool.slug);
+
+  const isFeaturedVariant = variant === 'featured';
+  const isAiHybrid = ['ai-analyze-pdf', 'ocr-pdf'].includes(tool.slug);
 
   return (
     <Link
       to={targetPath}
       id={`tool-card-${toolId}`}
-      onClick={() => window.scrollTo(0, 0)}
+      onPointerDown={() => prefetchToolChunk(tool.slug)}
       onMouseEnter={() => prefetchToolChunk(tool.slug)}
       onFocus={() => prefetchToolChunk(tool.slug)}
-      className={`page-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between text-left group transition-all duration-300 transform hover:-translate-y-1 relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 no-underline border ${
-        isHighlighted
-          ? 'border-emerald-500/30 dark:border-emerald-500/30 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 bg-white/60 dark:bg-black/40 backdrop-blur-lg'
-          : 'border-white/50 dark:border-white/10 hover:border-emerald-500/40 shadow-sm hover:shadow-lg bg-white/50 dark:bg-slate-900/40 backdrop-blur-md'
+      className={`rounded-2xl p-5 flex flex-col justify-between text-left group transition-all duration-200 hover:-translate-y-0.5 relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 no-underline border ${
+        isFeaturedVariant
+          ? 'bg-gradient-to-b from-white via-white to-emerald-50/25 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-emerald-950/20 border-emerald-500/25 dark:border-emerald-500/25 hover:border-emerald-500/60 dark:hover:border-emerald-400/60 shadow-xs hover:shadow-md hover:shadow-emerald-500/10'
+          : 'bg-white/95 dark:bg-slate-900/80 border-slate-200/85 dark:border-slate-800/85 hover:border-emerald-500/45 dark:hover:border-emerald-500/45 shadow-2xs hover:shadow-sm'
       }`}
     >
-      {isHighlighted && (
-        <div className="absolute top-0 left-6 right-6 h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent rounded-b-full" />
-      )}
       <div>
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs shrink-0">
-            <Icon
-              className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400"
-              aria-hidden="true"
-            />
+        <div className="flex items-center justify-between gap-2.5 mb-3.5">
+          <div
+            className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-105 shrink-0 ${
+              isFeaturedVariant
+                ? 'bg-emerald-500/12 dark:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400'
+                : 'bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25'
+            }`}
+          >
+            <Icon className="w-5 h-5" aria-hidden="true" />
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {isHighlighted && (
-              <span className="text-[10px] font-black tracking-wider px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400 rounded-full border border-amber-500/25 uppercase shrink-0 whitespace-nowrap shadow-2xs">
-                {t('home.toolCard.highDemand', { defaultValue: '★ HIGH DEMAND' })}
+          <div className="flex items-center gap-1.5 shrink-0 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            {isHighlighted ? (
+              <span className="text-emerald-700 dark:text-emerald-400 font-semibold tracking-wide">
+                ★{' '}
+                {t('home.toolCard.highDemand', { defaultValue: 'Popular' })
+                  .replace(/^★\s*/, '')
+                  .trim()}
               </span>
-            )}
-            {badge && !['popular', 'ai_hybrid'].includes(toolSEO.badge || '') && (
-              <span
-                className={`text-[10px] font-extrabold tracking-wider px-2.5 py-1 rounded-full border uppercase shrink-0 whitespace-nowrap ${badge.color}`}
-              >
-                {badge.text}
-              </span>
+            ) : (
+              badge &&
+              !['popular', 'ai_hybrid'].includes(toolSEO.badge || '') && (
+                <span className="text-slate-500 dark:text-slate-400 font-medium lowercase first-letter:uppercase">
+                  {badge.text.toLowerCase()}
+                </span>
+              )
             )}
           </div>
         </div>
 
-        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight mb-2 font-sans">
+        <h3 className="text-[15px] sm:text-[16.5px] font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight leading-snug mb-1.5 font-display">
           {localizedName}
         </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal line-clamp-2 min-h-[2.5rem]">
+        <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-[1.6] font-normal line-clamp-2 min-h-[2.6rem] font-sans">
           {localizedDesc}
         </p>
       </div>
 
-      <div className="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:border-emerald-600 dark:group-hover:border-emerald-500 text-slate-700 dark:text-slate-200 group-hover:text-white transition-all duration-200 flex items-center justify-between text-xs sm:text-sm font-bold shadow-2xs">
-        <span>{t('home.toolCard.useTool', { defaultValue: 'Use Tool' })}</span>
-        <ArrowRight
-          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-          aria-hidden="true"
-        />
+      {/* Action Footer Row */}
+      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/70 flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
+          <span>{t('home.toolCard.useTool', { defaultValue: 'Open Tool' })}</span>
+          <ArrowRight
+            className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-150"
+            aria-hidden="true"
+          />
+        </span>
+        <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 select-none">
+          {isAiHybrid ? 'AI · Consent' : 'Local RAM'}
+        </span>
       </div>
     </Link>
   );
-};
+});
+
+ToolCard.displayName = 'ToolCard';

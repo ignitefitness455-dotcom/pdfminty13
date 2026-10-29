@@ -301,21 +301,38 @@ const translations: Record<string, { name: string; shortDesc: string; body: stri
   }
 };
 
-const articleId = 'blog-pdf-form-wont-let-me-type';
+export const NEW_BLOG_TRANSLATIONS = translations;
 
-for (const [lang, data] of Object.entries(translations)) {
-  const filePath = path.join(localesDir, lang, 'common.json');
-  if (fs.existsSync(filePath)) {
-    const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    if (!json.articles) {
-      json.articles = {};
+const articleId = 'blog-pdf-form-wont-let-me-type';
+const articleSlug = 'blog/how-to-fill-out-non-fillable-pdf-form';
+
+if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+  for (const [lang, data] of Object.entries(translations)) {
+    const filePath = path.join(localesDir, lang, 'common.json');
+    const bodyPath = path.join(localesDir, lang, 'articles-body.json');
+    if (fs.existsSync(filePath)) {
+      const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (!json.articles) {
+        json.articles = {};
+      }
+      json.articles[articleId] = {
+        name: data.name,
+        shortDesc: data.shortDesc,
+      };
+      json.articles[articleSlug] = {
+        name: data.name,
+        shortDesc: data.shortDesc,
+      };
+      fs.writeFileSync(filePath, JSON.stringify(json, null, 2) + '\n', 'utf8');
+      if (lang !== 'en') {
+        const bodies = fs.existsSync(bodyPath)
+          ? JSON.parse(fs.readFileSync(bodyPath, 'utf8'))
+          : {};
+        bodies[articleId] = data.body;
+        bodies[articleSlug] = data.body;
+        fs.writeFileSync(bodyPath, JSON.stringify(bodies, null, 2) + '\n', 'utf8');
+      }
+      console.log(`✅ Successfully added ${lang} translation for ${articleId}`);
     }
-    json.articles[articleId] = {
-      name: data.name,
-      shortDesc: data.shortDesc,
-      body: data.body
-    };
-    fs.writeFileSync(filePath, JSON.stringify(json, null, 2), 'utf8');
-    console.log(`✅ Successfully added ${lang} translation for ${articleId}`);
   }
 }

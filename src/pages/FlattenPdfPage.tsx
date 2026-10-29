@@ -7,7 +7,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const FlattenPdfPage: React.FC = () => {
@@ -58,7 +58,7 @@ export const FlattenPdfPage: React.FC = () => {
         [fileBytes.buffer]
       );
       const blob = new Blob([processedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `pdfminty_flattened_${selectedFile.name}`;
+      const name = sanitizeDownloadFilename(`pdfminty_flattened_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -103,17 +103,18 @@ export const FlattenPdfPage: React.FC = () => {
               />
             ) : (
               <div
-                className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3"
                 id="loaded_flatten_file"
               >
-                <div className="truncate pr-4">
-                  <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
+                <div className="truncate pr-2">
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selectedFile.name}</p>
                   <p className="text-xs text-slate-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
                     {t('flattenPdf.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     setSelectedFile(null);
                     setIsSuccess(false);
@@ -122,9 +123,9 @@ export const FlattenPdfPage: React.FC = () => {
                       setDownloadUrl(null);
                     }
                   }}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white border border-slate-200 py-1 px-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="shrink-0 min-h-[40px] text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  {t('toolCommon.changeFile', { defaultValue: 'Remove' })}
+                  {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                 </button>
               </div>
             )}
@@ -138,8 +139,10 @@ export const FlattenPdfPage: React.FC = () => {
 
             {isSuccess && (
               <div
-                className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-300 font-bold"
                 id="flatten_success_banner"
+                role="status"
+                aria-live="polite"
               >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
@@ -150,14 +153,14 @@ export const FlattenPdfPage: React.FC = () => {
                     })}
                   </span>
                 </div>
-                <p className="text-slate-500 text-[11px] font-semibold leading-normal">
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] font-semibold leading-normal">
                   {t('flattenPdf.successDesc', {
                     defaultValue:
                       'All active electronic form fields, radio buttons, annotations, and text boxes are now rendered as permanent flat page graphics.',
                   })}
                 </p>
                 {downloadUrl && (
-                  <div className="pt-2">
+                  <div className="pt-2 flex flex-wrap items-center gap-2.5">
                     <a
                       href={downloadUrl}
                       download={downloadName}
@@ -171,6 +174,21 @@ export const FlattenPdfPage: React.FC = () => {
                         })}
                       </span>
                     </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setIsSuccess(false);
+                        setError(null);
+                        if (downloadUrl) {
+                          URL.revokeObjectURL(downloadUrl);
+                          setDownloadUrl(null);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+                    >
+                      {t('toolCommon.processAnother', { defaultValue: 'Flatten Another PDF' })}
+                    </button>
                   </div>
                 )}
               </div>

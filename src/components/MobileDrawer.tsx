@@ -31,6 +31,12 @@ import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { useModal } from '../hooks/useModal';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -55,8 +61,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   theme,
   setThemeSetting,
 }) => {
-  const { i18n } = useTranslation('common');
-  const isBn = i18n.language === 'bn';
+  const { t, i18n } = useTranslation('common');
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
+  const isBn = activeLocale === 'bn';
+  const homePath = getLocalizedPath('', activeLocale);
+  const mergePath = getLocalizedPath('merge-pdf', activeLocale);
   const location = useLocation();
   const { user, logout } = useAuth();
   const { tier, tasksRemaining, openLimitModal } = useUsageLimit();
@@ -67,14 +79,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   if (!mobileMenuOpen) return null;
 
   const quickTools = [
-    { name: isBn ? 'পিডিএফ মার্জ' : 'Merge PDF', path: ROUTES.MERGE, icon: Layers, color: 'text-emerald-500 bg-emerald-500/10' },
-    { name: isBn ? 'পিডিএফ স্প্লিট' : 'Split PDF', path: ROUTES.SPLIT, icon: Scissors, color: 'text-sky-500 bg-sky-500/10' },
-    { name: isBn ? 'পাসওয়ার্ড লক' : 'Protect PDF', path: ROUTES.PROTECT, icon: Lock, color: 'text-amber-500 bg-amber-500/10' },
-    { name: isBn ? 'পাসওয়ার্ড আনলক' : 'Unlock PDF', path: ROUTES.UNLOCK, icon: KeyRound, color: 'text-teal-500 bg-teal-500/10' },
-    { name: isBn ? 'অটো-রেডাকশন' : 'Sanitize & PII', path: ROUTES.SANITIZE_PDF, icon: ShieldBan, color: 'text-rose-500 bg-rose-500/10' },
-    { name: isBn ? 'ফর্ম ফিল ও সাইন' : 'Sign & Stamp', path: ROUTES.SIGN_PDF, icon: FilePenLine, color: 'text-indigo-500 bg-indigo-500/10' },
-    { name: isBn ? 'পিডিএফ তুলনা' : 'Compare PDF', path: ROUTES.COMPARE_PDF, icon: GitCompare, color: 'text-purple-500 bg-purple-500/10' },
-    { name: isBn ? 'কমপ্রেস পিডিএফ' : 'Compress PDF', path: ROUTES.COMPRESS, icon: Minimize2, color: 'text-emerald-600 bg-emerald-600/10' },
+    { name: t('tools.merge-pdf.name', { defaultValue: 'Merge PDF' }), path: mergePath, icon: Layers, color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: t('tools.split-pdf.name', { defaultValue: 'Split PDF' }), path: ROUTES.SPLIT, icon: Scissors, color: 'text-sky-500 bg-sky-500/10' },
+    { name: t('tools.protect-pdf.name', { defaultValue: 'Protect PDF' }), path: ROUTES.PROTECT, icon: Lock, color: 'text-amber-500 bg-amber-500/10' },
+    { name: t('tools.unlock-pdf.name', { defaultValue: 'Unlock PDF' }), path: ROUTES.UNLOCK, icon: KeyRound, color: 'text-teal-500 bg-teal-500/10' },
+    { name: t('tools.sanitize-pdf.name', { defaultValue: 'Sanitize & PII' }), path: ROUTES.SANITIZE_PDF, icon: ShieldBan, color: 'text-rose-500 bg-rose-500/10' },
+    { name: t('tools.sign-pdf.name', { defaultValue: 'Sign & Stamp' }), path: ROUTES.SIGN_PDF, icon: FilePenLine, color: 'text-indigo-500 bg-indigo-500/10' },
+    { name: t('tools.compare-pdf.name', { defaultValue: 'Compare PDF' }), path: ROUTES.COMPARE_PDF, icon: GitCompare, color: 'text-purple-500 bg-purple-500/10' },
+    { name: t('tools.compress-pdf.name', { defaultValue: 'Compress PDF' }), path: ROUTES.COMPRESS, icon: Minimize2, color: 'text-emerald-600 bg-emerald-600/10' },
   ];
 
   return (
@@ -102,7 +114,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         {/* Drawer Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
           <Link
-            to={ROUTES.HOME}
+            to={homePath}
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-2.5 group cursor-pointer"
           >
@@ -271,7 +283,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               {isBn ? 'জনপ্রিয় PDF টুলস' : 'Popular PDF Tools'}
             </span>
             <Link
-              to={ROUTES.HOME}
+              to={homePath}
               onClick={() => {
                 setMobileMenuOpen(false);
                 setTimeout(() => {

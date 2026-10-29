@@ -5,7 +5,7 @@ import { EmailJoinForm } from '../components/EmailJoinForm';
 import { useLayout } from '../components/Layout';
 import { SEO } from '../components/SEO';
 import { SeoResourcesSection } from '../components/SeoResourcesSection';
-import { TOOLS } from '../config/seo-data';
+import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import { useDebounce } from '../hooks/useDebounce';
 
 import { CtaSection } from './home/CtaSection';
@@ -14,13 +14,14 @@ import { HeroSection } from './home/HeroSection';
 import { HowItWorksSection } from './home/HowItWorksSection';
 import { RecommendedToolsSection } from './home/RecommendedToolsSection';
 import { SearchBar } from './home/SearchBar';
-import { ToolGrid } from './home/ToolGrid';
+import { ToolGrid, CORE_ESSENTIAL_SLUGS } from './home/ToolGrid';
 import { TrustBadgeSection } from './home/TrustBadgeSection';
 import { WhyChooseSection } from './home/WhyChooseSection';
 
 const CATEGORIES = [
-  { id: 'all', nameKey: 'home.categories.all', defaultName: 'All' },
-  { id: 'workflows', nameKey: 'home.categories.workflows', defaultName: 'Workflows' },
+  { id: 'all', nameKey: 'home.categories.all', defaultName: 'All Tools' },
+  { id: 'essential', nameKey: 'home.categories.workflows', defaultName: 'Core Essentials' },
+  { id: 'specialist', nameKey: 'home.categories.specialist', defaultName: 'Advanced & AI' },
   { id: 'organize', nameKey: 'home.categories.organize', defaultName: 'Organize PDF' },
   { id: 'optimize', nameKey: 'home.categories.optimize', defaultName: 'Optimize PDF' },
   { id: 'convert', nameKey: 'home.categories.convert', defaultName: 'Convert PDF' },
@@ -31,18 +32,14 @@ const CATEGORIES = [
 
 const isToolInCategory = (slug: string, categoryId: string): boolean => {
   if (categoryId === 'all') return true;
+  if (categoryId === 'essential' || categoryId === 'workflows') {
+    return CORE_ESSENTIAL_SLUGS.has(slug);
+  }
+  if (categoryId === 'specialist') {
+    return !CORE_ESSENTIAL_SLUGS.has(slug);
+  }
 
   switch (categoryId) {
-    case 'workflows':
-      return [
-        'compress-pdf',
-        'merge-pdf',
-        'split-pdf',
-        'sign-pdf',
-        'reorder-pdf',
-        'extract-pages-pdf',
-        'compare-pdf',
-      ].includes(slug);
     case 'organize':
       return [
         'reorder-pdf',
@@ -78,26 +75,37 @@ const isToolInCategory = (slug: string, categoryId: string): boolean => {
   }
 };
 
+const TOOL_RANK_MAP = new Map(TOOLS.map((t) => [t.slug, t.homeRank ?? 999]));
+
 export const HomePage: React.FC = () => {
   const { toolsList = [] } = useLayout() || {};
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const { debouncedValue, isDebouncing } = useDebounce(searchQuery, 300);
+  const { debouncedValue, isDebouncing } = useDebounce(searchQuery, 200);
+  const isBn = (i18n.language || '').startsWith('bn');
 
   const sortedTools = useMemo(() => {
     if (!Array.isArray(toolsList)) return [];
     return [...toolsList].sort((a, b) => {
       if (!a || !a.slug) return 0;
       if (!b || !b.slug) return 0;
-      const toolA = TOOLS.find((t) => t.slug === a.slug);
-      const toolB = TOOLS.find((t) => t.slug === b.slug);
-      const rankA = toolA?.homeRank ?? 999;
-      const rankB = toolB?.homeRank ?? 999;
+      const rankA = TOOL_RANK_MAP.get(a.slug) ?? 999;
+      const rankB = TOOL_RANK_MAP.get(b.slug) ?? 999;
       return rankA - rankB;
     });
   }, [toolsList]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const category of CATEGORIES) {
+      counts[category.id] = sortedTools.filter(
+        (tool) => tool && tool.slug && isToolInCategory(tool.slug, category.id)
+      ).length;
+    }
+    return counts;
+  }, [sortedTools]);
 
   const filteredTools = useMemo(() => {
     const cleanQuery = (debouncedValue || '').toLowerCase().trim();
@@ -121,6 +129,18 @@ export const HomePage: React.FC = () => {
     });
   }, [sortedTools, debouncedValue, selectedCategory, t]);
 
+  const getCategoryLabel = (category: (typeof CATEGORIES)[number]) => {
+    if (category.id === 'essential') {
+      return isBn ? 'মূল ও জনপ্রিয়' : 'Core Essentials';
+    }
+    if (category.id === 'specialist') {
+      return isBn ? 'অ্যাডভান্সড ও AI' : 'Advanced & AI';
+    }
+    return t(category.nameKey, { defaultValue: category.defaultName });
+  };
+
+  const showTwoSections = selectedCategory === 'all' && !(debouncedValue || '').trim();
+
   return (
     <div className="animate-fadein relative z-10 font-sans text-on-background bg-transparent pb-12 overflow-x-hidden">
       <SEO />
@@ -138,17 +158,16 @@ export const HomePage: React.FC = () => {
           {t('homePage.srToolsHeading', { defaultValue: 'Free In-Browser PDF Tools' })}
         </h2>
 
-        <div className="mb-8 max-w-lg mx-auto" id="all-tools">
+        <div className="mb-7 max-w-lg mx-auto px-4" id="all-tools">
           <SearchBar value={searchQuery} onChange={setSearchQuery} isDebouncing={isDebouncing} />
         </div>
 
-        {/* Category Filter Tabs (2 Horizontal Rows) */}
-        <div className="mb-10 max-w-4xl mx-auto px-4 space-y-2.5" id="tool-categories">
-          {/* Row 1 */}
-          <div className="flex items-center gap-2 sm:grid sm:grid-cols-4 overflow-x-auto scrollbar-none py-0.5 select-none">
-            {CATEGORIES.slice(0, 4).map((category) => {
+        {/* Category Filter Tabs */}
+        <div className="mb-10 max-w-5xl mx-auto px-4" id="tool-categories">
+          <div className="flex items-center sm:justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-100/85 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 overflow-x-auto scrollbar-none select-none">
+            {CATEGORIES.map((category) => {
               const isActive = selectedCategory === category.id;
-              const count = sortedTools.filter((t) => isToolInCategory(t.slug, category.id)).length;
+              const count = categoryCounts[category.id] ?? 0;
 
               return (
                 <button
@@ -156,51 +175,18 @@ export const HomePage: React.FC = () => {
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`whitespace-nowrap flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer border active:scale-95 shrink-0 sm:shrink ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer active:scale-95 shrink-0 ${
                     isActive
-                      ? 'bg-emerald-600/90 backdrop-blur-md border-emerald-500/50 text-white shadow-lg shadow-emerald-600/20'
-                      : 'bg-white/40 dark:bg-black/30 hover:bg-white/60 dark:hover:bg-white/10 backdrop-blur-md border-white/50 dark:border-white/10 text-slate-700 dark:text-slate-200 shadow-sm'
+                      ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-200/90 dark:border-slate-700 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
                   }`}
                 >
-                  <span>{t(category.nameKey, { defaultValue: category.defaultName })}</span>
+                  <span>{getCategoryLabel(category)}</span>
                   <span
-                    className={`text-[10px] md:text-[11px] px-2 py-0.5 rounded-full font-black ${
+                    className={`text-[10px] font-mono ${
                       isActive
-                        ? 'bg-white/25 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Row 2 */}
-          <div className="flex items-center gap-2 sm:grid sm:grid-cols-4 overflow-x-auto scrollbar-none py-0.5 select-none">
-            {CATEGORIES.slice(4, 8).map((category) => {
-              const isActive = selectedCategory === category.id;
-              const count = sortedTools.filter((t) => isToolInCategory(t.slug, category.id)).length;
-
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  aria-pressed={isActive}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`whitespace-nowrap flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer border active:scale-95 shrink-0 sm:shrink ${
-                    isActive
-                      ? 'bg-emerald-600/90 backdrop-blur-md border-emerald-500/50 text-white shadow-lg shadow-emerald-600/20'
-                      : 'bg-white/40 dark:bg-black/30 hover:bg-white/60 dark:hover:bg-white/10 backdrop-blur-md border-white/50 dark:border-white/10 text-slate-700 dark:text-slate-200 shadow-sm'
-                  }`}
-                >
-                  <span>{t(category.nameKey, { defaultValue: category.defaultName })}</span>
-                  <span
-                    className={`text-[10px] md:text-[11px] px-2 py-0.5 rounded-full font-black ${
-                      isActive
-                        ? 'bg-white/25 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        ? 'text-emerald-600/80 dark:text-emerald-400/80 font-bold'
+                        : 'text-slate-400 dark:text-slate-500'
                     }`}
                   >
                     {count}
@@ -213,6 +199,7 @@ export const HomePage: React.FC = () => {
 
         <ToolGrid
           filteredTools={filteredTools}
+          showTwoSections={showTwoSections}
           onClearSearch={() => {
             setSearchQuery('');
             setSelectedCategory('all');

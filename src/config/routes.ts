@@ -1,4 +1,4 @@
-import { TOOLS, SITE_URL } from './seo-data';
+import { TOOLS_CATALOG as TOOLS, SITE_URL } from './seo-catalog';
 
 export { SITE_URL };
 

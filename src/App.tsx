@@ -10,7 +10,7 @@ import { PWAController } from './components/PWAController';
 import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
 import { ROUTES } from './config/routes';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './i18n/config';
+import i18n, { SUPPORTED_LOCALES, DEFAULT_LOCALE, type SupportedLocale } from './i18n/config';
 import { HomePage } from './pages/HomePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -126,6 +126,30 @@ const NotFoundPage = lazyWithRetry(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 );
 
+const LocaleRouteSync: React.FC = () => {
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    const segments = pathname.split('/').filter(Boolean);
+    const first = segments[0]?.toLowerCase() as SupportedLocale | undefined;
+    if (first && (SUPPORTED_LOCALES as readonly string[]).includes(first)) {
+      if (i18n.language !== first) {
+        void i18n.changeLanguage(first);
+      }
+      try {
+        localStorage.setItem('pdfminty_locale', first);
+      } catch {
+        // Ignore storage errors in restricted modes
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = first;
+      }
+    }
+  }, [pathname]);
+
+  return null;
+};
+
 const ScrollToTop: React.FC = () => {
   const { pathname, hash } = useLocation();
 
@@ -155,7 +179,8 @@ const ScrollToTop: React.FC = () => {
 
 /**
  * Normalizes browser URL to the canonical trailing-slash structure.
- * Redirects any non-slash or malformed directory paths to their canonical trailing-slash equivalent.
+ * Also normalizes locale-prefixed paths (e.g. /bn/pricing/ -> /pricing/ while keeping 'bn' active,
+ * or /en/merge-pdf/ -> /merge-pdf/) so links in any language never hit a client-side 404.
  */
 const TrailingSlashRedirect: React.FC = () => {
   const { pathname, search, hash } = useLocation();
@@ -174,6 +199,19 @@ const TrailingSlashRedirect: React.FC = () => {
     if (normalizedPath !== '/' && !normalizedPath.endsWith('/')) {
       normalizedPath = `${normalizedPath}/`;
     }
+
+    const segments = normalizedPath.split('/').filter(Boolean);
+    const first = segments[0] as SupportedLocale | undefined;
+    if (first && (SUPPORTED_LOCALES as readonly string[]).includes(first)) {
+      const restSlug = segments.slice(1).join('/');
+      if (first === DEFAULT_LOCALE) {
+        // /en/ -> / and /en/merge-pdf/ -> /merge-pdf/
+        normalizedPath = restSlug ? `/${restSlug}/` : '/';
+      } else if (restSlug && restSlug !== 'merge-pdf') {
+        // Non-English locale prefix on a shared canonical route (e.g., /bn/pricing/ -> /pricing/)
+        normalizedPath = `/${restSlug}/`;
+      }
+    }
   }
 
   if (normalizedPath !== pathname) {
@@ -186,6 +224,7 @@ const TrailingSlashRedirect: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <>
+      <LocaleRouteSync />
       <ScrollToTop />
       <TrailingSlashRedirect />
       <SkipToContent />
@@ -609,36 +648,55 @@ export const App: React.FC = () => {
             <Route path="/tos" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/tos/" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/edit-metadata" element={<Navigate to={ROUTES.EDIT_METADATA} replace />} />
+            <Route path="/edit-metadata/" element={<Navigate to={ROUTES.EDIT_METADATA} replace />} />
             <Route path="/intelligence" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
+            <Route path="/intelligence/" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
             <Route path="/protect" element={<Navigate to={ROUTES.PROTECT} replace />} />
+            <Route path="/protect/" element={<Navigate to={ROUTES.PROTECT} replace />} />
             <Route path="/unlock" element={<Navigate to={ROUTES.UNLOCK} replace />} />
+            <Route path="/unlock/" element={<Navigate to={ROUTES.UNLOCK} replace />} />
             <Route path="/delete-pages" element={<Navigate to={ROUTES.DELETE_PAGES} replace />} />
+            <Route path="/delete-pages/" element={<Navigate to={ROUTES.DELETE_PAGES} replace />} />
             <Route path="/extract-pages" element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />} />
+            <Route path="/extract-pages/" element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />} />
             <Route path="/reorder" element={<Navigate to={ROUTES.REORDER} replace />} />
+            <Route path="/reorder/" element={<Navigate to={ROUTES.REORDER} replace />} />
             <Route path="/watermark" element={<Navigate to={ROUTES.WATERMARK} replace />} />
+            <Route path="/watermark/" element={<Navigate to={ROUTES.WATERMARK} replace />} />
             <Route path="/page-numbers" element={<Navigate to={ROUTES.PAGE_NUMBERS} replace />} />
+            <Route path="/page-numbers/" element={<Navigate to={ROUTES.PAGE_NUMBERS} replace />} />
             <Route path="/add-blank" element={<Navigate to={ROUTES.ADD_BLANK} replace />} />
+            <Route path="/add-blank/" element={<Navigate to={ROUTES.ADD_BLANK} replace />} />
             <Route path="/img-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
-            <Route path="/jpg-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
-            <Route path="/jpeg-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
-            <Route path="/png-to-pdf" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
+            <Route path="/img-to-pdf/" element={<Navigate to={ROUTES.IMG_TO_PDF} replace />} />
             <Route path="/pdf-to-img" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
-            <Route path="/pdf-to-jpg" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
-            <Route path="/pdf-to-jpeg" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
-            <Route path="/pdf-to-png" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
+            <Route path="/pdf-to-img/" element={<Navigate to={ROUTES.PDF_TO_IMG} replace />} />
             <Route path="/grayscale" element={<Navigate to={ROUTES.GRAYSCALE} replace />} />
+            <Route path="/grayscale/" element={<Navigate to={ROUTES.GRAYSCALE} replace />} />
             <Route path="/flatten" element={<Navigate to={ROUTES.FLATTEN} replace />} />
+            <Route path="/flatten/" element={<Navigate to={ROUTES.FLATTEN} replace />} />
             <Route path="/compress" element={<Navigate to={ROUTES.COMPRESS} replace />} />
             <Route path="/compress/" element={<Navigate to={ROUTES.COMPRESS} replace />} />
             <Route path="/repair" element={<Navigate to={ROUTES.REPAIR} replace />} />
+            <Route path="/repair/" element={<Navigate to={ROUTES.REPAIR} replace />} />
             <Route path="/sign" element={<Navigate to={ROUTES.SIGN_PDF} replace />} />
+            <Route path="/sign/" element={<Navigate to={ROUTES.SIGN_PDF} replace />} />
             <Route path="/ocr" element={<Navigate to={ROUTES.OCR_PDF} replace />} />
+            <Route path="/ocr/" element={<Navigate to={ROUTES.OCR_PDF} replace />} />
             <Route path="/sanitize" element={<Navigate to={ROUTES.SANITIZE_PDF} replace />} />
+            <Route path="/sanitize/" element={<Navigate to={ROUTES.SANITIZE_PDF} replace />} />
             <Route path="/merge" element={<Navigate to={ROUTES.MERGE} replace />} />
+            <Route path="/merge/" element={<Navigate to={ROUTES.MERGE} replace />} />
             <Route path="/split" element={<Navigate to={ROUTES.SPLIT} replace />} />
+            <Route path="/split/" element={<Navigate to={ROUTES.SPLIT} replace />} />
             <Route path="/rotate" element={<Navigate to={ROUTES.ROTATE} replace />} />
+            <Route path="/rotate/" element={<Navigate to={ROUTES.ROTATE} replace />} />
             <Route
               path="/switch-from-adobe-acrobat"
+              element={<Navigate to={ROUTES.ADOBE_ALTERNATIVE} replace />}
+            />
+            <Route
+              path="/switch-from-adobe-acrobat/"
               element={<Navigate to={ROUTES.ADOBE_ALTERNATIVE} replace />}
             />
             <Route
@@ -646,11 +704,23 @@ export const App: React.FC = () => {
               element={<Navigate to={ROUTES.TRUST_ARTICLE} replace />}
             />
             <Route
+              path="/is-it-safe-to-upload-pdf-to-online-tools/"
+              element={<Navigate to={ROUTES.TRUST_ARTICLE} replace />}
+            />
+            <Route
               path="/pdfminty-vs-smallpdf"
               element={<Navigate to={ROUTES.COMPARE_SMALLPDF} replace />}
             />
             <Route
+              path="/pdfminty-vs-smallpdf/"
+              element={<Navigate to={ROUTES.COMPARE_SMALLPDF} replace />}
+            />
+            <Route
               path="/pdfminty-vs-ilovepdf"
+              element={<Navigate to={ROUTES.COMPARE_ILOVEPDF} replace />}
+            />
+            <Route
+              path="/pdfminty-vs-ilovepdf/"
               element={<Navigate to={ROUTES.COMPARE_ILOVEPDF} replace />}
             />
 
@@ -662,7 +732,19 @@ export const App: React.FC = () => {
               }
             />
             <Route
+              path="/blog/best-free-pdf-compressor-without-losing-quality/"
+              element={
+                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
+              }
+            />
+            <Route
               path="/blog/how-to-compress-pdf-without-losing-quality-locally"
+              element={
+                <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
+              }
+            />
+            <Route
+              path="/blog/how-to-compress-pdf-without-losing-quality-locally/"
               element={
                 <Navigate to="/blog/how-to-compress-a-pdf-without-losing-quality-2026/" replace />
               }
@@ -672,7 +754,15 @@ export const App: React.FC = () => {
               element={<Navigate to="/blog/how-to-password-protect-a-pdf-offline/" replace />}
             />
             <Route
+              path="/blog/how-to-protect-a-pdf-with-password-in-3-easy-steps/"
+              element={<Navigate to="/blog/how-to-password-protect-a-pdf-offline/" replace />}
+            />
+            <Route
               path="/blog/how-to-edit-a-pdf-offline-without-uploading-it"
+              element={<Navigate to="/blog/secure-pdf-editing-without-uploading/" replace />}
+            />
+            <Route
+              path="/blog/how-to-edit-a-pdf-offline-without-uploading-it/"
               element={<Navigate to="/blog/secure-pdf-editing-without-uploading/" replace />}
             />
             <Route
@@ -680,7 +770,15 @@ export const App: React.FC = () => {
               element={<Navigate to="/blog/why-privacy-first-pdf-tools-matter-in-2026/" replace />}
             />
             <Route
+              path="/blog/why-offline-pdf-editors-are-the-future-of-privacy/"
+              element={<Navigate to="/blog/why-privacy-first-pdf-tools-matter-in-2026/" replace />}
+            />
+            <Route
               path="/blog/pdf-form-wont-let-you-type"
+              element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
+            />
+            <Route
+              path="/blog/pdf-form-wont-let-you-type/"
               element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
             />
             <Route
@@ -688,7 +786,15 @@ export const App: React.FC = () => {
               element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
             />
             <Route
+              path="/blog/cant-type-in-pdf-form/"
+              element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
+            />
+            <Route
               path="/blog/how-to-fill-out-a-pdf-form-that-is-not-fillable"
+              element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
+            />
+            <Route
+              path="/blog/how-to-fill-out-a-pdf-form-that-is-not-fillable/"
               element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
             />
 

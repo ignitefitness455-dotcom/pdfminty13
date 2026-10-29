@@ -1,5 +1,3 @@
-import { auth } from '../lib/firebase';
-
 export interface TierConfig {
   name: string;
   maxFileSizeMB: number;
@@ -81,6 +79,7 @@ export const getStoredUsage = (): DailyUsageStorage => {
 };
 
 let syncedProStatus = false;
+let syncedAuthUid: string | null = null;
 
 /**
  * Updates the in-memory synced Pro status from Firestore `users/{uid}` onSnapshot.
@@ -88,6 +87,13 @@ let syncedProStatus = false;
 export const setSyncedProStatus = (isPro: boolean): void => {
   if (syncedProStatus !== isPro) {
     syncedProStatus = isPro;
+    notifyUsageChanged();
+  }
+};
+
+export const setSyncedAuthUid = (uid: string | null): void => {
+  if (syncedAuthUid !== uid) {
+    syncedAuthUid = uid;
     notifyUsageChanged();
   }
 };
@@ -109,13 +115,12 @@ export const resolveCurrentSession = (
     return { tier: 'free', uid: providedUser.uid };
   }
 
-  // Fallback to Firebase current user
-  if (typeof window !== 'undefined' && auth?.currentUser) {
-    const fbUid = auth.currentUser.uid;
+  // Fallback to Firebase current user UID synced from AuthContext
+  if (typeof window !== 'undefined' && syncedAuthUid) {
     if (syncedProStatus) {
-      return { tier: 'pro', uid: fbUid };
+      return { tier: 'pro', uid: syncedAuthUid };
     }
-    return { tier: 'free', uid: fbUid };
+    return { tier: 'free', uid: syncedAuthUid };
   }
 
   // Fallback to Demo user in localStorage (always free tier, never client-writable pro)

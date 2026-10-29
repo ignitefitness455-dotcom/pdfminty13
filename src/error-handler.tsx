@@ -39,7 +39,7 @@ export function scrubPII(input: string): string {
     [/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED_TOKEN]'],
     // Use capturing group (not non-capturing) so $1 refers to the key name.
     [
-      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|token)\s*[:=]\s*[^\s&]+/gi,
+      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|oobCode|secret|password|token|key)\s*[:=]\s*[^\s&#"']+/gi,
       '$1=[REDACTED]',
     ],
     // Email.
@@ -275,6 +275,11 @@ export function reportErrorToTelemetry(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REPORT_TIMEOUT_MS);
 
+  const safeUrl =
+    typeof window !== 'undefined' && window.location
+      ? `${window.location.origin || ''}${window.location.pathname || ''}`
+      : '';
+
   fetch('/api/error', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -286,7 +291,7 @@ export function reportErrorToTelemetry(
         ? formatFileContextForLog({ ...fileContext, fileName: undefined })
         : undefined,
       timestamp: new Date().toISOString(),
-      url: typeof window !== 'undefined' ? window.location.href : '',
+      url: safeUrl,
     }),
     signal: controller.signal,
     keepalive: true,
@@ -297,11 +302,18 @@ export function reportErrorToTelemetry(
     .finally(() => clearTimeout(timer));
 }
 
+let activeTelemetryCleanup: (() => void) | null = null;
+
 /**
  * Install global error and unhandled-rejection listeners that attach active file context.
- * Returns a cleanup function so callers can remove duplicate listeners.
+ * Deduplicates across repeated invocations and returns a cleanup function.
  */
 export function setupErrorTelemetry(): () => void {
+  if (activeTelemetryCleanup) {
+    activeTelemetryCleanup();
+    activeTelemetryCleanup = null;
+  }
+
   const onError = (event: ErrorEvent) => {
     if (!event.message) return;
     const msg = event.message.toLowerCase();
@@ -350,12 +362,18 @@ export function setupErrorTelemetry(): () => void {
     window.addEventListener('unhandledrejection', onRejection);
   }
 
-  return () => {
+  const cleanup = () => {
     if (typeof window !== 'undefined') {
       window.removeEventListener('error', onError);
       window.removeEventListener('unhandledrejection', onRejection);
     }
+    if (activeTelemetryCleanup === cleanup) {
+      activeTelemetryCleanup = null;
+    }
   };
+
+  activeTelemetryCleanup = cleanup;
+  return cleanup;
 }
 
 // React Context for File Processing Context

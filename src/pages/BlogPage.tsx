@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
-import { TOOLS, ToolSEOInfo } from '../config/seo-data';
+import { TOOLS_CATALOG as TOOLS, ToolCatalogItem } from '../config/seo-catalog';
 
 export const BlogPage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
@@ -133,11 +133,9 @@ export const BlogPage: React.FC = () => {
     }
   };
 
-  // Estimate reading time from HTML longFormBody content
-  const getReadingTime = (html: string): string => {
-    const text = html ? html.replace(/<[^>]*>/g, '') : '';
-    const words = text.trim().split(/\s+/).length;
-    const time = Math.max(1, Math.ceil(words / 225)); // average 225 words per minute
+  // Estimate reading time from precomputed word count
+  const getReadingTime = (post: ToolCatalogItem): string => {
+    const time = post.readingTimeMinutes || 1;
     return t('blog.readTime', { count: time, defaultValue: `${time} min read` });
   };
 
@@ -145,7 +143,7 @@ export const BlogPage: React.FC = () => {
     !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
 
   // Format the publication dates beautifully
-  const getFormattedDate = (post: ToolSEOInfo): string => {
+  const getFormattedDate = (post: ToolCatalogItem): string => {
     const dateStr = post.dateModified || post.datePublished || '2026-09-21';
     try {
       const locale = i18n.language === 'bn' ? 'bn-BD' : i18n.language === 'de' ? 'de-DE' : 'en-US';
@@ -160,7 +158,7 @@ export const BlogPage: React.FC = () => {
   };
 
   const getArticleTitle = useCallback(
-    (post: ToolSEOInfo) => {
+    (post: ToolCatalogItem) => {
       if (isDefaultLocale) return post.name;
       return t(`articles.${post.id}.name`, {
         defaultValue: t(`articles.${post.slug}.name`, { defaultValue: post.name }),
@@ -170,7 +168,7 @@ export const BlogPage: React.FC = () => {
   );
 
   const getArticleDesc = useCallback(
-    (post: ToolSEOInfo) => {
+    (post: ToolCatalogItem) => {
       if (isDefaultLocale) return post.shortDescription;
       return t(`articles.${post.id}.shortDesc`, {
         defaultValue: t(`articles.${post.slug}.shortDesc`, { defaultValue: post.shortDescription }),
@@ -229,24 +227,24 @@ export const BlogPage: React.FC = () => {
       </div>
 
       {/* Main Hero & Description */}
-      <div className="space-y-4 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+      <div className="space-y-3 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest">
           <BookOpen className="w-4 h-4" />
-          <span>{t('blog.hubBadge', { defaultValue: 'Knowledge Hub & Security Guides' })}</span>
+          <span>{t('blog.hubBadge', { defaultValue: 'PDF Guides & Troubleshooting' })}</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-slate-900 dark:text-slate-50">
+        <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-slate-50">
           {t('blog.hubTitle', { defaultValue: 'PDFMinty Knowledge Hub' })}
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base leading-relaxed">
           {t('blog.hubSubtitle', {
             defaultValue:
-              'Expert guides, privacy-first tutorials, and technical insights on secure PDF processing, offline browser cryptography, and document workflow optimization.',
+              'Practical troubleshooting guides, privacy comparisons, and step-by-step tutorials for fixing, compressing, signing, and securing PDFs directly in your browser.',
           })}
         </p>
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="p-4 bg-surface-container-low border border-border-muted rounded-2xl shadow-sm space-y-4">
+      <div className="p-4 sm:p-5 bg-surface-container-low border border-border-muted rounded-2xl shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
@@ -254,7 +252,7 @@ export const BlogPage: React.FC = () => {
             <input
               type="text"
               placeholder={t('blog.searchPlaceholder', {
-                defaultValue: 'Search guides, tutorials, or comparisons...',
+                defaultValue: 'Search by problem (e.g., "too large", "won\'t open", "W-9")...',
               })}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -280,7 +278,7 @@ export const BlogPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Category Filter Pills */}
+        {/* Category Filter Buttons */}
         <div
           className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none"
           id="category-filters"
@@ -312,6 +310,43 @@ export const BlogPage: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Common PDF Troubleshooting Quick-Access Links */}
+        <div className="pt-3 border-t border-border-muted flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+          <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
+            {t('blog.popularFixesLabel', { defaultValue: 'Common Fixes:' })}
+          </span>
+          <Link
+            to="/blog/cant-copy-text-from-pdf/"
+            className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
+          >
+            Can&apos;t Copy Text from PDF
+          </Link>
+          <Link
+            to="/blog/pdf-wont-open/"
+            className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
+          >
+            PDF Won&apos;t Open (9 Fixes)
+          </Link>
+          <Link
+            to="/blog/pdf-form-wont-let-me-type/"
+            className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
+          >
+            Fill Non-Fillable PDF Forms
+          </Link>
+          <Link
+            to="/blog/pdf-file-size-too-large-email-upload/"
+            className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
+          >
+            Shrink PDF Under 2MB
+          </Link>
+          <Link
+            to="/blog/how-to-sign-a-pdf-without-adobe-or-docusign/"
+            className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
+          >
+            Sign PDF Without Adobe
+          </Link>
+        </div>
       </div>
 
       {/* Featured Article Banner (Top Priority Highlight) */}
@@ -322,12 +357,13 @@ export const BlogPage: React.FC = () => {
           </div>
 
           <div className="relative z-10 space-y-6 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-full shadow-sm">
+            <div className="flex flex-wrap items-center gap-2.5 text-xs">
+              <span className="inline-flex items-center gap-1.5 text-emerald-400 font-extrabold uppercase tracking-widest">
                 <Sparkles className="w-3.5 h-3.5" />
-                {t('blog.featuredArticle', { defaultValue: 'Featured Article' })}
+                {t('blog.featuredArticle', { defaultValue: 'Featured Guide' })}
               </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-xs font-bold text-emerald-300">
+              <span className="text-slate-500">·</span>
+              <span className="inline-flex items-center gap-1 font-bold text-slate-300">
                 {getCategoryIcon(getPostCategory(featuredPost.id))}
                 {getCategoryLabel(getPostCategory(featuredPost.id))}
               </span>
@@ -360,7 +396,7 @@ export const BlogPage: React.FC = () => {
                 </span>
                 <span className="flex items-center gap-1 font-mono text-[11px] text-slate-400">
                   <Clock className="w-3.5 h-3.5" />
-                  {getReadingTime(featuredPost.longFormBody)}
+                  {getReadingTime(featuredPost)}
                 </span>
               </div>
 
@@ -381,7 +417,7 @@ export const BlogPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="blog-posts-grid">
           {regularPosts.map((post) => {
             const category = getPostCategory(post.id);
-            const readingTime = getReadingTime(post.longFormBody);
+            const readingTime = getReadingTime(post);
             const formattedDate = getFormattedDate(post);
             const targetPath = `/${post.slug}/`;
 

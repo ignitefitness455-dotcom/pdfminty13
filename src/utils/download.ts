@@ -19,15 +19,35 @@
 import { recordDailyTask } from './usageLimit';
 
 const REVOKE_DELAY_MS = 60_000;
+const WINDOWS_RESERVED_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
+const MAX_FILENAME_LENGTH = 200;
 
 export function sanitizeDownloadFilename(filename: string, defaultName = 'document.pdf'): string {
   if (!filename || typeof filename !== 'string') return defaultName;
-  // Strip control characters, quotes, and invalid path separators that cause browser download rejections
+  // Strip control characters, Unicode bidi/zero-width spoofing chars, quotes, and invalid path separators
   const cleaned = filename
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+    .replace(/[\x00-\x1F\x7F-\x9F\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, '')
+    .replace(/[<>:"/\\|?*]/g, '_')
+    .replace(/\.{2,}/g, '_')
     .replace(/\s+/g, ' ')
-    .trim();
-  return cleaned || defaultName;
+    .replace(/^[.\s]+|[.\s]+$/g, '');
+
+  if (!cleaned) return defaultName;
+
+  let safe = WINDOWS_RESERVED_NAMES.test(cleaned) ? `_${cleaned}` : cleaned;
+
+  if (safe.length > MAX_FILENAME_LENGTH) {
+    const lastDot = safe.lastIndexOf('.');
+    if (lastDot > 0 && safe.length - lastDot <= 15) {
+      const ext = safe.slice(lastDot);
+      const base = safe.slice(0, MAX_FILENAME_LENGTH - ext.length).replace(/[.\s]+$/g, '');
+      safe = `${base || 'document'}${ext}`;
+    } else {
+      safe = safe.slice(0, MAX_FILENAME_LENGTH).replace(/[.\s]+$/g, '');
+    }
+  }
+
+  return safe || defaultName;
 }
 
 export async function downloadBlob(
@@ -39,9 +59,9 @@ export async function downloadBlob(
   // Works cleanly in all browsers, mobile devices, and sandboxed iframes.
   const safeFilename = sanitizeDownloadFilename(filename);
 
-  // Automatically count successful task execution
+  // Automatically count successful task execution without retaining document filename in state
   try {
-    recordDailyTask(null, safeFilename);
+    recordDailyTask(null, 'pdf_download');
   } catch {
     // Non-blocking quota recording
   }
@@ -58,12 +78,7 @@ export async function downloadBlob(
   try {
     link.click();
   } catch {
-    // If programmatic click was disallowed by sandboxing or security policy, open in new tab
-    try {
-      window.open(url, '_blank');
-    } catch {
-      // Best-effort fallback
-    }
+    // Best-effort fallback if programmatic click is blocked by sandboxed iframe
   }
 
   // Generous delay before revoke to ensure browser download manager has completed reading the stream.

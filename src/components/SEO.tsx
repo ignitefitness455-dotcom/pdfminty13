@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 
 import { HOMEPAGE_META } from '../config/homeConfig';
-import { TOOLS, SITE_URL, SITE_NAME } from '../config/seo-data';
+import { TOOLS_CATALOG as TOOLS, SITE_URL, SITE_NAME } from '../config/seo-catalog';
 import { useHreflang } from '../hooks/useHreflang';
 import { DEFAULT_LOCALE } from '../i18n/config';
 
@@ -26,12 +26,16 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
 
   const item = TOOLS.find((t) => t.slug === baseSlug);
 
-  const currentToolIndex = TOOLS.findIndex((t) => t.slug === baseSlug);
-  const prevTool = currentToolIndex > 0 ? TOOLS[currentToolIndex - 1] : null;
-  const nextTool =
-    currentToolIndex >= 0 && currentToolIndex < TOOLS.length - 1
-      ? TOOLS[currentToolIndex + 1]
-      : null;
+  const localeMetaMap: Record<string, { langName: string; ogLocale: string }> = {
+    en: { langName: 'English', ogLocale: 'en_US' },
+    de: { langName: 'German', ogLocale: 'de_DE' },
+    fr: { langName: 'French', ogLocale: 'fr_FR' },
+    es: { langName: 'Spanish', ogLocale: 'es_ES' },
+    bn: { langName: 'Bengali', ogLocale: 'bn_BD' },
+    hi: { langName: 'Hindi', ogLocale: 'hi_IN' },
+    zh: { langName: 'Chinese', ogLocale: 'zh_CN' },
+  };
+  const activeLocaleMeta = localeMetaMap[currentLocale] || localeMetaMap.en;
 
   // Localized SEO strings for pages with translations available when not default locale
   let localizedTitle: string | undefined;
@@ -67,6 +71,16 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
     if (tDesc && tDesc !== `tools.${baseSlug}.desc`) {
       localizedDescription = tDesc;
     }
+  } else if (currentLocale !== DEFAULT_LOCALE && !baseSlug) {
+    const tH1Part1 = t('home.hero.h1Part1', { ns: 'common', defaultValue: '' });
+    const tH1Part2 = t('home.hero.h1Part2', { ns: 'common', defaultValue: '' });
+    const tSubtitle = t('home.hero.subtitle', { ns: 'common', defaultValue: '' });
+    if (tH1Part1 && tH1Part1 !== 'home.hero.h1Part1') {
+      localizedTitle = `${tH1Part1}${tH1Part2} | ${SITE_NAME}`;
+    }
+    if (tSubtitle && tSubtitle !== 'home.hero.subtitle') {
+      localizedDescription = tSubtitle;
+    }
   }
 
   // Default values for homepage or custom non-tool pathways.
@@ -101,7 +115,7 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       />
       <meta name="author" content="PDFMinty" />
       <meta name="publisher" content="PDFMinty" />
-      <meta name="language" content="English" />
+      <meta name="language" content={activeLocaleMeta.langName} />
       <meta name="revisit-after" content="7 days" />
       <link rel="canonical" href={canonicalUrl} />
 
@@ -109,9 +123,6 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       {hreflangs.map((entry) => (
         <link key={entry.hreflang} rel="alternate" hrefLang={entry.hreflang} href={entry.href} />
       ))}
-
-      {prevTool && <link rel="prev" href={`${SITE_URL}/${prevTool.slug}/`} />}
-      {nextTool && <link rel="next" href={`${SITE_URL}/${nextTool.slug}/`} />}
 
       {/* Open Graph Tags */}
       <meta property="og:type" content={ogType} />
@@ -123,7 +134,7 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={title} />
       <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:locale" content="en_US" />
+      <meta property="og:locale" content={activeLocaleMeta.ogLocale} />
 
       {/* Twitter Cards */}
       <meta name="twitter:card" content="summary_large_image" />

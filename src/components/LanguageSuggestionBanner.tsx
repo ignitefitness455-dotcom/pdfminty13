@@ -1,6 +1,7 @@
 import { Globe, ArrowRight, X } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
   DEFAULT_LOCALE,
@@ -57,6 +58,8 @@ const STORAGE_KEY = 'pdfminty_lang_suggestion_dismissed';
 
 export const LanguageSuggestionBanner: React.FC = () => {
   const { i18n } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [suggestedLocale, setSuggestedLocale] = useState<SupportedLocale | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -70,15 +73,16 @@ export const LanguageSuggestionBanner: React.FC = () => {
     }
 
     // Determine active page locale from path or i18n
-    const pathname = window.location.pathname.split('?')[0];
+    const pathname = (location?.pathname || window.location.pathname).split('?')[0];
     const firstSegment = pathname.split('/').filter(Boolean)[0];
+    const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
     const activeLocale: SupportedLocale =
       firstSegment &&
       (SUPPORTED_LOCALES as readonly string[]).includes(firstSegment) &&
       firstSegment !== DEFAULT_LOCALE
         ? (firstSegment as SupportedLocale)
-        : (SUPPORTED_LOCALES as readonly string[]).includes(i18n.language)
-          ? (i18n.language as SupportedLocale)
+        : (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+          ? (rawLang as SupportedLocale)
           : DEFAULT_LOCALE;
 
     // Detect browser languages
@@ -103,8 +107,10 @@ export const LanguageSuggestionBanner: React.FC = () => {
     if (matchedLocale && matchedLocale !== activeLocale) {
       setSuggestedLocale(matchedLocale);
       setVisible(true);
+    } else {
+      setVisible(false);
     }
-  }, [i18n.language]);
+  }, [i18n.language, location?.pathname]);
 
   const handleDismiss = () => {
     setVisible(false);
@@ -115,8 +121,9 @@ export const LanguageSuggestionBanner: React.FC = () => {
     }
   };
 
-  const handleSwitchLanguage = () => {
+  const handleSwitchLanguage = async () => {
     if (!suggestedLocale) return;
+    setVisible(false);
 
     try {
       localStorage.setItem(STORAGE_KEY, 'true');
@@ -126,11 +133,15 @@ export const LanguageSuggestionBanner: React.FC = () => {
       // Ignore
     }
 
-    i18n.changeLanguage(suggestedLocale);
-    const currentFull = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    await i18n.changeLanguage(suggestedLocale);
+
+    const pathname = location?.pathname || window.location.pathname;
+    const search = location?.search ?? window.location.search;
+    const hash = location?.hash ?? window.location.hash;
+    const currentFull = `${pathname}${search}${hash}`;
     const targetPath = getSwitchLocalePath(currentFull, suggestedLocale);
     if (targetPath !== currentFull) {
-      window.location.assign(targetPath);
+      navigate(targetPath);
     }
   };
 

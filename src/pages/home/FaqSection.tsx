@@ -2,7 +2,7 @@ import { HelpCircle, ChevronDown } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FAQS } from '../../config/seo-data';
+import { FAQS } from '../../config/seo-catalog';
 
 export const FaqSection: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);

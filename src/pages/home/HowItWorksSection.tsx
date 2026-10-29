@@ -8,59 +8,60 @@ export const HowItWorksSection: React.FC = () => {
   return (
     <>
       {/* Visual Workspace Feature Section */}
-      <div className="mt-24 border border-white/50 dark:border-white/10 rounded-[32px] p-8 md:p-12 bg-white/40 dark:bg-black/30 backdrop-blur-xl relative overflow-hidden z-20 shadow-2xl flex flex-col md:flex-row items-center gap-10">
-        <div className="flex-1 space-y-5">
-          <span className="inline-flex items-center gap-1.5 text-[10px] bg-security-green/10 text-security-green border border-security-green/20 px-3.5 py-1.5 rounded-full font-black tracking-widest uppercase animate-pulse">
-            {t('home.howItWorks.badge', { defaultValue: '100% In-Browser Privacy' })}
-          </span>
-          <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight leading-tight">
+      <div className="mt-20 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 md:p-10 bg-white/70 dark:bg-slate-900/50 backdrop-blur-md relative overflow-hidden z-20 shadow-xs flex flex-col md:flex-row items-center gap-10">
+        <div className="flex-1 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>{t('home.howItWorks.badge', { defaultValue: '100% In-Browser Privacy' })}</span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
             {t('home.howItWorks.title', { defaultValue: 'Fast, Private Document Processing' })}
           </h2>
-          <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
             {t('home.howItWorks.desc', {
               defaultValue:
                 'PDFMinty processes your documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, file size limits, or cloud storage risks. Process confidential contracts, tax forms, and financial records with guaranteed zero data leakage.',
             })}
           </p>
         </div>
-        <div className="w-full md:w-80 shrink-0 border border-white/50 dark:border-white/10 rounded-[24px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-white/50 dark:bg-black/40 backdrop-blur-md p-5">
-          <div className="w-full h-44 bg-white/60 dark:bg-black/50 rounded-xl p-3.5 flex flex-col gap-3 border border-white/40 dark:border-white/10 shadow-inner relative overflow-hidden select-none">
+        <div className="w-full md:w-80 shrink-0 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-slate-950/60 p-4">
+          <div className="w-full h-44 bg-slate-50 dark:bg-slate-900/80 rounded-xl p-3.5 flex flex-col gap-3 border border-slate-200/60 dark:border-slate-800/60 select-none">
             {/* Workspace header */}
-            <div className="flex items-center justify-between border-b border-border-muted pb-1.5 whitespace-nowrap">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-critical-red"></div>
-                <div className="w-2 h-2 rounded-full bg-warning-amber"></div>
-                <div className="w-2 h-2 rounded-full bg-security-green"></div>
-                <span className="text-[10px] text-on-surface-variant font-mono ml-2">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 pb-2 whitespace-nowrap">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                <span className="text-[11px] text-slate-500 font-mono ml-2">
                   document.pdf
                 </span>
               </div>
-              <div className="px-2 py-0.5 rounded bg-security-green/10 text-security-green text-[9px] font-black uppercase">
+              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
                 {t('home.howItWorks.offlineBadge', { defaultValue: '100% Offline' })}
-              </div>
+              </span>
             </div>
             {/* Workspace body / dropzone representation */}
-            <div className="flex-1 border border-dashed border-border-muted rounded-lg flex flex-col items-center justify-center p-2 text-center bg-surface-container-low/10">
+            <div className="flex-1 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center p-2 text-center bg-white/40 dark:bg-slate-800/30">
               <Merge
-                className="w-5 h-5 text-security-green mb-1 animate-bounce"
+                className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-1"
                 aria-hidden="true"
               />
-              <span className="text-xs font-bold text-primary">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                 {t('home.howItWorks.dragDrop', { defaultValue: 'Drag & Drop PDF here' })}
               </span>
-              <span className="text-[10px] text-on-surface-variant/70 mt-0.5">
+              <span className="text-[10px] text-slate-500 mt-0.5">
                 {t('home.howItWorks.orBrowse', { defaultValue: 'or click to browse locally' })}
               </span>
             </div>
             {/* Mini active items list */}
             <div className="flex items-center gap-1.5 whitespace-nowrap">
-              <div className="flex-1 bg-surface-container-lowest p-2 rounded-md border border-border-muted flex items-center justify-between shadow-sm">
-                <span className="text-[10px] text-on-surface-variant font-bold max-w-[120px] truncate">
+              <div className="flex-1 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-2xs">
+                <span className="text-[11px] text-slate-700 dark:text-slate-300 font-medium max-w-[120px] truncate">
                   contract_draft.pdf
                 </span>
-                <span className="text-[9px] text-on-surface-variant/60 font-mono">1.2 MB</span>
+                <span className="text-[10px] text-slate-400 font-mono">1.2 MB</span>
               </div>
-              <div className="w-6 h-6 rounded-md bg-security-green flex items-center justify-center text-background font-bold text-xs shadow-sm shrink-0 hover:bg-primary-fixed-dim transition-colors cursor-pointer">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs shrink-0 transition-colors">
                 →
               </div>
             </div>
@@ -69,68 +70,65 @@ export const HowItWorksSection: React.FC = () => {
       </div>
 
       {/* How It Works Section */}
-      <div className="mt-24 relative z-20">
-        <h2 className="text-2xl md:text-4xl font-black text-primary text-center tracking-tight mb-2 font-sans">
+      <div className="mt-20 relative z-20">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white text-center tracking-tight mb-3 font-sans">
           {t('home.howItWorks.stepsHeading', { defaultValue: 'How It Works in 3 Simple Steps' })}
         </h2>
-        <p className="text-on-surface-variant text-sm sm:text-base text-center mb-16 max-w-md mx-auto font-normal">
-          {t('home.howItWorks.step1Desc', {
-            defaultValue: 'Three simple steps to process your files entirely inside your browser.',
+        <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base text-center mb-12 sm:mb-16 max-w-md mx-auto font-normal leading-relaxed">
+          {t('home.howItWorks.stepsSubtitle', {
+            defaultValue: 'Three simple steps to process your files directly inside your browser.',
           })}
         </p>
 
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {/* Timeline Connector Line */}
-          <div className="hidden md:block absolute top-[40px] left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-security-green/5 via-security-green/20 to-security-green/5 -z-10" />
-
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
           <div
             id="step-1-card"
-            className="flex flex-col items-center p-6 sm:p-8 rounded-3xl bg-surface-container-low border border-border-muted shadow-lg hover:border-security-green transition-all duration-300"
+            className="flex flex-col p-6 sm:p-7 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-emerald-500/40 transition-all duration-200 hover:-translate-y-0.5"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-container-lowest text-security-green border border-border-muted flex items-center justify-center font-bold text-lg mb-4 shadow-md z-10 font-mono">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-black text-sm mb-4 font-mono">
               1
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-primary mb-2">
-              {t('home.howItWorks.step1Title', { defaultValue: 'Select Tool' })}
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
+              {t('home.howItWorks.step1Title', { defaultValue: 'Pick a Tool' })}
             </h3>
-            <p className="text-on-surface-variant text-sm leading-relaxed max-w-xs font-normal">
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.howItWorks.step1Desc', {
                 defaultValue:
-                  'Choose from 22+ dedicated PDF tools above for merging, splitting, editing, or securing your files.',
+                  'Choose from 24 PDF tools above to merge, split, compress, sign, or protect your document.',
               })}
             </p>
           </div>
           <div
             id="step-2-card"
-            className="flex flex-col items-center p-6 sm:p-8 rounded-3xl bg-surface-container-low border border-border-muted shadow-lg hover:border-security-green transition-all duration-300"
+            className="flex flex-col p-6 sm:p-7 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-emerald-500/40 transition-all duration-200 hover:-translate-y-0.5"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-container-lowest text-security-green border border-border-muted flex items-center justify-center font-bold text-lg mb-4 shadow-md z-10 font-mono">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-black text-sm mb-4 font-mono">
               2
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-primary mb-2">
-              {t('home.howItWorks.step2Title', { defaultValue: 'Add Files' })}
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
+              {t('home.howItWorks.step2Title', { defaultValue: 'Add Your Files' })}
             </h3>
-            <p className="text-on-surface-variant text-sm leading-relaxed max-w-xs font-normal">
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.howItWorks.step2Desc', {
                 defaultValue:
-                  'Drag and drop your PDF files directly into your browser window. Everything stays local in memory.',
+                  'Drag and drop your PDF files into the browser window. Standard tools keep your files in local memory.',
               })}
             </p>
           </div>
           <div
             id="step-3-card"
-            className="flex flex-col items-center p-6 sm:p-8 rounded-3xl bg-surface-container-low border border-border-muted shadow-lg hover:border-security-green transition-all duration-300"
+            className="flex flex-col p-6 sm:p-7 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-emerald-500/40 transition-all duration-200 hover:-translate-y-0.5"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-container-lowest text-security-green border border-border-muted flex items-center justify-center font-bold text-lg mb-4 shadow-md z-10 font-mono">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-black text-sm mb-4 font-mono">
               3
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-primary mb-2">
-              {t('home.howItWorks.step3Title', { defaultValue: 'Download' })}
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
+              {t('home.howItWorks.step3Title', { defaultValue: 'Save Your Result' })}
             </h3>
-            <p className="text-on-surface-variant text-sm leading-relaxed max-w-xs font-normal">
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.howItWorks.step3Desc', {
                 defaultValue:
-                  'Your PDF is processed instantly on your hardware. Click download to save the result immediately.',
+                  'Your browser finishes the job in seconds. Click download to save your updated PDF right away.',
               })}
             </p>
           </div>

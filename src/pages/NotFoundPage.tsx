@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ROUTES } from '../config/routes';
-import { TOOLS } from '../config/seo-data';
+import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 
 export const NotFoundPage: React.FC = () => {
   const { t } = useTranslation('common');

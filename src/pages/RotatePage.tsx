@@ -1,4 +1,4 @@
-import { RotateCw, AlertCircle, Download } from 'lucide-react';
+import { RotateCw, AlertCircle, Download, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,7 +8,7 @@ import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const RotatePage: React.FC = () => {
@@ -20,11 +20,18 @@ export const RotatePage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const [outputSize, setOutputSize] = useState<number>(0);
 
   // Live preview states
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [renderingPreview, setRenderingPreview] = useState<boolean>(false);
   const operationTokenRef = React.useRef<number>(0);
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return '0 B';
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(2)} MB`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  };
 
   React.useEffect(() => {
     return () => {
@@ -60,9 +67,11 @@ export const RotatePage: React.FC = () => {
         // Render first page as PNG image using the worker operation
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
-        >('pdfToImage', { bytes: fileBytes, originalName: selectedFile.name, scale: 0.4 }, [
-          fileBytes.buffer,
-        ]);
+        >(
+          'pdfToImage',
+          { bytes: fileBytes, originalName: selectedFile.name, scale: 0.4, maxPages: 1 },
+          [fileBytes.buffer]
+        );
 
         if (myToken !== operationTokenRef.current) return;
 
@@ -90,6 +99,7 @@ export const RotatePage: React.FC = () => {
       setSelectedFile(files[0]);
       setError(null);
       setIsSuccess(false);
+      setOutputSize(0);
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
         setDownloadUrl(null);
@@ -115,8 +125,9 @@ export const RotatePage: React.FC = () => {
         [fileBytes.buffer]
       );
       const blob = new Blob([rotatedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `pdfminty_rotated_${selectedFile.name}`;
+      const name = sanitizeDownloadFilename(`pdfminty_rotated_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
+      setOutputSize(blob.size);
       setDownloadUrl(url);
       setDownloadName(name);
 
@@ -154,7 +165,7 @@ export const RotatePage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <RotateCw className="w-5 h-5 text-blue-600" />
 
             {!selectedFile ? (
@@ -166,44 +177,48 @@ export const RotatePage: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div
-                  className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                  className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3"
                   id="loaded_rotate_file"
                 >
                   <div className="truncate pr-4">
-                    <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
-                    <p className="text-xs text-slate-400">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-xs text-slate-400 tabular-nums">
+                      {formatBytes(selectedFile.size)} •{' '}
                       {t('rotatePdf.pdfDocument', { defaultValue: 'PDF Document' })}
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       setSelectedFile(null);
                       setIsSuccess(false);
+                      setOutputSize(0);
                       if (downloadUrl) {
                         URL.revokeObjectURL(downloadUrl);
                         setDownloadUrl(null);
                       }
                     }}
-                    className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white border border-slate-200 py-1 px-3 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
                     {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                   </button>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h3 className="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h3 className="font-bold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                       <span>{t('toolCommon.preview', { defaultValue: 'Live Preview' })}</span>
                     </h3>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-150">
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-150 dark:border-slate-700 tabular-nums">
                       {t('rotatePdf.page', { defaultValue: 'Page' })} 1 • {degrees}°
                     </span>
                   </div>
 
                   {/* Frame container for holding the 3D rotating box */}
-                  <div className="relative w-full aspect-[1/1.4] max-w-sm mx-auto bg-slate-50 rounded-xl overflow-hidden shadow-inner border border-slate-200 flex items-center justify-center p-8">
+                  <div className="relative w-full aspect-[1/1.4] max-w-sm mx-auto bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 flex items-center justify-center p-8">
                     {renderingPreview ? (
                       <div className="flex flex-col items-center gap-2.5 text-slate-400">
                         <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -260,37 +275,65 @@ export const RotatePage: React.FC = () => {
 
           {isSuccess && (
             <div
-              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-200 font-bold"
               id="rotate_success_banner"
+              role="status"
+              aria-live="polite"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>
-                  {t('rotatePdf.successTitle', {
-                    defaultValue:
-                      'Rotation Completed Successfully! Your rotated PDF has been generated.',
-                  })}
-                </span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>
+                    {t('rotatePdf.successTitle', {
+                      defaultValue:
+                        'Rotation Completed Successfully! Your rotated PDF has been generated.',
+                    })}
+                  </span>
+                </div>
+                {outputSize > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold tabular-nums">
+                    {formatBytes(outputSize)}
+                  </span>
+                )}
               </div>
-              <p className="text-slate-500 text-[11px] font-semibold leading-normal">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] font-semibold leading-normal m-0">
                 {t('rotatePdf.successDesc', {
                   defaultValue:
                     'The pages have been rotated and saved completely offline in your browser.',
                 })}
               </p>
               {downloadUrl && (
-                <div className="pt-2">
+                <div className="pt-1 flex flex-wrap items-center gap-3">
                   <a
                     href={downloadUrl}
                     download={downloadName}
                     id="manual_download_link"
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer no-underline"
                   >
-                    <Download className="w-4 h-4 animate-bounce" />
+                    <Download className="w-4 h-4 shrink-0" />
                     <span>
                       {t('rotatePdf.downloadRotated', { defaultValue: 'Download Rotated PDF' })}
+                      {outputSize > 0 ? ` (${formatBytes(outputSize)})` : ''}
                     </span>
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setIsSuccess(false);
+                      setOutputSize(0);
+                      if (downloadUrl) {
+                        URL.revokeObjectURL(downloadUrl);
+                        setDownloadUrl(null);
+                      }
+                    }}
+                    id="reset_rotate_btn"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
+                  >
+                    <span>
+                      {t('rotatePdf.rotateAnother', { defaultValue: 'Rotate Another PDF' })}
+                    </span>
+                  </button>
                 </div>
               )}
             </div>

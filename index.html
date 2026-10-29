@@ -5,9 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Preload Critical Local Fonts -->
+    <!-- Preload Critical Local Fonts & Multilingual Typography -->
     <link rel="preload" href="/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    />
     
     <!-- Core SEO Meta Tags -->
     <title>PDFMinty — Free Privacy-First PDF Toolkit</title>
@@ -248,10 +254,9 @@
       });
     </script>
 
-    <!-- DNS Prefetch & Preconnect for Third-Party Services -->
+    <!-- DNS Prefetch for Third-Party Services (deferred until interaction) -->
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
 
     <!-- Deferred Third-Party Scripts (Analytics & Ads) -->
     <script>

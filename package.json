@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
-    "build": "vite build && tsx scripts/generate-og-images.ts && tsx scripts/generate-sitemap.ts && tsx scripts/generate-static-pages.ts && tsx scripts/minify-html.ts",
+    "build": "tsx scripts/build-complete-translations.ts && vite build && tsx scripts/generate-og-images.ts && tsx scripts/generate-sitemap.ts && tsx scripts/generate-static-pages.ts && tsx scripts/minify-html.ts",
     "generate:sitemap": "tsx scripts/generate-sitemap.ts",
     "validate:seo": "tsx scripts/validate-seo.ts",
     "validate:parity": "tsx scripts/validate-locale-parity.ts",

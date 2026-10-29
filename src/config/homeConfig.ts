@@ -26,7 +26,7 @@ import React from 'react';
 
 import { logger } from '../utils/logger';
 
-import { HOMEPAGE_META } from './seo-data';
+import { HOMEPAGE_META } from './seo-catalog';
 
 export const prefetchMap: Record<string, () => Promise<unknown>> = {
   'compress-pdf': () => import('../pages/CompressPdfPage'),
@@ -53,12 +53,26 @@ export const prefetchMap: Record<string, () => Promise<unknown>> = {
   'sign-pdf': () => import('../pages/SignPdfPage'),
   'ocr-pdf': () => import('../pages/OcrPdfPage'),
   'compare-pdf': () => import('../pages/ComparePdfPage'),
+  pricing: () => import('../pages/PricingPage'),
+  blog: () => import('../pages/BlogPage'),
+  'about-us': () => import('../pages/AboutUsPage'),
+  contact: () => import('../pages/ContactPage'),
+  login: () => import('../pages/AuthPage'),
+  signup: () => import('../pages/AuthPage'),
+  dashboard: () => import('../pages/DashboardPage'),
 };
 
 const prefetchedSet = new Set<string>();
+let sharedLayoutChunksPrefetched = false;
 
 export const prefetchToolChunk = (slug: string): void => {
-  const key = slug.toLowerCase();
+  const key = slug.replace(/^\/+|\/+$/g, '').toLowerCase();
+  if (!sharedLayoutChunksPrefetched) {
+    sharedLayoutChunksPrefetched = true;
+    void import('../components/ToolContentSection').catch(() => {});
+    void import('../components/RelatedTools').catch(() => {});
+    void import('../components/RelatedBlogs').catch(() => {});
+  }
   if (prefetchedSet.has(key)) return;
   prefetchedSet.add(key);
   const loader = prefetchMap[key];

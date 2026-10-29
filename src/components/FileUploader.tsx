@@ -132,6 +132,17 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           continue;
         }
 
+        // 1b. Reject empty 0-byte files immediately
+        if (file.size === 0) {
+          rejectedFiles.push({
+            name: file.name,
+            reason: t('fileUploader.emptyFile', {
+              defaultValue: 'file is empty (0 bytes)',
+            }),
+          });
+          continue;
+        }
+
         // 2. Validate maximum file size limit
         if (file.size > limitBytes) {
           const sizeMB = Number((file.size / 1024 / 1024).toFixed(1));
@@ -276,6 +287,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     [triggerInputClick]
   );
 
+  const supportedFormatLabel = accept.toLowerCase().includes('pdf')
+    ? 'PDF'
+    : 'JPG, PNG, WebP, HEIC';
+
   return (
     <div className="w-full flex flex-col space-y-3" id={id || 'file_uploader_wrapper'}>
       <div className="flex items-center justify-between px-1">
@@ -302,10 +317,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         aria-label={`${displayTitle}. ${displaySubtitle}. ${t('fileUploader.browseAria', { defaultValue: 'Press Enter or Space to browse.' })}`}
         aria-disabled={false}
         id="uploader_dropzone"
-        className={`relative w-full border-2 border-dashed rounded-2xl py-12 px-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 group outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 ${
+        className={`relative w-full border-2 border-dashed rounded-2xl py-8 sm:py-10 px-4 sm:px-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 group outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 ${
           isDragActive
-            ? 'border-emerald-500 bg-emerald-50/40 shadow-inner'
-            : 'border-slate-300 hover:border-emerald-500 hover:bg-slate-50'
+            ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-inner'
+            : 'border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
         }`}
       >
         <input
@@ -314,26 +329,51 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           accept={accept}
           multiple={multiple}
           onChange={handleChange}
+          onClick={(e) => e.stopPropagation()}
           className="sr-only"
           id={id ? `${id}_input` : 'uploader_hidden_input'}
           aria-label={t('fileUploader.inputAria', { defaultValue: 'File input' })}
         />
 
         <div
-          className={`p-4 rounded-full mb-4 transition-transform duration-200 ${
+          className={`p-3.5 rounded-full mb-3 transition-transform duration-200 ${
             isDragActive
               ? 'bg-emerald-100 text-emerald-600 scale-110'
-              : 'bg-slate-100 text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:scale-105'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/50 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:scale-105'
           }`}
           aria-hidden="true"
         >
-          <IconComponent className="w-8 h-8" />
+          <IconComponent className="w-7 h-7 sm:w-8 sm:h-8" />
         </div>
 
-        <h3 className="font-semibold text-slate-800 text-base md:text-lg mb-1">{displayTitle}</h3>
-        <p className="text-slate-500 text-sm mb-2">{displaySubtitle}</p>
+        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base md:text-lg mb-1">
+          {displayTitle}
+        </h3>
+        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mb-4">
+          {displaySubtitle}
+        </p>
+
+        {/* Explicit Touch Target Button for Mobile & First-Time Users (>= 44px height) */}
+        <span
+          className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 mb-4 rounded-xl bg-emerald-600 group-hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-colors select-none"
+          data-testid="uploader-browse-cta"
+        >
+          <File className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>
+            {multiple
+              ? t('fileUploader.selectFilesBtn', { defaultValue: 'Choose Files from Device' })
+              : t('fileUploader.selectFileBtn', { defaultValue: 'Choose File from Device' })}
+          </span>
+        </span>
+
         <div className="flex items-center gap-2 justify-center flex-wrap pt-1">
-          <span className="inline-flex py-1 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 font-medium group-hover:border-emerald-200 group-hover:text-emerald-700">
+          <span className="inline-flex py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 font-semibold">
+            {t('fileUploader.supportedFormats', {
+              formats: supportedFormatLabel,
+              defaultValue: `Format: ${supportedFormatLabel}`,
+            })}
+          </span>
+          <span className="inline-flex py-1 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 font-medium tabular-nums group-hover:border-emerald-200 group-hover:text-emerald-700">
             {t('usageLimits.uploader.maxSize', {
               size: effectiveMaxMB,
               defaultValue: `Max file size: ${effectiveMaxMB}MB`,
@@ -342,7 +382,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
           {tier === 'guest' && (
             <>
-              <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+              <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums">
                 <Zap className="w-3 h-3 text-emerald-600 fill-emerald-600" />
                 <span>
                   {t('usageLimits.uploader.guestTasks', {
@@ -375,7 +415,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
           {tier === 'free' && (
             <>
-              <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+              <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums">
                 <ShieldCheck className="w-3 h-3 text-emerald-600" />
                 <span>
                   {t('usageLimits.uploader.freeTasks', {

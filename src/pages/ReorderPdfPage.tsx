@@ -29,7 +29,7 @@ import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 interface PageItem {
@@ -150,13 +150,21 @@ export const ReorderPdfPage: React.FC = () => {
         if (myToken !== operationTokenRef.current) return;
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
-        >('pdfToImage', { bytes: fileBytes, originalName: file.name, scale: 0.35 }, [
-          fileBytes.buffer,
-        ]);
+        >(
+          'pdfToImage',
+          {
+            bytes: fileBytes,
+            originalName: file.name,
+            scale: 0.35,
+            maxPages: 50,
+            format: 'image/jpeg',
+          },
+          [fileBytes.buffer]
+        );
         if (myToken !== operationTokenRef.current) return;
 
         const mapped: PageItem[] = rendered.map((item, idx) => {
-          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/png' });
+          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/jpeg' });
           return {
             id: `p-${item.page}-${idx}-${Date.now()}`,
             page: item.page,
@@ -164,6 +172,27 @@ export const ReorderPdfPage: React.FC = () => {
             rotation: 0,
           };
         });
+
+        if (rendered.length === 50) {
+          try {
+            const countBytes = new Uint8Array(await file.arrayBuffer());
+            const totalCount = await WorkerManager.getInstance().runOperation<number>(
+              'getPageCount',
+              { bytes: countBytes },
+              [countBytes.buffer]
+            );
+            for (let p = mapped.length + 1; p <= totalCount; p++) {
+              mapped.push({
+                id: `p-${p}-${p - 1}-${Date.now()}`,
+                page: p,
+                dataUrl: '',
+                rotation: 0,
+              });
+            }
+          } catch {
+            // Keep rendered 50 thumbnails if count lookup fails
+          }
+        }
 
         if (myToken !== operationTokenRef.current) return;
         setItems(mapped);
@@ -415,7 +444,7 @@ export const ReorderPdfPage: React.FC = () => {
       );
 
       const blob = new Blob([parsedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `pdfminty_organized_${selectedFile.name}`;
+      const name = sanitizeDownloadFilename(`pdfminty_organized_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -885,7 +914,7 @@ export const ReorderPdfPage: React.FC = () => {
                           </span>
 
                           {/* Quick Card Controls: Move Left, Rotate, Delete, Move Right */}
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-0.5 sm:gap-1">
                             {/* Move Left */}
                             <button
                               type="button"
@@ -894,10 +923,11 @@ export const ReorderPdfPage: React.FC = () => {
                                 handleMove(index, 'left');
                               }}
                               disabled={index === 0}
-                              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-20 cursor-pointer"
+                              aria-label={isBn ? 'বামে সরান' : 'Move Left'}
+                              className="min-w-[30px] min-h-[30px] p-1.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-20 cursor-pointer"
                               title={isBn ? 'বামে সরান' : 'Move Left'}
                             >
-                              <ChevronLeft className="w-3.5 h-3.5" />
+                              <ChevronLeft className="w-4 h-4" />
                             </button>
 
                             {/* Rotate 90° Clockwise */}
@@ -907,7 +937,8 @@ export const ReorderPdfPage: React.FC = () => {
                                 e.stopPropagation();
                                 handleRotateSingle(index, 90);
                               }}
-                              className="p-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer transition-colors"
+                              aria-label={isBn ? 'পৃষ্ঠা ৯০° রোটেট করুন' : 'Rotate 90° CW'}
+                              className="min-w-[30px] min-h-[30px] p-1.5 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer transition-colors"
                               title={isBn ? 'পৃষ্ঠা ৯০° রোটেট করুন' : 'Rotate 90° CW'}
                             >
                               <RotateCw className="w-3.5 h-3.5" />
@@ -920,7 +951,8 @@ export const ReorderPdfPage: React.FC = () => {
                                 e.stopPropagation();
                                 handleDeleteSingle(index);
                               }}
-                              className="p-1 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
+                              aria-label={isBn ? 'এই পৃষ্ঠাটি বাদ দিন' : 'Remove this page'}
+                              className="min-w-[30px] min-h-[30px] p-1.5 rounded-lg flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
                               title={isBn ? 'এই পৃষ্ঠাটি বাদ দিন' : 'Remove this page'}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -934,10 +966,11 @@ export const ReorderPdfPage: React.FC = () => {
                                 handleMove(index, 'right');
                               }}
                               disabled={index === items.length - 1}
-                              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-20 cursor-pointer"
+                              aria-label={isBn ? 'ডানে সরান' : 'Move Right'}
+                              className="min-w-[30px] min-h-[30px] p-1.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-20 cursor-pointer"
                               title={isBn ? 'ডানে সরান' : 'Move Right'}
                             >
-                              <ChevronRight className="w-3.5 h-3.5" />
+                              <ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
                         </div>

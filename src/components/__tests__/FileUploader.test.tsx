@@ -65,4 +65,35 @@ describe('FileUploader', () => {
     fireEvent.change(input, { target: { files: [fakePdf] } });
     expect(input.value).toBe('');
   });
+
+  it('rejects 0-byte empty files with a clear error message and does not call onFilesSelected', async () => {
+    const onFilesSelected = vi.fn();
+    render(
+      <FileUploader onFilesSelected={onFilesSelected} accept="application/pdf" title="Upload" />
+    );
+    const input = document.getElementById('uploader_hidden_input') as HTMLInputElement;
+    const emptyPdf = new File([], 'empty.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [emptyPdf] } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/empty \(0 bytes\)/i);
+    });
+    expect(onFilesSelected).not.toHaveBeenCalled();
+  });
+
+  it('renders an explicit mobile-friendly browse CTA and supported format badge', () => {
+    render(
+      <FileUploader
+        onFilesSelected={() => {}}
+        accept=".pdf,application/pdf"
+        multiple
+        title="Upload PDFs"
+      />
+    );
+    expect(screen.getByTestId('uploader-browse-cta')).toHaveTextContent(
+      /Choose Files from Device/i
+    );
+    expect(screen.getByText(/Format: PDF/i)).toBeInTheDocument();
+  });
 });
+

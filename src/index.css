@@ -101,8 +101,6 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-@variant dark (&:where(.dark, .dark *));
-
 html,
 body {
   width: 100%;
@@ -112,6 +110,14 @@ body {
 }
 
 :root {
+  --font-display:
+    'Sora', 'Plus Jakarta Sans', 'Hind Siliguri', ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+  --font-sans:
+    'Plus Jakarta Sans', 'Sora', 'Hind Siliguri', ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
   --custom-bg: #f8fafc;
   --custom-on-bg: #0f172a;
   --custom-primary-fixed: #047857; /* emerald-700 for 5.17:1 contrast on white */
@@ -169,46 +175,47 @@ html.dark {
   --custom-text-muted-more: #94a3b8; /* slate-400 for >4.5:1 contrast on dark background */
 }
 
-@theme {
-  --font-sans: 'Sora', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-
-  --color-background: var(--custom-bg);
-  --color-on-background: var(--custom-on-bg);
-  --color-primary-fixed: var(--custom-primary-fixed);
-  --color-primary-fixed-dim: var(--custom-primary-fixed-dim);
-  --color-security-green: var(--custom-security-green);
-  --color-primary: var(--custom-primary);
-  --color-on-primary: var(--custom-on-primary);
-
-  --color-surface: var(--custom-surface);
-  --color-on-surface: var(--custom-on-surface);
-  --color-surface-dim: var(--custom-surface-dim);
-  --color-surface-bright: var(--custom-surface-bright);
-  --color-surface-variant: var(--custom-surface-variant);
-  --color-on-surface-variant: var(--custom-on-surface-variant);
-  --color-inverse-surface: var(--custom-inverse-surface);
-  --color-inverse-on-surface: var(--custom-inverse-on-surface);
-
-  --color-surface-container-lowest: var(--custom-surface-lowest);
-  --color-surface-container-low: var(--custom-surface-low);
-  --color-surface-container: var(--custom-surface-container);
-  --color-surface-container-high: var(--custom-surface-container-high);
-  --color-surface-container-highest: var(--custom-surface-container-highest);
-
-  --color-border-muted: var(--custom-border-muted);
-}
-
 body {
   background-color: var(--custom-bg);
   color: var(--custom-on-bg);
   font-family: var(--font-sans);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-optical-sizing: auto;
+  line-height: 1.6;
+  letter-spacing: -0.008em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition:
     background-color 0.2s,
     color 0.15s;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+  font-feature-settings: 'ss01', 'cv02', 'cv11';
+}
+
+/* Preserve natural glyph spacing and generous vertical line-height for Bengali & Indic scripts */
+html[lang='bn'] body,
+html[lang='hi'] body {
+  letter-spacing: 0em;
+  line-height: 1.7;
+}
+
+html[lang='bn'] h1,
+html[lang='bn'] h2,
+html[lang='bn'] h3,
+html[lang='hi'] h1,
+html[lang='hi'] h2,
+html[lang='hi'] h3 {
+  letter-spacing: -0.005em;
+  line-height: 1.32;
 }
 
 .content-auto {
@@ -508,26 +515,15 @@ html.dark :focus-visible {
   font-weight: 900 !important;
   margin-top: 2.75rem !important;
   margin-bottom: 1.25rem !important;
-  padding: 0.75rem 1.25rem !important;
-  border-left: 6px solid #10b981 !important; /* emerald-500 */
-  background: linear-gradient(
-    90deg,
-    rgba(16, 185, 129, 0.12) 0%,
-    rgba(16, 185, 129, 0.01) 100%
-  ) !important;
-  border-radius: 0 0.85rem 0.85rem 0 !important;
+  padding-bottom: 0.65rem !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25) !important;
   color: #0f172a !important;
   letter-spacing: -0.025em !important;
 }
 
 html.dark .blog-prose h2 {
   color: #ffffff !important;
-  background: linear-gradient(
-    90deg,
-    rgba(16, 185, 129, 0.22) 0%,
-    rgba(16, 185, 129, 0.02) 100%
-  ) !important;
-  border-left-color: #34d399 !important;
+  border-bottom-color: rgba(148, 163, 184, 0.2) !important;
 }
 
 @media (min-width: 640px) {

@@ -8,6 +8,8 @@ import {
   type PDFPage,
 } from '@cantoo/pdf-lib';
 
+import { PDFSanitizer } from '../../core/PDFSanitizer';
+
 import type { PageInfo, PlacedField, SignatureSet } from './types';
 
 export type ExportInput = {
@@ -82,6 +84,12 @@ function hexToRgb(hex: string) {
 }
 
 export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
+  const inputUint8 = new Uint8Array(input.bytes);
+  if (await PDFSanitizer.isEncrypted(inputUint8)) {
+    throw new Error(
+      'SECURED_LOCKED: This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.'
+    );
+  }
   const pdf = await PDFDocument.load(input.bytes);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const pdfPages = pdf.getPages();
@@ -319,18 +327,18 @@ function rasterizeStamp(signerName: string, dateStr: string, aspect: number): st
   ctx.fillStyle = '#065f46';
   ctx.font = 'bold 22px Arial, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('DIGITALLY SIGNED & VERIFIED', w / 2, 48);
+  ctx.fillText('ELECTRONICALLY SIGNED', w / 2, 48);
 
   // Signer Name
   ctx.fillStyle = '#111827';
   ctx.font = 'bold 26px Arial, sans-serif';
-  ctx.fillText(signerName || 'VERIFIED SIGNER', w / 2, 100);
+  ctx.fillText(signerName || 'VISUAL E-SIGNATURE', w / 2, 100);
 
-  // Verification metadata
+  // Stamp metadata (visual representation, not PKCS#7 cryptographic certificate)
   ctx.fillStyle = '#047857';
   ctx.font = '16px monospace';
   ctx.fillText(`DATE: ${dateStr}`, w / 2, 145);
-  ctx.fillText('PDFMINTY AIR-GAPPED VERIFICATION', w / 2, 180);
+  ctx.fillText('PDFMINTY VISUAL E-SIGN STAMP', w / 2, 180);
 
   return canvas.toDataURL('image/png');
 }

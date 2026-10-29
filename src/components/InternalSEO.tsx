@@ -1,16 +1,26 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
 import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
-import { SITE_URL, SITE_NAME, TOOLS } from '../config/seo-data';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
+import { SITE_URL, SITE_NAME, TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
+import type { ToolSEOInfo } from '../config/seo-data';
+import {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 export const Breadcrumbs: React.FC = () => {
   const { pathname = '/' } = useLocation() || {};
-  const { t } = useTranslation('common');
-  const homePath = '/';
+  const { t, i18n } = useTranslation('common');
+  const rawLang = (i18n?.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
+  const homePath = getLocalizedPath('', activeLocale);
   const blogPath = ROUTES.BLOG;
 
   const cleanSlug = useMemo(() => {
@@ -139,6 +149,7 @@ export const Breadcrumbs: React.FC = () => {
 
 export default function InternalSEO() {
   const location = useLocation();
+  const [fullTools, setFullTools] = useState<ToolSEOInfo[] | null>(null);
 
   const nonce = React.useMemo(() => {
     if (typeof document === 'undefined') return undefined;
@@ -160,6 +171,17 @@ export default function InternalSEO() {
       break;
     }
   }
+
+  useEffect(() => {
+    if (!baseSlug || baseSlug === 'blog' || fullTools) return;
+    let active = true;
+    void import('../config/seo-data').then((mod) => {
+      if (active) setFullTools(mod.TOOLS);
+    });
+    return () => {
+      active = false;
+    };
+  }, [baseSlug, fullTools]);
 
   const structuredData = React.useMemo<Record<string, unknown>[]>(() => {
     const list: Record<string, unknown>[] = [];
@@ -229,7 +251,9 @@ export default function InternalSEO() {
       );
     } else {
       // 3. Tool, Article, or Static Page
-      const seoInfo = TOOLS.find((t) => t && t.slug === baseSlug);
+      const catalogInfo = TOOLS.find((t) => t && t.slug === baseSlug);
+      const fullInfo = fullTools?.find((t) => t && t.slug === baseSlug);
+      const seoInfo = fullInfo || (catalogInfo as ToolSEOInfo | undefined);
       if (!seoInfo) return list;
 
       const pageCanonicalUrl =
@@ -483,7 +507,7 @@ export default function InternalSEO() {
     }
 
     return list;
-  }, [baseSlug, currentLocale]);
+  }, [baseSlug, currentLocale, fullTools]);
 
   // DUPLICATION GUARD:
   // Check if static HTML already contains JSON-LD blocks with the same @type

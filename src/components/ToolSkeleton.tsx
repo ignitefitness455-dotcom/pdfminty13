@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function ToolSkeleton() {
   return (
     <div className="animate-pulse max-w-4xl mx-auto p-6 space-y-6">

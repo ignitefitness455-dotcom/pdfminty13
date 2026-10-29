@@ -1,6 +1,7 @@
-import { PDFDocument as PlainPDFDocument } from '@cantoo/pdf-lib';
+import { PDFDocument as PlainPDFDocument, PDFName } from '@cantoo/pdf-lib';
 import { describe, it, expect } from 'vitest';
 
+import { getFriendlyErrorMessage } from '../index';
 import { getMetadataPDF, editMetadataPDF } from '../metadata-operations';
 import {
   mergePDFs,
@@ -678,4 +679,396 @@ describe('pdf-operations - Edge Cases', () => {
       await expect(imagesToPDF([fakeImage])).rejects.toThrow(/Unsupported image format/i);
     });
   });
+
+  describe('Phase 2 Regression Tests', () => {
+    it('splitPDF supports en-dashes and whitespace around range separators', async () => {
+      const pdfBytes = await createCustomPdf(4);
+      const chunks = await splitPDF(pdfBytes, '1–2, 3 - 4');
+      expect(chunks).toHaveLength(2);
+      const doc1 = await PlainPDFDocument.load(chunks[0]);
+      const doc2 = await PlainPDFDocument.load(chunks[1]);
+      expect(doc1.getPageCount()).toBe(2);
+      expect(doc2.getPageCount()).toBe(2);
+    });
+
+    it('rotatePDF and reorderPDF normalize negative rotation angles to positive [0, 270] multiples', async () => {
+      const pdfBytes = await createCustomPdf(2);
+      const rotatedBytes = await rotatePDF(pdfBytes, -90, [1]);
+      const rotatedDoc = await PlainPDFDocument.load(rotatedBytes);
+      expect(rotatedDoc.getPages()[0].getRotation().angle).toBe(270);
+      expect(rotatedDoc.getPages()[1].getRotation().angle).toBe(0);
+
+      const reorderedBytes = await reorderPDF(pdfBytes, [
+        { page: 1, rotation: -90 },
+        { page: 2, rotation: -180 },
+      ]);
+      const reorderedDoc = await PlainPDFDocument.load(reorderedBytes);
+      expect(reorderedDoc.getPages()[0].getRotation().angle).toBe(270);
+      expect(reorderedDoc.getPages()[1].getRotation().angle).toBe(180);
+    });
+
+    it('compressPDF preserves 1-bit monochrome image streams without corrupting them', async () => {
+      const doc = await PlainPDFDocument.create();
+      doc.addPage([400, 400]);
+      // Create a >2KB 1-bit DeviceGray image stream (BitsPerComponent: 1) with high-entropy data
+      const oneBitData = new Uint8Array(8192);
+      let seed = 0x12345678;
+      for (let i = 0; i < oneBitData.length; i++) {
+        seed = (seed * 1664525 + 1013904223) | 0;
+        oneBitData[i] = (seed >>> 16) & 0xff;
+      }
+      const imgStream = doc.context.flateStream(oneBitData, {
+        Type: 'XObject',
+        Subtype: 'Image',
+        Width: 256,
+        Height: 256,
+        ColorSpace: 'DeviceGray',
+        BitsPerComponent: 1,
+      });
+      const streamRef = doc.context.register(imgStream);
+      doc.getPages()[0].node.set(PDFName.of('XObjectTest'), streamRef);
+      const savedBytes = await doc.save();
+
+      const compressedBytes = await compressPDF(savedBytes, 'recommended');
+      const reloaded = await PlainPDFDocument.load(compressedBytes);
+      expect(reloaded.getPageCount()).toBe(1);
+    });
+
+    it('getFriendlyErrorMessage distinguishes encrypted PDFs from corrupt/empty PDFs', () => {
+      const encMsg = getFriendlyErrorMessage('Merge failed', new Error('SECURED_LOCKED: encrypted'));
+      expect(encMsg).toMatch(/encrypted or locked/i);
+
+      const corruptMsg = getFriendlyErrorMessage(
+        'Merge failed',
+        new Error('Failed to parse PDF document (line:0 col:0)')
+      );
+      expect(corruptMsg).toMatch(/corrupted, empty, or not a valid PDF/i);
+      expect(corruptMsg).not.toMatch(/encrypted or locked/i);
+    });
+  });
+
+  describe('Phase 6 — Decoded Page Content, Compression Regressions & Boundary Suite', () => {
+    // Helper to create a multi-page PDF with distinct text markers on each page
+    async function createLabeledPdf(labels: string[]): Promise<Uint8Array> {
+      const doc = await PlainPDFDocument.create();
+      labels.forEach((label, idx) => {
+        const page = doc.addPage([500, 600 + idx * 20]);
+        page.drawText(label, { x: 50, y: 500, size: 14 });
+      });
+      // Save with useObjectStreams: false so content streams can also be inspected directly
+      return await doc.save({ useObjectStreams: false });
+    }
+
+    // Helper to decode uncompressed/FlateDecode page content streams and extract drawn literal strings
+    async function extractDecodedPageLiterals(pdfBytes: Uint8Array): Promise<string[]> {
+      const { decodePDFRawStream, PDFRawStream, PDFArray } = await import('@cantoo/pdf-lib');
+      const doc = await PlainPDFDocument.load(pdfBytes);
+      const pageTexts: string[] = [];
+
+      for (const page of doc.getPages()) {
+        const contentsRef = page.node.Contents();
+        if (!contentsRef) {
+          pageTexts.push('');
+          continue;
+        }
+        const chunks: string[] = [];
+        const collectStream = (obj: unknown) => {
+          if (obj instanceof PDFRawStream) {
+            const decoded = decodePDFRawStream(obj).decode();
+            chunks.push(new TextDecoder('latin1').decode(decoded));
+          }
+        };
+        const lookedUp = doc.context.lookup(contentsRef);
+        if (!lookedUp) {
+          pageTexts.push('');
+          continue;
+        }
+        if (lookedUp instanceof PDFArray) {
+          for (const item of lookedUp.asArray()) {
+            collectStream(doc.context.lookup(item));
+          }
+        } else {
+          collectStream(lookedUp);
+        }
+        const rawContent = chunks.join('\n');
+        // pdf-lib encodes standard font drawText strings as hex <...> or literal (...)
+        const hexMatches = [...rawContent.matchAll(/<([0-9A-Fa-f]+)>\s*Tj/g)];
+        const decodedHex = hexMatches
+          .map((m) => {
+            const hex = m[1];
+            let str = '';
+            for (let i = 0; i < hex.length; i += 2) {
+              str += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16));
+            }
+            return str;
+          })
+          .join(' ');
+        const parenMatches = [...rawContent.matchAll(/\(([^)]+)\)\s*Tj/g)]
+          .map((m) => m[1])
+          .join(' ');
+        pageTexts.push(`${decodedHex} ${parenMatches} ${rawContent}`.trim());
+      }
+      return pageTexts;
+    }
+
+    it('verifies decoded page content and exact page order across merge, reorder, extract, split, and deletePages', async () => {
+      const docA = await createLabeledPdf(['ALPHA_PAGE_ONE', 'BETA_PAGE_TWO']);
+      const docB = await createLabeledPdf(['GAMMA_PAGE_THREE', 'DELTA_PAGE_FOUR']);
+
+      // 1. Merge preserves page order and decoded content
+      const merged = await mergePDFs([docA, docB]);
+      const mergedLiterals = await extractDecodedPageLiterals(merged);
+      expect(mergedLiterals).toHaveLength(4);
+      expect(mergedLiterals[0]).toContain('ALPHA_PAGE_ONE');
+      expect(mergedLiterals[1]).toContain('BETA_PAGE_TWO');
+      expect(mergedLiterals[2]).toContain('GAMMA_PAGE_THREE');
+      expect(mergedLiterals[3]).toContain('DELTA_PAGE_FOUR');
+
+      // 2. Reorder [4, 1, 3, 2] moves decoded page content to exact target positions
+      const reordered = await reorderPDF(merged, [4, 1, 3, 2]);
+      const reorderedLiterals = await extractDecodedPageLiterals(reordered);
+      expect(reorderedLiterals).toHaveLength(4);
+      expect(reorderedLiterals[0]).toContain('DELTA_PAGE_FOUR');
+      expect(reorderedLiterals[1]).toContain('ALPHA_PAGE_ONE');
+      expect(reorderedLiterals[2]).toContain('GAMMA_PAGE_THREE');
+      expect(reorderedLiterals[3]).toContain('BETA_PAGE_TWO');
+
+      // 3. Delete page 2 ('ALPHA_PAGE_ONE') from reordered document leaves 3 pages in order
+      const afterDelete = await deletePagesPDF(reordered, [2]);
+      const deletedLiterals = await extractDecodedPageLiterals(afterDelete);
+      expect(deletedLiterals).toHaveLength(3);
+      expect(deletedLiterals[0]).toContain('DELTA_PAGE_FOUR');
+      expect(deletedLiterals[1]).toContain('GAMMA_PAGE_THREE');
+      expect(deletedLiterals[2]).toContain('BETA_PAGE_TWO');
+
+      // 4. Extract pages [3, 1] from merged yields GAMMA then ALPHA
+      const extracted = await extractPages(merged, [3, 1]);
+      const extractedLiterals = await extractDecodedPageLiterals(extracted);
+      expect(extractedLiterals).toHaveLength(2);
+      expect(extractedLiterals[0]).toContain('GAMMA_PAGE_THREE');
+      expect(extractedLiterals[1]).toContain('ALPHA_PAGE_ONE');
+    });
+
+    it('verifies watermarkPDF and addPageNumbersPDF inject new decoded text without erasing original page content', async () => {
+      const original = await createLabeledPdf(['CONTRACT_BODY_2026']);
+      const watermarked = await watermarkPDF(original, 'INTERNAL_DRAFT_ONLY');
+      const numbered = await addPageNumbersPDF(watermarked, { format: 'Page {n} of {total}' });
+
+      const literals = await extractDecodedPageLiterals(numbered);
+      expect(literals).toHaveLength(1);
+      expect(literals[0]).toContain('CONTRACT_BODY_2026');
+      expect(literals[0]).toContain('INTERNAL_DRAFT_ONLY');
+      expect(literals[0]).toContain('Page 1 of 1');
+    });
+
+    it('compression regression: guarantees output size never exceeds input size even on tiny (<2KB) already-compact PDFs', async () => {
+      const doc = await PlainPDFDocument.create();
+      doc.addPage([200, 200]);
+      const tinyCompactBytes = await doc.save({ useObjectStreams: true });
+      expect(tinyCompactBytes.byteLength).toBeLessThan(2048);
+
+      const recOut = await compressPDF(tinyCompactBytes, 'recommended');
+      const extOut = await compressPDF(tinyCompactBytes, 'extreme');
+      const lowOut = await compressPDF(tinyCompactBytes, 'low');
+
+      expect(recOut.byteLength).toBeLessThanOrEqual(tinyCompactBytes.byteLength);
+      expect(extOut.byteLength).toBeLessThanOrEqual(tinyCompactBytes.byteLength);
+      expect(lowOut.byteLength).toBeLessThanOrEqual(tinyCompactBytes.byteLength);
+
+      const loaded = await PlainPDFDocument.load(recOut);
+      expect(loaded.getPageCount()).toBe(1);
+    });
+
+    it('compression regression: prevents excessive compression from downsampling images below 600px or destroying soft masks and vector text', async () => {
+      const doc = await PlainPDFDocument.create();
+      const page = doc.addPage([600, 800]);
+      page.drawText('CRITICAL_LEGAL_CLAUSE_VECTOR_TEXT', { x: 40, y: 740, size: 12 });
+
+      // Embed a >5KB JPEG image (2400x1800)
+      const baseJpg = Uint8Array.from(
+        atob(
+          '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='
+        ),
+        (c) => c.charCodeAt(0)
+      );
+      const commentLen = 6000;
+      const commentPayload = new Uint8Array(commentLen).fill(0x41);
+      const marker = new Uint8Array([0xff, 0xfe, (commentLen + 2) >> 8, (commentLen + 2) & 0xff]);
+      const largeJpg = new Uint8Array(2 + marker.length + commentLen + (baseJpg.length - 2));
+      largeJpg.set(baseJpg.subarray(0, 2), 0);
+      largeJpg.set(marker, 2);
+      largeJpg.set(commentPayload, 2 + marker.length);
+      largeJpg.set(baseJpg.subarray(2), 2 + marker.length + commentLen);
+
+      const embedded = await doc.embedJpg(largeJpg);
+      page.drawImage(embedded, { x: 50, y: 100, width: 400, height: 300 });
+      const inputBytes = await doc.save({ useObjectStreams: false });
+
+      let capturedCanvasWidth = 0;
+      let capturedCanvasHeight = 0;
+      let capturedQuality = 0;
+
+      const origCreateImageBitmap = (globalThis as unknown as { createImageBitmap?: unknown })
+        .createImageBitmap;
+      const origOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown })
+        .OffscreenCanvas;
+
+      (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap = async () => ({
+        width: 2400,
+        height: 1800,
+        close: () => {},
+      });
+
+      class ClampingVerifyOffscreenCanvas {
+        width: number;
+        height: number;
+        constructor(w: number, h: number) {
+          this.width = w;
+          this.height = h;
+          capturedCanvasWidth = w;
+          capturedCanvasHeight = h;
+        }
+        getContext() {
+          return {
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+            fillStyle: '#ffffff',
+            fillRect: () => {},
+            drawImage: () => {},
+            getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+            putImageData: () => {},
+          };
+        }
+        async convertToBlob(opts?: { type?: string; quality?: number }) {
+          capturedQuality = opts?.quality ?? 0;
+          return {
+            arrayBuffer: async () =>
+              baseJpg.buffer.slice(baseJpg.byteOffset, baseJpg.byteOffset + baseJpg.byteLength),
+          };
+        }
+      }
+
+      (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+        ClampingVerifyOffscreenCanvas;
+
+      try {
+        // Pass excessively aggressive settings (quality: 0.05, maxDimension: 100)
+        const compressed = await compressPDF(inputBytes, {
+          level: 'extreme',
+          quality: 0.05,
+          maxDimension: 100,
+        });
+
+        // Verify clamping: maxDimension is clamped to >= 600px, quality is clamped to >= 0.40
+        expect(Math.max(capturedCanvasWidth, capturedCanvasHeight)).toBeGreaterThanOrEqual(600);
+        expect(capturedQuality).toBeGreaterThanOrEqual(0.4);
+        expect(compressed.byteLength).toBeLessThan(inputBytes.byteLength);
+
+        // Verify vector text is still present and decoded cleanly
+        const decodedLiterals = await extractDecodedPageLiterals(compressed);
+        expect(decodedLiterals[0]).toContain('CRITICAL_LEGAL_CLAUSE_VECTOR_TEXT');
+      } finally {
+        (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap =
+          origCreateImageBitmap;
+        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+          origOffscreenCanvas;
+      }
+    });
+
+    it('compression regression: falls back to original image stream when recompressed bytes are larger than original stream', async () => {
+      const doc = await PlainPDFDocument.create();
+      const page = doc.addPage([500, 500]);
+      page.drawText('PRESERVE_ALREADY_OPTIMIZED_STREAM', { x: 40, y: 440 });
+
+      const baseJpg = Uint8Array.from(
+        atob(
+          '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='
+        ),
+        (c) => c.charCodeAt(0)
+      );
+      const commentLen = 3000;
+      const marker = new Uint8Array([0xff, 0xfe, (commentLen + 2) >> 8, (commentLen + 2) & 0xff]);
+      const mediumJpg = new Uint8Array(2 + marker.length + commentLen + (baseJpg.length - 2));
+      mediumJpg.set(baseJpg.subarray(0, 2), 0);
+      mediumJpg.set(marker, 2);
+      mediumJpg.set(new Uint8Array(commentLen).fill(0x33), 2 + marker.length);
+      mediumJpg.set(baseJpg.subarray(2), 2 + marker.length + commentLen);
+
+      const embedded = await doc.embedJpg(mediumJpg);
+      page.drawImage(embedded, { x: 20, y: 20, width: 200, height: 200 });
+      const inputBytes = await doc.save({ useObjectStreams: true });
+
+      const origCreateImageBitmap = (globalThis as unknown as { createImageBitmap?: unknown })
+        .createImageBitmap;
+      const origOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown })
+        .OffscreenCanvas;
+
+      (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap = async () => ({
+        width: 400,
+        height: 400,
+        close: () => {},
+      });
+
+      // Simulate canvas producing a bloated 15KB buffer larger than the 3KB source image stream
+      const bloatedBuffer = new Uint8Array(15000).fill(0x55);
+      class BloatedOffscreenCanvas {
+        width: number;
+        height: number;
+        constructor(w: number, h: number) {
+          this.width = w;
+          this.height = h;
+        }
+        getContext() {
+          return {
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+            fillStyle: '#fff',
+            fillRect: () => {},
+            drawImage: () => {},
+          };
+        }
+        async convertToBlob() {
+          return {
+            arrayBuffer: async () => bloatedBuffer.buffer.slice(0),
+          };
+        }
+      }
+
+      (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+        BloatedOffscreenCanvas;
+
+      try {
+        const result = await compressPDF(inputBytes, 'recommended');
+        expect(result.byteLength).toBeLessThanOrEqual(inputBytes.byteLength);
+        const decoded = await extractDecodedPageLiterals(result);
+        expect(decoded[0]).toContain('PRESERVE_ALREADY_OPTIMIZED_STREAM');
+      } finally {
+        (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap =
+          origCreateImageBitmap;
+        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+          origOffscreenCanvas;
+      }
+    });
+
+    it('rejects 0-byte empty buffers and XFA dynamic forms with explicit error messages', async () => {
+      const emptyBytes = new Uint8Array(0);
+      await expect(mergePDFs([emptyBytes])).rejects.toThrow();
+      await expect(splitPDF(emptyBytes, '1')).rejects.toThrow();
+      await expect(compressPDF(emptyBytes, 'recommended')).rejects.toThrow();
+      await expect(flattenPDF(emptyBytes)).rejects.toThrow();
+      await expect(repairPDF(emptyBytes)).rejects.toThrow();
+
+      // Create a PDF containing an /XFA entry in /AcroForm
+      const xfaDoc = await PlainPDFDocument.create();
+      xfaDoc.addPage([400, 400]);
+      const acroForm = xfaDoc.context.obj({
+        XFA: xfaDoc.context.obj([]),
+      });
+      xfaDoc.catalog.set(PDFName.of('AcroForm'), acroForm);
+      const xfaBytes = await xfaDoc.save();
+
+      await expect(flattenPDF(xfaBytes)).rejects.toThrow(/UNSUPPORTED_XFA/i);
+    });
+  });
 });
+

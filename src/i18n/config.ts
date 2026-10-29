@@ -51,6 +51,35 @@ const localeLoaders: Record<string, Record<string, () => Promise<{ default: unkn
   },
 };
 
+const articleBodyLoaders: Record<string, () => Promise<{ default: Record<string, string> }>> = {
+  bn: () => import('../locales/bn/articles-body.json'),
+  de: () => import('../locales/de/articles-body.json'),
+  es: () => import('../locales/es/articles-body.json'),
+  fr: () => import('../locales/fr/articles-body.json'),
+  hi: () => import('../locales/hi/articles-body.json'),
+  zh: () => import('../locales/zh/articles-body.json'),
+};
+
+const articleBodyCache: Record<string, Record<string, string>> = {};
+
+export async function loadLocalizedArticleBodies(
+  locale: string
+): Promise<Record<string, string> | null> {
+  const code = locale.split('-')[0].toLowerCase();
+  if (code === DEFAULT_LOCALE) return null;
+  if (articleBodyCache[code]) return articleBodyCache[code];
+  const loader = articleBodyLoaders[code];
+  if (!loader) return null;
+  try {
+    const mod = await loader();
+    const data = (mod as { default?: Record<string, string> }).default || (mod as unknown as Record<string, string>);
+    articleBodyCache[code] = data;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export interface LocaleMetadata {
   code: SupportedLocale;
   name: string;
@@ -187,6 +216,14 @@ export function getInitialLocale(): SupportedLocale {
     if (first && (SUPPORTED_LOCALES as readonly string[]).includes(first)) {
       return first;
     }
+    try {
+      const saved = window.localStorage?.getItem('pdfminty_locale') as SupportedLocale | null;
+      if (saved && (SUPPORTED_LOCALES as readonly string[]).includes(saved)) {
+        return saved;
+      }
+    } catch {
+      // Ignore storage access errors
+    }
   }
   return DEFAULT_LOCALE;
 }
@@ -219,6 +256,7 @@ i18n
     defaultNS: DEFAULT_NAMESPACE,
     ns: [DEFAULT_NAMESPACE, 'merge-pdf', 'faq'],
     resources,
+    partialBundledLanguages: true,
     interpolation: {
       escapeValue: false,
     },

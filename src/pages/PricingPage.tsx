@@ -21,6 +21,7 @@ import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { getLocalizedPath, SUPPORTED_LOCALES, DEFAULT_LOCALE, type SupportedLocale } from '../i18n/config';
 import {
   detectCountrySync,
   detectCountryAsync,
@@ -32,6 +33,11 @@ import {
 export const PricingPage: React.FC = () => {
   const { i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
+  const homePath = getLocalizedPath(ROUTES.HOME, activeLocale);
 
   const { user, isPro, upgradeToPro } = useAuth();
   const navigate = useNavigate();
@@ -67,7 +73,7 @@ export const PricingPage: React.FC = () => {
           : 'You are already enjoying our 100% free browser PDF tools!',
         'info'
       );
-      navigate(ROUTES.HOME);
+      navigate(homePath);
       return;
     }
 
@@ -309,7 +315,7 @@ export const PricingPage: React.FC = () => {
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
             <Link
-              to={ROUTES.HOME}
+              to={homePath}
               className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors flex items-center justify-center gap-2"
             >
               <span>{isBn ? 'ফ্রি শুরু করুন' : 'Start Free (No Login)'}</span>

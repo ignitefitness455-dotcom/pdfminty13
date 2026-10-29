@@ -7,7 +7,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const PageNumbersPage: React.FC = () => {
@@ -64,9 +64,11 @@ export const PageNumbersPage: React.FC = () => {
         // Render first page as PNG image using the worker operation
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
-        >('pdfToImage', { bytes: fileBytes, originalName: selectedFile.name, scale: 0.4 }, [
-          fileBytes.buffer,
-        ]);
+        >(
+          'pdfToImage',
+          { bytes: fileBytes, originalName: selectedFile.name, scale: 0.4, maxPages: 1 },
+          [fileBytes.buffer]
+        );
 
         if (myToken !== operationTokenRef.current) return;
 
@@ -124,7 +126,7 @@ export const PageNumbersPage: React.FC = () => {
         [fileBytes.buffer]
       );
       const blob = new Blob([updatedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `pdfminty_numbered_${selectedFile.name}`;
+      const name = sanitizeDownloadFilename(`pdfminty_numbered_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -162,16 +164,17 @@ export const PageNumbersPage: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div
-                  className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                  className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3"
                   id="loaded_number_file"
                 >
-                  <div className="truncate pr-4">
-                    <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
+                  <div className="truncate pr-2">
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selectedFile.name}</p>
                     <p className="text-xs text-slate-400">
                       {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • PDF Document
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       operationTokenRef.current++;
                       setSelectedFile(null);
@@ -185,15 +188,15 @@ export const PageNumbersPage: React.FC = () => {
                         setDownloadUrl(null);
                       }
                     }}
-                    className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white border border-slate-200 py-1 px-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="shrink-0 min-h-[40px] text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
                     {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                   </button>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h3 className="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h3 className="font-bold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
                       <span>
                         {t('pageNumbers.realtimePreview', {
@@ -201,8 +204,8 @@ export const PageNumbersPage: React.FC = () => {
                         })}
                       </span>
                     </h3>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-150">
-                      {t('pageNumbers.pageIndicator', { defaultValue: 'Page 1 of 12' })}
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-150 dark:border-slate-700">
+                      {t('pageNumbers.pageIndicator', { defaultValue: 'Page 1 Preview' })}
                     </span>
                   </div>
 
@@ -291,8 +294,10 @@ export const PageNumbersPage: React.FC = () => {
 
             {isSuccess && (
               <div
-                className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-300 font-bold"
                 id="page_numbers_success_banner"
+                role="status"
+                aria-live="polite"
               >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
@@ -304,7 +309,7 @@ export const PageNumbersPage: React.FC = () => {
                   </span>
                 </div>
                 {downloadUrl && (
-                  <div className="pt-2">
+                  <div className="pt-2 flex flex-wrap items-center gap-2.5">
                     <a
                       href={downloadUrl}
                       download={downloadName}
@@ -316,6 +321,25 @@ export const PageNumbersPage: React.FC = () => {
                         {t('toolCommon.download', { defaultValue: 'Download Numbered PDF' })}
                       </span>
                     </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        operationTokenRef.current++;
+                        setSelectedFile(null);
+                        setIsSuccess(false);
+                        if (previewUrl) {
+                          URL.revokeObjectURL(previewUrl);
+                          setPreviewUrl(null);
+                        }
+                        if (downloadUrl) {
+                          URL.revokeObjectURL(downloadUrl);
+                          setDownloadUrl(null);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+                    >
+                      {t('toolCommon.processAnother', { defaultValue: 'Number Another PDF' })}
+                    </button>
                   </div>
                 )}
               </div>

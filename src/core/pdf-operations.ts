@@ -15,9 +15,7 @@ import {
   PDFHexString,
   decodePDFRawStream,
 } from '@cantoo/pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
 
-import notoSansRegularBytes from '../../public/fonts/NotoSans-Regular.ttf?arraybuffer';
 import { PDF_PAGE_SIZES, WATERMARK_DEFAULTS, PAGE_NUMBER_DEFAULTS } from '../config/constants';
 import { logger } from '../utils/logger';
 
@@ -131,11 +129,19 @@ async function loadPlainPDF(bytes: Uint8Array, skipEncryptionCheck = false) {
     }
 
     const pdfDoc = await PDFDocument.load(safeBytes);
-    const realFontkit = (fontkit as { default?: unknown }).default || fontkit;
-    pdfDoc.registerFontkit(realFontkit as Parameters<PDFDocument['registerFontkit']>[0]);
     return pdfDoc;
   } catch (err: unknown) {
     handlePdfLibError(err, 'Failed to read PDF document. It may be corrupted.');
+  }
+}
+
+async function ensureFontkitRegistered(pdfDoc: PDFDocument): Promise<void> {
+  try {
+    const fontkitModule = await import('@pdf-lib/fontkit');
+    const realFontkit = (fontkitModule as { default?: unknown }).default || fontkitModule;
+    pdfDoc.registerFontkit(realFontkit as Parameters<PDFDocument['registerFontkit']>[0]);
+  } catch (err) {
+    logger.debug('Dynamic fontkit registration note:', err);
   }
 }
 
@@ -194,13 +200,18 @@ async function getFontBytes(): Promise<Uint8Array> {
     }
   }
 
-  const rawData = (notoSansRegularBytes as { default?: unknown })?.default || notoSansRegularBytes;
-  if (rawData) {
-    const fallbackBytes = new Uint8Array(rawData as unknown as ArrayBuffer);
-    if (fallbackBytes.length > 50000 && isValidTtfHeader(fallbackBytes)) {
-      fontBytes = fallbackBytes;
-      return fontBytes;
+  try {
+    const mod = await import('../../public/fonts/NotoSans-Regular.ttf?arraybuffer');
+    const rawData = (mod as { default?: unknown })?.default || mod;
+    if (rawData) {
+      const fallbackBytes = new Uint8Array(rawData as unknown as ArrayBuffer);
+      if (fallbackBytes.length > 50000 && isValidTtfHeader(fallbackBytes)) {
+        fontBytes = fallbackBytes;
+        return fontBytes;
+      }
     }
+  } catch (err) {
+    logger.debug('getFontBytes dynamic import fallback note:', err);
   }
 
   // Graceful fallback to StandardFonts.Helvetica
@@ -241,8 +252,8 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
     let startPage = NaN;
     let endPage = NaN;
 
-    if (/^\d+-\d+$/.test(spec)) {
-      const parts = spec.split('-');
+    if (/^\d+\s*[-–—]\s*\d+$/.test(spec)) {
+      const parts = spec.split(/\s*[-–—]\s*/);
       startPage = parseInt(parts[0], 10);
       endPage = parseInt(parts[1], 10);
     } else if (/^\d+$/.test(spec)) {
@@ -317,7 +328,8 @@ export async function rotatePDF(
       if (idx >= 0 && idx < pages.length) {
         const page = pages[idx];
         const currentRotation = page.getRotation().angle;
-        page.setRotation(degrees((currentRotation + degreesValue) % 360));
+        const normalizedRotation = (((currentRotation + degreesValue) % 360) + 360) % 360;
+        page.setRotation(degrees(normalizedRotation));
       }
     }
     return await pdfDoc.save();
@@ -381,7 +393,8 @@ export async function reorderPDF(
       const extraRotation = normalizedOrder[idx]?.rotation || 0;
       if (extraRotation % 360 !== 0) {
         const cur = p.getRotation().angle;
-        p.setRotation(degrees((cur + extraRotation) % 360));
+        const normalizedRotation = (((cur + extraRotation) % 360) + 360) % 360;
+        p.setRotation(degrees(normalizedRotation));
       }
       reorderedPdf.addPage(p);
     });
@@ -403,6 +416,7 @@ export async function watermarkPDF(
     try {
       const fontData = await getFontBytes();
       if (fontData && fontData.length > 50000 && isValidTtfHeader(fontData)) {
+        await ensureFontkitRegistered(pdfDoc);
         font = await pdfDoc.embedFont(fontData, {
           customName: 'NotoSans',
           subset: true,
@@ -417,7 +431,9 @@ export async function watermarkPDF(
     }
 
     const size = options?.size || WATERMARK_DEFAULTS.size;
-    const opacity = options?.opacity !== undefined ? options?.opacity : WATERMARK_DEFAULTS.opacity;
+    const rawOpacity =
+      options?.opacity !== undefined ? options?.opacity : WATERMARK_DEFAULTS.opacity;
+    const opacity = Math.max(0, Math.min(1, rawOpacity));
     const rot = options?.rotationDegrees ?? WATERMARK_DEFAULTS.rotationDegrees;
 
     let rVal = 0.5,
@@ -448,6 +464,9 @@ export async function watermarkPDF(
 
     for (const page of pages) {
       const { width, height } = page.getSize();
+      const cropBox = page.getCropBox();
+      const ox = cropBox.x || 0;
+      const oy = cropBox.y || 0;
 
       lines.forEach((lineText, index) => {
         const textWidth = font.widthOfTextAtSize(lineText, size);
@@ -460,8 +479,8 @@ export async function watermarkPDF(
         const rotatedCenterX = localCenterX * cosTheta - localCenterY * sinTheta;
         const rotatedCenterY = localCenterX * sinTheta + localCenterY * cosTheta;
 
-        const x = width / 2 - rotatedCenterX;
-        const y = height / 2 - rotatedCenterY;
+        const x = ox + width / 2 - rotatedCenterX;
+        const y = oy + height / 2 - rotatedCenterY;
 
         page.drawText(lineText, {
           x,
@@ -493,6 +512,7 @@ export async function addPageNumbersPDF(
     try {
       const fontData = await getFontBytes();
       if (fontData && fontData.length > 50000 && isValidTtfHeader(fontData)) {
+        await ensureFontkitRegistered(pdfDoc);
         font = await pdfDoc.embedFont(fontData, {
           customName: 'NotoSans',
           subset: true,
@@ -686,6 +706,51 @@ export async function addBlankPagePDF(
  * - options.pageSize = 'A4' | 'Letter' | 'Legal' → image is centered on standard
  *   page with 20pt margins, scaled to fit while preserving aspect ratio.
  */
+/**
+ * Reads the EXIF Orientation tag (1..8) from a JPEG byte buffer if present.
+ * Returns 1 when no EXIF orientation tag exists or if the header cannot be parsed.
+ */
+function getJpegExifOrientation(bytes: Uint8Array): number {
+  if (bytes.length < 12 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return 1;
+  let offset = 2;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  while (offset + 4 <= bytes.length) {
+    if (bytes[offset] !== 0xff) break;
+    const marker = bytes[offset + 1];
+    if (marker === 0xda || marker === 0xd9) break; // SOS or EOI
+    const segLength = view.getUint16(offset + 2, false);
+    if (segLength < 2 || offset + 2 + segLength > bytes.length) break;
+    if (
+      marker === 0xe1 &&
+      segLength >= 14 &&
+      bytes[offset + 4] === 0x45 && // 'E'
+      bytes[offset + 5] === 0x78 && // 'x'
+      bytes[offset + 6] === 0x69 && // 'i'
+      bytes[offset + 7] === 0x66 && // 'f'
+      bytes[offset + 8] === 0x00 &&
+      bytes[offset + 9] === 0x00
+    ) {
+      const tiffStart = offset + 10;
+      const littleEndian = view.getUint16(tiffStart, false) === 0x4949;
+      const ifdOffset = view.getUint32(tiffStart + 4, littleEndian);
+      const dirStart = tiffStart + ifdOffset;
+      if (dirStart + 2 > bytes.length) return 1;
+      const entries = view.getUint16(dirStart, littleEndian);
+      for (let i = 0; i < entries; i++) {
+        const entryOffset = dirStart + 2 + i * 12;
+        if (entryOffset + 12 > bytes.length) break;
+        const tag = view.getUint16(entryOffset, littleEndian);
+        if (tag === 0x0112) {
+          return view.getUint16(entryOffset + 8, littleEndian);
+        }
+      }
+      return 1;
+    }
+    offset += 2 + segLength;
+  }
+  return 1;
+}
+
 export async function imagesToPDF(
   imageBlobs: { buf: Uint8Array; type: string; name?: string }[],
   options?: { pageSize?: keyof typeof PDF_PAGE_SIZES }
@@ -716,7 +781,34 @@ export async function imagesToPDF(
     let embeddedImg;
     try {
       if (normalizedType === 'image/jpeg' || normalizedType === 'image/jpg') {
-        embeddedImg = await pdfDoc.embedJpg(file.buf);
+        let jpgBytes = file.buf;
+        const exifOrientation = getJpegExifOrientation(jpgBytes);
+        if (
+          exifOrientation > 1 &&
+          typeof createImageBitmap === 'function' &&
+          typeof OffscreenCanvas !== 'undefined'
+        ) {
+          try {
+            const blob = new Blob([jpgBytes as unknown as BlobPart], { type: 'image/jpeg' });
+            const bitmap = await createImageBitmap(blob);
+            const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, bitmap.width, bitmap.height);
+              ctx.drawImage(bitmap, 0, 0);
+              const normalizedBlob = await canvas.convertToBlob({
+                type: 'image/jpeg',
+                quality: 0.92,
+              });
+              jpgBytes = new Uint8Array(await normalizedBlob.arrayBuffer());
+            }
+            bitmap.close();
+          } catch {
+            // Fall back to raw JPEG bytes if canvas normalization is unavailable
+          }
+        }
+        embeddedImg = await pdfDoc.embedJpg(jpgBytes);
       } else if (normalizedType === 'image/png') {
         embeddedImg = await pdfDoc.embedPng(file.buf);
       } else if (
@@ -1084,25 +1176,57 @@ async function recompressImageStream(
     if (first instanceof PDFName) colorSpaceStr = first.asString();
   }
 
-  let isDeviceGray = colorSpaceStr === '/DeviceGray' || colorSpaceStr === 'DeviceGray';
-  let isCMYK =
-    colorSpaceStr.includes('CMYK') ||
+  let isDeviceGray =
+    colorSpaceStr === '/DeviceGray' ||
+    colorSpaceStr === 'DeviceGray' ||
+    colorSpaceStr === '/CalGray' ||
+    colorSpaceStr === 'CalGray';
+  let isCMYK = colorSpaceStr.includes('CMYK');
+  const isSpecialColorSpace =
+    colorSpaceStr.includes('Lab') ||
+    colorSpaceStr.includes('Pattern') ||
     colorSpaceStr.includes('Separation') ||
     colorSpaceStr.includes('DeviceN');
 
-  // Handle Indexed ColorSpaces: [/Indexed baseColorSpace hival lookupTable]
+  // Handle ICCBased and Indexed ColorSpaces
   let indexedPalette: Uint8Array | null = null;
   if (colorSpaceObj instanceof PDFArray) {
     const first = colorSpaceObj.get(0);
-    if (first instanceof PDFName && first.asString() === '/Indexed') {
-      const baseCs = colorSpaceObj.get(1);
-      const baseCsStr = baseCs instanceof PDFName ? baseCs.asString() : '';
+    if (first instanceof PDFName && first.asString() === '/ICCBased') {
+      const iccStream = colorSpaceObj.lookup(1);
+      if (iccStream instanceof PDFRawStream && iccStream.dict) {
+        const nObj = iccStream.dict.lookup(PDFName.of('N'));
+        if (nObj instanceof PDFNumber) {
+          const nVal = nObj.asNumber();
+          if (nVal === 1) isDeviceGray = true;
+          else if (nVal === 4) isCMYK = true;
+        }
+      }
+    } else if (first instanceof PDFName && first.asString() === '/Indexed') {
+      const baseCs = colorSpaceObj.lookup(1);
+      let baseCsStr = baseCs instanceof PDFName ? baseCs.asString() : '';
+      if (baseCs instanceof PDFArray) {
+        const baseFirst = baseCs.get(0);
+        if (baseFirst instanceof PDFName) baseCsStr = baseFirst.asString();
+        if (baseCsStr === '/ICCBased') {
+          const iccStream = baseCs.lookup(1);
+          if (iccStream instanceof PDFRawStream && iccStream.dict) {
+            const nObj = iccStream.dict.lookup(PDFName.of('N'));
+            if (nObj instanceof PDFNumber && nObj.asNumber() === 4) isCMYK = true;
+            if (nObj instanceof PDFNumber && nObj.asNumber() === 1) isDeviceGray = true;
+          }
+        }
+      }
       if (baseCsStr.includes('CMYK')) isCMYK = true;
       if (baseCsStr.includes('Gray')) isDeviceGray = true;
 
-      const lookupObj = colorSpaceObj.get(3);
+      const lookupObj = colorSpaceObj.lookup(3);
       if (lookupObj instanceof PDFString || lookupObj instanceof PDFHexString) {
         indexedPalette = lookupObj.asBytes();
+      } else if (lookupObj instanceof PDFRawStream) {
+        indexedPalette = new Uint8Array(
+          decodePDFRawStream(lookupObj).getBytes(Math.max(1024, lookupObj.getContentsSize() * 4))
+        );
       } else if (lookupObj instanceof PDFStream) {
         indexedPalette = lookupObj.getContents();
       }
@@ -1225,12 +1349,13 @@ async function recompressImageStream(
             new Blob([new Uint8Array(pixelBytes)], { type: 'image/png' })
           );
         } else {
-          // Check DecodeParms for PNG Predictor
+          // Check stream dictionary and DecodeParms for BitsPerComponent and PNG Predictor
+          const dictBpcObj = dict.lookup(PDFName.of('BitsPerComponent'));
           const decodeParms = dict.lookup(PDFName.of('DecodeParms'));
           let predictor = 1;
           let columns = origWidth;
           let colors = indexedPalette ? 1 : isDeviceGray ? 1 : isCMYK ? 4 : 3;
-          let bitsPerComponent = 8;
+          let bitsPerComponent = dictBpcObj instanceof PDFNumber ? dictBpcObj.asNumber() : 8;
 
           if (decodeParms instanceof PDFDict) {
             const predObj = decodeParms.lookup(PDFName.of('Predictor'));
@@ -1241,6 +1366,18 @@ async function recompressImageStream(
             if (colrObj instanceof PDFNumber) colors = colrObj.asNumber();
             const bpcObj = decodeParms.lookup(PDFName.of('BitsPerComponent'));
             if (bpcObj instanceof PDFNumber) bitsPerComponent = bpcObj.asNumber();
+          }
+
+          if (isSpecialColorSpace) {
+            throw new Error(
+              `Special color space (${colorSpaceStr}) skipped in raw pixel recompression to preserve color accuracy`
+            );
+          }
+
+          if (bitsPerComponent !== 8) {
+            throw new Error(
+              `Non-8-bit image stream (BitsPerComponent=${bitsPerComponent}) skipped to preserve lossless bit-packed structure`
+            );
           }
 
           if (predictor >= 10 && columns > 0 && origHeight > 0) {
@@ -1363,12 +1500,10 @@ async function recompressImageStream(
           ctx.imageSmoothingQuality = 'high';
         }
 
-        if (!hasMask && !hasRealSMask) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, w, h);
-        } else {
-          ctx.clearRect(0, 0, w, h);
-        }
+        // Always composite onto white before JPEG encoding since DCTDecode has no alpha channel;
+        // if the image has a separate /SMask or /Mask, the PDF viewer applies that mask over these RGB values.
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
         ctx.drawImage(bitmap!, 0, 0, w, h);
 
         if (isDecodeInverted) {
@@ -1413,12 +1548,8 @@ async function recompressImageStream(
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        if (!hasMask && !hasRealSMask) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, w, h);
-        } else {
-          ctx.clearRect(0, 0, w, h);
-        }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
         ctx.drawImage(bitmap!, 0, 0, w, h);
 
         if (isDecodeInverted) {
@@ -1926,7 +2057,7 @@ export async function compressPDF(
     }
 
     // Strict Size Invariant: Output must NEVER exceed original safeBytes size.
-    if (safeBytes.length > 2048 && bestCandidate.length > safeBytes.length) {
+    if (bestCandidate.length > safeBytes.length) {
       return safeBytes;
     }
     return bestCandidate;
@@ -2126,7 +2257,7 @@ export async function unlockPDF(payload: {
  */
 export async function pdfToImage(
   bytes: Uint8Array,
-  originalName: string,
+  _originalName: string,
   scale: number = 1.5,
   maxPages?: number,
   format: 'image/png' | 'image/jpeg' = 'image/png',
@@ -2353,6 +2484,12 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
 export async function flattenPDF(bytes: Uint8Array): Promise<Uint8Array> {
   try {
     const pdfDoc = await loadPlainPDF(bytes);
+    const acroForm = pdfDoc.catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict);
+    if (acroForm && acroForm.has(PDFName.of('XFA'))) {
+      throw new Error(
+        'UNSUPPORTED_XFA: This PDF uses dynamic Adobe XFA (XML Forms Architecture) forms, which cannot be flattened without losing dynamic form data. Please save or print as a standard PDF first.'
+      );
+    }
     const form = pdfDoc.getForm();
     form.flatten();
     const compiledBytes = await pdfDoc.save();

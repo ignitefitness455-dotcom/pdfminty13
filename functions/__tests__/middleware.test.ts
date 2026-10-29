@@ -210,4 +210,43 @@ describe('Cloudflare Pages Middleware - Redirect & Routing Tests', () => {
     expect(legacyAuthRes.status).toBe(301);
     expect(legacyAuthRes.headers.get('Location')).toBe('https://pdfminty.com/dashboard/');
   });
+
+  it('falls back to /index.html via ASSETS.fetch with 200 OK if a valid route like /pricing/ returns 404 from context.next()', async () => {
+    const request = new Request('https://pdfminty.com/pricing/');
+    const next = vi.fn().mockImplementation(async () => {
+      return new Response('<html><body>404 Not Found</body></html>', {
+        status: 404,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+      });
+    });
+    const assetsFetch = vi.fn().mockImplementation(async () => {
+      return new Response('<html><body><div id="root">Pricing SPA</div></body></html>', {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+      });
+    });
+
+    const ctx = {
+      request,
+      next,
+      env: {
+        ASSETS: {
+          fetch: assetsFetch,
+        },
+      },
+      params: {},
+      data: {},
+      waitUntil: vi.fn(),
+      passThroughOnException: vi.fn(),
+    } as unknown as Parameters<typeof onRequest>[0];
+
+    const res = await onRequest(ctx);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('X-Robots-Tag')).toBe('index, follow');
+    expect(assetsFetch).toHaveBeenCalledTimes(1);
+  });
 });

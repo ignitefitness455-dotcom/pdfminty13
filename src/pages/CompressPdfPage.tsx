@@ -24,7 +24,6 @@ import { FileUploader } from '../components/FileUploader';
 import { PdfPreview } from '../components/PdfPreview';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { ToolLongForm } from '../components/ToolLongForm';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
@@ -55,6 +54,7 @@ export const CompressPdfPage: React.FC = () => {
   const [wasAlreadyCompact, setWasAlreadyCompact] = useState<boolean>(false);
 
   const operationTokenRef = React.useRef<number>(0);
+  const isProcessingRef = React.useRef<boolean>(false);
 
   // Revoke object URL on cleanup
   useEffect(() => {
@@ -92,8 +92,9 @@ export const CompressPdfPage: React.FC = () => {
   };
 
   const handleCompress = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || isProcessing || isProcessingRef.current) return;
 
+    isProcessingRef.current = true;
     const myToken = ++operationTokenRef.current;
     setIsProcessing(true);
     setError(null);
@@ -215,6 +216,7 @@ export const CompressPdfPage: React.FC = () => {
       );
     } finally {
       if (myToken === operationTokenRef.current) {
+        isProcessingRef.current = false;
         setIsProcessing(false);
       }
     }
@@ -267,6 +269,11 @@ export const CompressPdfPage: React.FC = () => {
                 fileName={selectedFile.name}
                 originalSizeBytes={selectedFile.size}
                 compressionMode={compressionMode}
+                onCancel={() => {
+                  operationTokenRef.current += 1;
+                  isProcessingRef.current = false;
+                  setIsProcessing(false);
+                }}
               />
             ) : !selectedFile ? (
               <FileUploader
@@ -277,28 +284,30 @@ export const CompressPdfPage: React.FC = () => {
               />
             ) : (
               <div
-                className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between"
+                className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3"
                 id="loaded_compress_file"
               >
-                <div className="truncate pr-4">
+                <div className="min-w-0 flex-1 pr-2">
                   <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                     {formatBytes(selectedFile.size)} • PDF Document
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
+                    operationTokenRef.current += 1;
                     setSelectedFile(null);
                     setIsSuccess(false);
+                    setError(null);
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);
                       setDownloadUrl(null);
                     }
                   }}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-1.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                 </button>
@@ -324,17 +333,17 @@ export const CompressPdfPage: React.FC = () => {
                 className="p-5 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-4"
                 id="compress_success_banner"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>Compression Completed Successfully!</span>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-600 text-white shadow-sm">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-black tabular-nums bg-emerald-600 text-white shadow-sm">
                     {percentSaved > 0 ? `-${percentSaved}% Saved` : 'Fully Optimized'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/60 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/60 text-xs tabular-nums">
                   <div>
                     <span className="text-slate-500 dark:text-slate-400 block mb-0.5">
                       Original Size:
@@ -389,9 +398,9 @@ export const CompressPdfPage: React.FC = () => {
                         type="button"
                         onClick={handleManualDownload}
                         id="manual_download_btn"
-                        className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all cursor-pointer text-sm"
+                        className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all cursor-pointer text-sm"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-4 h-4 shrink-0" />
                         <span>Download Compressed PDF ({formatBytes(compressedSize)})</span>
                       </button>
 
@@ -400,16 +409,16 @@ export const CompressPdfPage: React.FC = () => {
                         aria-expanded={showPreview}
                         onClick={() => setShowPreview((prev) => !prev)}
                         id="toggle_preview_pdf_btn"
-                        className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
+                        className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
                       >
                         {showPreview ? (
                           <>
-                            <EyeOff className="w-4 h-4" />
+                            <EyeOff className="w-4 h-4 shrink-0" />
                             <span>Hide In-Page Preview</span>
                           </>
                         ) : (
                           <>
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-4 h-4 shrink-0" />
                             <span>Inspect & Preview Pages</span>
                           </>
                         )}
@@ -420,11 +429,34 @@ export const CompressPdfPage: React.FC = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         id="preview_pdf_btn"
-                        className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm no-underline"
+                        className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm no-underline"
                       >
-                        <ExternalLink className="w-4 h-4 text-slate-500" />
+                        <ExternalLink className="w-4 h-4 text-slate-500 shrink-0" />
                         <span>Open in New Tab</span>
                       </a>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          operationTokenRef.current += 1;
+                          setSelectedFile(null);
+                          setIsSuccess(false);
+                          setError(null);
+                          setShowPreview(false);
+                          if (downloadUrl) {
+                            URL.revokeObjectURL(downloadUrl);
+                            setDownloadUrl(null);
+                          }
+                        }}
+                        id="reset_compress_btn"
+                        className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-all cursor-pointer text-sm"
+                      >
+                        <span>
+                          {t('compressPdf.compressAnother', {
+                            defaultValue: 'Compress Another PDF',
+                          })}
+                        </span>
+                      </button>
                     </div>
 
                     {showPreview && compressedBlob && (
@@ -734,9 +766,6 @@ export const CompressPdfPage: React.FC = () => {
           </p>
         </Link>
       </div>
-
-      {/* Embedded SEO long-form article & technical FAQ */}
-      <ToolLongForm slug="compress-pdf" />
     </div>
   );
 };

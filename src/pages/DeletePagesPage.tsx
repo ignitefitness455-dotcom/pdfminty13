@@ -16,7 +16,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const DeletePagesPage: React.FC = () => {
@@ -73,16 +73,19 @@ export const DeletePagesPage: React.FC = () => {
         setDownloadUrl(null);
       }
 
+      let rawBuffer: ArrayBuffer;
+      let docPageCount = 0;
       try {
-        const bytes = new Uint8Array(await file.arrayBuffer());
+        rawBuffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(rawBuffer);
         if (myToken !== operationTokenRef.current) return;
         // Get page count independently of thumbnail rendering so manual deletion
         // still works even if pdfToImage fails.
-        const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
+        docPageCount = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
           bytes,
         });
         if (myToken !== operationTokenRef.current) return;
-        setTotalPages(count);
+        setTotalPages(docPageCount);
       } catch (err: unknown) {
         if (myToken !== operationTokenRef.current) return;
         const message = err instanceof Error ? err.message : 'Failed to read PDF.';
@@ -95,21 +98,32 @@ export const DeletePagesPage: React.FC = () => {
 
       setRenderingThumbnails(true);
       try {
-        const fileBytes = new Uint8Array(await file.arrayBuffer());
+        const fileBytes = new Uint8Array(rawBuffer);
         if (myToken !== operationTokenRef.current) return;
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
-        >('pdfToImage', { bytes: fileBytes, originalName: file.name, scale: 0.3 }, [
-          fileBytes.buffer,
-        ]);
+        >(
+          'pdfToImage',
+          {
+            bytes: fileBytes,
+            originalName: file.name,
+            scale: 0.3,
+            maxPages: 50,
+            format: 'image/jpeg',
+          },
+          [fileBytes.buffer]
+        );
         if (myToken !== operationTokenRef.current) return;
         const mapped = rendered.map((item) => {
-          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/png' });
+          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/jpeg' });
           return {
             page: item.page,
             dataUrl: URL.createObjectURL(blob),
           };
         });
+        for (let p = mapped.length + 1; p <= docPageCount; p++) {
+          mapped.push({ page: p, dataUrl: '' });
+        }
         if (myToken !== operationTokenRef.current) return;
         setThumbnails(mapped);
       } catch (err: unknown) {
@@ -242,7 +256,7 @@ export const DeletePagesPage: React.FC = () => {
         [fileBytes.buffer]
       );
       const blob = new Blob([parsedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `pdfminty_stripped_${selectedFile.name}`;
+      const name = sanitizeDownloadFilename(`pdfminty_stripped_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -284,17 +298,21 @@ export const DeletePagesPage: React.FC = () => {
               />
             ) : (
               <div
-                className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3"
                 id="loaded_delete_file"
               >
                 <div className="truncate pr-4">
-                  <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-slate-400 tabular-nums">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {totalPages > 0 ? `${totalPages} Pages • ` : ''}
                     {t('deletePages.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     operationTokenRef.current++; // Invalidate in-flight rendering
                     // Revoke existing blob URLs to prevent memory leaks.
@@ -309,7 +327,7 @@ export const DeletePagesPage: React.FC = () => {
                       setDownloadUrl(null);
                     }
                   }}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white border border-slate-200 py-1 px-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                 </button>
@@ -319,8 +337,10 @@ export const DeletePagesPage: React.FC = () => {
 
           {isSuccess && (
             <div
-              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-200 font-bold"
               id="delete_pages_success_banner"
+              role="status"
+              aria-live="polite"
             >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
@@ -331,25 +351,47 @@ export const DeletePagesPage: React.FC = () => {
                   })}
                 </span>
               </div>
-              <p className="text-slate-500 text-[11px] font-semibold leading-normal">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] font-semibold leading-normal m-0">
                 {t('deletePages.successDesc', {
                   defaultValue:
                     'The selected pages have been removed completely offline in your browser.',
                 })}
               </p>
               {downloadUrl && (
-                <div className="pt-2">
+                <div className="pt-1 flex flex-wrap items-center gap-3">
                   <a
                     href={downloadUrl}
                     download={downloadName}
                     id="manual_download_link"
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer no-underline"
                   >
-                    <Download className="w-4 h-4 animate-bounce" />
+                    <Download className="w-4 h-4 shrink-0" />
                     <span>
                       {t('deletePages.downloadStripped', { defaultValue: 'Download Stripped PDF' })}
                     </span>
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      operationTokenRef.current++;
+                      thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
+                      setSelectedFile(null);
+                      setThumbnails([]);
+                      setPagesStr('');
+                      setTotalPages(0);
+                      setIsSuccess(false);
+                      if (downloadUrl) {
+                        URL.revokeObjectURL(downloadUrl);
+                        setDownloadUrl(null);
+                      }
+                    }}
+                    id="reset_delete_pages_btn"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
+                  >
+                    <span>
+                      {t('deletePages.deleteAnother', { defaultValue: 'Process Another PDF' })}
+                    </span>
+                  </button>
                 </div>
               )}
             </div>
@@ -432,15 +474,24 @@ export const DeletePagesPage: React.FC = () => {
                         </div>
 
                         <div className="w-full h-[85%] bg-white rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
-                          <img
-                            src={item.dataUrl}
-                            alt={t('deletePages.pageNumber', {
-                              page: item.page,
-                              defaultValue: `Page ${item.page}`,
-                            })}
-                            referrerPolicy="no-referrer"
-                            className="max-w-full max-h-full object-contain"
-                          />
+                          {item.dataUrl ? (
+                            <img
+                              src={item.dataUrl}
+                              alt={t('deletePages.pageNumber', {
+                                page: item.page,
+                                defaultValue: `Page ${item.page}`,
+                              })}
+                              referrerPolicy="no-referrer"
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          ) : (
+                            <span className="text-xs font-bold text-slate-400">
+                              {t('deletePages.pageNumber', {
+                                page: item.page,
+                                defaultValue: `Page ${item.page}`,
+                              })}
+                            </span>
+                          )}
                         </div>
 
                         <div className="w-full flex items-center justify-center pt-1">

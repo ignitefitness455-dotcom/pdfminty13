@@ -20,8 +20,6 @@ import type * as PDFJSTypes from 'pdfjs-dist';
 // assets from node_modules. See: https://vitejs.dev/guide/assets.html#url-imports
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-import { PDFSanitizer } from './PDFSanitizer';
-
 export { WorkerManager } from './WorkerManager';
 
 let cachedPdfJs: typeof import('pdfjs-dist') | null = null;
@@ -62,21 +60,32 @@ export const getFriendlyErrorMessage = (prefix: string, rawError: unknown): stri
     [
       'secured_locked',
       '/encrypt',
-      'no pdf header found',
-      'failed to parse pdf document',
-      'invalid pdf',
-      'formaterror',
       'encrypted content',
+      'password required',
+      'passwordexception',
     ].some((s) => errorStr.includes(s))
   ) {
     return `${prefix}: The file is encrypted or locked. Please use the "Unlock PDF" tool first to decrypt it.`;
   }
   if (
-    ['pdf header magic', 'missing the standard', 'header signature'].some((s) =>
-      errorStr.includes(s)
-    )
+    [
+      'pdf header magic',
+      'missing the standard',
+      'header signature',
+      'no pdf header found',
+    ].some((s) => errorStr.includes(s))
   ) {
     return `${prefix}: Incompatible file format. The file is missing a standard '%PDF' header signature.`;
+  }
+  if (
+    [
+      'failed to parse pdf document',
+      'invalid pdf',
+      'formaterror',
+      'file is empty',
+    ].some((s) => errorStr.includes(s))
+  ) {
+    return `${prefix}: The file appears to be corrupted, empty, or not a valid PDF document.`;
   }
   if (['incorrect password', 'decrypt', 'bad decrypt'].some((s) => errorStr.includes(s))) {
     return `${prefix}: Incorrect password! Please verify and try again.`;
@@ -119,6 +128,7 @@ export async function preprocessAndLoadPdf(
   const arrayBuffer = await file.arrayBuffer();
   let sanitizedBytes: Uint8Array = new Uint8Array(arrayBuffer);
   try {
+    const { PDFSanitizer } = await import('./PDFSanitizer');
     const sanResult = PDFSanitizer.sanitize(sanitizedBytes, {
       skipEncryptionCheck: options?.skipEncryptionCheck,
     });

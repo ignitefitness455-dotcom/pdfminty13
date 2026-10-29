@@ -239,13 +239,12 @@ export const OcrPdfPage: React.FC = () => {
       if (selectedFile.type.startsWith('image/')) {
         // Direct image convert to base64
         const buffer = await selectedFile.arrayBuffer();
-        let binary = '';
         const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-          binary += String.fromCharCode(bytes[i]);
+        const chunks: string[] = [];
+        for (let i = 0; i < bytes.byteLength; i += 8192) {
+          chunks.push(String.fromCharCode(...bytes.subarray(i, i + 8192)));
         }
-        imageBase64s.push(`data:${selectedFile.type};base64,${btoa(binary)}`);
+        imageBase64s.push(`data:${selectedFile.type};base64,${btoa(chunks.join(''))}`);
       } else {
         // PDF pages conversion
         const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
@@ -268,13 +267,12 @@ export const OcrPdfPage: React.FC = () => {
 
           if (myToken !== operationTokenRef.current) return;
           if (rendered && rendered.length > 0) {
-            let binary = '';
             const imgBytes = rendered[0].imageBytes;
-            const len = imgBytes.byteLength;
-            for (let i = 0; i < len; i++) {
-              binary += String.fromCharCode(imgBytes[i]);
+            const chunks: string[] = [];
+            for (let i = 0; i < imgBytes.byteLength; i += 8192) {
+              chunks.push(String.fromCharCode(...imgBytes.subarray(i, i + 8192)));
             }
-            imageBase64s.push(`data:image/jpeg;base64,${btoa(binary)}`);
+            imageBase64s.push(`data:image/jpeg;base64,${btoa(chunks.join(''))}`);
           }
         }
       }

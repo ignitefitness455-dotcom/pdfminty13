@@ -11,28 +11,18 @@ export const TrustBadgeSection: React.FC = () => {
       aria-labelledby="featured-badge-title"
       className="mt-16 mb-6 max-w-4xl mx-auto px-4"
     >
-      <div className="relative overflow-hidden rounded-[32px] border border-white/50 dark:border-white/10 bg-white/40 dark:bg-black/30 backdrop-blur-xl p-8 sm:p-10 text-center shadow-xl hover:shadow-2xl transition-shadow duration-300">
-        {/* Subtle decorative background glow */}
-        <div
-          className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 pointer-events-none opacity-20 dark:opacity-10 blur-3xl -z-10 rounded-full"
-          style={{
-            background:
-              'radial-gradient(circle, var(--custom-security-green, #10b981) 0%, transparent 70%)',
-          }}
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 space-y-4">
-          {/* Eyebrow badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wide uppercase">
-            <Award className="w-3.5 h-3.5" aria-hidden="true" />
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-8 sm:p-10 text-center shadow-xs">
+        <div className="relative z-10 space-y-3">
+          {/* Unboxed Eyebrow */}
+          <div className="flex items-center justify-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-emerald-600 dark:text-emerald-400">
+            <Award className="w-4 h-4 text-emerald-500" aria-hidden="true" />
             <span>{t('home.trustBadge.eyebrow', { defaultValue: 'Community Verified' })}</span>
           </div>
 
           {/* Title */}
           <h3
             id="featured-badge-title"
-            className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white"
           >
             {t('home.trustBadge.title', {
               defaultValue: 'Recognized & Featured Across Leading Platforms',

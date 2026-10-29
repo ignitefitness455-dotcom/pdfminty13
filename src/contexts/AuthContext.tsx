@@ -1,23 +1,8 @@
+import type { User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
-import {
-  auth,
-  googleProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  applyActionCode,
-  updateProfile,
-  onAuthStateChanged,
-  isFirebaseConfigured,
-  type User,
-} from '../lib/firebase';
-import { syncUserProfileToFirestore, subscribeToUserProfile } from '../services/userService';
-import { isDisposableEmail } from '../utils/disposableEmailBlocker';
-import { setSyncedProStatus } from '../utils/usageLimit';
+import { isFirebaseConfigured } from '../lib/firebaseConfig';
+import { setSyncedProStatus, setSyncedAuthUid } from '../utils/usageLimit';
 
 export const LEMON_SQUEEZY_CHECKOUT_URL =
   'https://pdfminty.lemonsqueezy.com/checkout/buy/6cc92d05-f59d-4a1b-9d04-abcb89f50da6';
@@ -63,74 +48,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const DEMO_USER_STORAGE_KEY = 'pdfminty_demo_user';
+const HAS_AUTH_SESSION_KEY = 'pdfminty_has_auth_session';
+
+const loadFirebaseSdk = () => import('../lib/firebase');
+const loadUserService = () => import('../services/userService');
+
+function hasLikelyActiveAuthSession(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (localStorage.getItem(HAS_AUTH_SESSION_KEY) === '1') return true;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('firebase:authUser:')) return true;
+    }
+    const path = window.location.pathname || '';
+    if (
+      path.includes('/login') ||
+      path.includes('/signup') ||
+      path.includes('/dashboard') ||
+      path.includes('/pricing')
+    ) {
+      return true;
+    }
+  } catch {
+    // Ignore storage access errors
+  }
+  return false;
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [isPro, setIsPro] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(() => hasLikelyActiveAuthSession());
   const isConfigured = isFirebaseConfigured();
 
   // Sync Firebase Auth state and real-time Firestore `users/{uid}` listener
   useEffect(() => {
-    if (isConfigured && auth) {
-      let unsubscribeFirestore: (() => void) | undefined;
-
-      const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
-        if (unsubscribeFirestore) {
-          unsubscribeFirestore();
-          unsubscribeFirestore = undefined;
-        }
-
-        setFirebaseUser(fbUser);
-        if (fbUser) {
-          const currentUser: AppUser = {
-            uid: fbUser.uid,
-            email: fbUser.email,
-            displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
-            photoURL: fbUser.photoURL,
-            plan: 'free',
-            isPro: false,
-            emailVerified: fbUser.emailVerified,
-          };
-          setUser(currentUser);
-          setIsPro(false);
-          setSyncedProStatus(false);
-
-          // Synchronize profile metadata to Firestore (never writes isPro)
-          syncUserProfileToFirestore(currentUser);
-
-          // Subscribe in real time with Firestore onSnapshot to document `users/{uid}`
-          unsubscribeFirestore = subscribeToUserProfile(fbUser.uid, (firestoreProfile) => {
-            const proActive = firestoreProfile.isPro === true;
-            setIsPro(proActive);
-            setSyncedProStatus(proActive);
-            setUser((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    isPro: proActive,
-                    plan: proActive ? 'pro' : 'free',
-                  }
-                : null
-            );
-          });
-        } else {
-          setIsPro(false);
-          setSyncedProStatus(false);
-          setUser(null);
-        }
-        setLoading(false);
-      });
-
-      return () => {
-        unsubscribe();
-        if (unsubscribeFirestore) {
-          unsubscribeFirestore();
-        }
-      };
-    } else {
-      // Offline / Developer preview fallback
+    if (!isConfigured) {
       try {
         const stored = localStorage.getItem(DEMO_USER_STORAGE_KEY);
         if (stored) {
@@ -142,40 +97,153 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setIsPro(false);
       setSyncedProStatus(false);
+      setSyncedAuthUid(null);
       setLoading(false);
       return undefined;
     }
+
+    let isMounted = true;
+    let unsubscribeAuth: (() => void) | undefined;
+    let unsubscribeFirestore: (() => void) | undefined;
+    let idleTimerId: number | undefined;
+
+    const initFirebaseAuth = async () => {
+      try {
+        const fb = await loadFirebaseSdk();
+        const auth = fb.auth;
+        if (!isMounted || !auth) {
+          if (isMounted) setLoading(false);
+          return;
+        }
+
+        unsubscribeAuth = fb.onAuthStateChanged(auth, async (fbUser) => {
+          if (!isMounted) return;
+          if (unsubscribeFirestore) {
+            unsubscribeFirestore();
+            unsubscribeFirestore = undefined;
+          }
+
+          setFirebaseUser(fbUser);
+          if (fbUser) {
+            try {
+              localStorage.setItem(HAS_AUTH_SESSION_KEY, '1');
+            } catch {
+              // Ignore
+            }
+            const currentUser: AppUser = {
+              uid: fbUser.uid,
+              email: fbUser.email,
+              displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+              photoURL: fbUser.photoURL,
+              plan: 'free',
+              isPro: false,
+              emailVerified: fbUser.emailVerified,
+            };
+            setUser(currentUser);
+            setIsPro(false);
+            setSyncedAuthUid(fbUser.uid);
+            setSyncedProStatus(false);
+            setLoading(false);
+
+            const userSvc = await loadUserService();
+            if (!isMounted) return;
+            void userSvc.syncUserProfileToFirestore(currentUser);
+            unsubscribeFirestore = userSvc.subscribeToUserProfile(fbUser.uid, (firestoreProfile) => {
+              if (!isMounted) return;
+              const proActive = firestoreProfile.isPro === true;
+              setIsPro(proActive);
+              setSyncedProStatus(proActive);
+              setUser((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      isPro: proActive,
+                      plan: proActive ? 'pro' : 'free',
+                    }
+                  : null
+              );
+            });
+          } else {
+            try {
+              localStorage.removeItem(HAS_AUTH_SESSION_KEY);
+            } catch {
+              // Ignore
+            }
+            setIsPro(false);
+            setSyncedAuthUid(null);
+            setSyncedProStatus(false);
+            setUser(null);
+            setLoading(false);
+          }
+        });
+      } catch {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    if (hasLikelyActiveAuthSession()) {
+      void initFirebaseAuth();
+    } else if (typeof window !== 'undefined') {
+      // Guest user with no stored auth session: defer 685KB Firebase SDK load until browser is idle
+      const win = window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+      if (typeof win.requestIdleCallback === 'function') {
+        const idleId = win.requestIdleCallback(() => void initFirebaseAuth(), { timeout: 3500 });
+        return () => {
+          isMounted = false;
+          win.cancelIdleCallback?.(idleId);
+          unsubscribeAuth?.();
+          unsubscribeFirestore?.();
+        };
+      } else {
+        idleTimerId = window.setTimeout(() => void initFirebaseAuth(), 2500);
+      }
+    }
+
+    return () => {
+      isMounted = false;
+      if (idleTimerId !== undefined) window.clearTimeout(idleTimerId);
+      unsubscribeAuth?.();
+      unsubscribeFirestore?.();
+    };
   }, [isConfigured]);
 
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
       setLoading(true);
       try {
-        if (isConfigured && auth) {
-          const result = await signInWithEmailAndPassword(auth, email, password);
-          setFirebaseUser(result.user);
-          setUser({
-            uid: result.user.uid,
-            email: result.user.email,
-            displayName: result.user.displayName || email.split('@')[0],
-            photoURL: result.user.photoURL,
-            plan: 'free',
-            isPro: false,
-            emailVerified: result.user.emailVerified,
-          });
-        } else {
-          const demoUser: AppUser = {
-            uid: 'demo_' + Date.now(),
-            email,
-            displayName: email.split('@')[0],
-            photoURL: null,
-            plan: 'free',
-            isPro: false,
-            emailVerified: true,
-          };
-          localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
-          setUser(demoUser);
+        if (isConfigured) {
+          const fb = await loadFirebaseSdk();
+          const auth = fb.auth;
+          if (auth) {
+            const result = await fb.signInWithEmailAndPassword(auth, email, password);
+            setFirebaseUser(result.user);
+            setSyncedAuthUid(result.user.uid);
+            setUser({
+              uid: result.user.uid,
+              email: result.user.email,
+              displayName: result.user.displayName || email.split('@')[0],
+              photoURL: result.user.photoURL,
+              plan: 'free',
+              isPro: false,
+              emailVerified: result.user.emailVerified,
+            });
+            return;
+          }
         }
+        const demoUser: AppUser = {
+          uid: 'demo_' + Date.now(),
+          email,
+          displayName: email.split('@')[0],
+          photoURL: null,
+          plan: 'free',
+          isPro: false,
+          emailVerified: true,
+        };
+        localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
+        setUser(demoUser);
       } finally {
         setLoading(false);
       }
@@ -185,44 +253,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUpWithEmail = useCallback(
     async (email: string, password: string, name?: string) => {
+      const { isDisposableEmail } = await import('../utils/disposableEmailBlocker');
       if (isDisposableEmail(email)) {
         throw new Error('DISPOSABLE_EMAIL_NOT_ALLOWED');
       }
       setLoading(true);
       try {
-        if (isConfigured && auth) {
-          const result = await createUserWithEmailAndPassword(auth, email, password);
-          if (name && result.user) {
-            await updateProfile(result.user, { displayName: name });
+        if (isConfigured) {
+          const fb = await loadFirebaseSdk();
+          const auth = fb.auth;
+          if (auth) {
+            const result = await fb.createUserWithEmailAndPassword(auth, email, password);
+            if (name && result.user) {
+              await fb.updateProfile(result.user, { displayName: name });
+            }
+            try {
+              await fb.sendEmailVerification(result.user);
+            } catch (verErr) {
+              console.warn('[Firebase Auth] Verification email dispatch note:', verErr);
+            }
+            setFirebaseUser(result.user);
+            setSyncedAuthUid(result.user.uid);
+            setUser({
+              uid: result.user.uid,
+              email: result.user.email,
+              displayName: name || result.user.displayName || email.split('@')[0],
+              photoURL: result.user.photoURL,
+              plan: 'free',
+              isPro: false,
+              emailVerified: result.user.emailVerified,
+            });
+            return;
           }
-          try {
-            await sendEmailVerification(result.user);
-          } catch (verErr) {
-            console.warn('[Firebase Auth] Verification email dispatch note:', verErr);
-          }
-          setFirebaseUser(result.user);
-          setUser({
-            uid: result.user.uid,
-            email: result.user.email,
-            displayName: name || result.user.displayName || email.split('@')[0],
-            photoURL: result.user.photoURL,
-            plan: 'free',
-            isPro: false,
-            emailVerified: result.user.emailVerified,
-          });
-        } else {
-          const demoUser: AppUser = {
-            uid: 'demo_' + Date.now(),
-            email,
-            displayName: name || email.split('@')[0],
-            photoURL: null,
-            plan: 'free',
-            isPro: false,
-            emailVerified: false,
-          };
-          localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
-          setUser(demoUser);
         }
+        const demoUser: AppUser = {
+          uid: 'demo_' + Date.now(),
+          email,
+          displayName: name || email.split('@')[0],
+          photoURL: null,
+          plan: 'free',
+          isPro: false,
+          emailVerified: false,
+        };
+        localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
+        setUser(demoUser);
       } finally {
         setLoading(false);
       }
@@ -233,37 +307,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithGoogle = useCallback(async () => {
     setLoading(true);
     try {
-      if (isConfigured && auth) {
-        const result = await signInWithPopup(auth, googleProvider);
-        setFirebaseUser(result.user);
-        setUser((prev) => ({
-          uid: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName || 'Google User',
-          photoURL: result.user.photoURL,
-          plan: prev?.uid === result.user.uid && prev.isPro ? 'pro' : 'free',
-          isPro: prev?.uid === result.user.uid ? Boolean(prev.isPro) : false,
-          emailVerified: result.user.emailVerified,
-        }));
-      } else {
-        throw new Error('AUTH_NOT_CONFIGURED');
+      if (isConfigured) {
+        const fb = await loadFirebaseSdk();
+        const auth = fb.auth;
+        if (auth) {
+          const result = await fb.signInWithPopup(auth, fb.googleProvider);
+          setFirebaseUser(result.user);
+          setSyncedAuthUid(result.user.uid);
+          setUser((prev) => ({
+            uid: result.user.uid,
+            email: result.user.email,
+            displayName: result.user.displayName || 'Google User',
+            photoURL: result.user.photoURL,
+            plan: prev?.uid === result.user.uid && prev.isPro ? 'pro' : 'free',
+            isPro: prev?.uid === result.user.uid ? Boolean(prev.isPro) : false,
+            emailVerified: result.user.emailVerified,
+          }));
+          return;
+        }
       }
+      throw new Error('AUTH_NOT_CONFIGURED');
     } finally {
       setLoading(false);
     }
   }, [isConfigured]);
 
-  /**
-   * Prompts Google sign-in first if the user is not signed in.
-   * Once signed in, redirects to the Lemon Squeezy Pro checkout URL with
-   * `checkout[custom][uid]=<firebase uid>` and `checkout[email]=<user email>`.
-   */
   const upgradeToPro = useCallback(async () => {
-    const activeFbUser = auth?.currentUser || firebaseUser;
-    if (activeFbUser?.uid) {
+    if (firebaseUser?.uid) {
       const checkoutUrl = buildLemonSqueezyCheckoutUrl(
-        activeFbUser.uid,
-        activeFbUser.email || user?.email
+        firebaseUser.uid,
+        firebaseUser.email || user?.email
       );
       window.location.assign(checkoutUrl);
       return;
@@ -275,29 +348,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    // Not signed in: prompt Google sign-in first, then redirect to Lemon Squeezy checkout
-    if (isConfigured && auth) {
+    if (isConfigured) {
       setLoading(true);
       try {
-        const result = await signInWithPopup(auth, googleProvider);
-        setFirebaseUser(result.user);
-        setUser({
-          uid: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName || 'Google User',
-          photoURL: result.user.photoURL,
-          plan: 'free',
-          isPro: false,
-          emailVerified: result.user.emailVerified,
-        });
-        const checkoutUrl = buildLemonSqueezyCheckoutUrl(result.user.uid, result.user.email);
-        window.location.assign(checkoutUrl);
+        const fb = await loadFirebaseSdk();
+        const auth = fb.auth;
+        if (auth?.currentUser?.uid) {
+          const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+            auth.currentUser.uid,
+            auth.currentUser.email || user?.email
+          );
+          window.location.assign(checkoutUrl);
+          return;
+        }
+        if (auth) {
+          const result = await fb.signInWithPopup(auth, fb.googleProvider);
+          setFirebaseUser(result.user);
+          setSyncedAuthUid(result.user.uid);
+          setUser({
+            uid: result.user.uid,
+            email: result.user.email,
+            displayName: result.user.displayName || 'Google User',
+            photoURL: result.user.photoURL,
+            plan: 'free',
+            isPro: false,
+            emailVerified: result.user.emailVerified,
+          });
+          const checkoutUrl = buildLemonSqueezyCheckoutUrl(result.user.uid, result.user.email);
+          window.location.assign(checkoutUrl);
+          return;
+        }
       } finally {
         setLoading(false);
       }
-    } else {
-      throw new Error('AUTH_NOT_CONFIGURED');
     }
+    throw new Error('AUTH_NOT_CONFIGURED');
   }, [firebaseUser, user, isConfigured]);
 
   const signInAsDemo = useCallback((customEmail?: string) => {
@@ -322,9 +407,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const sendVerificationEmail = useCallback(async () => {
-    if (isConfigured && auth) {
-      if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser);
+    if (isConfigured) {
+      const fb = await loadFirebaseSdk();
+      const auth = fb.auth;
+      if (auth?.currentUser) {
+        await fb.sendEmailVerification(auth.currentUser);
       } else {
         throw new Error('NO_CURRENT_USER');
       }
@@ -332,6 +419,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isConfigured]);
 
   const verifyEmailWithCode = useCallback(async (code: string) => {
+    const fb = await loadFirebaseSdk();
+    const auth = fb.auth;
     if (!auth) throw new Error('AUTH_UNAVAILABLE');
     const trimmed = code.trim();
     if (!trimmed) throw new Error('EMPTY_CODE');
@@ -350,7 +439,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    await applyActionCode(auth, actionCode);
+    await fb.applyActionCode(auth, actionCode);
     if (auth.currentUser) {
       await auth.currentUser.reload();
       const updated = auth.currentUser;
@@ -360,23 +449,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const reloadUser = useCallback(async () => {
-    if (isConfigured && auth?.currentUser) {
-      await auth.currentUser.reload();
-      const updated = auth.currentUser;
-      setFirebaseUser(updated);
-      setUser((prev) => (prev ? { ...prev, emailVerified: updated.emailVerified } : null));
+    if (isConfigured) {
+      const fb = await loadFirebaseSdk();
+      const auth = fb.auth;
+      if (auth?.currentUser) {
+        await auth.currentUser.reload();
+        const updated = auth.currentUser;
+        setFirebaseUser(updated);
+        setUser((prev) => (prev ? { ...prev, emailVerified: updated.emailVerified } : null));
+      }
     }
   }, [isConfigured]);
 
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      if (isConfigured && auth) {
-        await signOut(auth);
+      if (isConfigured) {
+        const fb = await loadFirebaseSdk();
+        const auth = fb.auth;
+        if (auth) {
+          await fb.signOut(auth);
+        }
       }
       localStorage.removeItem(DEMO_USER_STORAGE_KEY);
+      localStorage.removeItem(HAS_AUTH_SESSION_KEY);
       setFirebaseUser(null);
       setIsPro(false);
+      setSyncedAuthUid(null);
       setSyncedProStatus(false);
       setUser(null);
     } finally {
@@ -386,11 +485,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = useCallback(
     async (email: string) => {
-      if (isConfigured && auth) {
-        await sendPasswordResetEmail(auth, email);
-      } else {
-        console.log('[Auth] Password reset requested for demo:', email);
+      if (isConfigured) {
+        const fb = await loadFirebaseSdk();
+        const auth = fb.auth;
+        if (auth) {
+          await fb.sendPasswordResetEmail(auth, email);
+          return;
+        }
       }
+      console.log('[Auth] Password reset requested for demo:', email);
     },
     [isConfigured]
   );
@@ -400,8 +503,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const cleanName = newName.trim();
       if (!cleanName) return;
 
-      if (isConfigured && auth?.currentUser) {
-        await updateProfile(auth.currentUser, { displayName: cleanName });
+      if (isConfigured) {
+        const fb = await loadFirebaseSdk();
+        const auth = fb.auth;
+        if (auth?.currentUser) {
+          await fb.updateProfile(auth.currentUser, { displayName: cleanName });
+        }
       }
 
       setUser((prev) => {

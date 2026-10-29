@@ -4,7 +4,7 @@ import path from 'path';
 import { describe, expect, it } from 'vitest';
 
 import { TOOLS } from '../../config/seo-data';
-import {
+import i18n, {
   getCanonicalUrl,
   getHreflangs,
   getLocalizedPath,
@@ -14,6 +14,24 @@ import {
 } from '../config';
 
 describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
+  it('dynamically loads non-English locale bundles when switching languages via i18n.changeLanguage', async () => {
+    await i18n.changeLanguage('bn');
+    expect(i18n.language).toBe('bn');
+    expect(i18n.hasResourceBundle('bn', 'common')).toBe(true);
+    expect(i18n.hasResourceBundle('bn', 'merge-pdf')).toBe(true);
+    expect(i18n.t('header.nav.home')).toBe('হোম');
+    expect(i18n.t('tools.merge-pdf.name')).not.toBe('Merge PDF');
+
+    await i18n.changeLanguage('de');
+    expect(i18n.language).toBe('de');
+    expect(i18n.hasResourceBundle('de', 'common')).toBe(true);
+    expect(i18n.t('header.nav.home')).not.toBe('Home');
+
+    await i18n.changeLanguage('en');
+    expect(i18n.language).toBe('en');
+    expect(i18n.t('header.nav.home')).toBe('Home');
+  });
+
   it('accurately resolves localized paths and language switcher targets with trailing slashes', () => {
     expect(isI18nToolSlug('merge-pdf')).toBe(true);
     expect(isI18nToolSlug('/merge-pdf/')).toBe(true);

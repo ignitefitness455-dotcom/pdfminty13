@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
-import { TaskLimitModal } from '../components/TaskLimitModal';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import {
   type UserTier,
   type UsageStatus,
@@ -10,6 +10,10 @@ import {
 } from '../utils/usageLimit';
 
 import { useAuth } from './AuthContext';
+
+const TaskLimitModal = lazyWithRetry(() =>
+  import('../components/TaskLimitModal').then((m) => ({ default: m.TaskLimitModal }))
+);
 
 export interface UsageLimitContextType {
   tier: UserTier;
@@ -100,13 +104,17 @@ export const UsageLimitProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <UsageLimitContext.Provider value={contextValue}>
       {children}
-      <TaskLimitModal
-        isOpen={modalOpen}
-        onClose={closeLimitModal}
-        reason={modalReason}
-        tier={status.tier}
-        attemptedFileSizeMB={attemptedFileSizeMB}
-      />
+      {modalOpen && (
+        <React.Suspense fallback={null}>
+          <TaskLimitModal
+            isOpen={modalOpen}
+            onClose={closeLimitModal}
+            reason={modalReason}
+            tier={status.tier}
+            attemptedFileSizeMB={attemptedFileSizeMB}
+          />
+        </React.Suspense>
+      )}
     </UsageLimitContext.Provider>
   );
 };

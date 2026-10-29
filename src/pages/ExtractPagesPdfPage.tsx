@@ -8,7 +8,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { WorkerManager } from '../core/WorkerManager';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const ExtractPagesPdfPage: React.FC = () => {
@@ -67,21 +67,45 @@ export const ExtractPagesPdfPage: React.FC = () => {
 
       setRenderingThumbnails(true);
       try {
-        const fileBytes = new Uint8Array(await file.arrayBuffer());
+        const rawBuffer = await file.arrayBuffer();
+        const fileBytes = new Uint8Array(rawBuffer);
         if (myToken !== operationTokenRef.current) return;
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
-        >('pdfToImage', { bytes: fileBytes, originalName: file.name, scale: 0.3 }, [
-          fileBytes.buffer,
-        ]);
+        >(
+          'pdfToImage',
+          {
+            bytes: fileBytes,
+            originalName: file.name,
+            scale: 0.3,
+            maxPages: 50,
+            format: 'image/jpeg',
+          },
+          [fileBytes.buffer]
+        );
         if (myToken !== operationTokenRef.current) return;
         const mapped = rendered.map((item) => {
-          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/png' });
+          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/jpeg' });
           return {
             page: item.page,
             dataUrl: URL.createObjectURL(blob),
           };
         });
+        if (rendered.length === 50) {
+          try {
+            const countBytes = new Uint8Array(await file.arrayBuffer());
+            const totalCount = await WorkerManager.getInstance().runOperation<number>(
+              'getPageCount',
+              { bytes: countBytes },
+              [countBytes.buffer]
+            );
+            for (let p = mapped.length + 1; p <= totalCount; p++) {
+              mapped.push({ page: p, dataUrl: '' });
+            }
+          } catch {
+            // Keep rendered 50 thumbnails if count lookup fails
+          }
+        }
         if (myToken !== operationTokenRef.current) return;
         setThumbnails(mapped);
       } catch (err: unknown) {
@@ -155,7 +179,7 @@ export const ExtractPagesPdfPage: React.FC = () => {
       );
 
       const blob = new Blob([extractedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `extracted_${selectedFile.name}`;
+      const name = sanitizeDownloadFilename(`extracted_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -196,18 +220,19 @@ export const ExtractPagesPdfPage: React.FC = () => {
               />
             ) : (
               <div
-                className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between"
+                className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between gap-3"
                 id="loaded_extract_file"
               >
                 <div className="truncate pr-4">
                   <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 tabular-nums">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • PDF Document
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     operationTokenRef.current++; // Invalidate in-flight rendering
                     thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
@@ -220,7 +245,7 @@ export const ExtractPagesPdfPage: React.FC = () => {
                       setDownloadUrl(null);
                     }
                   }}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-1 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                 </button>
@@ -230,8 +255,10 @@ export const ExtractPagesPdfPage: React.FC = () => {
 
           {isSuccess && (
             <div
-              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-200 font-bold"
               id="extract_pages_success_banner"
+              role="status"
+              aria-live="polite"
             >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
@@ -243,20 +270,41 @@ export const ExtractPagesPdfPage: React.FC = () => {
                 </span>
               </div>
               {downloadUrl && (
-                <div className="pt-2">
+                <div className="pt-1 flex flex-wrap items-center gap-3">
                   <a
                     href={downloadUrl}
                     download={downloadName}
                     id="manual_download_link"
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer no-underline"
                   >
-                    <Download className="w-4 h-4 animate-bounce" />
+                    <Download className="w-4 h-4 shrink-0" />
                     <span>
                       {t('extractPages.downloadExtracted', {
                         defaultValue: 'Download Extracted PDF',
                       })}
                     </span>
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      operationTokenRef.current++;
+                      thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
+                      setSelectedFile(null);
+                      setThumbnails([]);
+                      setSelectedPages([]);
+                      setIsSuccess(false);
+                      if (downloadUrl) {
+                        URL.revokeObjectURL(downloadUrl);
+                        setDownloadUrl(null);
+                      }
+                    }}
+                    id="reset_extract_pages_btn"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
+                  >
+                    <span>
+                      {t('extractPages.extractAnother', { defaultValue: 'Extract Another PDF' })}
+                    </span>
+                  </button>
                 </div>
               )}
             </div>

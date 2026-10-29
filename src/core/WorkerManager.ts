@@ -94,6 +94,14 @@ export class WorkerManager {
       const timer = setTimeout(() => {
         if (this.promises.has(id)) {
           this.promises.delete(id);
+          if (this.promises.size === 0 && this.worker) {
+            try {
+              this.worker.terminate();
+            } catch {
+              // Ignore termination errors
+            }
+            this.worker = null;
+          }
           reject(new Error('Processing timed out — try a smaller file.'));
         }
       }, 120 * 1000); // 120 seconds timeout

@@ -39,12 +39,15 @@ export function addRecordedError(
 
   try {
     const errors = getRecordedErrors();
+    const safeUrl = window.location
+      ? `${window.location.origin || ''}${window.location.pathname || ''}`
+      : '';
     const newError: RecordedError = {
       id: crypto.randomUUID(),
       message,
       stack,
       timestamp: new Date().toISOString(),
-      url: window.location.href,
+      url: safeUrl,
       fileContext: fileContext || null,
       userAgent: navigator.userAgent,
     };

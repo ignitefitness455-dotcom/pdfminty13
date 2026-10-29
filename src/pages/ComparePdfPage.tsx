@@ -22,7 +22,9 @@ import { recordLocalProcessing } from '../components/NetworkPrivacyInspector';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { getPdfJs } from '../core';
+import { getFriendlyErrorMessage, getPdfJs } from '../core';
+import { PDFSanitizer } from '../core/PDFSanitizer';
+import { sanitizeDownloadFilename } from '../utils/download';
 import { recordDailyTask } from '../utils/usageLimit';
 
 interface DiffLine {
@@ -40,6 +42,45 @@ interface PageDiff {
   addedCount: number;
   removedCount: number;
   unchangedCount: number;
+}
+
+// Group PDF.js text items by visual baseline Y-coordinate so word fragments on the same line
+// are compared as cohesive lines rather than thousands of single-word lines.
+function extractVisualLines(items: unknown[]): string[] {
+  const positioned: { str: string; x: number; y: number }[] = [];
+  for (const raw of items) {
+    if (!raw || typeof raw !== 'object' || !('str' in raw)) continue;
+    const item = raw as { str: string; transform?: number[] };
+    const text = item.str;
+    if (!text || !text.trim()) continue;
+    const x = Array.isArray(item.transform) ? Number(item.transform[4] || 0) : 0;
+    const y = Array.isArray(item.transform) ? Number(item.transform[5] || 0) : 0;
+    positioned.push({ str: text.trim(), x, y });
+  }
+  if (positioned.length === 0) return [];
+
+  const rows: { y: number; tokens: { x: number; str: string }[] }[] = [];
+  const Y_TOLERANCE = 3.5;
+  for (const pt of positioned) {
+    const existingRow = rows.find((r) => Math.abs(r.y - pt.y) <= Y_TOLERANCE);
+    if (existingRow) {
+      existingRow.tokens.push({ x: pt.x, str: pt.str });
+    } else {
+      rows.push({ y: pt.y, tokens: [{ x: pt.x, str: pt.str }] });
+    }
+  }
+
+  // Sort top-to-bottom (higher PDF Y is higher on the page), then left-to-right
+  rows.sort((a, b) => b.y - a.y);
+  return rows
+    .map((r) =>
+      r.tokens
+        .sort((a, b) => a.x - b.x)
+        .map((t) => t.str)
+        .join(' ')
+        .trim()
+    )
+    .filter((line) => line.length > 0);
 }
 
 // Simple fast Myers / LCS line diff algorithm
@@ -114,9 +155,12 @@ export const ComparePdfPage: React.FC = () => {
   const canvasBRef = useRef<HTMLCanvasElement>(null);
   const docARef = useRef<PDFDocumentProxy | null>(null);
   const docBRef = useRef<PDFDocumentProxy | null>(null);
+  const operationTokenRef = useRef<number>(0);
 
   useEffect(() => {
+    const token = operationTokenRef;
     return () => {
+      token.current++;
       docARef.current?.destroy().catch(() => {
         /* ignore */
       });
@@ -145,6 +189,7 @@ export const ComparePdfPage: React.FC = () => {
   };
 
   const runComparison = async (fA: File, fB: File) => {
+    const myToken = ++operationTokenRef.current;
     setIsComparing(true);
     setError(null);
     setPageDiffs([]);
@@ -167,8 +212,16 @@ export const ComparePdfPage: React.FC = () => {
       const pdfjs = await getPdfJs();
 
       const [bufA, bufB] = await Promise.all([fA.arrayBuffer(), fB.arrayBuffer()]);
+      if (myToken !== operationTokenRef.current) return;
       const bytesA = new Uint8Array(bufA);
       const bytesB = new Uint8Array(bufB);
+
+      if ((await PDFSanitizer.isEncrypted(bytesA)) || (await PDFSanitizer.isEncrypted(bytesB))) {
+        throw new Error(
+          'SECURED_LOCKED: One or both PDFs are password-protected. Please use the Unlock PDF tool first.'
+        );
+      }
+      if (myToken !== operationTokenRef.current) return;
 
       recordLocalProcessing(
         bytesA.byteLength + bytesB.byteLength,
@@ -181,6 +234,14 @@ export const ComparePdfPage: React.FC = () => {
         pdfjs.getDocument({ data: bytesB }).promise,
       ]);
 
+      if (myToken !== operationTokenRef.current) {
+        await Promise.all([
+          loadedA.destroy().catch(() => {}),
+          loadedB.destroy().catch(() => {}),
+        ]);
+        return;
+      }
+
       docARef.current = loadedA;
       docBRef.current = loadedB;
       setDocA(loadedA);
@@ -190,31 +251,32 @@ export const ComparePdfPage: React.FC = () => {
       const diffResults: PageDiff[] = [];
 
       for (let p = 1; p <= maxPages; p++) {
-        let textA = '';
-        let textB = '';
+        if (myToken !== operationTokenRef.current) return;
+        let linesA: string[] = [];
+        let linesB: string[] = [];
 
         if (p <= loadedA.numPages) {
           const pageA = await loadedA.getPage(p);
-          const contentA = await pageA.getTextContent();
-          textA = contentA.items
-            .map((it) => ('str' in it ? it.str : ''))
-            .filter((s) => s.trim().length > 0)
-            .join('\n');
-          pageA.cleanup();
+          try {
+            const contentA = await pageA.getTextContent();
+            linesA = extractVisualLines(contentA.items);
+          } finally {
+            pageA.cleanup();
+          }
         }
 
         if (p <= loadedB.numPages) {
           const pageB = await loadedB.getPage(p);
-          const contentB = await pageB.getTextContent();
-          textB = contentB.items
-            .map((it) => ('str' in it ? it.str : ''))
-            .filter((s) => s.trim().length > 0)
-            .join('\n');
-          pageB.cleanup();
+          try {
+            const contentB = await pageB.getTextContent();
+            linesB = extractVisualLines(contentB.items);
+          } finally {
+            pageB.cleanup();
+          }
         }
 
-        const linesA = textA ? textA.split('\n') : [];
-        const linesB = textB ? textB.split('\n') : [];
+        const textA = linesA.join('\n');
+        const textB = linesB.join('\n');
 
         const diffLines = computeLineDiff(linesA, linesB);
         let added = 0;
@@ -238,12 +300,17 @@ export const ComparePdfPage: React.FC = () => {
         });
       }
 
-      setPageDiffs(diffResults);
+      if (myToken === operationTokenRef.current) {
+        setPageDiffs(diffResults);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to compare PDF documents.';
-      setError(msg);
+      if (myToken === operationTokenRef.current) {
+        setError(getFriendlyErrorMessage('Failed to compare PDF documents', err));
+      }
     } finally {
-      setIsComparing(false);
+      if (myToken === operationTokenRef.current) {
+        setIsComparing(false);
+      }
     }
   };
 
@@ -392,7 +459,10 @@ ${pageDiffs
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `pdf-diff-report-${fileA.name.replace(/\.pdf$/i, '')}-vs-${fileB.name.replace(/\.pdf$/i, '')}.txt`;
+    a.download = sanitizeDownloadFilename(
+      `pdf-diff-report-${fileA.name.replace(/\.pdf$/i, '')}-vs-${fileB.name.replace(/\.pdf$/i, '')}.txt`,
+      'pdf-diff-report.txt'
+    );
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -431,7 +501,15 @@ ${pageDiffs
                 </span>
                 {fileA && (
                   <button
-                    onClick={() => setFileA(null)}
+                    onClick={() => {
+                      operationTokenRef.current++;
+                      docARef.current?.destroy().catch(() => {});
+                      docARef.current = null;
+                      setDocA(null);
+                      setFileA(null);
+                      setPageDiffs([]);
+                      setIsComparing(false);
+                    }}
                     className="text-xs text-rose-600 hover:underline cursor-pointer"
                   >
                     Remove
@@ -475,7 +553,15 @@ ${pageDiffs
                 </span>
                 {fileB && (
                   <button
-                    onClick={() => setFileB(null)}
+                    onClick={() => {
+                      operationTokenRef.current++;
+                      docBRef.current?.destroy().catch(() => {});
+                      docBRef.current = null;
+                      setDocB(null);
+                      setFileB(null);
+                      setPageDiffs([]);
+                      setIsComparing(false);
+                    }}
                     className="text-xs text-emerald-600 hover:underline cursor-pointer"
                   >
                     Remove

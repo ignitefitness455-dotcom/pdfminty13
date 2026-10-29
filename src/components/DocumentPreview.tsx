@@ -42,27 +42,24 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 
   const handleSelect = useCallback(
     (index: number, event?: React.MouseEvent | React.KeyboardEvent) => {
+      const baseSelection = isControlled ? selectedPages : internalSelection;
       if (event?.shiftKey && lastSelectedRef.current !== null) {
         const start = Math.min(lastSelectedRef.current, index);
         const end = Math.max(lastSelectedRef.current, index);
-        setInternalSelection((prev) => {
-          const merged = new Set(prev);
-          for (let i = start; i <= end; i++) merged.add(i);
-          if (onSelectionChange) onSelectionChange(merged);
-          return merged;
-        });
+        const merged = new Set(baseSelection);
+        for (let i = start; i <= end; i++) merged.add(i);
+        setInternalSelection(merged);
+        onSelectionChange?.(merged);
       } else {
-        setInternalSelection((prev) => {
-          const next = new Set(prev);
-          if (next.has(index)) next.delete(index);
-          else next.add(index);
-          if (onSelectionChange) onSelectionChange(next);
-          return next;
-        });
+        const next = new Set(baseSelection);
+        if (next.has(index)) next.delete(index);
+        else next.add(index);
+        setInternalSelection(next);
+        onSelectionChange?.(next);
       }
       lastSelectedRef.current = index;
     },
-    [onSelectionChange, setInternalSelection]
+    [isControlled, selectedPages, internalSelection, onSelectionChange]
   );
 
   const selectAll = useCallback(() => {
@@ -77,6 +74,15 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     if (onSelectionChange) onSelectionChange(new Set());
     lastSelectedRef.current = null;
   }, [onSelectionChange, setInternalSelection]);
+
+  const PAGE_BATCH_SIZE = 60;
+  const [visibleLimit, setVisibleLimit] = useState<number>(PAGE_BATCH_SIZE);
+
+  React.useEffect(() => {
+    setVisibleLimit(PAGE_BATCH_SIZE);
+  }, [pdfDoc, pageCount]);
+
+  const renderedCount = Math.min(pageCount, visibleLimit);
 
   return (
     <div className="space-y-4">
@@ -163,7 +169,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           gridTemplateColumns: `repeat(auto-fill, minmax(${Math.round(480 * zoom)}px, 1fr))`,
         }}
       >
-        {Array.from({ length: pageCount }, (_, i) => (
+        {Array.from({ length: renderedCount }, (_, i) => (
           <div key={i} className="flex flex-col items-center justify-center">
             <div className="relative rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-md transition-all duration-200 bg-white dark:bg-slate-950 p-1">
               <LazyPDFPage
@@ -182,6 +188,22 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           </div>
         ))}
       </div>
+
+      {renderedCount < pageCount && (
+        <div className="flex items-center justify-center pt-1">
+          <button
+            type="button"
+            onClick={() => setVisibleLimit((prev) => Math.min(pageCount, prev + PAGE_BATCH_SIZE))}
+            className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 px-4 py-2 rounded-xl transition-colors cursor-pointer"
+          >
+            {t('preview.loadMorePages', {
+              shown: renderedCount,
+              total: pageCount,
+              defaultValue: `Show More Pages (${renderedCount} of ${pageCount} shown)`,
+            })}
+          </button>
+        </div>
+      )}
 
       {currentSelection.size > 0 && (
         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">

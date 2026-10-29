@@ -18,14 +18,49 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { NORD_AFFILIATE_LINKS } from '../config/constants';
-import { ToolSEOInfo } from '../config/seo-data';
+import { TOOLS_CATALOG } from '../config/seo-catalog';
+import type { ToolSEOInfo } from '../config/seo-data';
 
-interface ToolContentSectionProps {
-  tool: ToolSEOInfo;
+let cachedFullTools: ToolSEOInfo[] | null = null;
+let pendingFullToolsPromise: Promise<ToolSEOInfo[]> | null = null;
+
+function loadFullToolsCatalog(): Promise<ToolSEOInfo[]> {
+  if (cachedFullTools) return Promise.resolve(cachedFullTools);
+  if (!pendingFullToolsPromise) {
+    pendingFullToolsPromise = import('../config/seo-data').then((mod) => {
+      cachedFullTools = mod.TOOLS;
+      return mod.TOOLS;
+    });
+  }
+  return pendingFullToolsPromise;
 }
 
-export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool }) => {
+interface ToolContentSectionProps {
+  tool?: ToolSEOInfo;
+  slug?: string;
+}
+
+export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: propTool, slug: propSlug }) => {
   const { t, i18n } = useTranslation('common');
+  const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(cachedFullTools);
+
+  React.useEffect(() => {
+    if (propTool || cachedFullTools) return;
+    let active = true;
+    void loadFullToolsCatalog().then((loaded) => {
+      if (active) setFullTools(loaded);
+    });
+    return () => {
+      active = false;
+    };
+  }, [propTool]);
+
+  const catalogFallback = propSlug
+    ? (TOOLS_CATALOG.find((item) => item.slug === propSlug) as ToolSEOInfo | undefined)
+    : undefined;
+  const fullMatch =
+    propSlug && fullTools ? fullTools.find((item) => item.slug === propSlug) : undefined;
+  const tool = propTool || fullMatch || catalogFallback;
 
   if (!tool) return null;
 
@@ -78,6 +113,8 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool }) 
   const handleCtaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const uploaderEl =
+      document.getElementById('uploader_dropzone') ||
+      document.getElementById('file_uploader_wrapper') ||
       document.getElementById('file-uploader-deck') ||
       document.getElementById('file-uploader-input') ||
       document.getElementById('main-tool-workspace') ||
@@ -88,6 +125,9 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool }) 
       if (uploaderEl instanceof HTMLInputElement) {
         uploaderEl.click();
       } else {
+        if (uploaderEl instanceof HTMLElement) {
+          uploaderEl.focus({ preventScroll: true });
+        }
         const inputInside = uploaderEl.querySelector(
           'input[type="file"]'
         ) as HTMLInputElement | null;

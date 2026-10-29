@@ -694,10 +694,11 @@ export const PrivacyPolicyPage: React.FC = () => {
             </p>
             <p>
               To protect our serverless API endpoints (<code>/api/gemini-proxy</code>,{' '}
-              <code>/api/contact</code>, <code>/api/subscribe</code>, and <code>/api/feedback</code>
-              ) against automated DDoS attacks and quota abuse, our edge middleware utilizes
-              ephemeral rate-limiting counters via Cloudflare KV and cryptographically signed
-              HMAC-SHA256 state tokens that expire automatically within 60 seconds.
+              <code>/api/contact</code>, <code>/api/subscribe</code>, <code>/api/feedback</code>,
+              and <code>/api/error</code>) against automated DDoS attacks and quota abuse, our edge
+              middleware utilizes ephemeral rate-limiting counters via Cloudflare KV and
+              cryptographically signed HMAC-SHA256 state tokens using a 10-second burst guard and a
+              1-hour rolling window that expires automatically.
             </p>
           </section>
 

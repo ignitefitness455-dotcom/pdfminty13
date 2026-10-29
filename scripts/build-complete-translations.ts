@@ -1,7 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { TOOLS } from '../src/config/seo-data';
+import {
+  TOOLS,
+  SITE_NAME,
+  HOMEPAGE_META,
+  FAQS,
+  RELATED_TOOL_MAPPING,
+} from '../src/config/seo-data';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,10 +24,68 @@ import { ZH_ARTICLES } from './translations/zh-articles';
 // UI translations dictionaries
 import { UI_TRANSLATIONS } from './translations/ui-translations';
 
-const ALL_LOCALES = ['bn', 'de', 'es', 'fr', 'hi', 'zh', 'en'] as const;
+function generateSeoCatalog() {
+  const catalogPath = path.join(__dirname, '../src/config/seo-catalog.ts');
+  const heavyKeys = new Set([
+    'longFormBody',
+    'howTo',
+    'faqs',
+    'supportedFormats',
+    'technicalNotes',
+    'troubleshooting',
+    'relatedLinks',
+  ]);
+  const catalog = TOOLS.map((t) => {
+    const copy: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(t)) {
+      if (!heavyKeys.has(k) && v !== undefined) {
+        copy[k] = v;
+      }
+    }
+    const text = (t.longFormBody || '').replace(/<[^>]*>/g, ' ').trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    copy.readingTimeMinutes = Math.max(1, Math.ceil(words / 200));
+    return copy;
+  });
+
+  const code = `import type { ToolSEOInfo } from './seo-data';
+
+export const SITE_URL = (
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SITE_URL) ||
+  (typeof process !== 'undefined' && process.env?.VITE_SITE_URL) ||
+  'https://pdfminty.com'
+).replace(/\\/+$/, '');
+export const SITE_NAME = ${JSON.stringify(SITE_NAME)};
+
+export const HOMEPAGE_META = ${JSON.stringify(HOMEPAGE_META, null, 2)};
+
+export const FAQS = ${JSON.stringify(FAQS, null, 2)};
+
+export const RELATED_TOOL_MAPPING: Record<string, string[]> = ${JSON.stringify(RELATED_TOOL_MAPPING, null, 2)};
+
+export type ToolCatalogItem = Omit<
+  ToolSEOInfo,
+  | 'longFormBody'
+  | 'howTo'
+  | 'faqs'
+  | 'supportedFormats'
+  | 'technicalNotes'
+  | 'troubleshooting'
+  | 'relatedLinks'
+> & {
+  readingTimeMinutes?: number;
+};
+
+export const TOOLS_CATALOG: ToolCatalogItem[] = ${JSON.stringify(catalog, null, 2)};
+`;
+
+  fs.writeFileSync(catalogPath, code, 'utf8');
+  console.log(`✓ Generated src/config/seo-catalog.ts (${catalog.length} items)`);
+}
 
 function main() {
-  console.log('Building full 7-locale translations...');
+  console.log('Building full 7-locale translations and SEO catalog...');
+  generateSeoCatalog();
 
   const enCommonPath = path.join(localesDir, 'en', 'common.json');
   const enData = JSON.parse(fs.readFileSync(enCommonPath, 'utf8'));
@@ -29,18 +93,17 @@ function main() {
   const staticPageIds = ['blog', 'about-us', 'contact', 'privacy-policy', 'terms-of-service', 'adobe-acrobat-alternative'];
   const articles = TOOLS.filter((t) => t.type === 'article' && !staticPageIds.includes(t.id));
 
-  // Populate EN articles
+  // Populate EN articles (name + shortDesc only; body is served directly from seo-data.ts)
   if (!enData.articles) enData.articles = {};
   for (const a of articles) {
     const payload = {
-      name: a.h1 || a.name,
+      name: a.name,
       shortDesc: a.shortDescription,
-      body: a.longFormBody || a.shortDescription || '',
     };
     enData.articles[a.id] = payload;
     if (a.slug) enData.articles[a.slug] = payload;
   }
-  fs.writeFileSync(enCommonPath, JSON.stringify(enData, null, 2), 'utf8');
+  fs.writeFileSync(enCommonPath, JSON.stringify(enData, null, 2) + '\n', 'utf8');
 
   const localeArticleMaps: Record<string, Record<string, { name: string; shortDesc: string; body: string }>> = {
     bn: BN_ARTICLES,
@@ -53,9 +116,14 @@ function main() {
 
   for (const loc of ['bn', 'de', 'es', 'fr', 'hi', 'zh']) {
     const locPath = path.join(localesDir, loc, 'common.json');
+    const locBodyPath = path.join(localesDir, loc, 'articles-body.json');
     let locData: any = {};
     if (fs.existsSync(locPath)) {
       locData = JSON.parse(fs.readFileSync(locPath, 'utf8'));
+    }
+    let existingBodies: Record<string, string> = {};
+    if (fs.existsSync(locBodyPath)) {
+      existingBodies = JSON.parse(fs.readFileSync(locBodyPath, 'utf8'));
     }
 
     // Merge UI translations
@@ -76,34 +144,39 @@ function main() {
       }
     }
 
-    // Populate localized articles
+    // Populate localized articles (name + shortDesc in common.json, body in articles-body.json)
     if (!locData.articles) locData.articles = {};
     const articleMap = localeArticleMaps[loc] || {};
+    const newBodies: Record<string, string> = {};
 
     for (const a of articles) {
       const translation = articleMap[a.id] || articleMap[a.slug || ''];
-      if (translation && translation.name && translation.body) {
-        locData.articles[a.id] = translation;
-        if (a.slug) locData.articles[a.slug] = translation;
-      } else {
-        // Fallback or keep existing
-        const existing = locData.articles[a.id];
-        if (existing && existing.name && existing.body) {
-          if (a.slug) locData.articles[a.slug] = existing;
-        } else {
-          // If no translation yet, provide title and description
-          const fallbackPayload = {
-            name: (existing && existing.name) || translation?.name || a.name,
-            shortDesc: (existing && existing.shortDesc) || translation?.shortDesc || a.shortDescription,
-            body: (existing && existing.body) || translation?.body || a.longFormBody || a.shortDescription,
-          };
-          locData.articles[a.id] = fallbackPayload;
-          if (a.slug) locData.articles[a.slug] = fallbackPayload;
-        }
+      const existing = locData.articles[a.id];
+      const nameVal = translation?.name || existing?.name || a.name;
+      const shortDescVal = translation?.shortDesc || existing?.shortDesc || a.shortDescription;
+      const bodyVal =
+        translation?.body ||
+        existing?.body ||
+        existingBodies[a.id] ||
+        (a.slug ? existingBodies[a.slug] : '') ||
+        a.longFormBody ||
+        a.shortDescription;
+
+      const metaPayload = {
+        name: nameVal,
+        shortDesc: shortDescVal,
+      };
+      locData.articles[a.id] = metaPayload;
+      if (a.slug) locData.articles[a.slug] = metaPayload;
+
+      if (bodyVal) {
+        newBodies[a.id] = bodyVal;
+        if (a.slug) newBodies[a.slug] = bodyVal;
       }
     }
 
-    fs.writeFileSync(locPath, JSON.stringify(locData, null, 2), 'utf8');
+    fs.writeFileSync(locPath, JSON.stringify(locData, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(locBodyPath, JSON.stringify(newBodies, null, 2) + '\n', 'utf8');
     console.log(`✓ Synchronized ${loc} (${Object.keys(locData).length} UI sections, ${Object.keys(locData.articles).length} article entries)`);
   }
 

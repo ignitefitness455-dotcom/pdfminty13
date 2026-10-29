@@ -32,7 +32,7 @@ import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { getPdfJs } from '../core';
 import { PDFSanitizer } from '../core/PDFSanitizer';
 import { WorkerManager } from '../core/WorkerManager';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { recordDailyTask } from '../utils/usageLimit';
 
 export type PiiCategory = 'card' | 'phone' | 'nid' | 'email' | 'secret' | 'custom' | 'manual';
@@ -113,8 +113,9 @@ export default function SanitizePdfPage() {
   }, [downloadUrl]);
 
   useEffect(() => {
+    const tokenRef = operationTokenRef;
     return () => {
-      operationTokenRef.current++;
+      tokenRef.current++;
       if (pdfJsDocRef.current) {
         pdfJsDocRef.current.destroy().catch(() => {
           /* ignore */
@@ -151,6 +152,11 @@ export default function SanitizePdfPage() {
       const arrayBuffer = await selectedFile.arrayBuffer();
       if (operationTokenRef.current !== currentToken) return;
       const uint8 = new Uint8Array(arrayBuffer);
+      if (await PDFSanitizer.isEncrypted(uint8)) {
+        throw new Error(
+          'This PDF is password-protected or encrypted. Please unlock it first using the Unlock PDF tool before sanitizing or redacting.'
+        );
+      }
       setFileBytes(uint8);
       recordLocalProcessing(uint8.byteLength, `Sanitize/Redact: ${selectedFile.name}`);
 
@@ -320,35 +326,39 @@ export default function SanitizePdfPage() {
       const newItems: PiiEntity[] = [];
       for (let p = 1; p <= totalPages; p++) {
         const page = await pdfJsDoc.getPage(p);
-        const textContent = await page.getTextContent();
-        for (const item of textContent.items) {
-          if (!('str' in item)) continue;
-          const text = item.str;
-          const lower = text.toLowerCase();
-          let idx = lower.indexOf(term);
-          while (idx !== -1) {
-            const transform = item.transform;
-            const tx = transform[4];
-            const ty = transform[5];
-            const w = item.width || 50;
-            const h = item.height || Math.abs(transform[3]) || 12;
-            const offsetRatio = idx / Math.max(1, text.length);
-            const matchLenRatio = term.length / Math.max(1, text.length);
+        try {
+          const textContent = await page.getTextContent();
+          for (const item of textContent.items) {
+            if (!('str' in item)) continue;
+            const text = item.str;
+            const lower = text.toLowerCase();
+            let idx = lower.indexOf(term);
+            while (idx !== -1) {
+              const transform = item.transform;
+              const tx = transform[4];
+              const ty = transform[5];
+              const w = item.width || 50;
+              const h = item.height || Math.abs(transform[3]) || 12;
+              const offsetRatio = idx / Math.max(1, text.length);
+              const matchLenRatio = term.length / Math.max(1, text.length);
 
-            newItems.push({
-              id: Math.random().toString(36).substring(2, 9),
-              category: 'custom',
-              text: text.substr(idx, term.length),
-              pageIndex: p - 1,
-              x: tx + w * offsetRatio,
-              y: ty,
-              width: Math.max(10, w * matchLenRatio),
-              height: Math.max(h, 12),
-              selected: true,
-            });
+              newItems.push({
+                id: Math.random().toString(36).substring(2, 9),
+                category: 'custom',
+                text: text.slice(idx, idx + term.length),
+                pageIndex: p - 1,
+                x: tx + w * offsetRatio,
+                y: ty,
+                width: Math.max(10, w * matchLenRatio),
+                height: Math.max(h, 12),
+                selected: true,
+              });
 
-            idx = lower.indexOf(term, idx + term.length);
+              idx = lower.indexOf(term, idx + term.length);
+            }
           }
+        } finally {
+          page.cleanup();
         }
       }
       setEntities((prev) => [...prev, ...newItems]);
@@ -621,7 +631,9 @@ export default function SanitizePdfPage() {
       recordDailyTask(null, 'sanitize_pdf');
 
       const blob = new Blob([savedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = file.name.replace(/\.pdf$/i, '') + '-redacted-shield.pdf';
+      const name = sanitizeDownloadFilename(
+        file.name.replace(/\.pdf$/i, '') + '-redacted-shield.pdf'
+      );
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -666,7 +678,7 @@ export default function SanitizePdfPage() {
       recordDailyTask(null, 'sanitize_pdf');
 
       const blob = new Blob([result.bytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = file.name.replace(/\.pdf$/i, '') + '-sanitized.pdf';
+      const name = sanitizeDownloadFilename(file.name.replace(/\.pdf$/i, '') + '-sanitized.pdf');
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
@@ -826,6 +838,10 @@ export default function SanitizePdfPage() {
                       /* ignore */
                     });
                     pdfJsDocRef.current = null;
+                  }
+                  if (downloadUrl) {
+                    URL.revokeObjectURL(downloadUrl);
+                    setDownloadUrl(null);
                   }
                   setFile(null);
                   setFileBytes(null);

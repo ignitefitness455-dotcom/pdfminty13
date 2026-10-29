@@ -4,10 +4,13 @@ import path from 'node:path';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 
+import { CompressAnimation } from '../components/CompressAnimation';
 import { ConsentManager } from '../components/ConsentManager';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
+import { PDFSanitizer } from '../core/PDFSanitizer';
+import { setupErrorTelemetry } from '../error-handler';
 import { FaqSection } from '../pages/home/FaqSection';
 
 function renderWithRoot(ui: React.ReactElement) {
@@ -121,4 +124,101 @@ describe('Prompt 6 — Performance, Mobile UX & Accessibility Regressions', () =
     expect(btn.getAttribute('data-dark')).toBe('true');
     unmount();
   });
+
+  it('CompressAnimation uses an honest indeterminate progressbar and invokes onCancel without fabricated savings', () => {
+    const onCancel = vi.fn();
+    const { container, unmount } = renderWithRoot(
+      <CompressAnimation
+        fileName="report.pdf"
+        originalSizeBytes={1048576}
+        compressionMode="recommended"
+        onCancel={onCancel}
+      />
+    );
+    const progressbar = container.querySelector('[role="progressbar"]');
+    expect(progressbar).not.toBeNull();
+    expect(container.textContent).not.toContain('(-70%)');
+    expect(container.textContent).not.toContain('Byte Squisher');
+
+    const cancelBtn = container.querySelector('#cancel_compress_btn') as HTMLButtonElement;
+    expect(cancelBtn).not.toBeNull();
+    act(() => {
+      cancelBtn.click();
+    });
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    unmount();
+  });
+
+  it('PDFSanitizer.ts, core/index.ts, and PdfToImgPage.tsx avoid eager main-thread PDF engine imports', () => {
+    const sanitizerSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/core/PDFSanitizer.ts'),
+      'utf8'
+    );
+    const coreIndexSrc = fs.readFileSync(path.resolve(process.cwd(), 'src/core/index.ts'), 'utf8');
+    const pdfToImgSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/pages/PdfToImgPage.tsx'),
+      'utf8'
+    );
+
+    expect(sanitizerSrc).not.toMatch(/^import\s+.*from\s+['"]@cantoo\/pdf-lib['"]/m);
+    expect(sanitizerSrc).toContain("await import('@cantoo/pdf-lib')");
+    expect(coreIndexSrc).not.toMatch(/^import\s+.*from\s+['"]\.\/PDFSanitizer['"]/m);
+    expect(pdfToImgSrc).not.toContain('getPdfJs');
+  });
+
+  it('PDFSanitizer.sanitize uses copy-on-write (zero-copy for clean PDFs, cloned when neutralizing scripts)', () => {
+    const cleanBytes = new TextEncoder().encode('%PDF-1.7\n1 0 obj\n<< /Type /Catalog >>\n%%EOF');
+    const cleanResult = PDFSanitizer.sanitize(cleanBytes);
+    expect(cleanResult.bytes).toBe(cleanBytes);
+    expect(cleanResult.warnings).toHaveLength(0);
+
+    const scriptBytes = new TextEncoder().encode(
+      '%PDF-1.7\n1 0 obj\n<< /S /JavaScript /JS (app.alert(1)) >>\n%%EOF'
+    );
+    const scriptResult = PDFSanitizer.sanitize(scriptBytes);
+    expect(scriptResult.bytes).not.toBe(scriptBytes);
+    expect(new TextDecoder().decode(scriptResult.bytes)).not.toContain('/JavaScript');
+    expect(new TextDecoder().decode(scriptBytes)).toContain('/JavaScript');
+  });
+
+  it('setupErrorTelemetry deduplicates global error and unhandledrejection listeners across repeated calls', () => {
+    const addSpy = vi.spyOn(window, 'addEventListener');
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+
+    const cleanup1 = setupErrorTelemetry();
+    const cleanup2 = setupErrorTelemetry();
+
+    expect(removeSpy).toHaveBeenCalledWith('error', expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith('unhandledrejection', expect.any(Function));
+
+    cleanup1();
+    cleanup2();
+    addSpy.mockRestore();
+    void removeSpy.mockRestore();
+  });
+
+  it('prevents click-to-navigation lag by disabling v7_startTransition, avoiding synchronous 818KB seo-data imports in ToolContentSection/CompressPdfPage, and keeping ToolCard click handlers non-blocking', () => {
+    const mainSrc = fs.readFileSync(path.resolve(process.cwd(), 'src/main.tsx'), 'utf8');
+    const toolContentSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/components/ToolContentSection.tsx'),
+      'utf8'
+    );
+    const compressSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/pages/CompressPdfPage.tsx'),
+      'utf8'
+    );
+    const toolCardSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/pages/home/ToolCard.tsx'),
+      'utf8'
+    );
+
+    expect(mainSrc).toContain('v7_startTransition: false');
+    expect(toolContentSrc).not.toMatch(/^import\s+\{\s*TOOLS\b.*\}\s+from\s+['"]\.\.\/config\/seo-data['"]/m);
+    expect(toolContentSrc).toContain("import('../config/seo-data')");
+    expect(compressSrc).not.toContain('ToolLongForm');
+    expect(toolCardSrc).not.toContain('window.scrollTo');
+    expect(toolCardSrc).not.toContain('useLocation');
+  });
 });
+
+

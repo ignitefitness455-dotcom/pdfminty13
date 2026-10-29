@@ -1,3 +1,4 @@
+import { Search, X, Loader2 } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,57 +21,34 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const effectiveAriaLabel = t('home.search.ariaLabel', { defaultValue: 'Search PDF tools' });
 
   return (
-    <div className="relative">
+    <div className="relative group">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+        <Search className="w-4 h-4" aria-hidden="true" />
+      </div>
+
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={effectivePlaceholder}
         aria-label={effectiveAriaLabel}
-        className="w-full rounded-2xl border border-white/50 dark:border-white/10 bg-white/40 dark:bg-black/30 backdrop-blur-xl shadow-lg shadow-black/5 px-5 py-4 pr-12 text-sm text-primary placeholder-on-surface-variant/70 focus:border-emerald-500/50 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-300"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md pl-11 pr-11 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:focus:ring-emerald-500/30 shadow-xs transition-all duration-200"
       />
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+
+      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
         {isDebouncing && (
-          <svg
-            className="animate-spin h-4 w-4 text-security-green"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            width="16"
-            height="16"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
+          <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" aria-hidden="true" />
         )}
-        <svg
-          className="h-5 w-5 text-on-surface-variant/60"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          aria-hidden="true"
-          width="20"
-          height="20"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        {!isDebouncing && value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Clear search text"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

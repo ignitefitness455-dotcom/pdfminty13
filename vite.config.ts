@@ -143,9 +143,7 @@ function devApiPlugin() {
               }
             } else {
               console.log(
-                '[dev-api] /api/subscribe received:',
-                { email, name },
-                '(Set RESEND_API_KEY in .env to send via Resend)'
+                '[dev-api] /api/subscribe received (Set RESEND_API_KEY in .env to send via Resend)'
               );
             }
 
@@ -259,8 +257,9 @@ function devApiPlugin() {
               promptContent = `Use the provided document text to answer the user's specific query.\n\nUSER SPECIFIC QUERY:\n${query}\n\nDOCUMENT TEXT CONTEXT:\n${truncated}`;
             }
 
+            const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
             const response = await ai.models.generateContent({
-              model: 'gemini-3.8-flash',
+              model: modelName,
               contents: promptContent,
               config: {
                 systemInstruction,
@@ -278,15 +277,19 @@ function devApiPlugin() {
               })
             );
           } catch (apiErr: unknown) {
-            console.error('[dev-api] Gemini proxy error:', apiErr);
+            const rawErrMsg =
+              apiErr instanceof Error ? apiErr.message : 'Failed to process AI document query.';
+            const configuredKey = process.env.GEMINI_API_KEY;
+            const safeErrMsg =
+              configuredKey && configuredKey.length >= 6
+                ? rawErrMsg.split(configuredKey).join('[REDACTED_API_KEY]')
+                : rawErrMsg;
+            console.error('[dev-api] Gemini proxy error:', safeErrMsg);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
             res.end(
               JSON.stringify({
-                error:
-                  apiErr instanceof Error
-                    ? apiErr.message
-                    : 'Failed to process AI document query.',
+                error: safeErrMsg,
               })
             );
           }
@@ -324,83 +327,113 @@ function generateSitemapPlugin() {
   };
 }
 
-export default defineConfig({
-  plugins: [
-    react(),
-    injectSwVersion(),
-    devApiPlugin(),
-    generateSitemapPlugin(),
-    visualizer({
-      filename: 'dist/stats.html',
-      gzipSize: true,
-      brotliSize: true,
-      open: false,
-    }),
-  ],
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    target: 'es2020',
-    cssCodeSplit: true,
-    minify: 'esbuild',
-    cssMinify: true,
-    modulePreload: {
-      polyfill: false,
-      resolveDependencies: (_filename, deps) => {
-        // Prevent preloading 4MB+ of non-English translation JSON and 2.4MB+ PDF engine on index.html
-        return deps.filter((dep) => {
-          if (
-            dep.includes('vendor-pdf') ||
-            dep.includes('locales-de') ||
-            dep.includes('locales-fr') ||
-            dep.includes('locales-es') ||
-            dep.includes('locales-bn') ||
-            dep.includes('locales-hi') ||
-            dep.includes('locales-zh')
-          ) {
-            return false;
-          }
-          return true;
-        });
+export default defineConfig(({ command, mode }) => {
+  const isProdBuild = command === 'build' || mode === 'production';
+  if (isProdBuild) {
+    process.env.NODE_ENV = 'production';
+  }
+
+  return {
+    define: isProdBuild
+      ? {
+          'process.env.NODE_ENV': JSON.stringify('production'),
+        }
+      : undefined,
+    esbuild: isProdBuild
+      ? {
+          jsxDev: false,
+        }
+      : undefined,
+    plugins: [
+      react(),
+      injectSwVersion(),
+      devApiPlugin(),
+      generateSitemapPlugin(),
+      visualizer({
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+        open: false,
+      }),
+    ],
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      target: 'es2020',
+      cssCodeSplit: true,
+      minify: 'esbuild',
+      cssMinify: true,
+      modulePreload: {
+        polyfill: false,
+        resolveDependencies: (_filename, deps) => {
+          // Prevent preloading non-critical chunks on initial load (PDF engines, Firebase, heavy SEO data, non-English locales)
+          return deps.filter((dep) => {
+            if (
+              dep.includes('vendor-pdf') ||
+              dep.includes('vendor-fontkit') ||
+              dep.includes('vendor-jszip') ||
+              dep.includes('vendor-firebase') ||
+              dep.includes('app-seo-data') ||
+              dep.includes('locales-de') ||
+              dep.includes('locales-fr') ||
+              dep.includes('locales-es') ||
+              dep.includes('locales-bn') ||
+              dep.includes('locales-hi') ||
+              dep.includes('locales-zh') ||
+              dep.includes('-articles')
+            ) {
+              return false;
+            }
+            return true;
+          });
+        },
       },
-    },
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            // Group all PDF processing engines into vendor-pdf (loaded only when tool accessed)
-            if (
-              id.includes('pdfjs-dist') ||
-              id.includes('pdf-lib') ||
-              id.includes('@cantoo/pdf-lib') ||
-              id.includes('fabric') ||
-              id.includes('jszip')
-            ) {
-              return 'vendor-pdf';
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // Granular PDF processing engines
+              if (id.includes('@pdf-lib/fontkit')) {
+                return 'vendor-fontkit';
+              }
+              if (id.includes('pdfjs-dist')) {
+                return 'vendor-pdfjs';
+              }
+              if (id.includes('jszip')) {
+                return 'vendor-jszip';
+              }
+              if (id.includes('@cantoo/pdf-lib') || id.includes('pdf-lib')) {
+                return 'vendor-pdf-lib';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('i18next') || id.includes('react-i18next')) {
+                return 'vendor-i18n';
+              }
+              if (id.includes('firebase') || id.includes('@firebase')) {
+                return 'vendor-firebase';
+              }
+              if (
+                id.includes('react') ||
+                id.includes('react-dom') ||
+                id.includes('react-router') ||
+                id.includes('scheduler')
+              ) {
+                return 'vendor-react';
+              }
+              if (id.includes('signature_pad')) {
+                return 'vendor-sigpad';
+              }
+              if (id.includes('@google/genai')) {
+                return 'vendor-genai';
+              }
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('i18next') || id.includes('react-i18next')) {
-              return 'vendor-i18n';
-            }
-            if (id.includes('firebase') || id.includes('@firebase')) {
-              return 'vendor-firebase';
-            }
-            if (
-              id.includes('react') ||
-              id.includes('react-dom') ||
-              id.includes('react-router') ||
-              id.includes('scheduler')
-            ) {
-              return 'vendor-react';
-            }
-            if (id.includes('signature_pad')) {
-              return 'vendor-sigpad';
-            }
-            if (id.includes('@google/genai')) {
-              return 'vendor-genai';
-            }
+
+          // Separate article bodies from general UI localization so initial common.json stays <115KB
+          if (id.includes('articles-body.json')) {
+            const match = id.match(/\/locales\/([a-z]{2})\//);
+            return match ? `locales-${match[1]}-articles` : 'locales-articles';
           }
 
           // Per-locale chunking so users only download the language they need
@@ -412,6 +445,10 @@ export default defineConfig({
           if (id.includes('/locales/zh/')) return 'locales-zh';
           if (id.includes('/locales/en/')) return 'locales-en';
 
+          // Separate lightweight catalog from heavy longFormBody SEO data
+          if (id.includes('/src/config/seo-catalog')) {
+            return 'app-seo-catalog';
+          }
           if (id.includes('/src/config/seo-data')) {
             return 'app-seo-data';
           }
@@ -420,12 +457,17 @@ export default defineConfig({
       },
     },
   },
-  server: {
-    host: '0.0.0.0',
-    port: 3000,
-    strictPort: true,
-  },
-  worker: {
-    format: 'es',
-  },
+    server: {
+      host: '0.0.0.0',
+      port: 3000,
+      strictPort: true,
+      hmr: false,
+      watch: {
+        ignored: ['**/dist/**', '**/public/sitemap*.xml', '**/public/og-*.png'],
+      },
+    },
+    worker: {
+      format: 'es',
+    },
+  };
 });

@@ -3,6 +3,7 @@ import path from 'path';
 
 import { describe, it, expect } from 'vitest';
 
+import { TOOLS_CATALOG } from '../config/seo-catalog';
 import { TOOLS } from '../config/seo-data';
 
 const STATIC_INFO_SLUGS = new Set([
@@ -123,5 +124,44 @@ describe('Blog & Informational Content SEO & Governance Audit (Prompt 5)', () =>
 
     const rankingGuide = TOOLS.find((t) => t.id === 'best-offline-pdf-tools-sensitive-documents')!;
     expect(rankingGuide.metaDescription).not.toContain('PDFMinty ranks #1');
+  });
+
+  it('ensures TOOLS_CATALOG matches TOOLS in seo-data.ts with exact 1-to-1 parity', () => {
+    expect(TOOLS_CATALOG.length).toBe(TOOLS.length);
+
+    for (const tool of TOOLS) {
+      const catalogEntry = TOOLS_CATALOG.find((c) => c.id === tool.id);
+      expect(catalogEntry, `Catalog entry for ${tool.id}`).toBeDefined();
+      if (catalogEntry) {
+        expect(catalogEntry.slug).toBe(tool.slug);
+        expect(catalogEntry.name).toBe(tool.name);
+        expect(catalogEntry.type).toBe(tool.type);
+        expect(catalogEntry.category).toBe(tool.category);
+        expect(catalogEntry.metaTitle).toBe(tool.metaTitle);
+        expect(catalogEntry.metaDescription).toBe(tool.metaDescription);
+      }
+    }
+  });
+
+  it('prevents duplicate leading title H2s, fabricated bulletins, inaccurate quota claims, and SERP metadata truncation', () => {
+    for (const item of blogAndCompareArticles) {
+      expect(
+        /^\s*<h2\b[^>]*>[\s\S]*?<\/h2>\s*(?=<p\b)/i.test(item.longFormBody),
+        `${item.id} must not start with a duplicate title <h2> before the opening paragraph`
+      ).toBe(false);
+      expect(item.longFormBody, `${item.id} fabricated bulletin`).not.toContain('APSB26-87');
+      expect(item.longFormBody, `${item.id} unverified breach claim`).not.toContain('5.6 billion');
+      expect(item.longFormBody.toLowerCase(), `${item.id} inaccurate quota claim`).not.toContain(
+        'no daily limit'
+      );
+      expect(
+        item.metaTitle.length,
+        `${item.id} metaTitle length (${item.metaTitle.length})`
+      ).toBeLessThanOrEqual(60);
+      expect(
+        item.metaDescription.length,
+        `${item.id} metaDescription length (${item.metaDescription.length})`
+      ).toBeLessThanOrEqual(160);
+    }
   });
 });

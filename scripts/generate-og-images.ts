@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,7 +32,12 @@ const tools: Tool[] = [
   { slug: 'unlock-pdf', name: 'Unlock PDF', tagline: 'Remove password protection from PDF', color: '#0d9488', icon: 'U' },
   { slug: 'image-to-pdf', name: 'Image to PDF', tagline: 'Convert JPG, PNG, WebP to PDF', color: '#d946ef', icon: 'I' },
   { slug: 'pdf-to-image', name: 'PDF to Image', tagline: 'Convert PDF pages to PNG or JPEG', color: '#7c3aed', icon: 'F' },
+  { slug: 'pdf-to-markdown', name: 'PDF to Markdown', tagline: 'Convert PDF to clean Markdown text', color: '#0284c7', icon: 'MD' },
   { slug: 'ai-analyze-pdf', name: 'AI PDF Analyzer', tagline: 'Chat with your PDF using AI', color: '#f59e0b', icon: 'A' },
+  { slug: 'grayscale-pdf', name: 'Grayscale PDF', tagline: 'Convert color PDFs to black and white', color: '#475569', icon: 'BW' },
+  { slug: 'flatten-pdf', name: 'Flatten PDF', tagline: 'Lock form fields and annotations', color: '#059669', icon: 'FL' },
+  { slug: 'repair-pdf', name: 'Repair PDF', tagline: 'Recover corrupted or damaged PDFs', color: '#e11d48', icon: 'RP' },
+  { slug: 'compress-pdf', name: 'Compress PDF', tagline: 'Reduce PDF file size without losing quality', color: '#10b981', icon: 'C' },
 ];
 
 function buildSvg(tool: Tool, isDefault: boolean = false): string {
@@ -88,14 +92,20 @@ async function generateAll(): Promise<void> {
     logger.info(`✓ Generated og-${tool.slug}.png`);
   }
 
-  // Article OG image
+  // Article OG images
   await generateOGImage(
     { slug: 'is-it-safe-to-upload-pdf-to-online-tools', name: 'Is It Safe?', tagline: 'PDF Security Analysis', color: '#dc2626', icon: '?' },
     'og-is-it-safe-to-upload-pdf-to-online-tools.png'
   );
   logger.info('✓ Generated og-is-it-safe-to-upload-pdf-to-online-tools.png (article)');
 
-  logger.info(`\n✓ Generated ${tools.length + 2} OG images total`);
+  await generateOGImage(
+    { slug: 'blog/pdf-wont-open', name: 'PDF Won’t Open?', tagline: '9 Real Fixes That Work', color: '#0284c7', icon: '!' },
+    'og-pdf-wont-open.png'
+  );
+  logger.info('✓ Generated og-pdf-wont-open.png (article)');
+
+  logger.info(`\n✓ Generated ${tools.length + 3} OG images total`);
 }
 
 generateAll().catch((err: unknown) => {

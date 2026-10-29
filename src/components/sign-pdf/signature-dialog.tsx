@@ -63,7 +63,32 @@ export function SignatureDialog({ open, onOpenChange, initial, onApply }: Props)
   const reprocessUpload = useCallback(
     async (which: 'signature' | 'initials', file: File | undefined, remove: boolean) => {
       if (!file) return;
+      if (file.size === 0) {
+        setError(
+          t('signPdf.dialog.imageEmptyError', {
+            defaultValue: 'The selected image file is empty.',
+          })
+        );
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setError(
+          t('signPdf.dialog.imageTooLargeError', {
+            defaultValue: 'Signature image must be smaller than 15 MB.',
+          })
+        );
+        return;
+      }
+      if (!file.type.startsWith('image/') && !/\.(png|jpe?g|webp)$/i.test(file.name)) {
+        setError(
+          t('signPdf.dialog.imageTypeError', {
+            defaultValue: 'Please upload a valid PNG, JPG, or WebP image.',
+          })
+        );
+        return;
+      }
       try {
+        setError(null);
         const asset = await imageFileToAsset(file, remove);
         if (which === 'signature') setUploadedSignature(asset);
         else setUploadedInitials(asset);

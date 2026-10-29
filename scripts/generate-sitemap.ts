@@ -221,14 +221,40 @@ export function generateSitemapXml(): SitemapGenerationResult {
           if (!addedPaths.has(localizedPath)) {
             addedPaths.add(localizedPath);
             const localizedLoc = `${baseUrl}${localizedPath}/`;
+            let locTitle = `${item.metaTitle || item.name || item.h1 || 'PdfMinty Tool'} [${locLang.toUpperCase()}]`;
+            let locCaption = item.shortDescription || `${item.name} PDF tool`;
+            try {
+              const localeFilePath = path.join(
+                __dirname,
+                '../src/locales',
+                locLang,
+                `${cleanSlug}.json`
+              );
+              if (fs.existsSync(localeFilePath)) {
+                const parsedLocale = JSON.parse(fs.readFileSync(localeFilePath, 'utf8')) as {
+                  seo?: { metaTitle?: string; metaDescription?: string };
+                  pageTitle?: string;
+                };
+                if (parsedLocale.seo?.metaTitle) {
+                  locTitle = parsedLocale.seo.metaTitle;
+                } else if (parsedLocale.pageTitle) {
+                  locTitle = parsedLocale.pageTitle;
+                }
+                if (parsedLocale.seo?.metaDescription) {
+                  locCaption = parsedLocale.seo.metaDescription;
+                }
+              }
+            } catch {
+              // Fallback to default title/caption if locale JSON cannot be read
+            }
             toolEntries.push({
               loc: localizedLoc,
               lastmod,
               changefreq,
               priority,
               imageLoc: ogImage,
-              title: item.metaTitle || item.name || item.h1 || 'PdfMinty Tool',
-              caption: item.shortDescription || `${item.name} PDF tool`,
+              title: locTitle,
+              caption: locCaption,
               hreflangs: toolHreflangs,
             });
           }

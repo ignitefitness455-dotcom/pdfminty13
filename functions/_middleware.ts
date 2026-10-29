@@ -394,6 +394,27 @@ export const onRequest: PagesFunction = async (context) => {
 
       const isValidRoute = checkValidRoute(cleanPath);
 
+      // If a known valid route (such as /pricing/, /login/, /signup/, /dashboard/) returned 404
+      // from static asset resolution, serve the root /index.html SPA shell with 200 OK when ASSETS binding is present.
+      const assetsFetcher = (
+        context.env as { ASSETS?: { fetch?: (req: Request | string) => Promise<Response> } } | undefined
+      )?.ASSETS;
+      if (isValidRoute && response.status === 404 && assetsFetcher && typeof assetsFetcher.fetch === 'function') {
+        const spaShellUrl = new URL('/index.html', url.origin);
+        const spaResponse = await assetsFetcher.fetch(new Request(spaShellUrl.toString(), context.request));
+        if (spaResponse.ok) {
+          const fallbackResponse = new Response(spaResponse.body, {
+            status: 200,
+            headers: newResponse.headers,
+          });
+          fallbackResponse.headers.set(
+            'X-Robots-Tag',
+            NOINDEX_VALID_ROUTES.has(cleanPath) ? 'noindex, nofollow' : 'index, follow'
+          );
+          return fallbackResponse;
+        }
+      }
+
       // CRITICAL SEO FIX:
       // If route is NOT valid OR upstream response status is not 2xx OK (e.g. 404, 410, 500, 502):
       // X-Robots-Tag MUST ALWAYS be 'noindex, nofollow' (NEVER index, follow on 404 or error pages)

@@ -1,4 +1,13 @@
-import { Files, Trash2, ArrowUp, ArrowDown, Download, AlertCircle } from 'lucide-react';
+import {
+  Files,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  Download,
+  AlertCircle,
+  GripVertical,
+  CheckCircle2,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,11 +29,14 @@ export const MergePage: React.FC = () => {
   const isLoggedIn = !!user;
   const currentLimits = getToolLimit('merge-pdf', isPro, isLoggedIn);
   const [files, setFiles] = useState<File[]>([]);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const [mergedSize, setMergedSize] = useState<number>(0);
+  const isSubmittingRef = React.useRef<boolean>(false);
 
   React.useEffect(() => {
     return () => {
@@ -91,7 +103,25 @@ export const MergePage: React.FC = () => {
     setFiles(reordered);
   };
 
+  const handleDropRow = (targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      return;
+    }
+    setIsSuccess(false);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+    const reordered = [...files];
+    const [moved] = reordered.splice(draggedIdx, 1);
+    reordered.splice(targetIdx, 0, moved);
+    setFiles(reordered);
+    setDraggedIdx(null);
+  };
+
   const handleMerge = async () => {
+    if (loading || isSubmittingRef.current) return;
     if (files.length < 2) {
       setError(
         t('errors.minFilesRequired', {
@@ -101,6 +131,7 @@ export const MergePage: React.FC = () => {
       return;
     }
 
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -121,6 +152,7 @@ export const MergePage: React.FC = () => {
       const blob = new Blob([mergedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = `pdfminty_merged_${Date.now()}.pdf`;
       const url = URL.createObjectURL(blob);
+      setMergedSize(blob.size);
       setDownloadUrl(url);
       setDownloadName(name);
       await downloadBlob(blob, name);
@@ -152,9 +184,18 @@ export const MergePage: React.FC = () => {
           })
       );
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   };
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return '0 B';
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(2)} MB`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  };
+
+  const totalSelectedBytes = files.reduce((acc, f) => acc + f.size, 0);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="merge_page_container">
@@ -164,7 +205,7 @@ export const MergePage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Upload Deck */}
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <Files className="w-5 h-5 text-emerald-600" />
             <FileUploader
               onFilesSelected={handleFilesSelected}
@@ -188,67 +229,97 @@ export const MergePage: React.FC = () => {
             />
           ) : (
             <div
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
               id="files_deck_list"
             >
-              <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  {t('fileList.titleWithCount', {
-                    count: files.length,
-                    defaultValue: `Arrange File Order (${files.length} selected)`,
-                  })}
-                </span>
+              <div className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 px-4 py-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider tabular-nums">
+                    {t('fileList.titleWithCount', {
+                      count: files.length,
+                      defaultValue: `Arrange File Order (${files.length} selected)`,
+                    })}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tabular-nums">
+                    • {formatBytes(totalSelectedBytes)}
+                  </span>
+                </div>
                 <button
-                  onClick={() => setFiles([])}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 cursor-pointer"
+                  type="button"
+                  onClick={() => {
+                    setFiles([]);
+                    setIsSuccess(false);
+                    if (downloadUrl) {
+                      URL.revokeObjectURL(downloadUrl);
+                      setDownloadUrl(null);
+                    }
+                  }}
+                  className="min-h-[36px] px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                 >
                   {t('fileList.clearAll', { defaultValue: 'Clear All' })}
                 </button>
               </div>
 
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {files.map((file, i) => (
                   <div
                     key={`${file.name}_${i}`}
-                    className="p-4 flex items-center justify-between gap-4 bg-white hover:bg-slate-50/50 transition-colors"
+                    draggable
+                    onDragStart={() => setDraggedIdx(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDropRow(i)}
+                    onDragEnd={() => setDraggedIdx(null)}
+                    className={`p-3.5 sm:p-4 flex items-center justify-between gap-3 bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors ${
+                      draggedIdx === i ? 'opacity-50 bg-emerald-50/40 dark:bg-emerald-950/20' : ''
+                    }`}
                   >
-                    <div className="flex items-center space-x-3 overflow-hidden">
-                      <span className="w-6 h-6 rounded-full bg-slate-100 text-[10px] text-slate-600 font-bold flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                      <GripVertical
+                        className="w-4 h-4 text-slate-300 dark:text-slate-600 cursor-grab active:cursor-grabbing shrink-0 hidden sm:block"
+                        aria-hidden="true"
+                      />
+                      <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-300 font-bold tabular-nums flex items-center justify-center flex-shrink-0">
                         {i + 1}
                       </span>
-                      <div className="truncate">
-                        <p className="text-sm font-bold text-slate-800 truncate" title={file.name}>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate"
+                          title={file.name}
+                        >
                           {file.name}
                         </p>
-                        <p className="text-xs text-slate-400">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        <p className="text-xs text-slate-400 tabular-nums">
+                          {formatBytes(file.size)}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-1 flex-shrink-0">
                       <button
+                        type="button"
                         onClick={() => moveItem(i, 'up')}
                         disabled={i === 0}
                         aria-label={t('fileList.actions.moveUp', { defaultValue: 'Move item up' })}
-                        className="p-1.5 rounded hover:bg-slate-100 text-slate-500 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                        className="min-w-[38px] min-h-[38px] p-2 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                       >
                         <ArrowUp className="w-4 h-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => moveItem(i, 'down')}
                         disabled={i === files.length - 1}
                         aria-label={t('fileList.actions.moveDown', {
                           defaultValue: 'Move item down',
                         })}
-                        className="p-1.5 rounded hover:bg-slate-100 text-slate-500 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                        className="min-w-[38px] min-h-[38px] p-2 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                       >
                         <ArrowDown className="w-4 h-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleRemove(i)}
                         aria-label={t('fileList.actions.remove', { defaultValue: 'Delete item' })}
-                        className="p-1.5 rounded hover:bg-rose-50 text-rose-600 hover:scale-105 transition-transform cursor-pointer"
+                        className="min-w-[38px] min-h-[38px] p-2 rounded-lg flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 hover:scale-105 transition-transform cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -261,38 +332,63 @@ export const MergePage: React.FC = () => {
 
           {isSuccess && (
             <div
-              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-200 font-bold"
               id="merge_success_banner"
               role="status"
               aria-live="polite"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>
-                  {t('alerts.successTitle', {
-                    defaultValue: 'Merge Operation Completed Successfully!',
-                  })}
-                </span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>
+                    {t('alerts.successTitle', {
+                      defaultValue: 'Merge Operation Completed Successfully!',
+                    })}
+                  </span>
+                </div>
+                {mergedSize > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold tabular-nums">
+                    {formatBytes(mergedSize)} • {files.length} files
+                  </span>
+                )}
               </div>
-              <p className="text-slate-500 text-[11px] font-semibold leading-normal">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] font-semibold leading-normal m-0">
                 {t('alerts.successDescription', {
                   defaultValue:
                     'Your compiled and structured PDF has been built completely in your browser.',
                 })}
               </p>
               {downloadUrl && (
-                <div className="pt-2">
+                <div className="pt-1 flex flex-wrap items-center gap-3">
                   <a
                     href={downloadUrl}
                     download={downloadName}
                     id="manual_download_link"
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer no-underline"
                   >
-                    <Download className="w-4 h-4 animate-bounce" />
+                    <Download className="w-4 h-4 shrink-0" />
                     <span>
                       {t('alerts.downloadButton', { defaultValue: 'Download Merged PDF' })}
+                      {mergedSize > 0 ? ` (${formatBytes(mergedSize)})` : ''}
                     </span>
                   </a>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFiles([]);
+                      setIsSuccess(false);
+                      setMergedSize(0);
+                      if (downloadUrl) {
+                        URL.revokeObjectURL(downloadUrl);
+                        setDownloadUrl(null);
+                      }
+                    }}
+                    id="reset_merge_btn"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
+                  >
+                    <span>{t('alerts.mergeMore', { defaultValue: 'Merge More PDFs' })}</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -300,18 +396,18 @@ export const MergePage: React.FC = () => {
         </div>
 
         {/* Sidebar settings */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('sidebar.title', { defaultValue: 'Merge Settings' })}
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               {t('sidebar.description', {
                 defaultValue:
                   'Use the ordering switches in the list deck to set page hierarchy. Merge compiles them consecutively from top to bottom.',
               })}
             </p>
-            <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-100 text-[11px] text-emerald-800 font-medium">
+            <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/60 text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
               {t('sidebar.securityNote', {
                 defaultValue:
                   'Files are merged 100% locally on your computer. Your secrets never leave your side.',
@@ -320,6 +416,14 @@ export const MergePage: React.FC = () => {
           </div>
 
           <div className="space-y-3 pt-4">
+            {files.length === 1 && !error && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 p-2.5 rounded-lg font-medium m-0">
+                {t('mergeControls.needOneMoreFile', {
+                  defaultValue: 'Add at least 1 more PDF file above to enable merging.',
+                })}
+              </p>
+            )}
+
             {error && (
               <div
                 className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg"
@@ -333,12 +437,13 @@ export const MergePage: React.FC = () => {
             )}
 
             <button
+              type="button"
               onClick={handleMerge}
               disabled={files.length < 2 || loading}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-emerald-600/10 ${
+              className={`w-full min-h-[44px] py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-emerald-600/10 ${
                 files.length >= 2 && !loading
                   ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (

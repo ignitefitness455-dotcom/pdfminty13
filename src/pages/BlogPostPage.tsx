@@ -22,13 +22,18 @@ import SEO from '../components/SEO';
 import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
 import { TOOLS } from '../config/seo-data';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../i18n/config';
+import {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  loadLocalizedArticleBodies,
+} from '../i18n/config';
 
 export const BlogPostPage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const { postSlug, slug: paramSlug } = useParams<{ postSlug?: string; slug?: string }>();
   const location = useLocation();
   const [copied, setCopied] = useState(false);
+  const [localizedBodies, setLocalizedBodies] = useState<Record<string, string> | null>(null);
 
   let currentPath = (location.pathname || '').replace(/^\//, '').replace(/\/$/, '');
   for (const loc of SUPPORTED_LOCALES) {
@@ -58,22 +63,71 @@ export const BlogPostPage: React.FC = () => {
   const isDefaultLocale =
     !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
 
-  // Clean HTML to guarantee strictly only ONE <h1> tag on the page
-  const cleanArticleBody = React.useMemo(() => {
-    if (!article) return '';
+  React.useEffect(() => {
+    if (isDefaultLocale) {
+      setLocalizedBodies(null);
+      return;
+    }
+    let active = true;
+    void loadLocalizedArticleBodies(i18n.language).then((data) => {
+      if (active) {
+        setLocalizedBodies(data);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [i18n.language, isDefaultLocale]);
+
+  // Clean HTML to guarantee strictly only ONE title heading on the page and add section anchor IDs
+  const { cleanArticleBody, articleSections } = React.useMemo(() => {
+    if (!article) return { cleanArticleBody: '', articleSections: [] as Array<{ id: string; title: string }> };
     const canonicalBody = article.longFormBody || article.shortDescription || '';
     const localizedBody = isDefaultLocale
       ? canonicalBody
-      : t(`articles.${article.id}.body`, {
+      : localizedBodies?.[article.id] ||
+        localizedBodies?.[article.slug] ||
+        t(`articles.${article.id}.body`, {
           defaultValue: t(`articles.${article.slug}.body`, {
             defaultValue: canonicalBody,
           }),
         });
-    const raw = localizedBody;
-    return raw
-      .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
+    const strippedLeadHeading = localizedBody
+      .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '')
+      .replace(/^\s*<h2\b[^>]*>[\s\S]*?<\/h2>\s*(?=<p\b)/i, '')
       .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>');
-  }, [article, isDefaultLocale, t]);
+
+    const sections: Array<{ id: string; title: string }> = [];
+    let sectionIdx = 0;
+    const bodyWithIds = strippedLeadHeading.replace(
+      /<h2(\b[^>]*)>([\s\S]*?)<\/h2>/gi,
+      (fullMatch, attrs: string, innerHtml: string) => {
+        const plainTitle = innerHtml
+          .replace(/<[^>]+>/g, '')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!plainTitle) return fullMatch;
+        sectionIdx += 1;
+        const slugId =
+          plainTitle
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 48) || `part-${sectionIdx}`;
+        const sectionId = `section-${sectionIdx}-${slugId}`;
+        sections.push({ id: sectionId, title: plainTitle });
+        if (/\bid\s*=/i.test(attrs)) {
+          return fullMatch;
+        }
+        return `<h2 id="${sectionId}" class="scroll-mt-24"${attrs}>${innerHtml}</h2>`;
+      }
+    );
+
+    return { cleanArticleBody: bodyWithIds, articleSections: sections };
+  }, [article, isDefaultLocale, localizedBodies, t]);
 
   const shouldRenderStructuredFaqs = React.useMemo(() => {
     if (!article || !article.faqs || article.faqs.length === 0) return false;
@@ -204,12 +258,13 @@ export const BlogPostPage: React.FC = () => {
         </nav>
 
         {/* Article Header */}
-        <header className="space-y-6 border-b border-border-muted pb-8">
+        <header className="space-y-5 border-b border-border-muted pb-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+              <span className="text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest">
                 {localizedCategory}
               </span>
+              <span className="text-slate-300 dark:text-slate-700">·</span>
               <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>
@@ -219,7 +274,7 @@ export const BlogPostPage: React.FC = () => {
               </span>
               {article.dateModified && article.dateModified !== article.datePublished && (
                 <>
-                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                  <span className="text-slate-300 dark:text-slate-700">·</span>
                   <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
                     <span>
                       {t('blog.updatedLabel', { defaultValue: 'Updated' })}{' '}
@@ -228,7 +283,7 @@ export const BlogPostPage: React.FC = () => {
                   </span>
                 </>
               )}
-              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className="text-slate-300 dark:text-slate-700">·</span>
               <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
                 <Clock className="w-3.5 h-3.5" />
                 {getReadingTime(cleanArticleBody)}
@@ -256,11 +311,11 @@ export const BlogPostPage: React.FC = () => {
             </button>
           </div>
 
-          <h1 className="text-[28px] sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.18] sm:leading-[1.12] text-slate-900 dark:text-white border-l-4 sm:border-l-8 border-emerald-500 pl-3.5 sm:pl-6 my-4">
+          <h1 className="text-[28px] sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.16] sm:leading-[1.12] text-slate-900 dark:text-white my-3">
             {localizedArticleName}
           </h1>
 
-          <p className="text-base sm:text-xl font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-base sm:text-xl font-normal text-slate-600 dark:text-slate-300 leading-relaxed">
             {localizedArticleDesc}
           </p>
 
@@ -276,7 +331,7 @@ export const BlogPostPage: React.FC = () => {
                 <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
                   <span>{PRIMARY_AUTHOR.name}</span>
                   <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                  <span className="text-slate-300 dark:text-slate-700">·</span>
                   <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-0.5">
                     <MapPin className="w-3 h-3 text-rose-500 inline" />
                     <span>
@@ -286,7 +341,7 @@ export const BlogPostPage: React.FC = () => {
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   <span>{PRIMARY_AUTHOR.jobTitle}</span>
-                  <span>•</span>
+                  <span>·</span>
                   <span>
                     {t('blog.teamSubtitle', { defaultValue: 'Reviewed by Security Team' })}
                   </span>
@@ -318,34 +373,61 @@ export const BlogPostPage: React.FC = () => {
           article.slug.includes('scanned-documents') ||
           (article.relatedLinks &&
             article.relatedLinks.some((l) => l.url.includes('compress-pdf')))) && (
-          <div className="not-prose my-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border-2 border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-emerald-500/10">
+          <div className="not-prose my-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md shadow-emerald-500/5">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
-                <Minimize2 className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Minimize2 className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-base font-black text-slate-900 dark:text-white m-0 tracking-tight">
                   {t('blog.compressToolPromptTitle', {
-                    defaultValue: 'Need to compress a PDF right now?',
+                    defaultValue: 'Need to shrink a PDF file right now?',
                   })}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 m-0 mt-0.5 font-medium">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 m-0 mt-0.5 font-normal">
                   {t('blog.compressToolPromptSubtitle', {
                     defaultValue:
-                      'Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.',
+                      'Compress PDFs locally in your browser without blurry text or server uploads.',
                   })}
                 </p>
               </div>
             </div>
             <Link
               to={ROUTES.COMPRESS}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md shadow-emerald-600/25 shrink-0 hover:scale-[1.03] active:scale-[0.98] no-underline"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-sm shrink-0 no-underline"
             >
               <span>
-                {t('blog.openCompressTool', { defaultValue: 'Open Compress PDF Tool →' })}
+                {t('blog.openCompressTool', { defaultValue: 'Open Compress PDF →' })}
               </span>
             </Link>
           </div>
+        )}
+
+        {/* Table of Contents (In This Guide) */}
+        {articleSections.length >= 3 && (
+          <nav
+            aria-label="Table of Contents"
+            className="not-prose my-6 p-5 sm:p-6 rounded-2xl bg-surface-container-low border border-border-muted"
+          >
+            <div className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">
+              {t('blog.inThisGuide', { defaultValue: 'In This Guide' })}
+            </div>
+            <ol className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-xs sm:text-sm list-none m-0 p-0">
+              {articleSections.map((sec, idx) => (
+                <li key={sec.id} className="m-0 p-0">
+                  <a
+                    href={`#${sec.id}`}
+                    className="inline-flex items-baseline gap-2 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors no-underline"
+                  >
+                    <span className="font-mono text-[11px] font-bold text-emerald-600/80 dark:text-emerald-400/80 shrink-0">
+                      {idx + 1}.
+                    </span>
+                    <span className="leading-snug">{sec.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
         )}
 
         {/* Article Body */}

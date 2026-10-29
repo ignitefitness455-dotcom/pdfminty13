@@ -191,6 +191,7 @@ async function run(): Promise<void> {
             <ul>
               <li><a href="${homeHref}">Home</a></li>
               <li><a href="${homeHref}#all-tools">All Tools</a></li>
+              <li><a href="/pricing/">Pricing</a></li>
               <li><a href="/blog/">Blog</a></li>
               <li><a href="/compare/pdfminty-vs-smallpdf/">Compare</a></li>
               <li><a href="/about-us/">About</a></li>
@@ -220,6 +221,7 @@ ${toolsListHtml}
             <h3>Company</h3>
             <ul>
               <li><a href="/about-us/">About Us</a></li>
+              <li><a href="/pricing/">Pricing Plans</a></li>
               <li><a href="/contact/">Contact Us</a></li>
               <li><a href="/adobe-acrobat-alternative/">Adobe Acrobat Alternative</a></li>
             </ul>
@@ -541,6 +543,8 @@ ${footerHtml}
       ? (Array.isArray(item.keywords) ? item.keywords.join(', ') : item.keywords)
       : `${item.name.toLowerCase()}, ${item.slug.replace(/-/g, ' ')}, pdf tools`;
 
+    const pageOgImage = `${SITE_URL}${item.ogImage || '/og-image.png'}`;
+
     // Set custom page head meta tags
     const headMeta: string = `
   <title>${item.metaTitle}</title>
@@ -551,12 +555,12 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   <meta property="og:title" content="${item.metaTitle}">
   <meta property="og:description" content="${item.metaDescription}">
   <meta property="og:url" content="${pageUrl}">
-  <meta property="og:image" content="${SITE_URL}/og-image.png">
+  <meta property="og:image" content="${pageOgImage}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="${pageUrl}">
   <meta name="twitter:title" content="${item.metaTitle}">
   <meta name="twitter:description" content="${item.metaDescription}">
-  <meta name="twitter:image" content="${SITE_URL}/og-image.png">
+  <meta name="twitter:image" content="${pageOgImage}">
   ${jsonLdMarkup}
   `;
   
@@ -589,6 +593,9 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
     let finalBody: string = item.longFormBody;
     // Strip any existing <h1> in body completely to avoid duplicate title headings
     finalBody = finalBody.replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/gi, '');
+    if (item.type === 'article') {
+      finalBody = finalBody.replace(/^\s*<h2\b[^>]*>[\s\S]*?<\/h2>\s*(?=<p\b)/i, '');
+    }
 
     // Prepend the page's exact, canonical <h1> tag
     finalBody = `<h1>${item.h1 || item.name}</h1>\n${finalBody}`;
@@ -856,6 +863,119 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 
   fs.writeFileSync(path.join(blogTargetFolder, "index.html"), blogHtml, "utf8");
   logger.info("Successfully pre-rendered static HTML for Blog Index at dist/blog/index.html");
+
+  // ----------------------------------------------------
+  // Pre-render the Pricing Page (dist/pricing/index.html)
+  // ----------------------------------------------------
+  logger.info("Pre-rendering static HTML for the Pricing Page (/pricing/)...");
+  const pricingTargetFolder = path.join(distDir, "pricing");
+  if (!fs.existsSync(pricingTargetFolder)) {
+    fs.mkdirSync(pricingTargetFolder, { recursive: true });
+  }
+
+  const pricingTitle = "Pricing Plans — Affordable Privacy-First PDF Tools | PDFMinty";
+  const pricingDesc =
+    "Simple, affordable pricing for PDFMinty. 100% free forever core tier with budget-friendly upgrades for 500MB batch processing, Priority Gemini 2.5 Flash AI analysis, and batch OCR.";
+  const pricingUrl = `${SITE_URL}/pricing/`;
+
+  const pricingHeadMeta = `
+  <title>${pricingTitle}</title>
+  <meta name="description" content="${pricingDesc}">
+  <link rel="canonical" href="${pricingUrl}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${pricingTitle}">
+  <meta property="og:description" content="${pricingDesc}">
+  <meta property="og:url" content="${pricingUrl}">
+  <meta property="og:image" content="${SITE_URL}/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="${pricingUrl}">
+  <meta name="twitter:title" content="${pricingTitle}">
+  <meta name="twitter:description" content="${pricingDesc}">
+  <meta name="twitter:image" content="${SITE_URL}/og-image.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "${pricingTitle}",
+    "description": "${pricingDesc}",
+    "url": "${pricingUrl}",
+    "publisher": {
+      "@type": "Organization",
+      "name": "${SITE_NAME}",
+      "url": "${SITE_URL}/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "${SITE_URL}/logo-512.png"
+      }
+    }
+  }
+  </script>
+  `;
+
+  const pricingArticleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
+          <h1>Pick the plan that fits your workflow</h1>
+          <p>Start 100% free with all 24 browser PDF tools. Upgrade only if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.</p>
+          <h2>Free Forever Plan</h2>
+          <ul>
+            <li>All 24 in-browser core PDF tools with 100% client-side WebAssembly privacy</li>
+            <li>Guest (No Login): 100 MB file limit and 5 free tasks per day</li>
+            <li>Free Account (Logged In): 150 MB file limit and 10 free tasks per day</li>
+            <li>Works offline once loaded — zero server uploads for standard tools</li>
+          </ul>
+          <h2>PDFMinty Pro Plan</h2>
+          <ul>
+            <li>Up to 500 MB batch file processing limits</li>
+            <li>Unlimited daily PDF operations across all client-side tools</li>
+            <li>Priority Gemini AI document analysis &amp; OCR quotas</li>
+          </ul>
+          <p><a href="/">Explore all free PDF tools</a> or <a href="/contact/">contact us</a> for team and enterprise inquiries.</p>
+        </article>`;
+
+  let pricingHtml = optimizedBase.replace("</head>", `${pricingHeadMeta}\n</head>`);
+  const pricingPreRendered = wrapInPrerenderedShell(pricingArticleHtml, DEFAULT_LOCALE);
+  pricingHtml = pricingHtml.replace(/<div\s+id="root"\s*><\/div>/i, pricingPreRendered);
+  pricingHtml = pricingHtml.replace(/<div\s+id="root"\s*>\s*<\/div>/i, pricingPreRendered);
+
+  fs.writeFileSync(path.join(pricingTargetFolder, "index.html"), pricingHtml, "utf8");
+  logger.info("Successfully pre-rendered static HTML for Pricing Page at dist/pricing/index.html");
+
+  // ----------------------------------------------------
+  // Generate SPA Entry HTML for Auth & Account Routes
+  // (/login/, /signup/, /dashboard/) so Cloudflare Pages
+  // never falls through to dist/404.html on direct navigation
+  // ----------------------------------------------------
+  const noindexSpaRoutes = [
+    {
+      slug: "login",
+      title: "Sign In — PDFMinty",
+      desc: "Sign in to your PDFMinty account to manage your PDF workflow and preferences.",
+    },
+    {
+      slug: "signup",
+      title: "Create Account — PDFMinty",
+      desc: "Create a free PDFMinty account for higher daily task limits and cloud preferences.",
+    },
+    {
+      slug: "dashboard",
+      title: "Account Dashboard — PDFMinty",
+      desc: "Manage your PDFMinty account, usage quotas, and subscription settings.",
+    },
+  ];
+
+  for (const spaRoute of noindexSpaRoutes) {
+    const spaFolder = path.join(distDir, spaRoute.slug);
+    if (!fs.existsSync(spaFolder)) {
+      fs.mkdirSync(spaFolder, { recursive: true });
+    }
+    const spaHead = `
+  <title>${spaRoute.title}</title>
+  <meta name="description" content="${spaRoute.desc}">
+  <meta name="robots" content="noindex, nofollow">
+  `;
+    const spaHtml = optimizedBase.replace("</head>", `${spaHead}\n</head>`);
+    fs.writeFileSync(path.join(spaFolder, "index.html"), spaHtml, "utf8");
+    logger.info(`Generated SPA entry HTML for /${spaRoute.slug}/ at dist/${spaRoute.slug}/index.html`);
+  }
 
   // ----------------------------------------------------
   // Pre-render the Homepage (dist/index.html)

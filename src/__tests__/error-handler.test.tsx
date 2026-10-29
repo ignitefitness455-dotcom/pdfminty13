@@ -140,5 +140,59 @@ describe('error-handler', () => {
       clearFileProcessingContext();
       vi.unstubAllGlobals();
     });
+
+    it('scrubs oobCode and id_token and strips URL query/hash parameters from error telemetry', async () => {
+      const fetchSpy = vi.fn().mockResolvedValue({ ok: true });
+      vi.stubGlobal('fetch', fetchSpy);
+
+      const originalHref = window.location.href;
+      window.history.pushState(
+        {},
+        '',
+        '/auth?mode=resetPassword&oobCode=SECRET_OOB_1234567890&id_token=EYJ_SECRET_TOKEN_987654321#token=HASH_SECRET'
+      );
+
+      const scrubbed = scrubPII(
+        'Failed reset at https://pdfminty.com/auth?oobCode=SECRET_OOB_1234567890&id_token=EYJ_SECRET_TOKEN_987654321'
+      );
+      expect(scrubbed).not.toContain('SECRET_OOB_1234567890');
+      expect(scrubbed).not.toContain('EYJ_SECRET_TOKEN_987654321');
+      expect(scrubbed).toContain('oobCode=[REDACTED]');
+      expect(scrubbed).toContain('id_token=[REDACTED]');
+
+      reportErrorToTelemetry(
+        'Reset failed with oobCode=SECRET_OOB_1234567890',
+        'Error: Reset failed'
+      );
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      const [, options] = fetchSpy.mock.calls[0];
+      const body = JSON.parse(options.body as string);
+
+      expect(body.url).toBe(`${window.location.origin}/auth`);
+      expect(body.url).not.toContain('SECRET_OOB_1234567890');
+      expect(body.url).not.toContain('HASH_SECRET');
+      expect(body.message).not.toContain('SECRET_OOB_1234567890');
+
+      window.history.pushState({}, '', originalHref);
+      vi.unstubAllGlobals();
+    });
+  });
+
+  describe('sanitizeDownloadFilename security hardening', () => {
+    it('strips path traversal, control/bidi characters, reserved device names, and caps length', async () => {
+      const { sanitizeDownloadFilename } = await import('../utils/download');
+
+      expect(sanitizeDownloadFilename('../../etc/passwd.pdf')).toBe('____etc_passwd.pdf');
+      expect(sanitizeDownloadFilename('invoice\u202Efdp.exe.pdf')).toBe('invoicefdp.exe.pdf');
+      expect(sanitizeDownloadFilename('CON.pdf')).toBe('_CON.pdf');
+      expect(sanitizeDownloadFilename('.htaccess')).toBe('htaccess');
+
+      const longName = `${'a'.repeat(250)}.pdf`;
+      const sanitizedLong = sanitizeDownloadFilename(longName);
+      expect(sanitizedLong.length).toBeLessThanOrEqual(200);
+      expect(sanitizedLong.endsWith('.pdf')).toBe(true);
+    });
   });
 });
+

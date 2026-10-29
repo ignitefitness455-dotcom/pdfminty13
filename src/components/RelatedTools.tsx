@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
-import { RELATED_TOOL_MAPPING } from '../config/seo-data';
+import { RELATED_TOOL_MAPPING } from '../config/seo-catalog';
 
 import { useLayout } from './Layout';
 

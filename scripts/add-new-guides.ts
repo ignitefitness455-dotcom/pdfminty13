@@ -11,9 +11,6 @@
  * - Enforces author attribution to Mohammed Tanveer Munshi
  */
 
-import fs from 'fs';
-import path from 'path';
-
 export interface GuideDraftInput {
   slug: string;
   name: string;

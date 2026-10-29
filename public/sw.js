@@ -102,9 +102,11 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         try {
           const fresh = await fetch(request);
-          // Cache the response under the request URL so each route has its own entry.
-          const runtimeCache = await caches.open(RUNTIME_CACHE);
-          runtimeCache.put(request.url, fresh.clone()).catch(() => {});
+          // Only cache valid 2xx HTML responses so transient 404/500 responses are never cached.
+          if (fresh && fresh.ok) {
+            const runtimeCache = await caches.open(RUNTIME_CACHE);
+            runtimeCache.put(request.url, fresh.clone()).catch(() => {});
+          }
           return fresh;
         } catch {
           // Offline: try the exact URL first (pre-rendered or previously visited).

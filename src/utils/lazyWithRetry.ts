@@ -12,10 +12,10 @@ import { logger } from './logger';
  * error, not a stale-chunk 404) doesn't cause an infinite reload loop —
  * after one retry it lets the real error surface normally.
  */
-export function lazyWithRetry<
-  P = Record<string, unknown>,
-  T extends { default: React.ComponentType<P> } = { default: React.ComponentType<P> },
->(factory: () => Promise<T>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lazyWithRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+): React.LazyExoticComponent<T> {
   return React.lazy(async () => {
     try {
       const result = await factory();
@@ -68,7 +68,7 @@ export function lazyWithRetry<
           }
 
           window.location.reload();
-          return new Promise<T>(() => {});
+          return new Promise<{ default: T }>(() => {});
         }
 
         try {

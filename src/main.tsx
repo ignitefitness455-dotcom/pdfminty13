@@ -12,7 +12,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { UsageLimitProvider } from './contexts/UsageLimitContext';
 import { setupErrorTelemetry, FileProcessingProvider } from './error-handler';
-import i18n, { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './i18n/config';
+import i18n, { getInitialLocale } from './i18n/config';
 import './index.css';
 
 // Initialize global error telemetry
@@ -51,24 +51,15 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Sync initial i18n language and document lang from URL path prefix if present
+// Sync initial i18n language and document lang from URL path prefix or persisted locale preference
 const syncInitialLocaleFromPath = (): void => {
-  const path = window.location.pathname;
-  const segments = path.split('/').filter(Boolean);
-  const first = segments[0] as (typeof SUPPORTED_LOCALES)[number];
+  const targetLocale = getInitialLocale();
 
-  if (first && first !== DEFAULT_LOCALE && SUPPORTED_LOCALES.includes(first)) {
-    i18n.changeLanguage(first);
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = first;
-    }
-    return;
+  if (i18n.language !== targetLocale) {
+    void i18n.changeLanguage(targetLocale);
   }
-
-  // Unprefixed routes default to DEFAULT_LOCALE (en)
-  i18n.changeLanguage(DEFAULT_LOCALE);
   if (typeof document !== 'undefined') {
-    document.documentElement.lang = DEFAULT_LOCALE;
+    document.documentElement.lang = targetLocale;
   }
 };
 
@@ -79,7 +70,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <I18nextProvider i18n={i18n}>
       <HelmetProvider>
         <BrowserRouter
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          future={{ v7_startTransition: false, v7_relativeSplatPath: true }}
         >
           <ThemeProvider>
             <ToastProvider>

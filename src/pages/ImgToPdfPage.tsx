@@ -1,4 +1,4 @@
-import { Image, Download, Trash2, AlertCircle } from 'lucide-react';
+import { Image, Download, Trash2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -94,6 +94,22 @@ export const ImgToPdfPage: React.FC = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleMove = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= images.length) return;
+    setIsSuccess(false);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+    setImages((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+  };
+
   const handleClearDeck = () => {
     setIsSuccess(false);
     if (downloadUrl) {
@@ -125,6 +141,7 @@ export const ImgToPdfPage: React.FC = () => {
         images.map(async (img) => ({
           buf: new Uint8Array(await img.file.arrayBuffer()),
           type: img.file.type,
+          name: img.file.name,
         }))
       );
       const pdfBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
@@ -181,8 +198,10 @@ export const ImgToPdfPage: React.FC = () => {
 
           {isSuccess && (
             <div
-              className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 font-bold"
+              className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex flex-col gap-3 text-xs text-emerald-800 dark:text-emerald-300 font-bold"
               id="img_to_pdf_success_banner"
+              role="status"
+              aria-live="polite"
             >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
@@ -193,7 +212,7 @@ export const ImgToPdfPage: React.FC = () => {
                 </span>
               </div>
               {downloadUrl && (
-                <div className="pt-2">
+                <div className="pt-2 flex flex-wrap items-center gap-2.5">
                   <a
                     href={downloadUrl}
                     download={downloadName}
@@ -205,6 +224,22 @@ export const ImgToPdfPage: React.FC = () => {
                       {t('imageToPdf.downloadCompiled', { defaultValue: 'Download Compiled PDF' })}
                     </span>
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      images.forEach((img) => URL.revokeObjectURL(img.url));
+                      setImages([]);
+                      setIsSuccess(false);
+                      setError(null);
+                      if (downloadUrl) {
+                        URL.revokeObjectURL(downloadUrl);
+                        setDownloadUrl(null);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+                  >
+                    {t('toolCommon.processAnother', { defaultValue: 'Convert More Images' })}
+                  </button>
                 </div>
               )}
             </div>
@@ -253,6 +288,9 @@ export const ImgToPdfPage: React.FC = () => {
                           alt={img.file.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
+                        <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-slate-900/75 text-white text-[10px] font-bold rounded-md">
+                          #{idx + 1}
+                        </span>
                         <button
                           onClick={() => handleRemove(idx)}
                           className="absolute top-1.5 right-1.5 p-1.5 bg-rose-600 hover:bg-rose-700 hover:scale-110 active:scale-95 text-white rounded-lg shadow-sm transition-transform"
@@ -264,6 +302,36 @@ export const ImgToPdfPage: React.FC = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+                        {images.length > 1 && (
+                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMove(idx, -1)}
+                              disabled={idx === 0}
+                              className="p-1 bg-slate-900/75 hover:bg-slate-900 disabled:opacity-40 text-white rounded-md shadow-sm transition"
+                              title={t('imageToPdf.moveEarlier', { defaultValue: 'Move earlier' })}
+                              aria-label={t('imageToPdf.moveEarlierAria', {
+                                name: img.file.name,
+                                defaultValue: `Move ${img.file.name} earlier`,
+                              })}
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMove(idx, 1)}
+                              disabled={idx === images.length - 1}
+                              className="p-1 bg-slate-900/75 hover:bg-slate-900 disabled:opacity-40 text-white rounded-md shadow-sm transition"
+                              title={t('imageToPdf.moveLater', { defaultValue: 'Move later' })}
+                              aria-label={t('imageToPdf.moveLaterAria', {
+                                name: img.file.name,
+                                defaultValue: `Move ${img.file.name} later`,
+                              })}
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <div className="p-1 mt-2">
                         <p

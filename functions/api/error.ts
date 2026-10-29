@@ -28,9 +28,9 @@ function scrubPII(input: string): string {
     [/\beyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\b/g, '[REDACTED_JWT]'],
     // Bearer tokens
     [/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED_TOKEN]'],
-    // Generic key=... / token=... / api_key=...
+    // Generic key=... / token=... / api_key=... / oobCode=...
     [
-      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|token)\s*[:=]\s*[^\s&]+/gi,
+      /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|oobCode|secret|password|token|key)\s*[:=]\s*[^\s&#"']+/gi,
       '$1=[REDACTED]',
     ],
     // Email addresses
@@ -144,7 +144,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     const cleanMessage = sanitize(data.message, MAX_MESSAGE_LENGTH);
     const cleanStack = sanitize(data.stack, MAX_STACK_LENGTH);
-    const cleanUrl = sanitize(data.url, MAX_URL_LENGTH);
+    const rawUrlStr = typeof data.url === 'string' ? data.url.split(/[?#]/)[0] : '';
+    const cleanUrl = sanitize(rawUrlStr, MAX_URL_LENGTH);
     const cleanTimestamp = sanitize(data.timestamp || new Date().toISOString(), 50);
 
     console.error(

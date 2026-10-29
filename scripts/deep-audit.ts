@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { TOOLS } from '../src/config/seo-data';
-import { SUPPORTED_LOCALES, I18N_TOOL_SLUGS, DEFAULT_LOCALE } from '../src/i18n/config';
+import { SUPPORTED_LOCALES } from '../src/i18n/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
