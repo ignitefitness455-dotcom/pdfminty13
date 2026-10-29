@@ -44,14 +44,9 @@ self.addEventListener('install', (event) => {
         cache.add('/manifest.json'),
         cache.add('/logo.svg'),
       ]);
-      // If there are no existing window clients (e.g. first-time install), skip waiting
-      // immediately so offline capabilities are ready right away.
-      // If active tabs are running, wait so we do not disrupt active user tasks (like PDF editing),
-      // allowing the PWA update prompt to politely notify the user.
-      const clientsList = await self.clients.matchAll({ type: 'window' });
-      if (clientsList.length === 0) {
-        await self.skipWaiting();
-      }
+      // Activate newly deployed Service Worker immediately so existing tabs never
+      // stay pinned to an outdated HTML shell whose hashed /assets/*.js chunks were replaced.
+      await self.skipWaiting();
     })()
   );
 });
@@ -101,7 +96,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         try {
-          const fresh = await fetch(request);
+          const fresh = await fetch(request, { cache: 'no-cache' });
           // Only cache valid 2xx HTML responses so transient 404/500 responses are never cached.
           if (fresh && fresh.ok) {
             const runtimeCache = await caches.open(RUNTIME_CACHE);
@@ -145,16 +140,26 @@ self.addEventListener('fetch', (event) => {
           try {
             const response = await fetch(request);
             const contentType = response?.headers?.get('Content-Type') || '';
-            if (response && response.status === 200 && !contentType.toLowerCase().includes('text/html')) {
+            const isHtmlFallback = contentType.toLowerCase().includes('text/html');
+            if (response && response.status === 200 && !isHtmlFallback) {
               cache.put(request, response.clone()).catch(() => {});
+            } else if (!response || response.status === 404 || isHtmlFallback) {
+              // Stale hashed chunk from a previous deployment: purge cached HTML shells
+              // so the subsequent page reload fetches the latest HTML bundle.
+              caches.delete(RUNTIME_CACHE).catch(() => {});
+              cache.delete('/index.html').catch(() => {});
             }
             return response;
           } catch (fetchErr) {
             // Fallback: fetch using just the URL string to bypass sandboxed/iframe request constraints
             const response = await fetch(request.url);
             const contentType = response?.headers?.get('Content-Type') || '';
-            if (response && response.status === 200 && !contentType.toLowerCase().includes('text/html')) {
+            const isHtmlFallback = contentType.toLowerCase().includes('text/html');
+            if (response && response.status === 200 && !isHtmlFallback) {
               cache.put(request, response.clone()).catch(() => {});
+            } else if (!response || response.status === 404 || isHtmlFallback) {
+              caches.delete(RUNTIME_CACHE).catch(() => {});
+              cache.delete('/index.html').catch(() => {});
             }
             return response;
           }

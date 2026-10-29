@@ -59,6 +59,85 @@ export interface ManualBox {
   height: number;
 }
 
+/**
+ * Normalizes Bengali (০-৯) and Devanagari (०-९) numerals to ASCII digits (0-9)
+ * while preserving exact 1:1 character length and string indices.
+ */
+export function normalizeDigitsToAscii(input: string): string {
+  let out = '';
+  for (let i = 0; i < input.length; i++) {
+    const code = input.charCodeAt(i);
+    if (code >= 0x09e6 && code <= 0x09ef) {
+      out += String.fromCharCode(0x30 + (code - 0x09e6));
+    } else if (code >= 0x0966 && code <= 0x096f) {
+      out += String.fromCharCode(0x30 + (code - 0x0966));
+    } else {
+      out += input[i];
+    }
+  }
+  return out;
+}
+
+const CARD_REGEX =
+  /\b(?:\d{4}[ -]?){3}\d{4}\b|\b(?:4\d{12}(?:\d{3})?|5[1-5]\d{14}|3[47]\d{13}|6(?:011|5\d\d)\d{12})\b/g;
+const PHONE_REGEX =
+  /(?:\+?880[ -]?)?0?1[3-9]\d{2}[ -]?\d{6}\b|\+?1[ -]?\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}\b|\+?[1-9]\d{1,3}[ -]?(?:\d{3,4}[ -]?\d{3,4})\b/g;
+const NID_REGEX =
+  /\b(?:\d{10}|\d{13}|\d{17})\b|\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{5}\b|\b\d{3}-\d{2}-\d{4}\b/g;
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+const SECRET_REGEX =
+  /\b(?:sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|Bearer\s+[a-zA-Z0-9_.-]{16,}|password\s*[:=]\s*\S+)\b/gi;
+
+/**
+ * Extracts PII entities from a single PDF text item, supporting English, Bengali,
+ * and Devanagari numerals.
+ */
+export function detectPiiInTextItem(
+  rawText: string,
+  pageIndex: number,
+  tx: number,
+  ty: number,
+  w: number,
+  h: number
+): PiiEntity[] {
+  if (!rawText || !rawText.trim()) return [];
+  const normalizedText = normalizeDigitsToAscii(rawText);
+  const results: PiiEntity[] = [];
+
+  const checkRegex = (regex: RegExp, category: PiiCategory) => {
+    regex.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(normalizedText)) !== null) {
+      const matchedNormalized = match[0];
+      const originalSlice = rawText.slice(match.index, match.index + matchedNormalized.length);
+      const offsetRatio = match.index / Math.max(1, rawText.length);
+      const matchLenRatio = originalSlice.length / Math.max(1, rawText.length);
+      const entityX = tx + w * offsetRatio;
+      const entityW = Math.max(10, w * matchLenRatio);
+
+      results.push({
+        id: `${pageIndex}-${category}-${match.index}-${Math.random().toString(36).substring(2, 7)}`,
+        category,
+        text: originalSlice,
+        pageIndex,
+        x: entityX,
+        y: ty,
+        width: entityW,
+        height: Math.max(h, 12),
+        selected: true,
+      });
+    }
+  };
+
+  checkRegex(CARD_REGEX, 'card');
+  checkRegex(PHONE_REGEX, 'phone');
+  checkRegex(NID_REGEX, 'nid');
+  checkRegex(EMAIL_REGEX, 'email');
+  checkRegex(SECRET_REGEX, 'secret');
+
+  return results;
+}
+
 export default function SanitizePdfPage() {
   const { t } = useTranslation('common');
   const [activeTab, setActiveTab] = useState<'redact' | 'strip'>('redact');
@@ -68,7 +147,10 @@ export default function SanitizePdfPage() {
   const [totalPages, setTotalPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number }[]>([]);
+  const [pageTextCounts, setPageTextCounts] = useState<number[]>([]);
+  const [scannedPagesProgress, setScannedPagesProgress] = useState<number>(0);
   const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+  const [currentPageDim, setCurrentPageDim] = useState<{ width: number; height: number } | null>(null);
 
   // PII Detection states
   const [isScanning, setIsScanning] = useState(false);
@@ -78,10 +160,10 @@ export default function SanitizePdfPage() {
   const [customSearchQuery, setCustomSearchQuery] = useState('');
   const [redactStyle, setRedactStyle] = useState<'blackout' | 'redacted_text' | 'whiteout'>('blackout');
 
-  // Drawing state
+  // Drawing state (stored as normalized 0..1 ratios relative to the rendered canvas)
   const [isDrawingMode, setIsDrawingMode] = useState(false);
-  const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
-  const [currentDrawRect, setCurrentDrawRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [drawStartNorm, setDrawStartNorm] = useState<{ x: number; y: number } | null>(null);
+  const [currentDrawNorm, setCurrentDrawNorm] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
   // Common processing states
   const [isProcessing, setIsProcessing] = useState(false);
@@ -125,7 +207,7 @@ export default function SanitizePdfPage() {
     };
   }, []);
 
-  // Load PDF and run PII detection
+  // Load PDF and run progressive PII detection
   const handleFileSelected = async (selectedFile: File) => {
     const currentToken = ++operationTokenRef.current;
     setFile(selectedFile);
@@ -134,6 +216,9 @@ export default function SanitizePdfPage() {
     setIsSuccess(false);
     setEntities([]);
     setManualBoxes([]);
+    setPageDimensions([]);
+    setPageTextCounts([]);
+    setScannedPagesProgress(0);
     setAuditSummary(null);
     setCurrentPage(1);
     if (downloadUrl) {
@@ -174,14 +259,8 @@ export default function SanitizePdfPage() {
       setTotalPages(loadedDoc.numPages);
 
       const dims: { width: number; height: number }[] = [];
+      const textCounts: number[] = [];
       const detected: PiiEntity[] = [];
-
-      // Regex patterns
-      const CARD_REGEX = /\b(?:\d{4}[ -]?){3}\d{4}\b|\b(?:4\d{12}(?:\d{3})?|5[1-5]\d{14}|3[47]\d{13}|6(?:011|5\d\d)\d{12})\b/g;
-      const PHONE_REGEX = /(?:\+?880\s?1[3-9]\d{8}|01[3-9]\d{8}|\+?1[ -]?\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}|\+?[1-9]\d{1,3}[ -]?(?:\d{3,4}[ -]?\d{3,4}))/g;
-      const NID_REGEX = /\b(?:\d{10}|\d{13}|\d{17})\b|\b\d{3}-\d{2}-\d{4}\b/g;
-      const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-      const SECRET_REGEX = /\b(?:sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|Bearer\s+[a-zA-Z0-9_.-]{16,}|password\s*[:=]\s*\S+)\b/gi;
 
       for (let p = 1; p <= loadedDoc.numPages; p++) {
         const page = await loadedDoc.getPage(p);
@@ -189,53 +268,35 @@ export default function SanitizePdfPage() {
         dims.push({ width: viewport.width, height: viewport.height });
 
         const textContent = await page.getTextContent();
+        let pageChars = 0;
+
         for (const item of textContent.items) {
           if (!('str' in item) || !item.str.trim()) continue;
           const text = item.str;
+          pageChars += text.trim().length;
           const transform = item.transform; // [sx, sky, skx, sy, tx, ty]
           const tx = transform[4];
           const ty = transform[5];
           const w = item.width || 50;
           const h = item.height || Math.abs(transform[3]) || 12;
 
-          // Helper to register detected pattern
-          const checkRegex = (regex: RegExp, category: PiiCategory) => {
-            regex.lastIndex = 0;
-            let match;
-            while ((match = regex.exec(text)) !== null) {
-              const matchedText = match[0];
-              const offsetRatio = match.index / Math.max(1, text.length);
-              const matchLenRatio = matchedText.length / Math.max(1, text.length);
-              const entityX = tx + w * offsetRatio;
-              const entityW = Math.max(10, w * matchLenRatio);
-
-              detected.push({
-                id: Math.random().toString(36).substring(2, 9),
-                category,
-                text: matchedText,
-                pageIndex: p - 1,
-                x: entityX,
-                y: ty,
-                width: entityW,
-                height: Math.max(h, 12),
-                selected: true,
-              });
-            }
-          };
-
-          checkRegex(CARD_REGEX, 'card');
-          checkRegex(PHONE_REGEX, 'phone');
-          checkRegex(NID_REGEX, 'nid');
-          checkRegex(EMAIL_REGEX, 'email');
-          checkRegex(SECRET_REGEX, 'secret');
+          const itemEntities = detectPiiInTextItem(text, p - 1, tx, ty, w, h);
+          if (itemEntities.length > 0) {
+            detected.push(...itemEntities);
+          }
         }
+
+        textCounts.push(pageChars);
         page.cleanup();
         if (operationTokenRef.current !== currentToken) return;
-      }
 
-      if (operationTokenRef.current === currentToken) {
-        setPageDimensions(dims);
-        setEntities(detected);
+        // Flush state immediately on page 1, page 2, and every 15 pages so multi-hundred-page PDFs are immediately interactive
+        if (p <= 2 || p % 15 === 0 || p === loadedDoc.numPages) {
+          setScannedPagesProgress(p);
+          setPageDimensions([...dims]);
+          setPageTextCounts([...textCounts]);
+          setEntities([...detected]);
+        }
       }
     } catch (err: unknown) {
       if (operationTokenRef.current === currentToken) {
@@ -271,6 +332,9 @@ export default function SanitizePdfPage() {
 
         const containerWidth = overlayRef.current?.clientWidth || 700;
         const unscaledViewport = page.getViewport({ scale: 1.0 });
+        if (!cancelled) {
+          setCurrentPageDim({ width: unscaledViewport.width, height: unscaledViewport.height });
+        }
         const scale = Math.min(2.0, Math.max(0.7, (containerWidth - 32) / unscaledViewport.width));
         const viewport = page.getViewport({ scale });
 
@@ -317,10 +381,11 @@ export default function SanitizePdfPage() {
     };
   }, [pdfJsDoc, currentPage, totalPages]);
 
-  // Handle custom search term scanning
+  // Handle custom search term scanning (supports Bengali & ASCII digit equivalence)
   const handleAddCustomSearch = () => {
     if (!customSearchQuery.trim() || !pdfJsDoc) return;
-    const term = customSearchQuery.trim().toLowerCase();
+    const rawTerm = customSearchQuery.trim();
+    const normTerm = normalizeDigitsToAscii(rawTerm).toLowerCase();
 
     const searchAsync = async () => {
       const newItems: PiiEntity[] = [];
@@ -331,8 +396,8 @@ export default function SanitizePdfPage() {
           for (const item of textContent.items) {
             if (!('str' in item)) continue;
             const text = item.str;
-            const lower = text.toLowerCase();
-            let idx = lower.indexOf(term);
+            const normText = normalizeDigitsToAscii(text).toLowerCase();
+            let idx = normText.indexOf(normTerm);
             while (idx !== -1) {
               const transform = item.transform;
               const tx = transform[4];
@@ -340,12 +405,12 @@ export default function SanitizePdfPage() {
               const w = item.width || 50;
               const h = item.height || Math.abs(transform[3]) || 12;
               const offsetRatio = idx / Math.max(1, text.length);
-              const matchLenRatio = term.length / Math.max(1, text.length);
+              const matchLenRatio = normTerm.length / Math.max(1, text.length);
 
               newItems.push({
                 id: Math.random().toString(36).substring(2, 9),
                 category: 'custom',
-                text: text.slice(idx, idx + term.length),
+                text: text.slice(idx, idx + normTerm.length),
                 pageIndex: p - 1,
                 x: tx + w * offsetRatio,
                 y: ty,
@@ -354,7 +419,7 @@ export default function SanitizePdfPage() {
                 selected: true,
               });
 
-              idx = lower.indexOf(term, idx + term.length);
+              idx = normText.indexOf(normTerm, idx + normTerm.length);
             }
           }
         } finally {
@@ -385,46 +450,51 @@ export default function SanitizePdfPage() {
     );
   };
 
-  // Drawing manual redaction box handlers
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDrawingMode || !overlayRef.current || !canvasRef.current) return;
+  const getNormalizedCanvasPoint = (clientX: number, clientY: number) => {
+    if (!canvasRef.current) return null;
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setDrawStart({ x, y });
-    setCurrentDrawRect({ x, y, w: 0, h: 0 });
+    if (rect.width <= 0 || rect.height <= 0) return null;
+    const normX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const normY = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    return { x: normX, y: normY };
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!drawStart || !canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const curX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const curY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-
-    const x = Math.min(drawStart.x, curX);
-    const y = Math.min(drawStart.y, curY);
-    const w = Math.abs(curX - drawStart.x);
-    const h = Math.abs(curY - drawStart.y);
-
-    setCurrentDrawRect({ x, y, w, h });
+  const startDrawingAt = (clientX: number, clientY: number) => {
+    if (!isDrawingMode) return;
+    const pt = getNormalizedCanvasPoint(clientX, clientY);
+    if (!pt) return;
+    setDrawStartNorm(pt);
+    setCurrentDrawNorm({ x: pt.x, y: pt.y, w: 0, h: 0 });
   };
 
-  const handleMouseUp = () => {
-    if (!drawStart || !currentDrawRect || !canvasRef.current) {
-      setDrawStart(null);
-      setCurrentDrawRect(null);
+  const moveDrawingAt = (clientX: number, clientY: number) => {
+    if (!drawStartNorm) return;
+    const pt = getNormalizedCanvasPoint(clientX, clientY);
+    if (!pt) return;
+    const x = Math.min(drawStartNorm.x, pt.x);
+    const y = Math.min(drawStartNorm.y, pt.y);
+    const w = Math.abs(pt.x - drawStartNorm.x);
+    const h = Math.abs(pt.y - drawStartNorm.y);
+    setCurrentDrawNorm({ x, y, w, h });
+  };
+
+  const finishDrawing = () => {
+    if (!drawStartNorm || !currentDrawNorm) {
+      setDrawStartNorm(null);
+      setCurrentDrawNorm(null);
       return;
     }
 
-    if (currentDrawRect.w > 5 && currentDrawRect.h > 5) {
-      const canvas = canvasRef.current;
-      const dim = pageDimensions[currentPage - 1] || { width: 612, height: 792 };
+    // Require at least 1% width/height drag to avoid accidental taps creating tiny dots
+    if (currentDrawNorm.w > 0.01 && currentDrawNorm.h > 0.008) {
+      const dim =
+        pageDimensions[currentPage - 1] ||
+        currentPageDim || { width: 612, height: 792 };
 
-      // Convert from screen canvas coordinates to PDF coordinates
-      const pdfX = (currentDrawRect.x / canvas.width) * dim.width;
-      const pdfY = dim.height - ((currentDrawRect.y + currentDrawRect.h) / canvas.height) * dim.height;
-      const pdfW = (currentDrawRect.w / canvas.width) * dim.width;
-      const pdfH = (currentDrawRect.h / canvas.height) * dim.height;
+      const pdfX = currentDrawNorm.x * dim.width;
+      const pdfY = dim.height - (currentDrawNorm.y + currentDrawNorm.h) * dim.height;
+      const pdfW = currentDrawNorm.w * dim.width;
+      const pdfH = currentDrawNorm.h * dim.height;
 
       setManualBoxes((prev) => [
         ...prev,
@@ -439,8 +509,38 @@ export default function SanitizePdfPage() {
       ]);
     }
 
-    setDrawStart(null);
-    setCurrentDrawRect(null);
+    setDrawStartNorm(null);
+    setCurrentDrawNorm(null);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDrawingMode) return;
+    startDrawingAt(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!drawStartNorm) return;
+    moveDrawingAt(e.clientX, e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    finishDrawing();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDrawingMode || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    startDrawingAt(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!drawStartNorm || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    moveDrawingAt(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchEnd = () => {
+    finishDrawing();
   };
 
   const removeManualBox = (id: string) => {
@@ -477,6 +577,14 @@ export default function SanitizePdfPage() {
         })),
         ...manualBoxes,
       ];
+
+      if (allRedactBoxes.length === 0) {
+        setError(
+          'No sensitive items or manual boxes are selected. Tap "Draw Redact Box" on the page preview and drag over the text/photo area you want to black out, or switch to "Metadata & Script Purger".'
+        );
+        setIsProcessing(false);
+        return;
+      }
 
       const modifiedPages = new Set<number>();
 
@@ -619,7 +727,7 @@ export default function SanitizePdfPage() {
       finalDoc.setAuthor('');
       finalDoc.setSubject('');
       finalDoc.setKeywords([]);
-      finalDoc.setProducer('PDFMinty Privacy AI Shield');
+      finalDoc.setProducer('PDFMinty Privacy Shield');
       finalDoc.setCreator('PDFMinty Client-Side Engine');
       finalDoc.setModificationDate(new Date());
 
@@ -705,6 +813,10 @@ export default function SanitizePdfPage() {
     return manualBoxes.filter((b) => b.pageIndex === currentPage - 1);
   }, [manualBoxes, currentPage]);
 
+  const activePageDim = pageDimensions[currentPage - 1] || currentPageDim;
+  const isCurrentPageScannedImage =
+    pageTextCounts[currentPage - 1] !== undefined && pageTextCounts[currentPage - 1] === 0;
+
   const countsByCategory = useMemo(() => {
     const counts = {
       card: 0,
@@ -757,7 +869,7 @@ export default function SanitizePdfPage() {
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>AI Privacy Shield & Auto-Redactor</span>
+            <span>Privacy Shield & Auto-Redactor</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 uppercase font-black">
               PRO
             </span>
@@ -791,7 +903,7 @@ export default function SanitizePdfPage() {
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {activeTab === 'redact'
-                ? 'Automatically detect and permanently black-out phone numbers, credit cards, NIDs, and emails before sharing.'
+                ? 'Automatically detect selectable phone numbers, credit cards, NIDs, and emails (English & Bengali digits), or draw manual black-out boxes over scanned images.'
                 : 'Strip hidden launch actions, embedded JavaScript, form definitions, and personal tracking metadata.'}
             </p>
           </div>
@@ -823,7 +935,9 @@ export default function SanitizePdfPage() {
                 <p className="text-xs text-slate-400">
                   {(file.size / 1024 / 1024).toFixed(2)} MB • {totalPages} Pages •{' '}
                   <span className="text-emerald-600 font-semibold">
-                    {isScanning ? 'Scanning PII...' : 'Local RAM Isolated'}
+                    {isScanning
+                      ? `Scanning text layer (${scannedPagesProgress}/${totalPages})...`
+                      : 'Local RAM Isolated'}
                   </span>
                 </p>
               </div>
@@ -848,6 +962,8 @@ export default function SanitizePdfPage() {
                   setPdfJsDoc(null);
                   setEntities([]);
                   setManualBoxes([]);
+                  setPageDimensions([]);
+                  setPageTextCounts([]);
                   setError(null);
                   setIsSuccess(false);
                 }}
@@ -945,102 +1061,143 @@ export default function SanitizePdfPage() {
                     </div>
                   </div>
 
+                  {/* Scanned / Camera Image Page Notice */}
+                  {isCurrentPageScannedImage && (
+                    <div
+                      className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      role="status"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold">
+                            Scanned / Photo Page Detected (No Embedded Text Layer)
+                          </p>
+                          <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5 leading-relaxed">
+                            Page {currentPage} is a camera photo or scanned image without selectable PDF text. Automatic text pattern detection cannot read inside images—tap{' '}
+                            <strong>Draw Redact Box</strong> and drag over any phone number, NID, name, or QR code to black it out permanently.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsDrawingMode(true)}
+                        className={`px-3 py-2 rounded-xl font-bold text-xs whitespace-nowrap cursor-pointer transition flex-shrink-0 ${
+                          isDrawingMode
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-amber-600 hover:bg-amber-700 text-white'
+                        }`}
+                      >
+                        {isDrawingMode ? 'Drag on Page Below' : 'Activate Draw Box'}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Interactive Visual Canvas Container */}
                   <div
                     ref={overlayRef}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    className={`relative w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex justify-center p-2 select-none ${
-                      isDrawingMode ? 'cursor-crosshair' : 'cursor-default'
-                    }`}
+                    className="relative w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex justify-center p-2 select-none"
                   >
-                    <canvas ref={canvasRef} className="shadow-lg rounded max-w-full" />
+                    <div
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseUp}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                      className={`relative inline-block max-w-full ${
+                        isDrawingMode ? 'cursor-crosshair touch-none' : 'cursor-default'
+                      }`}
+                    >
+                      <canvas ref={canvasRef} className="shadow-lg rounded max-w-full h-auto block" />
 
-                    {/* Bounding box highlights on canvas for current page */}
-                    {canvasSize.width > 0 &&
-                      pageDimensions[currentPage - 1] &&
-                      currentPageEntities.map((ent) => {
-                        const dim = pageDimensions[currentPage - 1];
-                        const sx = (ent.x / dim.width) * canvasSize.width;
-                        const sy = ((dim.height - ent.y - ent.height) / dim.height) * canvasSize.height;
-                        const sw = (ent.width / dim.width) * canvasSize.width;
-                        const sh = (ent.height / dim.height) * canvasSize.height;
+                      {/* Bounding box highlights on canvas for current page */}
+                      {canvasSize.width > 0 &&
+                        activePageDim &&
+                        currentPageEntities.map((ent) => {
+                          const leftPct = (ent.x / activePageDim.width) * 100;
+                          const topPct =
+                            ((activePageDim.height - ent.y - ent.height) / activePageDim.height) * 100;
+                          const widthPct = Math.max(2, (ent.width / activePageDim.width) * 100);
+                          const heightPct = Math.max(1.5, (ent.height / activePageDim.height) * 100);
 
-                        return (
-                          <div
-                            key={ent.id}
-                            onClick={() => toggleEntity(ent.id)}
-                            style={{
-                              left: `${sx}px`,
-                              top: `${sy}px`,
-                              width: `${Math.max(16, sw)}px`,
-                              height: `${Math.max(12, sh)}px`,
-                            }}
-                            className={`absolute transition-all cursor-pointer border ${
-                              ent.selected
-                                ? 'bg-black/90 text-white border-black shadow-md'
-                                : 'bg-amber-400/30 border-dashed border-amber-600 text-amber-900'
-                            }`}
-                            title={`Click to ${ent.selected ? 'unselect' : 'select'} (${ent.text})`}
-                          >
-                            {ent.selected && (
-                              <span className="text-[8px] font-mono font-bold px-1 text-white truncate block">
-                                REDACT
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-
-                    {/* Manual Boxes on current page */}
-                    {canvasSize.width > 0 &&
-                      pageDimensions[currentPage - 1] &&
-                      currentPageManualBoxes.map((box) => {
-                        const dim = pageDimensions[currentPage - 1];
-                        const sx = (box.x / dim.width) * canvasSize.width;
-                        const sy = ((dim.height - box.y - box.height) / dim.height) * canvasSize.height;
-                        const sw = (box.width / dim.width) * canvasSize.width;
-                        const sh = (box.height / dim.height) * canvasSize.height;
-
-                        return (
-                          <div
-                            key={box.id}
-                            style={{
-                              left: `${sx}px`,
-                              top: `${sy}px`,
-                              width: `${sw}px`,
-                              height: `${sh}px`,
-                            }}
-                            className="absolute bg-black text-white border border-rose-500 group flex items-center justify-between p-1"
-                          >
-                            <span className="text-[9px] font-bold text-white truncate">BLACK-OUT</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeManualBox(box.id);
+                          return (
+                            <div
+                              key={ent.id}
+                              onClick={() => toggleEntity(ent.id)}
+                              style={{
+                                left: `${leftPct}%`,
+                                top: `${topPct}%`,
+                                width: `${widthPct}%`,
+                                height: `${heightPct}%`,
                               }}
-                              className="text-white hover:text-rose-400 p-0.5 rounded cursor-pointer"
-                              title="Delete manual box"
+                              className={`absolute transition-all cursor-pointer border ${
+                                ent.selected
+                                  ? 'bg-black/90 text-white border-black shadow-md'
+                                  : 'bg-amber-400/30 border-dashed border-amber-600 text-amber-900'
+                              }`}
+                              title={`Click to ${ent.selected ? 'unselect' : 'select'} (${ent.text})`}
                             >
-                              ✕
-                            </button>
-                          </div>
-                        );
-                      })}
+                              {ent.selected && (
+                                <span className="text-[8px] font-mono font-bold px-1 text-white truncate block">
+                                  REDACT
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
 
-                    {/* User drag in progress */}
-                    {currentDrawRect && currentDrawRect.w > 0 && (
-                      <div
-                        style={{
-                          left: `${currentDrawRect.x}px`,
-                          top: `${currentDrawRect.y}px`,
-                          width: `${currentDrawRect.w}px`,
-                          height: `${currentDrawRect.h}px`,
-                        }}
-                        className="absolute border-2 border-rose-500 bg-rose-500/20 pointer-events-none"
-                      />
-                    )}
+                      {/* Manual Boxes on current page */}
+                      {canvasSize.width > 0 &&
+                        activePageDim &&
+                        currentPageManualBoxes.map((box) => {
+                          const leftPct = (box.x / activePageDim.width) * 100;
+                          const topPct =
+                            ((activePageDim.height - box.y - box.height) / activePageDim.height) * 100;
+                          const widthPct = (box.width / activePageDim.width) * 100;
+                          const heightPct = (box.height / activePageDim.height) * 100;
+
+                          return (
+                            <div
+                              key={box.id}
+                              style={{
+                                left: `${leftPct}%`,
+                                top: `${topPct}%`,
+                                width: `${widthPct}%`,
+                                height: `${heightPct}%`,
+                              }}
+                              className="absolute bg-black text-white border border-rose-500 group flex items-center justify-between p-1"
+                            >
+                              <span className="text-[9px] font-bold text-white truncate">BLACK-OUT</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeManualBox(box.id);
+                                }}
+                                className="text-white hover:text-rose-400 p-0.5 rounded cursor-pointer"
+                                title="Delete manual box"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        })}
+
+                      {/* User drag in progress */}
+                      {currentDrawNorm && currentDrawNorm.w > 0 && (
+                        <div
+                          style={{
+                            left: `${currentDrawNorm.x * 100}%`,
+                            top: `${currentDrawNorm.y * 100}%`,
+                            width: `${currentDrawNorm.w * 100}%`,
+                            height: `${currentDrawNorm.h * 100}%`,
+                          }}
+                          className="absolute border-2 border-rose-500 bg-rose-500/20 pointer-events-none"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1132,6 +1289,18 @@ export default function SanitizePdfPage() {
                         ✉️ Email ({countsByCategory.email})
                       </button>
                     )}
+                    {countsByCategory.manual > 0 && (
+                      <button
+                        onClick={() => setSelectedFilter('manual')}
+                        className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
+                          selectedFilter === 'manual'
+                            ? 'bg-rose-600 text-white border-rose-600'
+                            : 'bg-rose-50 text-rose-800 border-rose-200'
+                        }`}
+                      >
+                        ⬛ Manual ({countsByCategory.manual})
+                      </button>
+                    )}
                   </div>
 
                   {/* Custom Search Query Adder */}
@@ -1156,48 +1325,89 @@ export default function SanitizePdfPage() {
                     </button>
                   </div>
 
-                  {/* List of Detected Entities */}
+                  {/* List of Detected Entities & Manual Redact Boxes */}
                   <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredEntities.length === 0 && manualBoxes.length === 0 ? (
-                      <div className="py-8 text-center text-xs text-slate-400">
-                        <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-emerald-500 opacity-60" />
-                        No sensitive PII matching filter. Use "Draw Redact Box" or Search to black-out any section.
+                      <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
+                        <CheckCircle2 className="w-6 h-6 mx-auto mb-1 text-emerald-500 opacity-60" />
+                        <p>
+                          {isCurrentPageScannedImage
+                            ? 'This page is a scanned image/photo without selectable text. Tap "Draw Redact Box" and drag over any area on the page to black it out.'
+                            : 'No automatic PII patterns found in the text layer. Use "Draw Redact Box" or Search to black-out any section.'}
+                        </p>
                       </div>
                     ) : (
-                      filteredEntities.map((ent) => {
-                        const badge = getCategoryBadge(ent.category);
-                        const Icon = badge.icon;
-                        return (
-                          <div
-                            key={ent.id}
-                            className="pt-2 flex items-center justify-between text-xs gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1.5 rounded-lg transition"
-                          >
-                            <label className="flex items-center gap-2.5 truncate cursor-pointer flex-1">
-                              <input
-                                type="checkbox"
-                                checked={ent.selected}
-                                onChange={() => toggleEntity(ent.id)}
-                                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                              />
-                              <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${badge.color}`}
-                              >
-                                <Icon className="w-2.5 h-2.5" />
-                                {badge.label}
-                              </span>
-                              <span className="font-mono truncate font-medium text-slate-800 dark:text-slate-200">
-                                {ent.text}
-                              </span>
-                            </label>
-                            <button
-                              onClick={() => setCurrentPage(ent.pageIndex + 1)}
-                              className="text-[10px] text-slate-400 hover:text-emerald-600 whitespace-nowrap cursor-pointer"
+                      <>
+                        {(selectedFilter === 'all' || selectedFilter === 'manual') &&
+                          manualBoxes.map((box, idx) => (
+                            <div
+                              key={box.id}
+                              className="pt-2 flex items-center justify-between text-xs gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1.5 rounded-lg transition"
                             >
-                              Pg {ent.pageIndex + 1}
-                            </button>
-                          </div>
-                        );
-                      })
+                              <div className="flex items-center gap-2.5 truncate flex-1">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 text-rose-700 bg-rose-50 border-rose-200">
+                                  <PenTool className="w-2.5 h-2.5" />
+                                  Manual Box #{idx + 1}
+                                </span>
+                                <span className="font-mono truncate text-slate-600 dark:text-slate-300">
+                                  {Math.round(box.width)}×{Math.round(box.height)} pt
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setCurrentPage(box.pageIndex + 1)}
+                                  className="text-[10px] text-slate-400 hover:text-emerald-600 whitespace-nowrap cursor-pointer"
+                                >
+                                  Pg {box.pageIndex + 1}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeManualBox(box.id)}
+                                  className="text-rose-500 hover:text-rose-700 font-bold px-1 cursor-pointer"
+                                  title="Remove manual box"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+
+                        {filteredEntities.map((ent) => {
+                          const badge = getCategoryBadge(ent.category);
+                          const Icon = badge.icon;
+                          return (
+                            <div
+                              key={ent.id}
+                              className="pt-2 flex items-center justify-between text-xs gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1.5 rounded-lg transition"
+                            >
+                              <label className="flex items-center gap-2.5 truncate cursor-pointer flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={ent.selected}
+                                  onChange={() => toggleEntity(ent.id)}
+                                  className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                />
+                                <span
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${badge.color}`}
+                                >
+                                  <Icon className="w-2.5 h-2.5" />
+                                  {badge.label}
+                                </span>
+                                <span className="font-mono truncate font-medium text-slate-800 dark:text-slate-200">
+                                  {ent.text}
+                                </span>
+                              </label>
+                              <button
+                                onClick={() => setCurrentPage(ent.pageIndex + 1)}
+                                className="text-[10px] text-slate-400 hover:text-emerald-600 whitespace-nowrap cursor-pointer"
+                              >
+                                Pg {ent.pageIndex + 1}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </>
                     )}
                   </div>
 
@@ -1253,8 +1463,11 @@ export default function SanitizePdfPage() {
 
                     <button
                       onClick={handleExecuteRedaction}
-                      disabled={isProcessing}
-                      className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      disabled={
+                        isProcessing ||
+                        entities.filter((e) => e.selected).length + manualBoxes.length === 0
+                      }
+                      className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isProcessing ? (
                         <>

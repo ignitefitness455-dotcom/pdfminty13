@@ -37,10 +37,13 @@ import {
 } from '../i18n/config';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
+import { SilentErrorBoundary } from './ErrorBoundary';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import InternalSEO, { Breadcrumbs } from './InternalSEO';
 import LanguageSuggestionBanner from './LanguageSuggestionBanner';
+import { RelatedBlogs } from './RelatedBlogs';
+import { RelatedTools } from './RelatedTools';
 import { ToolsSidebar } from './ToolsSidebar';
 
 const MobileDrawer = lazyWithRetry(() =>
@@ -55,12 +58,6 @@ const ConsentManager = lazyWithRetry(() =>
 
 const ToolContentSection = lazyWithRetry(() =>
   import('./ToolContentSection').then((m) => ({ default: m.ToolContentSection }))
-);
-const RelatedTools = lazyWithRetry(() =>
-  import('./RelatedTools').then((m) => ({ default: m.RelatedTools }))
-);
-const RelatedBlogs = lazyWithRetry(() =>
-  import('./RelatedBlogs').then((m) => ({ default: m.RelatedBlogs }))
 );
 
 interface ToolInfo {
@@ -188,15 +185,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
 
         {mobileMenuOpen && (
-          <React.Suspense fallback={null}>
-            <MobileDrawer
-              mobileMenuOpen={mobileMenuOpen}
-              setMobileMenuOpen={setMobileMenuOpen}
-              theme={theme}
-              setThemeSetting={setThemeSetting}
-              menuItems={menuItems}
-            />
-          </React.Suspense>
+          <SilentErrorBoundary>
+            <React.Suspense fallback={null}>
+              <MobileDrawer
+                mobileMenuOpen={mobileMenuOpen}
+                setMobileMenuOpen={setMobileMenuOpen}
+                theme={theme}
+                setThemeSetting={setThemeSetting}
+                menuItems={menuItems}
+              />
+            </React.Suspense>
+          </SilentErrorBoundary>
         )}
 
         {/* Primary Page Canvas Container with Left Tools Menu Bar */}
@@ -213,14 +212,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               {children}
               <div className="content-auto">
                 {activeToolSlug && (
-                  <React.Suspense fallback={null}>
-                    <ToolContentSection slug={activeToolSlug} />
-                  </React.Suspense>
+                  <SilentErrorBoundary>
+                    <React.Suspense fallback={null}>
+                      <ToolContentSection slug={activeToolSlug} />
+                    </React.Suspense>
+                  </SilentErrorBoundary>
                 )}
-                <React.Suspense fallback={null}>
+                <SilentErrorBoundary>
                   <RelatedTools />
-                  <RelatedBlogs />
-                </React.Suspense>
+                  {activeToolSlug && <RelatedBlogs />}
+                </SilentErrorBoundary>
               </div>
             </div>
           </main>
@@ -229,13 +230,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Footer setShowFeedbackModal={setShowFeedbackModal} />
 
         {showFeedbackModal && (
-          <React.Suspense fallback={null}>
-            <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
-          </React.Suspense>
+          <SilentErrorBoundary>
+            <React.Suspense fallback={null}>
+              <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
+            </React.Suspense>
+          </SilentErrorBoundary>
         )}
-        <React.Suspense fallback={null}>
-          <ConsentManager />
-        </React.Suspense>
+        <SilentErrorBoundary>
+          <React.Suspense fallback={null}>
+            <ConsentManager />
+          </React.Suspense>
+        </SilentErrorBoundary>
       </div>
     </LayoutContext.Provider>
   );

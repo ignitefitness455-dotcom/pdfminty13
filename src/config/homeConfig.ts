@@ -70,8 +70,6 @@ export const prefetchToolChunk = (slug: string): void => {
   if (!sharedLayoutChunksPrefetched) {
     sharedLayoutChunksPrefetched = true;
     void import('../components/ToolContentSection').catch(() => {});
-    void import('../components/RelatedTools').catch(() => {});
-    void import('../components/RelatedBlogs').catch(() => {});
   }
   if (prefetchedSet.has(key)) return;
   prefetchedSet.add(key);

@@ -7,6 +7,49 @@ import {
   getFileProcessingContext,
   FileProcessingContext,
 } from '../error-handler';
+import { isChunkLoadError, purgeStaleCachesAndReload } from '../utils/lazyWithRetry';
+
+interface SilentErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+interface SilentErrorBoundaryState {
+  hasError: boolean;
+}
+
+/**
+ * Lightweight error boundary for non-critical secondary layout sections
+ * (e.g., RelatedTools, RelatedBlogs, ToolContentSection, ConsentManager, MobileDrawer)
+ * so an unexpected failure in an auxiliary widget never takes down the main page.
+ */
+export class SilentErrorBoundary extends Component<
+  SilentErrorBoundaryProps,
+  SilentErrorBoundaryState
+> {
+  public state: SilentErrorBoundaryState = { hasError: false };
+
+  public static getDerivedStateFromError(error: unknown): Partial<SilentErrorBoundaryState> {
+    if (error && typeof (error as Record<string, unknown>).then === 'function') {
+      throw error;
+    }
+    return { hasError: true };
+  }
+
+  public componentDidCatch(error: unknown, errorInfo: ErrorInfo) {
+    if (error && typeof (error as Record<string, unknown>).then === 'function') {
+      return;
+    }
+    console.warn('[SilentErrorBoundary isolated non-critical widget error]', error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return this.props.fallback ?? null;
+    }
+    return this.props.children;
+  }
+}
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -19,6 +62,8 @@ interface State {
   errorInfo: ErrorInfo | null;
   capturedContext: FileProcessingContext | null;
 }
+
+const BOUNDARY_CHUNK_RELOAD_KEY = 'pdfminty-boundary-chunk-reload';
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
   public state: State = {
@@ -49,6 +94,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
     if (error && typeof (error as Record<string, unknown>).then === 'function') {
       return;
     }
+
+    // If a stale deployment chunk load error ever reaches the boundary,
+    // attempt a one-time automatic Service Worker & cache purge + reload.
+    if (typeof window !== 'undefined' && isChunkLoadError(error)) {
+      try {
+        if (!sessionStorage.getItem(BOUNDARY_CHUNK_RELOAD_KEY)) {
+          sessionStorage.setItem(BOUNDARY_CHUNK_RELOAD_KEY, '1');
+          void purgeStaleCachesAndReload();
+          return;
+        }
+      } catch {
+        // Ignore storage errors and fall through to standard boundary UI
+      }
+    }
+
     const currentContext = getFileProcessingContext();
     this.setState({ errorInfo, capturedContext: currentContext });
     console.error(
@@ -68,7 +128,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
   }
 
   private handleReload = () => {
-    window.location.reload();
+    try {
+      sessionStorage.removeItem('pdfminty-chunk-retry');
+      sessionStorage.removeItem(BOUNDARY_CHUNK_RELOAD_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+    void purgeStaleCachesAndReload();
   };
 
   public render() {
