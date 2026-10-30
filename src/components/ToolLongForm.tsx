@@ -1,13 +1,27 @@
 import React from 'react';
 
-import { TOOLS } from '../config/seo-data';
+import type { ToolSEOInfo } from '../config/seo-data';
+import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
 
 interface ToolLongFormProps {
   slug: string;
 }
 
 export const ToolLongForm: React.FC<ToolLongFormProps> = ({ slug }) => {
-  const tool = TOOLS.find((t) => t.slug === slug);
+  const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(getCachedFullTools);
+
+  React.useEffect(() => {
+    if (getCachedFullTools()) return;
+    let active = true;
+    void loadFullToolsCatalog().then((loaded) => {
+      if (active) setFullTools(loaded);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const tool = fullTools?.find((t) => t.slug === slug);
 
   if (!tool || !tool.longFormBody) {
     return null;

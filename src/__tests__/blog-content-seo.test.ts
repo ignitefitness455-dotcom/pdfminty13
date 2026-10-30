@@ -164,4 +164,36 @@ describe('Blog & Informational Content SEO & Governance Audit (Prompt 5)', () =>
       ).toBeLessThanOrEqual(160);
     }
   });
+
+  it('enforces 100% unique metaTitle and metaDescription across all 37 articles and accurate Phase 2 technical claims', () => {
+    const seenTitles = new Map<string, string>();
+    const seenDescs = new Map<string, string>();
+
+    for (const item of blogAndCompareArticles) {
+      const normTitle = item.metaTitle.trim().toLowerCase();
+      const normDesc = item.metaDescription.trim().toLowerCase();
+      expect(seenTitles.get(normTitle), `Duplicate metaTitle on ${item.id}`).toBeUndefined();
+      expect(seenDescs.get(normDesc), `Duplicate metaDescription on ${item.id}`).toBeUndefined();
+      seenTitles.set(normTitle, item.id);
+      seenDescs.set(normDesc, item.id);
+    }
+
+    const clientSideExplained = TOOLS.find(
+      (t) => t.id === 'blog-client-side-pdf-processing-explained'
+    )!;
+    expect(clientSideExplained.longFormBody).toContain('@cantoo/pdf-lib');
+    expect(clientSideExplained.longFormBody).toContain('pdfjs-dist');
+    expect(clientSideExplained.longFormBody).not.toContain('QPDF');
+    expect(clientSideExplained.longFormBody).not.toContain('MuPDF');
+
+    const batchArticle = TOOLS.find((t) => t.id === 'blog-batch-processing')!;
+    expect(batchArticle.slug).toBe('blog/how-to-batch-process-50-pdfs-in-under-2-minutes');
+    expect(batchArticle.longFormBody).toContain('100 MB Guest');
+    expect(batchArticle.longFormBody).not.toContain('Process All');
+
+    const privacyArticle = TOOLS.find((t) => t.id === 'privacy-policy')!;
+    expect(privacyArticle.longFormBody).toContain('Google Consent Mode v2');
+    expect(privacyArticle.longFormBody).not.toContain('Cookiebot');
+    expect(privacyArticle.longFormBody).not.toContain('CMP ID: 134');
+  });
 });

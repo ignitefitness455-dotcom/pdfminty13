@@ -1167,7 +1167,7 @@
     "shortVersion": "Executive Summary (The Short Version)",
     "badge": "Complete Data Sovereignty & Privacy Standards",
     "updated": "Effective Date: January 1, 2026 • Last Updated & Reviewed: October 18, 2026 • Controller: PDFMinty Security & Compliance Architecture Team",
-    "summary": "PDFMinty's 30+ standard PDF tools process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI tools — the AI PDF Assistant (/ai-analyze-pdf/) or the OCR PDF tool (/ocr-pdf/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
+    "summary": "PDFMinty's 20+ standard PDF tools process your files 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI tools — the AI PDF Assistant (/ai-analyze-pdf/) or the OCR PDF tool (/ocr-pdf/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
     "sec1Title": "1. Local In-Browser Processing (Standard PDF Tools)",
     "sec1Desc": "When you select a PDF or image file in any of PDFMinty’s standard utilities (including Merge PDF, Split PDF, Compress PDF, Protect PDF, Unlock PDF, Rotate PDF, Sign PDF, Watermark PDF, Add Page Numbers, Delete Pages, Extract Pages, Reorder Pages, Flatten PDF, Grayscale PDF, Repair PDF, Edit PDF Metadata, Sanitize PDF, PDF to Image, Image to PDF, Compare PDF, and PDF to Markdown), the entire operation executes locally on your device using client-side WebAssembly (@cantoo/pdf-lib, pdfjs-dist), HTML5 Canvas (fabric, signature_pad), and dedicated Web Workers.",
     "sec2Title": "2. Zero Document Storage, No File Uploads & Memory Purging",
@@ -1175,7 +1175,7 @@
     "sec3Title": "3. Opt-In Cloud AI Features Disclosure (AI Analyze PDF & OCR PDF)",
     "sec3Desc": "PDFMinty provides two clearly labeled, optional AI-powered tools: the AI PDF Assistant (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/). Unlike our standard local tools, these two features require cloud inference via the Google Gemini API, strictly after you grant explicit user consent. PDFMinty never retains or stores your documents on our servers, and all processing is ephemeral for your immediate query.",
     "secGoogleTitle": "4. Google User Data, OAuth 2.0 Authentication & Account Information",
-    "secGoogleDesc": "All 30+ PDF tools on PDFMinty are publicly accessible to guest users without requiring registration or login. However, if you optionally choose to create an account or sign in using Google Sign-In (OAuth 2.0) or Email/Password authentication (powered by Google Firebase Authentication), we request basic profile information from your Google Account: your email address (userinfo.email), display name and profile avatar URL (userinfo.profile), and unique Google user identifier (openid / UID). We use this information solely to authenticate your identity, establish your secure session, track your daily processing task quotas, and manage your membership tier (Free vs PRO) in Google Cloud Firestore. PDFMinty never requests or accesses your Google Drive files, Gmail messages, Google Contacts, or any external Google Workspace data.",
+    "secGoogleDesc": "All 22 PDF tools on PDFMinty are publicly accessible to guest users without requiring registration or login. However, if you optionally choose to create an account or sign in using Google Sign-In (OAuth 2.0) or Email/Password authentication (powered by Google Firebase Authentication), we request basic profile information from your Google Account: your email address (userinfo.email), display name and profile avatar URL (userinfo.profile), and unique Google user identifier (openid / UID). We use this information solely to authenticate your identity, establish your secure session, track your daily processing task quotas, and manage your membership tier (Free vs PRO) in Google Cloud Firestore. PDFMinty never requests or accesses your Google Drive files, Gmail messages, Google Contacts, or any external Google Workspace data.",
     "secLimitedUseTitle": "5. Google API Services User Data Policy (Mandatory Limited Use Disclosure)",
     "secLimitedUseDesc": "PDFMinty's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.",
     "secRetentionTitle": "6. Data Retention, Account Deletion & Access Revocation",
@@ -1377,11 +1377,11 @@
     },
     "blog-batch-processing": {
       "name": "How to Batch Process 50 PDFs in Under 2 Minutes",
-      "shortDesc": "Tired of processing PDFs one by one? Learn how to use PDFMinty's bulk tools to compress, merge, and convert 50 files simultaneously in seconds—100% locally."
+      "shortDesc": "Eliminate slow one-by-one cloud uploads. Learn how to combine dozens of PDFs or images in one pass, export multi-page ZIPs, and run fast local workflows in PDFMinty."
     },
     "blog/how-to-batch-process-50-pdfs-in-under-2-minutes": {
       "name": "How to Batch Process 50 PDFs in Under 2 Minutes",
-      "shortDesc": "Tired of processing PDFs one by one? Learn how to use PDFMinty's bulk tools to compress, merge, and convert 50 files simultaneously in seconds—100% locally."
+      "shortDesc": "Eliminate slow one-by-one cloud uploads. Learn how to combine dozens of PDFs or images in one pass, export multi-page ZIPs, and run fast local workflows in PDFMinty."
     },
     "blog-free-esignature": {
       "name": "Free PDF E-Signature: Sign Documents Without Uploading",
@@ -1584,12 +1584,12 @@
       "shortDesc": "Technical analysis of network payloads, data transit, and retention policies of top PDF tools using Chrome DevTools."
     },
     "blog-client-side-pdf-processing-explained": {
-      "name": "Client-Side PDF Processing Explained: WebAssembly, Web Workers, and Ephemeral Blobs",
-      "shortDesc": "Technical breakdown of how modern browsers parse, edit, and render PDF binaries locally without server interaction."
+      "name": "Client-Side PDF Processing Explained: Web Workers, ArrayBuffers, and Ephemeral Blobs",
+      "shortDesc": "Technical breakdown of how modern browsers parse, edit, compress, and render PDF binaries locally using @cantoo/pdf-lib, PDF.js, OffscreenCanvas, and Web Workers."
     },
     "blog/client-side-pdf-processing-explained": {
-      "name": "Client-Side PDF Processing Explained: WebAssembly, Web Workers, and Ephemeral Blobs",
-      "shortDesc": "Technical breakdown of how modern browsers parse, edit, and render PDF binaries locally without server interaction."
+      "name": "Client-Side PDF Processing Explained: Web Workers, ArrayBuffers, and Ephemeral Blobs",
+      "shortDesc": "Technical breakdown of how modern browsers parse, edit, compress, and render PDF binaries locally using @cantoo/pdf-lib, PDF.js, OffscreenCanvas, and Web Workers."
     },
     "blog-hipaa-compliant-pdf-tools": {
       "name": "HIPAA-Compliant PDF Workflows: Why Healthcare Requires Client-Side Document Processing",

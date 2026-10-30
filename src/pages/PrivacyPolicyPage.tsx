@@ -312,7 +312,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             <p>
               {t('privacyPolicy.secGoogleDesc', {
                 defaultValue:
-                  'All 30+ PDF tools on PDFMinty are publicly accessible to guest users without requiring registration or login. However, if you optionally choose to create an account or sign in using Google Sign-In (OAuth 2.0) or Email/Password authentication (powered by Google Firebase Authentication), we collect and process specific basic account information.',
+                  'All 22 PDF tools on PDFMinty are publicly accessible to guest users without requiring registration or login. However, if you optionally choose to create an account or sign in using Google Sign-In (OAuth 2.0) or Email/Password authentication (powered by Google Firebase Authentication), we collect and process specific basic account information.',
               })}
             </p>
             <div className="space-y-2">

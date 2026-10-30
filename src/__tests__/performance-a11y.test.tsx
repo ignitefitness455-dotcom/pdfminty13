@@ -88,4 +88,29 @@ describe('Phase 2 Performance, Main-Thread Decoupling & Accessibility Regression
     expect(imgToPdfSrc).toContain('draggable');
     expect(imgToPdfSrc).toContain('handleReorder');
   });
+
+  it('decouples BlogPostPage, IsSafePdfArticlePage, and all UI components from synchronous 777 kB seo-data imports', () => {
+    const repoRoot = path.resolve(__dirname, '../..');
+    const dirsToScan = ['src/pages', 'src/components'];
+
+    for (const relDir of dirsToScan) {
+      const entries = fs.readdirSync(path.join(repoRoot, relDir), { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isFile() || !/\.(ts|tsx)$/.test(entry.name)) continue;
+        const relPath = `${relDir}/${entry.name}`;
+        const source = fs.readFileSync(path.join(repoRoot, relPath), 'utf8');
+        const staticSeoDataImports = source
+          .split('\n')
+          .filter(
+            (line) =>
+              /^import\s+(?!type\b)/.test(line.trim()) &&
+              /['"](?:\.\.\/)*config\/seo-data['"]/.test(line)
+          );
+        expect(
+          staticSeoDataImports,
+          `Unexpected synchronous runtime seo-data import in ${relPath}`
+        ).toEqual([]);
+      }
+    }
+  });
 });

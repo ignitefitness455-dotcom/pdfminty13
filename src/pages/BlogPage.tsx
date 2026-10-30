@@ -522,10 +522,10 @@ export const BlogPage: React.FC = () => {
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             {isDefaultLocale
-              ? 'All 30+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side WebAssembly with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).'
+              ? 'All 20+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side JavaScript and Web Workers with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).'
               : t('blog.privacyCalloutDesc', {
                   defaultValue:
-                    'All 30+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side WebAssembly with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).',
+                    'All 20+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side JavaScript and Web Workers with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).',
                 })}
           </p>
         </div>

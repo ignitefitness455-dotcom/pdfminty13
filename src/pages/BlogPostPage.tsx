@@ -21,12 +21,29 @@ import RelatedBlogs from '../components/RelatedBlogs';
 import SEO from '../components/SEO';
 import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
-import { TOOLS } from '../config/seo-data';
+import { TOOLS_CATALOG, type ToolCatalogItem } from '../config/seo-catalog';
+import type { ToolSEOInfo } from '../config/seo-data';
+import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
 import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
   loadLocalizedArticleBodies,
 } from '../i18n/config';
+
+function matchesArticleRoute(
+  p: { id: string; slug: string; type: 'tool' | 'article' },
+  currentPath: string,
+  targetSlug: string
+): boolean {
+  if (p.type !== 'article') return false;
+  if (p.slug === currentPath || p.id === currentPath) return true;
+  if (targetSlug) {
+    if (p.slug === targetSlug || p.id === targetSlug) return true;
+    if (p.slug === `blog/${targetSlug}` || p.slug === `compare/${targetSlug}`) return true;
+    if (p.slug.endsWith(`/${targetSlug}`)) return true;
+  }
+  return false;
+}
 
 export const BlogPostPage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
@@ -34,6 +51,7 @@ export const BlogPostPage: React.FC = () => {
   const location = useLocation();
   const [copied, setCopied] = useState(false);
   const [localizedBodies, setLocalizedBodies] = useState<Record<string, string> | null>(null);
+  const [fullTools, setFullTools] = useState<ToolSEOInfo[] | null>(getCachedFullTools);
 
   let currentPath = (location.pathname || '').replace(/^\//, '').replace(/\/$/, '');
   for (const loc of SUPPORTED_LOCALES) {
@@ -44,21 +62,25 @@ export const BlogPostPage: React.FC = () => {
   }
   const targetSlug = postSlug || paramSlug || currentPath;
 
-  const article = TOOLS.find((p) => {
-    if (p.type !== 'article') return false;
+  const catalogArticle: ToolCatalogItem | undefined = TOOLS_CATALOG.find((p) =>
+    matchesArticleRoute(p, currentPath, targetSlug)
+  );
+  const fullArticle: ToolSEOInfo | undefined = fullTools?.find((p) =>
+    matchesArticleRoute(p, currentPath, targetSlug)
+  );
+  const article: (ToolCatalogItem & Partial<ToolSEOInfo>) | undefined =
+    fullArticle || catalogArticle;
 
-    // Exact match on full path or ID
-    if (p.slug === currentPath || p.id === currentPath) return true;
-
-    // Match if slug / postSlug parameter matches
-    if (targetSlug) {
-      if (p.slug === targetSlug || p.id === targetSlug) return true;
-      if (p.slug === `blog/${targetSlug}` || p.slug === `compare/${targetSlug}`) return true;
-      if (p.slug.endsWith(`/${targetSlug}`)) return true;
-    }
-
-    return false;
-  });
+  React.useEffect(() => {
+    if (!catalogArticle || getCachedFullTools()) return;
+    let active = true;
+    void loadFullToolsCatalog().then((loaded) => {
+      if (active) setFullTools(loaded);
+    });
+    return () => {
+      active = false;
+    };
+  }, [catalogArticle]);
 
   const isDefaultLocale =
     !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
@@ -166,10 +188,14 @@ export const BlogPostPage: React.FC = () => {
     );
   }
 
-  // Calculate read time
+  // Calculate read time (falls back to precomputed catalog readingTimeMinutes while async body chunk loads)
   const getReadingTime = (html: string): string => {
+    if (!html && catalogArticle?.readingTimeMinutes) {
+      const precomputed = catalogArticle.readingTimeMinutes;
+      return t('blog.readTime', { count: precomputed, defaultValue: `${precomputed} min read` });
+    }
     const text = html ? html.replace(/<[^>]*>/g, '') : '';
-    const words = text.trim().split(/\s+/).length;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const time = Math.max(1, Math.ceil(words / 225));
     return t('blog.readTime', { count: time, defaultValue: `${time} min read` });
   };
@@ -431,10 +457,21 @@ export const BlogPostPage: React.FC = () => {
         )}
 
         {/* Article Body */}
-        <div
-          className="blog-prose prose dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: cleanArticleBody }}
-        />
+        {!cleanArticleBody && !fullArticle ? (
+          <div className="space-y-4 py-6 animate-pulse" aria-busy="true" aria-live="polite">
+            <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-11/12" />
+            <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-full" />
+            <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-4/5" />
+            <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-lg w-2/5 mt-8" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-full" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-5/6" />
+          </div>
+        ) : (
+          <div
+            className="blog-prose prose dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: cleanArticleBody }}
+          />
+        )}
 
         {/* Visible Structured FAQs when defined in seo-data.ts but not already embedded in longFormBody */}
         {shouldRenderStructuredFaqs && article.faqs && (

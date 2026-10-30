@@ -160,10 +160,12 @@ async function getFontBytes(): Promise<Uint8Array> {
   if (fontBytes && fontBytes.length > 50000) return fontBytes;
 
   // Try reading from filesystem if we are in a Node/test environment (like Vitest, even with jsdom/happy-dom)
-  if (typeof process !== 'undefined') {
+  if (typeof process !== 'undefined' && process.versions?.node && !import.meta.env?.PROD) {
     try {
-      const fs = await import('node:fs');
-      const path = await import('node:path');
+      const fsModule = 'node:fs';
+      const pathModule = 'node:path';
+      const fs = await import(/* @vite-ignore */ fsModule);
+      const path = await import(/* @vite-ignore */ pathModule);
       const fontPath = path.resolve(process.cwd(), 'public/fonts/NotoSans-Regular.ttf');
       if (fs.existsSync(fontPath)) {
         const fileBuffer = fs.readFileSync(fontPath);

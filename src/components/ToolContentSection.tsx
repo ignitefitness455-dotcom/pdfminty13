@@ -20,20 +20,7 @@ import { Link } from 'react-router-dom';
 import { NORD_AFFILIATE_LINKS } from '../config/constants';
 import { TOOLS_CATALOG } from '../config/seo-catalog';
 import type { ToolSEOInfo } from '../config/seo-data';
-
-let cachedFullTools: ToolSEOInfo[] | null = null;
-let pendingFullToolsPromise: Promise<ToolSEOInfo[]> | null = null;
-
-function loadFullToolsCatalog(): Promise<ToolSEOInfo[]> {
-  if (cachedFullTools) return Promise.resolve(cachedFullTools);
-  if (!pendingFullToolsPromise) {
-    pendingFullToolsPromise = import('../config/seo-data').then((mod) => {
-      cachedFullTools = mod.TOOLS;
-      return mod.TOOLS;
-    });
-  }
-  return pendingFullToolsPromise;
-}
+import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
 
 interface ToolContentSectionProps {
   tool?: ToolSEOInfo;
@@ -42,10 +29,10 @@ interface ToolContentSectionProps {
 
 export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: propTool, slug: propSlug }) => {
   const { t, i18n } = useTranslation('common');
-  const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(cachedFullTools);
+  const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(getCachedFullTools);
 
   React.useEffect(() => {
-    if (propTool || cachedFullTools) return;
+    if (propTool || getCachedFullTools()) return;
     let active = true;
     void loadFullToolsCatalog().then((loaded) => {
       if (active) setFullTools(loaded);

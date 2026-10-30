@@ -16,20 +16,37 @@ import { RelatedBlogs } from '../components/RelatedBlogs';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import SEO from '../components/SEO';
 import { ROUTES } from '../config/routes';
-import { TOOLS } from '../config/seo-data';
+import { TOOLS_CATALOG } from '../config/seo-catalog';
+import type { ToolSEOInfo } from '../config/seo-data';
+import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
 
 export const IsSafePdfArticlePage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
-  const trustArticle = TOOLS.find((item) => item.id === 'trust-article');
+  const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(getCachedFullTools);
+
+  React.useEffect(() => {
+    if (getCachedFullTools()) return;
+    let active = true;
+    void loadFullToolsCatalog().then((loaded) => {
+      if (active) setFullTools(loaded);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const catalogTrustArticle = TOOLS_CATALOG.find((item) => item.id === 'trust-article');
+  const fullTrustArticle = fullTools?.find((item) => item.id === 'trust-article');
+  const trustArticle = fullTrustArticle || catalogTrustArticle;
   const isDefaultLocale =
     !i18n.language || i18n.language === 'en' || i18n.language.startsWith('en-');
 
   const cleanBody = React.useMemo(() => {
-    const raw = trustArticle?.longFormBody || '';
+    const raw = fullTrustArticle?.longFormBody || '';
     return raw
       .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
       .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>');
-  }, [trustArticle]);
+  }, [fullTrustArticle]);
 
   return (
     <div className="min-h-screen bg-surface py-12 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
