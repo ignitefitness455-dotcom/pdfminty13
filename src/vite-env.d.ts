@@ -24,6 +24,10 @@ declare module 'pdfjs-dist/image_decoders/pdf.image_decoders.mjs' {
   }
 }
 
+declare module 'pdfjs-dist/build/pdf.worker.min.mjs' {
+  export const WorkerMessageHandler: unknown;
+}
+
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string;
   readonly VITE_SITE_URL?: string;

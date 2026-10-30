@@ -6,7 +6,6 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
-import { getMetadataPDF } from '../core/metadata-operations';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 
@@ -66,7 +65,14 @@ export default function EditMetadataPage() {
 
     try {
       const bytes = new Uint8Array(await selectedFile.arrayBuffer());
-      const existing = await getMetadataPDF(bytes);
+      const existing = await WorkerManager.getInstance().runOperation<{
+        title: string;
+        author: string;
+        subject: string;
+        keywords: string;
+        creator: string;
+        producer: string;
+      }>('getMetadataPDF', { bytes }, [bytes.buffer]);
       if (operationTokenRef.current === currentToken) {
         setMetadata(existing);
       }
@@ -93,7 +99,8 @@ export default function EditMetadataPage() {
       const bytes = new Uint8Array(await file.arrayBuffer());
       const resultBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'editMetadataPDF',
-        { bytes, metadata }
+        { bytes, metadata },
+        [bytes.buffer]
       );
       if (operationTokenRef.current !== currentToken) return;
 

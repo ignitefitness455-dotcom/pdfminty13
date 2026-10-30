@@ -32,7 +32,12 @@ if (import.meta.hot) {
   });
 }
 
-export const getPdfJs = async () => {
+export const _resetPdfJsCacheForTesting = () => {
+  cachedPdfJs = null;
+  workerInitialized = false;
+};
+
+export const getPdfJs = async (options?: { forceNonWindowModeForTest?: boolean }) => {
   if (cachedPdfJs) return cachedPdfJs;
   const pdfjs = await import('pdfjs-dist');
 
@@ -40,11 +45,27 @@ export const getPdfJs = async () => {
   // assignments across multiple page components previously caused the worker to never attach
   // correctly, hanging loadingTask.promise forever and silently dropping uploaded files.
   if (!workerInitialized) {
-    if (typeof window !== 'undefined') {
+    const isNodeRuntime =
+      typeof process !== 'undefined' &&
+      Boolean((process as { versions?: { node?: string } }).versions?.node);
+    const isBrowserMainThread =
+      !options?.forceNonWindowModeForTest && typeof window !== 'undefined' && !isNodeRuntime;
+
+    if (isBrowserMainThread) {
       pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
     } else {
-      // In Web Worker / Node environments, run in-thread without attempting illegal nested workers
-      pdfjs.GlobalWorkerOptions.workerSrc = '';
+      // Dedicated Web Worker (`typeof window === 'undefined'`) or Node/Vitest runtime:
+      // pdfjs-dist v4.3.x throws 'No "GlobalWorkerOptions.workerSrc" specified.' when workerSrc is '',
+      // and nested module workers are unsupported in Safari/Firefox workers. Pre-registering
+      // `globalThis.pdfjsWorker` makes PDFWorker._initialize() run cleanly in-thread via LoopbackPort.
+      const globalScope = globalThis as typeof globalThis & {
+        pdfjsWorker?: { WorkerMessageHandler?: unknown };
+      };
+      if (!globalScope.pdfjsWorker?.WorkerMessageHandler) {
+        const workerModule = await import('pdfjs-dist/build/pdf.worker.min.mjs');
+        globalScope.pdfjsWorker = workerModule;
+      }
+      pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl || 'pdf.worker.min.mjs';
     }
     workerInitialized = true;
   }

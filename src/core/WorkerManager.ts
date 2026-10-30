@@ -218,6 +218,10 @@ export class WorkerManager {
         return await ops.flattenPDF(p.bytes as Uint8Array);
       case 'repairPDF':
         return await ops.repairPDF(p.bytes as Uint8Array);
+      case 'getMetadataPDF': {
+        const { getMetadataPDF } = await import('./metadata-operations');
+        return await getMetadataPDF(p.bytes as Uint8Array);
+      }
       case 'editMetadataPDF': {
         const { editMetadataPDF } = await import('./metadata-operations');
         return await editMetadataPDF(p.bytes as Uint8Array, p.metadata as MetadataPayload);
