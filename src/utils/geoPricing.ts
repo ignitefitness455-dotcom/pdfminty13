@@ -36,22 +36,6 @@ export interface LocalizedPricing {
 
 // Preset database for popular countries with friendly rounded commercial pricing
 export const COUNTRY_CURRENCY_MAP: Record<string, GeoLocationInfo> = {
-  BD: {
-    countryCode: 'BD',
-    countryName: 'Bangladesh',
-    flag: '🇧🇩',
-    currencyCode: 'BDT',
-    currencySymbol: '৳',
-    rateToUsd: 120,
-  },
-  IN: {
-    countryCode: 'IN',
-    countryName: 'India',
-    flag: '🇮🇳',
-    currencyCode: 'INR',
-    currencySymbol: '₹',
-    rateToUsd: 86,
-  },
   US: {
     countryCode: 'US',
     countryName: 'United States',
@@ -116,6 +100,14 @@ export const COUNTRY_CURRENCY_MAP: Record<string, GeoLocationInfo> = {
     currencySymbol: '€',
     rateToUsd: 0.92,
   },
+  IN: {
+    countryCode: 'IN',
+    countryName: 'India',
+    flag: '🇮🇳',
+    currencyCode: 'INR',
+    currencySymbol: '₹',
+    rateToUsd: 86,
+  },
   JP: {
     countryCode: 'JP',
     countryName: 'Japan',
@@ -174,17 +166,17 @@ export const COUNTRY_CURRENCY_MAP: Record<string, GeoLocationInfo> = {
   },
 };
 
-export const DEFAULT_GEO: GeoLocationInfo = COUNTRY_CURRENCY_MAP.BD;
+export const DEFAULT_GEO: GeoLocationInfo = COUNTRY_CURRENCY_MAP.US;
 
 /**
- * Detect user country synchronously — defaults to Bangladesh (BDT 299.99)
- * unless the user explicitly selected another currency in sessionStorage.
+ * Detect user country synchronously — always defaults to United States (USD $)
+ * unless the user explicitly selected another supported currency in sessionStorage.
  */
 export function detectCountrySync(): GeoLocationInfo {
   try {
     if (typeof window !== 'undefined') {
       const cached = sessionStorage.getItem('pdfminty_manual_currency_code');
-      if (cached && COUNTRY_CURRENCY_MAP[cached]) {
+      if (cached && cached !== 'BD' && COUNTRY_CURRENCY_MAP[cached]) {
         return COUNTRY_CURRENCY_MAP[cached];
       }
     }
@@ -196,7 +188,7 @@ export function detectCountrySync(): GeoLocationInfo {
 }
 
 /**
- * Returns the active country/currency preference (defaults to BDT 299.99)
+ * Returns the active country/currency preference (defaults to USD $)
  */
 export async function detectCountryAsync(): Promise<GeoLocationInfo> {
   return detectCountrySync();
@@ -204,6 +196,10 @@ export async function detectCountryAsync(): Promise<GeoLocationInfo> {
 
 /**
  * Calculates rounded, formatted prices for a given country
+ * Official USD baseline:
+ * - Pro Monthly: $2.49/month
+ * - Pro Annual (10% off): $26.88/year ($2.24/month)
+ * - Lifetime Deal: $50 one-time
  */
 export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricing {
   const { currencyCode, currencySymbol, rateToUsd } = geo;
@@ -211,31 +207,25 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
   // Free plan is always 0
   const free = {
     amount: 0,
-    formatted: geo.countryCode === 'BD' ? 'BDT 0' : `${currencySymbol}0`,
+    formatted: `${currencySymbol}0`,
   };
 
-  // Official BDT baseline:
-  // Pro Monthly: BDT 299.99/month
-  // Pro Annual: BDT 1,799/year (BDT 149.99/month)
-  // Lifetime: BDT 3,490 one-time
-
-  // Special optimized commercial pricing for popular regions:
-  if (geo.countryCode === 'BD') {
+  if (geo.countryCode === 'US') {
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 149.99,
-        annualTotal: 1799,
-        formattedMonthly: 'BDT 149.99',
-        formattedAnnual: 'BDT 1,799',
+        monthlyEquivalent: 2.24,
+        annualTotal: 26.88,
+        formattedMonthly: '$2.24',
+        formattedAnnual: '$26.88',
       },
       proMonthly: {
-        amount: 299.99,
-        formatted: 'BDT 299.99',
+        amount: 2.49,
+        formatted: '$2.49',
       },
       lifetime: {
-        amount: 3490,
-        formatted: 'BDT 3,490',
+        amount: 50,
+        formatted: '$50',
       },
     };
   }
@@ -244,18 +234,18 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 109,
-        annualTotal: 1299,
-        formattedMonthly: '₹109',
-        formattedAnnual: '₹1,299',
+        monthlyEquivalent: 197,
+        annualTotal: 2365,
+        formattedMonthly: '₹197',
+        formattedAnnual: '₹2,365',
       },
       proMonthly: {
         amount: 219,
         formatted: '₹219',
       },
       lifetime: {
-        amount: 2490,
-        formatted: '₹2,490',
+        amount: 4290,
+        formatted: '₹4,290',
       },
     };
   }
@@ -264,18 +254,18 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 0.99,
-        annualTotal: 11.99,
-        formattedMonthly: '£0.99',
-        formattedAnnual: '£11.99',
+        monthlyEquivalent: 1.79,
+        annualTotal: 21.49,
+        formattedMonthly: '£1.79',
+        formattedAnnual: '£21.49',
       },
       proMonthly: {
         amount: 1.99,
         formatted: '£1.99',
       },
       lifetime: {
-        amount: 23,
-        formatted: '£23',
+        amount: 40,
+        formatted: '£40',
       },
     };
   }
@@ -284,53 +274,33 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 1.15,
-        annualTotal: 13.99,
-        formattedMonthly: '€1.15',
-        formattedAnnual: '€13.99',
+        monthlyEquivalent: 2.06,
+        annualTotal: 24.73,
+        formattedMonthly: '€2.06',
+        formattedAnnual: '€24.73',
       },
       proMonthly: {
         amount: 2.29,
         formatted: '€2.29',
       },
       lifetime: {
-        amount: 27,
-        formatted: '€27',
+        amount: 46,
+        formatted: '€46',
       },
     };
   }
 
-  if (geo.countryCode === 'US') {
-    return {
-      free,
-      proAnnual: {
-        monthlyEquivalent: 1.25,
-        annualTotal: 14.99,
-        formattedMonthly: '$1.25',
-        formattedAnnual: '$14.99',
-      },
-      proMonthly: {
-        amount: 2.49,
-        formatted: '$2.49',
-      },
-      lifetime: {
-        amount: 29,
-        formatted: '$29',
-      },
-    };
-  }
-
-  // Dynamic calculation for other currencies
+  // Dynamic calculation for other currencies (10% off annual, $50 lifetime baseline)
   const isHighDenom = rateToUsd >= 50; // JPY, PKR, etc.
 
-  const annualTotalRaw = 14.99 * rateToUsd;
+  const annualTotalRaw = 26.88 * rateToUsd;
   const annualTotal = isHighDenom ? Math.round(annualTotalRaw / 10) * 10 : Math.round(annualTotalRaw * 100) / 100;
   const monthlyEquiv = isHighDenom ? Math.round(annualTotal / 12) : Math.round((annualTotal / 12) * 100) / 100;
 
   const monthlyRaw = 2.49 * rateToUsd;
   const monthly = isHighDenom ? Math.round(monthlyRaw) : Math.round(monthlyRaw * 100) / 100;
 
-  const lifetimeRaw = 29 * rateToUsd;
+  const lifetimeRaw = 50 * rateToUsd;
   const lifetime = isHighDenom ? Math.round(lifetimeRaw / 10) * 10 : Math.round(lifetimeRaw);
 
   const format = (val: number) => {

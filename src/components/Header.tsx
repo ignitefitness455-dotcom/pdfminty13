@@ -160,7 +160,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
               disabled={isUpgrading}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all cursor-pointer active:scale-95 disabled:opacity-60 shrink-0 shadow-sm shadow-emerald-600/20"
               id="header-upgrade-pro-btn"
-              title="Upgrade to Pro (BDT 299.99/month)"
+              title="Upgrade to Pro ($2.49/month)"
             >
               <Zap className="w-3.5 h-3.5 fill-white shrink-0" />
               <span className="sm:hidden">Pro</span>

@@ -238,7 +238,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
                 <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                 <span>
                   {t('usageLimits.modal.btnUpgradeGuest', {
-                    defaultValue: 'Upgrade to Pro (BDT 299.99/month • 500 MB)',
+                    defaultValue: 'Upgrade to Pro ($2.49/month • 500 MB)',
                   })}
                 </span>
               </button>
@@ -254,7 +254,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
                 <Zap className="w-4 h-4 fill-white" />
                 <span>
                   {t('usageLimits.modal.btnUpgradeFree', {
-                    defaultValue: 'Upgrade to Pro (BDT 299.99/month • 500 MB)',
+                    defaultValue: 'Upgrade to Pro ($2.49/month • 500 MB)',
                   })}
                 </span>
               </button>

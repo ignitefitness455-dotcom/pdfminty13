@@ -385,7 +385,7 @@ export const AiAnalyzePage: React.FC = () => {
   const handleFilesSelected = async (files: File[]) => {
     if (!isPro) {
       setError(
-        'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.'
+        'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro ($2.49/month) to unlock AI document analysis.'
       );
       return;
     }
@@ -526,7 +526,7 @@ export const AiAnalyzePage: React.FC = () => {
   const submitChat = async (userPrompt: string, presetTitle?: string) => {
     if (!isPro) {
       setError(
-        'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro (BDT 299.99/month) to unlock AI document analysis.'
+        'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro ($2.49/month) to unlock AI document analysis.'
       );
       return;
     }
@@ -820,7 +820,7 @@ export const AiAnalyzePage: React.FC = () => {
               className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 cursor-pointer transition-all"
             >
               <Zap className="w-3.5 h-3.5 fill-white" />
-              <span>Upgrade to Pro (BDT 299.99/month)</span>
+              <span>Upgrade to Pro ($2.49/month)</span>
             </button>
           )}
           <Link
@@ -865,7 +865,7 @@ export const AiAnalyzePage: React.FC = () => {
             >
               <Zap className="w-4 h-4 fill-white" />
               <span>
-                {isUpgrading ? 'Redirecting to Checkout...' : 'Upgrade to Pro (BDT 299.99/month)'}
+                {isUpgrading ? 'Redirecting to Checkout...' : 'Upgrade to Pro ($2.49/month)'}
               </span>
             </button>
           </div>

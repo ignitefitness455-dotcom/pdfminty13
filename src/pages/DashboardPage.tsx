@@ -121,6 +121,7 @@ export const DashboardPage: React.FC = () => {
 
   // Upgrade & Subscription Modals State
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<'monthly' | 'annual' | 'lifetime'>('monthly');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showRenewModal, setShowRenewModal] = useState(false);
@@ -629,17 +630,34 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             {/* Clean Workspace Actions */}
-            <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800/80 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800/80 shrink-0">
               {!stats.isPro ? (
-                <button
-                  type="button"
-                  onClick={handleActivatePro}
-                  disabled={isUpgrading}
-                  className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
-                >
-                  <Crown className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
-                  <span>{isBn ? 'প্রো আপগ্রেড (৳২৯৯.৯৯/মাস)' : 'Upgrade to Pro (BDT 299.99/mo)'}</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedUpgradePlan('monthly');
+                      setShowUpgradeModal(true);
+                    }}
+                    disabled={isUpgrading}
+                    className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <Crown className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
+                    <span>{isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro ($2.49/mo)'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedUpgradePlan('lifetime');
+                      setShowUpgradeModal(true);
+                    }}
+                    disabled={isUpgrading}
+                    className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400 dark:text-emerald-600 shrink-0" />
+                    <span>{isBn ? 'লাইফটাইম ডিল ($50)' : 'Lifetime Deal ($50)'}</span>
+                  </button>
+                </>
               ) : (
                 <button
                   type="button"
@@ -1145,7 +1163,7 @@ export const DashboardPage: React.FC = () => {
                       <span>{stats.isPro ? (isBn ? 'প্রো মেম্বার অ্যাক্টিভ' : 'Pro Member Active') : (isBn ? 'ফ্রি অ্যাকাউন্ট' : 'Free Explorer')}</span>
                     </div>
                     <span className="text-[11px] font-bold bg-white/15 px-2.5 py-0.5 rounded-full">
-                      {stats.isPro ? 'BDT 299.99/mo' : 'Free'}
+                      {stats.isPro ? '$2.49/mo' : 'Free'}
                     </span>
                   </div>
 
@@ -1225,14 +1243,34 @@ export const DashboardPage: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowUpgradeModal(true)}
-                      className="w-full py-3 px-4 rounded-xl bg-white text-slate-950 font-black text-xs sm:text-sm hover:bg-emerald-50 transition-all shadow-lg text-center flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Sparkles className="w-4 h-4 text-emerald-600" />
-                      <span>{isBn ? 'প্রো আপগ্রেড (৳২৯৯.৯৯/মাস)' : 'Upgrade to Pro — BDT 299.99/mo'}</span>
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedUpgradePlan('monthly');
+                          setShowUpgradeModal(true);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-white text-slate-950 font-black text-xs sm:text-sm hover:bg-emerald-50 transition-all shadow-lg text-center flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-emerald-600" />
+                        <span>{isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro — $2.49/mo'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedUpgradePlan('lifetime');
+                          setShowUpgradeModal(true);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-slate-950/80 hover:bg-slate-950 text-white border border-white/20 font-bold text-xs text-center flex items-center justify-center gap-2 cursor-pointer transition-all"
+                      >
+                        <Crown className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                        <span>
+                          {isBn
+                            ? 'লাইফটাইম সাবস্ক্রিপশন নিন — $50 (এককালীন)'
+                            : 'Get Lifetime Subscription — $50 One-Time'}
+                        </span>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1527,32 +1565,49 @@ export const DashboardPage: React.FC = () => {
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}
                       >
-                        {stats.isPro ? 'Active (BDT 299.99/mo)' : 'Active (Free)'}
+                        {stats.isPro ? 'Active ($2.49/mo)' : 'Active (Free)'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {stats.isPro
                         ? isBn
-                          ? `পরবর্তী নবায়ন তারিখ: ${renewalDate} • বিলিং সাইকেল: মাসিক (BDT 299.99/মাস) • অটো-রিনিউ: ${autoRenew ? 'চালু' : 'বন্ধ'}`
-                          : `Next billing date: ${renewalDate} • Billed at BDT 299.99/month • Auto-renew: ${autoRenew ? 'ON' : 'OFF'}`
+                          ? `পরবর্তী নবায়ন তারিখ: ${renewalDate} • বিলিং সাইকেল: মাসিক ($2.49/মাস) • অটো-রিনিউ: ${autoRenew ? 'চালু' : 'বন্ধ'}`
+                          : `Next billing date: ${renewalDate} • Billed at $2.49/month • Auto-renew: ${autoRenew ? 'ON' : 'OFF'}`
                         : isBn
-                          ? `দৈনিক ১০টি টাস্ক ও ১৫০ এমবি ফাইল ক্যাপাসিটি • সীমাহীন টাস্ক পেতে প্রো আপগ্রেড করুন`
-                          : `10 tasks/day limit • 150MB per file • Upgrade to Pro for unlimited batch processing`}
+                          ? `দৈনিক ১০টি টাস্ক ও ১৫০ এমবি ফাইল ক্যাপাসিটি • সীমাহীন টাস্ক পেতে প্রো বা লাইফটাইম আপগ্রেড করুন`
+                          : `10 tasks/day limit • 150MB per file • Upgrade to Pro or Lifetime for unlimited batch processing`}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5">
                   {!stats.isPro ? (
-                    <button
-                      type="button"
-                      onClick={handleActivatePro}
-                      disabled={isUpgrading}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-60"
-                    >
-                      <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
-                      <span>{isBn ? 'প্রো আপগ্রেড করুন (BDT 299.99/month)' : 'Upgrade to Pro (BDT 299.99/month)'}</span>
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedUpgradePlan('monthly');
+                          setShowUpgradeModal(true);
+                        }}
+                        disabled={isUpgrading}
+                        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                      >
+                        <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
+                        <span>{isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro ($2.49/month)'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedUpgradePlan('lifetime');
+                          setShowUpgradeModal(true);
+                        }}
+                        disabled={isUpgrading}
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs sm:text-sm shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-400 dark:text-emerald-600" />
+                        <span>{isBn ? 'লাইফটাইম ডিল ($50 এককালীন)' : 'Lifetime Deal ($50 One-Time)'}</span>
+                      </button>
+                    </>
                   ) : (
                     <div className="flex flex-wrap items-center gap-2">
                       <button
@@ -1637,63 +1692,134 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Plan Comparison Matrix */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              {/* Plan Comparison Matrix (Free, Pro Monthly/Annual, Lifetime Deal) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                 {/* Free Plan Specs */}
-                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-black text-sm text-slate-800 dark:text-slate-200">
-                      {isBn ? 'ফ্রি ফিচারসমূহ' : 'Free Plan Features'}
-                    </span>
-                    <span className="text-xs font-bold text-slate-500">BDT 0 / month</span>
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-black text-sm text-slate-800 dark:text-slate-200">
+                        {isBn ? 'ফ্রি ফিচারসমূহ' : 'Free Plan Features'}
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">$0 / month</span>
+                    </div>
+                    <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>150MB max file limit (Logged in)</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>100% Client-side privacy execution</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Standard PDF Merge, Compress & Split</span>
+                      </li>
+                    </ul>
                   </div>
-                  <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>100MB max file limit per operation</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>100% Client-side privacy execution</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Standard PDF Merge, Compress & Split</span>
-                    </li>
-                  </ul>
                 </div>
 
                 {/* Pro Plan Specs */}
-                <div className="p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border-2 border-emerald-500/40 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-1.5">
-                      <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
-                      <span className="font-black text-sm text-emerald-900 dark:text-emerald-300">
-                        {isBn ? 'প্রো ফিচারসমূহ' : 'Pro Plan Perks'}
+                <div className="p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border-2 border-emerald-500/40 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-1.5">
+                        <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
+                        <span className="font-black text-sm text-emerald-900 dark:text-emerald-300">
+                          {isBn ? 'প্রো সাবস্ক্রিপশন' : 'Pro Plan Perks'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">
+                        $2.49 / month
                       </span>
                     </div>
-                    <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">
-                      BDT 299.99 / month
-                    </span>
+                    <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                      {isBn
+                        ? 'বার্ষিক বিলিংয়ে ১০% ছাড় ($2.24/মাস • $26.88/বছর)'
+                        : 'Save 10% with Annual Billing ($2.24/mo • $26.88/yr)'}
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span><strong>500MB per file & batch limit</strong> (50 files concurrent)</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span><strong>Gemini AI</strong> document analysis & summaries</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span><strong>High-accuracy OCR</strong> scanned document engine</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Priority WebAssembly CPU optimization</span>
+                      </li>
+                    </ul>
                   </div>
-                  <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span><strong>500MB per file & batch limit</strong> (50 files concurrent)</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span><strong>Gemini AI</strong> document analysis & summaries</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span><strong>High-accuracy OCR</strong> scanned document engine</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Priority WebAssembly CPU optimization</span>
-                    </li>
-                  </ul>
+                  {!stats.isPro && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedUpgradePlan('monthly');
+                        setShowUpgradeModal(true);
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      {isBn ? 'প্রো সাবস্ক্রিপশন নিন ($2.49/মাস)' : 'Choose Pro ($2.49/mo)'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Lifetime Subscription Plan Specs */}
+                <div className="p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border-2 border-amber-500/40 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
+                        <span className="font-black text-sm text-slate-900 dark:text-amber-300">
+                          {isBn ? 'লাইফটাইম সাবস্ক্রিপশন' : 'Lifetime Deal'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-amber-700 dark:text-amber-400">
+                        $50 One-Time
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                      {isBn
+                        ? 'একবার পেমেন্ট করুন • আজীবন প্রো অ্যাক্সেস উপভোগ করুন'
+                        : 'Pay once • Enjoy lifetime Pro access forever'}
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span><strong>All PDFMinty Pro features</strong> unlocked forever</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span><strong>Zero recurring renewals</strong> (No monthly/annual fees)</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span><strong>All future PDF tools</strong> & updates included</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>Commercial license & VIP engineering support</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedUpgradePlan('lifetime');
+                      setShowUpgradeModal(true);
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    {isBn ? 'লাইফটাইম ডিল নিন ($50 এককালীন)' : 'Get Lifetime Deal ($50)'}
+                  </button>
                 </div>
               </div>
 
@@ -1708,7 +1834,7 @@ export const DashboardPage: React.FC = () => {
                       <FileText className="w-4 h-4 text-emerald-500" />
                       <div>
                         <span className="font-bold text-slate-800 dark:text-slate-200 block">
-                          PDFMinty Pro Subscription — BDT 299.99 / Month
+                          PDFMinty Pro Subscription — $2.49 / Month
                         </span>
                         <span className="text-slate-500 text-[11px]">
                           {isBn ? 'স্ট্যাটাস: সক্রিয় &bull; আনলিমিটেড অ্যাক্সেস' : 'Status: Active &bull; Unlimited Access'}
@@ -1942,11 +2068,11 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* UPGRADE TO PRO MODAL ($2.49/mo)                          */}
+      {/* UPGRADE TO PRO / LIFETIME MODAL ($2.49/mo | $50 Lifetime) */}
       {/* ========================================================= */}
       {showUpgradeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadein">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 relative">
             <button
               onClick={() => setShowUpgradeModal(false)}
               className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
@@ -1958,24 +2084,95 @@ export const DashboardPage: React.FC = () => {
                 <Crown className="w-8 h-8 fill-white" />
               </div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                {isBn ? 'PDFMinty প্রো প্ল্যান' : 'Upgrade to PDFMinty Pro'}
+                {selectedUpgradePlan === 'lifetime'
+                  ? isBn
+                    ? 'PDFMinty লাইফটাইম ডিল'
+                    : 'PDFMinty Lifetime Deal'
+                  : isBn
+                    ? 'PDFMinty প্রো প্ল্যান'
+                    : 'Upgrade to PDFMinty Pro'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {isBn
-                  ? 'আন্তর্জাতিক পিডিএফ সাইটগুলোর তুলনায় অধিক সুরক্ষিত ও শক্তিশালী'
-                  : 'Power up with 500MB batch processing & Gemini AI'}
+                  ? 'মাসিক, বার্ষিক (১০% ছাড়) অথবা আজীবন এককালীন প্ল্যান বেছে নিন'
+                  : 'Choose Monthly, Annual (10% Off), or Lifetime One-Time Access'}
               </p>
+            </div>
+
+            {/* Plan Selector Tabs inside Dashboard Modal */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setSelectedUpgradePlan('monthly')}
+                className={`py-2 px-2 rounded-xl transition-all cursor-pointer ${
+                  selectedUpgradePlan === 'monthly'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                {isBn ? 'মাসিক ($2.49)' : 'Monthly ($2.49)'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedUpgradePlan('annual')}
+                className={`py-2 px-2 rounded-xl transition-all cursor-pointer ${
+                  selectedUpgradePlan === 'annual'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                {isBn ? 'বার্ষিক (10% ছাড়)' : 'Annual (10% Off)'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedUpgradePlan('lifetime')}
+                className={`py-2 px-2 rounded-xl transition-all cursor-pointer ${
+                  selectedUpgradePlan === 'lifetime'
+                    ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                {isBn ? 'লাইফটাইম ($50)' : 'Lifetime ($50)'}
+              </button>
             </div>
 
             <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 text-center space-y-1">
               <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
-                {isBn ? 'মাসিক আনলিমিটেড প্ল্যান' : 'Monthly Unlimited Pro'}
+                {selectedUpgradePlan === 'lifetime'
+                  ? isBn
+                    ? 'এককালীন পেমেন্ট • আজীবন মেয়াদ'
+                    : 'One-Time Payment • Lifetime Access'
+                  : selectedUpgradePlan === 'annual'
+                    ? isBn
+                      ? 'বার্ষিক প্রো প্ল্যান (১০% সাশ্রয়)'
+                      : 'Annual Unlimited Pro (Save 10%)'
+                    : isBn
+                      ? 'মাসিক আনলিমিটেড প্ল্যান'
+                      : 'Monthly Unlimited Pro'}
               </span>
               <div className="text-3xl font-black text-slate-900 dark:text-white">
-                BDT 299.99 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ month</span>
+                {selectedUpgradePlan === 'lifetime' ? (
+                  <>
+                    $50 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ one-time</span>
+                  </>
+                ) : selectedUpgradePlan === 'annual' ? (
+                  <>
+                    $2.24 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ mo ($26.88/yr)</span>
+                  </>
+                ) : (
+                  <>
+                    $2.49 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ month</span>
+                  </>
+                )}
               </div>
               <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                <span>Cancel anytime &bull; 100% Confidential</span>
+                <span>
+                  {selectedUpgradePlan === 'lifetime'
+                    ? isBn
+                      ? 'কোনো মাসিক চার্জ নেই • ভবিষ্যতের সব আপডেট ফ্রি'
+                      : 'No recurring charges • All future updates included'
+                    : 'Cancel anytime • 100% Confidential'}
+                </span>
               </p>
             </div>
 
@@ -2012,7 +2209,19 @@ export const DashboardPage: React.FC = () => {
                 disabled={isUpgrading}
                 className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                {isUpgrading ? '...' : isBn ? 'নিশ্চিত করুন (BDT 299.99)' : 'Confirm & Upgrade (BDT 299.99)'}
+                {isUpgrading
+                  ? '...'
+                  : selectedUpgradePlan === 'lifetime'
+                    ? isBn
+                      ? 'লাইফটাইম নিশ্চিত করুন ($50)'
+                      : 'Confirm Lifetime ($50)'
+                    : selectedUpgradePlan === 'annual'
+                      ? isBn
+                        ? 'নিশ্চিত করুন ($26.88/বছর)'
+                        : 'Confirm Annual ($26.88/yr)'
+                      : isBn
+                        ? 'নিশ্চিত করুন ($2.49/মাস)'
+                        : 'Confirm & Upgrade ($2.49)'}
               </button>
             </div>
           </div>
@@ -2052,7 +2261,7 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-center text-slate-700 dark:text-slate-300">
                 <span>{isBn ? 'নবায়ন সাইকেল:' : 'Billing Term:'}</span>
-                <span className="font-bold">+30 Days (BDT 299.99)</span>
+                <span className="font-bold">+30 Days ($2.49)</span>
               </div>
               <div className="flex justify-between items-center text-emerald-800 dark:text-emerald-300 font-bold pt-1 border-t border-emerald-500/20">
                 <span>{isBn ? 'দৈনিক টাস্ক সুবিধা:' : 'Task Limits:'}</span>

@@ -172,15 +172,15 @@ export const PricingPage: React.FC = () => {
               <ChevronDown className="w-3 h-3" />
             </button>
 
-            {/* Quick direct switch back to BDT 299.99/mo if another currency was selected */}
-            {geo.currencyCode !== 'BDT' && (
+            {/* Quick direct switch back to USD ($2.49/mo) if another currency was selected */}
+            {geo.currencyCode !== 'USD' && (
               <button
                 type="button"
-                onClick={() => handleManualCountryChange('BD')}
+                onClick={() => handleManualCountryChange('US')}
                 className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 transition-colors cursor-pointer ml-1.5"
-                title="View in BDT (BDT 299.99/month)"
+                title="View in USD ($2.49/month)"
               >
-                BDT (299.99/mo)
+                USD ($2.49/mo)
               </button>
             )}
 
@@ -244,8 +244,8 @@ export const PricingPage: React.FC = () => {
               <span>{isBn ? 'বার্ষিক বিলিং' : 'Annual Billing'}</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-wide uppercase">
                 {isBn
-                  ? `50% ছাড় (${pricing.proAnnual.formattedMonthly}/মাস)`
-                  : `Save 50% (${pricing.proAnnual.formattedMonthly}/mo)`}
+                  ? `10% ছাড় (${pricing.proAnnual.formattedMonthly}/মাস)`
+                  : `Save 10% (${pricing.proAnnual.formattedMonthly}/mo)`}
               </span>
             </button>
           </div>
@@ -375,8 +375,8 @@ export const PricingPage: React.FC = () => {
                         ? `মাসিক প্ল্যান: মাত্র ${pricing.proMonthly.formatted} / মাস (যেকোনো সময় বাতিলযোগ্য)`
                         : `Monthly Plan: Just ${pricing.proMonthly.formatted} / month (Cancel anytime)`)
                     : (isBn
-                        ? `বার্ষিক প্ল্যান: মাত্র ${pricing.proAnnual.formattedMonthly}/মাস (${pricing.proAnnual.formattedAnnual}/বছর • 50% সাশ্রয়)`
-                        : `Annual Plan: Just ${pricing.proAnnual.formattedMonthly}/mo (${pricing.proAnnual.formattedAnnual}/yr • Save 50%)`)}
+                        ? `বার্ষিক প্ল্যান: মাত্র ${pricing.proAnnual.formattedMonthly}/মাস (${pricing.proAnnual.formattedAnnual}/বছর • 10% সাশ্রয়)`
+                        : `Annual Plan: Just ${pricing.proAnnual.formattedMonthly}/mo (${pricing.proAnnual.formattedAnnual}/yr • Save 10%)`)}
                 </span>
               </div>
             </div>
@@ -495,7 +495,7 @@ export const PricingPage: React.FC = () => {
 
             {geo.currencyCode !== 'USD' && (
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mb-5">
-                (Equivalent to ~$29 USD one-time)
+                (Equivalent to ~$50 USD one-time)
               </p>
             )}
 
@@ -781,10 +781,10 @@ export const PricingPage: React.FC = () => {
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {billingCycle === 'annual' && checkoutModalPlan === 'Pro'
-                    ? `${pricing.proAnnual.formattedAnnual} / year (~${pricing.proAnnual.formattedMonthly}/mo • $14.99 USD)`
+                    ? `${pricing.proAnnual.formattedAnnual} / year (~${pricing.proAnnual.formattedMonthly}/mo • $26.88 USD)`
                     : checkoutModalPlan === 'Pro'
                       ? `${pricing.proMonthly.formatted} / month ($2.49 USD/mo)`
-                      : `${pricing.lifetime.formatted} one-time payment ($29 USD)`}
+                      : `${pricing.lifetime.formatted} one-time payment ($50 USD)`}
                 </p>
               </div>
             </div>
