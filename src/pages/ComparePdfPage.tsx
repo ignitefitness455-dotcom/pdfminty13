@@ -84,51 +84,192 @@ function extractVisualLines(items: unknown[]): string[] {
     .filter((line) => line.length > 0);
 }
 
-// Simple fast Myers / LCS line diff algorithm
-function computeLineDiff(linesA: string[], linesB: string[]): DiffLine[] {
+// Prefix/suffix-trimmed LCS line diff with linear O(m + n) fallback for dense pages
+export function computeLineDiff(linesA: string[], linesB: string[]): DiffLine[] {
   const m = linesA.length;
   const n = linesB.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
 
-  for (let i = 0; i < m; i++) {
-    for (let j = 0; j < n; j++) {
-      if (linesA[i].trim() === linesB[j].trim()) {
-        dp[i + 1][j + 1] = dp[i][j] + 1;
-      } else {
-        dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+  let prefix = 0;
+  while (prefix < m && prefix < n && linesA[prefix].trim() === linesB[prefix].trim()) {
+    prefix++;
+  }
+
+  let suffix = 0;
+  while (
+    suffix < m - prefix &&
+    suffix < n - prefix &&
+    linesA[m - 1 - suffix].trim() === linesB[n - 1 - suffix].trim()
+  ) {
+    suffix++;
+  }
+
+  const result: DiffLine[] = [];
+  for (let k = 0; k < prefix; k++) {
+    result.push({
+      type: 'unchanged',
+      text: linesA[k],
+      lineA: k + 1,
+      lineB: k + 1,
+    });
+  }
+
+  const midM = m - prefix - suffix;
+  const midN = n - prefix - suffix;
+
+  if (midM > 0 || midN > 0) {
+    if (midM * midN > 1_500_000) {
+      // Bounded linear lookahead diff to prevent O(m * n) memory spikes on huge dense pages
+      const LOOKAHEAD = 16;
+      let ia = 0;
+      let ib = 0;
+      while (ia < midM && ib < midN) {
+        const aTrim = linesA[prefix + ia].trim();
+        const bTrim = linesB[prefix + ib].trim();
+        if (aTrim === bTrim) {
+          result.push({
+            type: 'unchanged',
+            text: linesA[prefix + ia],
+            lineA: prefix + ia + 1,
+            lineB: prefix + ib + 1,
+          });
+          ia++;
+          ib++;
+          continue;
+        }
+
+        let matchInB = -1;
+        for (let k = 1; k <= LOOKAHEAD && ib + k < midN; k++) {
+          if (aTrim === linesB[prefix + ib + k].trim()) {
+            matchInB = k;
+            break;
+          }
+        }
+
+        let matchInA = -1;
+        for (let k = 1; k <= LOOKAHEAD && ia + k < midM; k++) {
+          if (linesA[prefix + ia + k].trim() === bTrim) {
+            matchInA = k;
+            break;
+          }
+        }
+
+        if (matchInB !== -1 && (matchInA === -1 || matchInB <= matchInA)) {
+          for (let k = 0; k < matchInB; k++) {
+            result.push({
+              type: 'added',
+              text: linesB[prefix + ib + k],
+              lineB: prefix + ib + k + 1,
+            });
+          }
+          ib += matchInB;
+        } else if (matchInA !== -1) {
+          for (let k = 0; k < matchInA; k++) {
+            result.push({
+              type: 'removed',
+              text: linesA[prefix + ia + k],
+              lineA: prefix + ia + k + 1,
+            });
+          }
+          ia += matchInA;
+        } else {
+          result.push({
+            type: 'removed',
+            text: linesA[prefix + ia],
+            lineA: prefix + ia + 1,
+          });
+          result.push({
+            type: 'added',
+            text: linesB[prefix + ib],
+            lineB: prefix + ib + 1,
+          });
+          ia++;
+          ib++;
+        }
+      }
+
+      while (ia < midM) {
+        result.push({
+          type: 'removed',
+          text: linesA[prefix + ia],
+          lineA: prefix + ia + 1,
+        });
+        ia++;
+      }
+      while (ib < midN) {
+        result.push({
+          type: 'added',
+          text: linesB[prefix + ib],
+          lineB: prefix + ib + 1,
+        });
+        ib++;
+      }
+    } else {
+      const stride = midN + 1;
+      const dp = new Int32Array((midM + 1) * stride);
+
+      for (let i = 0; i < midM; i++) {
+        const aTrim = linesA[prefix + i].trim();
+        const rowOffset = i * stride;
+        const nextRowOffset = (i + 1) * stride;
+        for (let j = 0; j < midN; j++) {
+          if (aTrim === linesB[prefix + j].trim()) {
+            dp[nextRowOffset + j + 1] = dp[rowOffset + j] + 1;
+          } else {
+            const left = dp[nextRowOffset + j];
+            const up = dp[rowOffset + j + 1];
+            dp[nextRowOffset + j + 1] = left >= up ? left : up;
+          }
+        }
+      }
+
+      const midReversed: DiffLine[] = [];
+      let i = midM;
+      let j = midN;
+      while (i > 0 || j > 0) {
+        if (
+          i > 0 &&
+          j > 0 &&
+          linesA[prefix + i - 1].trim() === linesB[prefix + j - 1].trim()
+        ) {
+          midReversed.push({
+            type: 'unchanged',
+            text: linesA[prefix + i - 1],
+            lineA: prefix + i,
+            lineB: prefix + j,
+          });
+          i--;
+          j--;
+        } else if (j > 0 && (i === 0 || dp[i * stride + (j - 1)] >= dp[(i - 1) * stride + j])) {
+          midReversed.push({
+            type: 'added',
+            text: linesB[prefix + j - 1],
+            lineB: prefix + j,
+          });
+          j--;
+        } else if (i > 0) {
+          midReversed.push({
+            type: 'removed',
+            text: linesA[prefix + i - 1],
+            lineA: prefix + i,
+          });
+          i--;
+        }
+      }
+      for (let k = midReversed.length - 1; k >= 0; k--) {
+        result.push(midReversed[k]);
       }
     }
   }
 
-  const result: DiffLine[] = [];
-  let i = m;
-  let j = n;
-
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && linesA[i - 1].trim() === linesB[j - 1].trim()) {
-      result.unshift({
-        type: 'unchanged',
-        text: linesA[i - 1],
-        lineA: i,
-        lineB: j,
-      });
-      i--;
-      j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      result.unshift({
-        type: 'added',
-        text: linesB[j - 1],
-        lineB: j,
-      });
-      j--;
-    } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
-      result.unshift({
-        type: 'removed',
-        text: linesA[i - 1],
-        lineA: i,
-      });
-      i--;
-    }
+  for (let k = 0; k < suffix; k++) {
+    const idxA = m - suffix + k;
+    const idxB = n - suffix + k;
+    result.push({
+      type: 'unchanged',
+      text: linesA[idxA],
+      lineA: idxA + 1,
+      lineB: idxB + 1,
+    });
   }
 
   return result;
@@ -306,6 +447,10 @@ export const ComparePdfPage: React.FC = () => {
           removedCount: removed,
           unchangedCount: unchanged,
         });
+
+        if (p % 5 === 0) {
+          await new Promise((r) => setTimeout(r, 0));
+        }
       }
 
       if (myToken === operationTokenRef.current) {

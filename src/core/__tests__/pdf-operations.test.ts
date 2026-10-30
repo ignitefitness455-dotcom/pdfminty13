@@ -1,4 +1,4 @@
-import { PDFDocument as PlainPDFDocument, PDFName } from '@cantoo/pdf-lib';
+import { PDFDocument as PlainPDFDocument, PDFName, PDFRef, PDFStream } from '@cantoo/pdf-lib';
 import { describe, it, expect } from 'vitest';
 
 import { getFriendlyErrorMessage } from '../index';
@@ -1068,6 +1068,213 @@ describe('pdf-operations - Edge Cases', () => {
       const xfaBytes = await xfaDoc.save();
 
       await expect(flattenPDF(xfaBytes)).rejects.toThrow(/UNSUPPORTED_XFA/i);
+    });
+
+    it('watermarkPDF stamps Bengali Unicode text (গোপনীয়) without WinAnsi encoding errors', async () => {
+      const sourceBytes = await createCustomPdf(2);
+
+      // 1. Headless environment fallback (pure-TS RGBA PNG stamp)
+      const headlessResult = await watermarkPDF(sourceBytes, 'গোপনীয়', {
+        opacity: 0.35,
+        rotationDegrees: 45,
+        size: 42,
+      });
+      const headlessDoc = await PlainPDFDocument.load(headlessResult);
+      expect(headlessDoc.getPageCount()).toBe(2);
+
+      // 2. OffscreenCanvas environment (verifies fillText receives exact Bengali string & embeds PNG XObject)
+      const origOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown })
+        .OffscreenCanvas;
+      const drawnStrings: string[] = [];
+
+      // Minimal valid 1x1 transparent PNG
+      const tinyPng = Uint8Array.from(
+        atob(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIAAAUAAeImBZsAAAAASUVORK5CYII='
+        ),
+        (c) => c.charCodeAt(0)
+      );
+
+      class UnicodeWatermarkOffscreenCanvas {
+        width: number;
+        height: number;
+        constructor(w: number, h: number) {
+          this.width = w;
+          this.height = h;
+        }
+        getContext() {
+          return {
+            font: '',
+            fillStyle: '',
+            textAlign: 'center',
+            textBaseline: 'middle',
+            clearRect: () => {},
+            save: () => {},
+            restore: () => {},
+            translate: () => {},
+            rotate: () => {},
+            measureText: (txt: string) => ({ width: txt.length * 24 }),
+            fillText: (txt: string) => {
+              drawnStrings.push(txt);
+            },
+          };
+        }
+        async convertToBlob() {
+          return {
+            arrayBuffer: async () =>
+              tinyPng.buffer.slice(tinyPng.byteOffset, tinyPng.byteOffset + tinyPng.byteLength),
+          };
+        }
+      }
+
+      (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+        UnicodeWatermarkOffscreenCanvas;
+
+      try {
+        const stampedBytes = await watermarkPDF(sourceBytes, 'গোপনীয় দলিল', {
+          opacity: 0.4,
+          rotationDegrees: 30,
+          size: 36,
+          colorHex: '#cc1a1a',
+        });
+        expect(drawnStrings).toContain('গোপনীয় দলিল');
+        const loaded = await PlainPDFDocument.load(stampedBytes);
+        expect(loaded.getPageCount()).toBe(2);
+      } finally {
+        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+          origOffscreenCanvas;
+      }
+    });
+
+    it('compressPDF downsamples /SMask images while preserving /SMask ref, and skips color-key /Mask arrays', async () => {
+      const baseJpg = Uint8Array.from(
+        atob(
+          '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='
+        ),
+        (c) => c.charCodeAt(0)
+      );
+      const padLen = 12000;
+      const marker = new Uint8Array([0xff, 0xfe, (padLen + 2) >> 8, (padLen + 2) & 0xff]);
+      const paddedJpg = new Uint8Array(2 + marker.length + padLen + (baseJpg.length - 2));
+      paddedJpg.set(baseJpg.subarray(0, 2), 0);
+      paddedJpg.set(marker, 2);
+      paddedJpg.set(new Uint8Array(padLen).fill(0x41), 2 + marker.length);
+      paddedJpg.set(baseJpg.subarray(2), 2 + marker.length + padLen);
+
+      const initialDoc = await PlainPDFDocument.create();
+      const page = initialDoc.addPage([400, 400]);
+      const embeddedSmaskImg = await initialDoc.embedJpg(paddedJpg);
+      const embeddedColorKeyImg = await initialDoc.embedJpg(paddedJpg.slice());
+      page.drawImage(embeddedSmaskImg, { x: 10, y: 10, width: 150, height: 150 });
+      page.drawImage(embeddedColorKeyImg, { x: 200, y: 10, width: 150, height: 150 });
+
+      // Save & reload once so @cantoo/pdf-lib materializes the lazy JPEG embedders into PDFStream indirect objects
+      const materializedBytes = await initialDoc.save({ useObjectStreams: false });
+      const doc = await PlainPDFDocument.load(materializedBytes);
+
+      // Attach a mock /SMask stream to the first image and a color-key /Mask array to the second image
+      const smaskStream = doc.context.flateStream(new Uint8Array(16).fill(0xff), {
+        Type: 'XObject',
+        Subtype: 'Image',
+        Width: 4,
+        Height: 4,
+        ColorSpace: 'DeviceGray',
+        BitsPerComponent: 8,
+      });
+      const smaskRef = doc.context.register(smaskStream);
+
+      const imageRefs: PDFRef[] = [];
+      for (const [ref, obj] of doc.context.enumerateIndirectObjects()) {
+        if (
+          obj instanceof PDFStream &&
+          ref.toString() !== smaskRef.toString() &&
+          obj.dict.lookup(PDFName.of('Subtype')) === PDFName.of('Image')
+        ) {
+          imageRefs.push(ref);
+        }
+      }
+      expect(imageRefs.length).toBe(2);
+
+      const firstImgStream = doc.context.lookup(imageRefs[0]) as PDFStream;
+      firstImgStream.dict.set(PDFName.of('Width'), doc.context.obj(2800));
+      firstImgStream.dict.set(PDFName.of('Height'), doc.context.obj(2800));
+      firstImgStream.dict.set(PDFName.of('SMask'), smaskRef);
+
+      const secondImgStream = doc.context.lookup(imageRefs[1]) as PDFStream;
+      secondImgStream.dict.set(PDFName.of('Mask'), doc.context.obj([0, 0, 0, 0, 0, 0]));
+
+      const inputBytes = await doc.save({ useObjectStreams: false });
+
+      const origCreateImageBitmap = (globalThis as unknown as { createImageBitmap?: unknown })
+        .createImageBitmap;
+      const origOffscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: unknown })
+        .OffscreenCanvas;
+
+      let downsampledDims: [number, number] | null = null;
+      (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap = async () => ({
+        width: 2800,
+        height: 2800,
+        close: () => {},
+      });
+
+      class MaskAwareOffscreenCanvas {
+        width: number;
+        height: number;
+        constructor(w: number, h: number) {
+          this.width = w;
+          this.height = h;
+          downsampledDims = [w, h];
+        }
+        getContext() {
+          return {
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+            fillStyle: '#fff',
+            fillRect: () => {},
+            drawImage: () => {},
+          };
+        }
+        async convertToBlob() {
+          return {
+            arrayBuffer: async () =>
+              baseJpg.buffer.slice(baseJpg.byteOffset, baseJpg.byteOffset + baseJpg.byteLength),
+          };
+        }
+      }
+
+      (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+        MaskAwareOffscreenCanvas;
+
+      try {
+        const compressedBytes = await compressPDF(inputBytes, 'recommended');
+        expect(compressedBytes.byteLength).toBeLessThan(inputBytes.byteLength);
+        // First image (2800x2800 with /SMask) WAS downsampled to <= 1600px
+        expect(downsampledDims).not.toBeNull();
+        expect(downsampledDims![0]).toBeLessThanOrEqual(1600);
+
+        const outDoc = await PlainPDFDocument.load(compressedBytes);
+        let preservedSmaskCount = 0;
+        let preservedColorKeyMaskCount = 0;
+        for (const [, obj] of outDoc.context.enumerateIndirectObjects()) {
+          if (obj instanceof PDFStream && obj.dict) {
+            if (obj.dict.get(PDFName.of('SMask'))) {
+              preservedSmaskCount++;
+            }
+            if (obj.dict.get(PDFName.of('Mask'))) {
+              preservedColorKeyMaskCount++;
+              // Color-key masked image must retain its original padded bytes (not re-encoded as lossy JPEG)
+              expect(obj.getContents().byteLength).toBeGreaterThan(10000);
+            }
+          }
+        }
+        expect(preservedSmaskCount).toBe(1);
+        expect(preservedColorKeyMaskCount).toBe(1);
+      } finally {
+        (globalThis as unknown as { createImageBitmap: unknown }).createImageBitmap =
+          origCreateImageBitmap;
+        (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+          origOffscreenCanvas;
+      }
     });
   });
 });

@@ -171,15 +171,17 @@ export const CompressPdfPage: React.FC = () => {
       setDownloadUrl(url);
       setDownloadName(safeName);
       setIsSuccess(true);
-      try {
-        confetti({
-          particleCount: 65,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#10b981', '#34d399', '#059669', '#6ee7b7', '#14b8a6'],
-        });
-      } catch {
-        // Non-blocking confetti fallback
+      if (isSmaller) {
+        try {
+          confetti({
+            particleCount: 65,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#10b981', '#34d399', '#059669', '#6ee7b7', '#14b8a6'],
+          });
+        } catch {
+          // Non-blocking confetti fallback
+        }
       }
 
       // Record real user activity for Dashboard
@@ -195,7 +197,7 @@ export const CompressPdfPage: React.FC = () => {
           fileSizeFormatted: `${formatMb(fileBytes.byteLength)} → ${formatMb(finalBytes.byteLength)}`,
           status: 'completed',
           tag: 'Compress',
-          savings: `${savedPct}% reduced`,
+          savings: isSmaller ? `${savedPct}% reduced` : 'Already optimized (0% change)',
         });
       } catch {
         // Non-blocking log
@@ -342,7 +344,11 @@ export const CompressPdfPage: React.FC = () => {
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Compression Completed Successfully!</span>
+                    <span>
+                      {wasAlreadyCompact || savedBytes === 0
+                        ? 'Already Optimized — Original File Preserved'
+                        : 'Compression Completed Successfully!'}
+                    </span>
                   </div>
                   <span className="px-2.5 py-1 rounded-full text-xs font-black tabular-nums bg-emerald-600 text-white shadow-sm">
                     {percentSaved > 0 ? `-${percentSaved}% Saved` : 'Fully Optimized'}

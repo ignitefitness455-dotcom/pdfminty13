@@ -303,7 +303,7 @@ export const GrayscalePdfPage: React.FC = () => {
           <p className="text-sm sm:text-base text-slate-600">
             {t('grayscalePdf.guideLead', {
               defaultValue:
-                'Converting high-resolution color PDF documents to pure monochrome (grayscale) is one of the most effective strategies for slashing file byte size, optimizing documents for bulk office printing, and preparing legal or academic filings according to strict publication guidelines.',
+                'Converting color PDF documents to pure monochrome (grayscale) prepares pages for bulk black-and-white office printing, prevents accidental color toner billing, and satisfies monochrome court, patent, or academic filing rules. Note: because pages are rasterized into grayscale images, pure vector-text PDFs may grow larger and lose selectable text—use our Compress PDF tool instead when vector-preserving file size reduction is your primary goal.',
             })}
           </p>
         </div>
@@ -313,17 +313,17 @@ export const GrayscalePdfPage: React.FC = () => {
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               {t('grayscalePdf.advTitle', {
-                defaultValue: 'Key Advantages of Grayscale Conversion',
+                defaultValue: 'Key Advantages & Rasterization Trade-offs',
               })}
             </h3>
             <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
               <li>
                 <strong>
-                  {t('grayscalePdf.adv1Bold', { defaultValue: 'Major File Size Reduction:' })}
+                  {t('grayscalePdf.adv1Bold', { defaultValue: 'True Monochrome Raster Output:' })}
                 </strong>{' '}
                 {t('grayscalePdf.adv1Text', {
                   defaultValue:
-                    'Strips redundant 24-bit RGB and 32-bit CMYK color channels, compressing documents by up to 60-80%.',
+                    'Converts RGB and CMYK graphics into neutral grayscale page images. Photo-heavy scans often shrink at Normal (1.0x) resolution, whereas vector-only text PDFs can increase in byte size.',
                 })}
               </li>
               <li>
@@ -407,7 +407,7 @@ export const GrayscalePdfPage: React.FC = () => {
           <p className="leading-normal text-slate-600">
             {t('grayscalePdf.privacyText', {
               defaultValue:
-                'All document rasterization, color math, and PDF reconstruction take place locally on your computer using WebAssembly and HTML5 Canvas. Your confidential pages are never uploaded to any cloud server.',
+                'All page rasterization, ITU-R BT.601 luminance math, and PDF reconstruction run locally inside an isolated browser Web Worker using PDF.js, OffscreenCanvas, and @cantoo/pdf-lib. Your confidential pages are never uploaded to any cloud server.',
             })}
           </p>
         </div>

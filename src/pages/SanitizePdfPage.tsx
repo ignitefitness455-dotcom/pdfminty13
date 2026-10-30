@@ -1,4 +1,3 @@
-import { PDFDocument, rgb, StandardFonts } from '@cantoo/pdf-lib';
 import {
   AlertCircle,
   CheckCircle2,
@@ -567,6 +566,7 @@ export default function SanitizePdfPage() {
         setDownloadUrl(null);
       }
 
+      const { PDFDocument, rgb, StandardFonts } = await import('@cantoo/pdf-lib');
       const pdfDoc = await PDFDocument.load(fileBytes);
       const pages = pdfDoc.getPages();
       const helvetica = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -719,6 +719,8 @@ export default function SanitizePdfPage() {
               const [copiedPage] = await flattenedDoc.copyPages(pdfDoc, [pIdx]);
               flattenedDoc.addPage(copiedPage);
             }
+            // Yield between rasterized pages to keep browser UI responsive on multi-page redactions
+            await new Promise((r) => setTimeout(r, 0));
           }
           finalDoc = flattenedDoc;
         } catch {

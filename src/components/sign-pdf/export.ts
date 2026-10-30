@@ -1,12 +1,4 @@
-import {
-  PDFDocument,
-  StandardFonts,
-  degrees,
-  rgb,
-  type PDFFont,
-  type PDFImage,
-  type PDFPage,
-} from '@cantoo/pdf-lib';
+import type { PDFFont, PDFImage, PDFPage } from '@cantoo/pdf-lib';
 
 import { PDFSanitizer } from '../../core/PDFSanitizer';
 
@@ -69,7 +61,7 @@ function dataUrlToBytes(dataUrl: string): Uint8Array {
   return out;
 }
 
-function hexToRgb(hex: string) {
+function hexToRgbTuple(hex: string): { r: number; g: number; b: number } {
   const h = hex.replace('#', '');
   const n = parseInt(
     h.length === 3
@@ -80,7 +72,11 @@ function hexToRgb(hex: string) {
       : h,
     16
   );
-  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+  return {
+    r: ((n >> 16) & 255) / 255,
+    g: ((n >> 8) & 255) / 255,
+    b: (n & 255) / 255,
+  };
 }
 
 export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
@@ -90,6 +86,7 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
       'SECURED_LOCKED: This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.'
     );
   }
+  const { PDFDocument, StandardFonts, degrees, rgb } = await import('@cantoo/pdf-lib');
   const pdf = await PDFDocument.load(input.bytes);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const pdfPages = pdf.getPages();
@@ -210,12 +207,13 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
           Math.max(0, (vw * (1 - TEXT_FIELD_PAD_RATIO * 2) - textW) / 2);
         const baselineVy = vy0 + vh / 2 + capH / 2 - size * 0.08;
         const anchor = toPdf(baselineVx, baselineVy);
+        const ink = hexToRgbTuple('#111111');
         page.drawText(text, {
           x: anchor.x,
           y: anchor.y,
           size,
           font,
-          color: hexToRgb('#111111'),
+          color: rgb(ink.r, ink.g, ink.b),
           rotate: degrees(rotate),
         });
         drawn = true;

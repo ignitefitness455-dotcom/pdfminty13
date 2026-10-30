@@ -441,20 +441,24 @@ export const AiAnalyzePage: React.FC = () => {
 
         textBuffer += `--- PAGE ${i} ---\n${pageText}\n\n`;
 
-        // Render a lightweight thumbnail canvas for page inspection
+        // Render lightweight preview thumbnails for the first 6 pages only to avoid mobile RAM/CPU spikes on 50-page docs
         let thumbUrl: string | undefined = undefined;
-        try {
-          const viewport = page.getViewport({ scale: 0.35 });
-          const canvas = document.createElement('canvas');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            thumbUrl = canvas.toDataURL('image/jpeg', 0.65);
+        if (i <= 6) {
+          try {
+            const viewport = page.getViewport({ scale: 0.35 });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              await page.render({ canvasContext: ctx, viewport }).promise;
+              thumbUrl = canvas.toDataURL('image/jpeg', 0.65);
+            }
+            canvas.width = 0;
+            canvas.height = 0;
+          } catch {
+            // Non-blocking thumbnail fallback
           }
-        } catch {
-          // Non-blocking thumbnail fallback
         }
 
         collectedMeta.push({

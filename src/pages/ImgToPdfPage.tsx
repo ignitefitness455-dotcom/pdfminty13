@@ -26,6 +26,7 @@ export const ImgToPdfPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   const urlsRef = React.useRef<string[]>([]);
 
@@ -101,9 +102,16 @@ export const ImgToPdfPage: React.FC = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleMove = (index: number, direction: -1 | 1) => {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= images.length) return;
+  const handleReorder = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= images.length ||
+      toIndex >= images.length
+    ) {
+      return;
+    }
     setIsSuccess(false);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
@@ -111,10 +119,14 @@ export const ImgToPdfPage: React.FC = () => {
     }
     setImages((prev) => {
       const next = [...prev];
-      const [moved] = next.splice(index, 1);
-      next.splice(targetIndex, 0, moved);
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
       return next;
     });
+  };
+
+  const handleMove = (index: number, direction: -1 | 1) => {
+    handleReorder(index, index + direction);
   };
 
   const handleClearDeck = () => {
@@ -291,7 +303,24 @@ export const ImgToPdfPage: React.FC = () => {
                   return (
                     <div
                       key={img.id}
-                      className="relative group bg-slate-50 rounded-xl overflow-hidden border border-slate-200 p-2 flex flex-col justify-between"
+                      draggable
+                      onDragStart={() => setDraggedIdx(idx)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggedIdx !== null && draggedIdx !== idx) {
+                          handleReorder(draggedIdx, idx);
+                        }
+                        setDraggedIdx(null);
+                      }}
+                      onDragEnd={() => setDraggedIdx(null)}
+                      className={`relative group bg-slate-50 rounded-xl overflow-hidden border p-2 flex flex-col justify-between cursor-grab active:cursor-grabbing transition-opacity ${
+                        draggedIdx === idx
+                          ? 'opacity-50 border-emerald-500'
+                          : 'border-slate-200'
+                      }`}
                     >
                       <div className="aspect-square relative w-full rounded-lg overflow-hidden bg-slate-200">
                         <img
@@ -303,8 +332,9 @@ export const ImgToPdfPage: React.FC = () => {
                           #{idx + 1}
                         </span>
                         <button
+                          type="button"
                           onClick={() => handleRemove(idx)}
-                          className="absolute top-1.5 right-1.5 p-1.5 bg-rose-600 hover:bg-rose-700 hover:scale-110 active:scale-95 text-white rounded-lg shadow-sm transition-transform"
+                          className="absolute top-1.5 right-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center bg-rose-600 hover:bg-rose-700 hover:scale-105 active:scale-95 text-white rounded-lg shadow-sm transition-transform cursor-pointer"
                           title={t('imageToPdf.removeImageTitle', { defaultValue: 'Remove image' })}
                           aria-label={t('imageToPdf.removeImageAria', {
                             name: img.file.name,
@@ -314,32 +344,32 @@ export const ImgToPdfPage: React.FC = () => {
                           <Trash2 className="w-4 h-4" />
                         </button>
                         {images.length > 1 && (
-                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
+                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => handleMove(idx, -1)}
                               disabled={idx === 0}
-                              className="p-1 bg-slate-900/75 hover:bg-slate-900 disabled:opacity-40 text-white rounded-md shadow-sm transition"
+                              className="min-w-[36px] min-h-[36px] flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 disabled:opacity-40 text-white rounded-lg shadow-sm transition cursor-pointer"
                               title={t('imageToPdf.moveEarlier', { defaultValue: 'Move earlier' })}
                               aria-label={t('imageToPdf.moveEarlierAria', {
                                 name: img.file.name,
                                 defaultValue: `Move ${img.file.name} earlier`,
                               })}
                             >
-                              <ChevronLeft className="w-3.5 h-3.5" />
+                              <ChevronLeft className="w-4 h-4" />
                             </button>
                             <button
                               type="button"
                               onClick={() => handleMove(idx, 1)}
                               disabled={idx === images.length - 1}
-                              className="p-1 bg-slate-900/75 hover:bg-slate-900 disabled:opacity-40 text-white rounded-md shadow-sm transition"
+                              className="min-w-[36px] min-h-[36px] flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 disabled:opacity-40 text-white rounded-lg shadow-sm transition cursor-pointer"
                               title={t('imageToPdf.moveLater', { defaultValue: 'Move later' })}
                               aria-label={t('imageToPdf.moveLaterAria', {
                                 name: img.file.name,
                                 defaultValue: `Move ${img.file.name} later`,
                               })}
                             >
-                              <ChevronRight className="w-3.5 h-3.5" />
+                              <ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
                         )}

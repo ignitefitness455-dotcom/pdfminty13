@@ -404,6 +404,234 @@ export async function reorderPDF(
   }
 }
 
+function createMinimalRgbaPng(
+  width: number,
+  height: number,
+  r: number,
+  g: number,
+  b: number,
+  a: number
+): Uint8Array {
+  const w = Math.max(1, Math.min(256, Math.round(width)));
+  const h = Math.max(1, Math.min(128, Math.round(height)));
+  const rowSize = 1 + w * 4;
+  const raw = new Uint8Array(h * rowSize);
+  for (let y = 0; y < h; y++) {
+    const rowOffset = y * rowSize;
+    raw[rowOffset] = 0; // filter type 0 (None)
+    for (let x = 0; x < w; x++) {
+      const px = rowOffset + 1 + x * 4;
+      raw[px] = r;
+      raw[px + 1] = g;
+      raw[px + 2] = b;
+      raw[px + 3] = a;
+    }
+  }
+
+  // Adler-32 checksum over uncompressed scanlines
+  let s1 = 1;
+  let s2 = 0;
+  for (let i = 0; i < raw.length; i++) {
+    s1 = (s1 + raw[i]) % 65521;
+    s2 = (s2 + s1) % 65521;
+  }
+  const adler = ((s2 << 16) | s1) >>> 0;
+
+  // Wrap raw bytes in valid zlib stored (uncompressed) blocks (max 65535 bytes/block)
+  const blockCount = Math.max(1, Math.ceil(raw.length / 65535));
+  const zlibData = new Uint8Array(2 + raw.length + blockCount * 5 + 4);
+  zlibData[0] = 0x78;
+  zlibData[1] = 0x01;
+  let zPos = 2;
+  let rPos = 0;
+  for (let blk = 0; blk < blockCount; blk++) {
+    const len = Math.min(65535, raw.length - rPos);
+    const isLast = blk === blockCount - 1 ? 1 : 0;
+    zlibData[zPos++] = isLast;
+    zlibData[zPos++] = len & 0xff;
+    zlibData[zPos++] = (len >> 8) & 0xff;
+    const nlen = ~len & 0xffff;
+    zlibData[zPos++] = nlen & 0xff;
+    zlibData[zPos++] = (nlen >> 8) & 0xff;
+    zlibData.set(raw.subarray(rPos, rPos + len), zPos);
+    zPos += len;
+    rPos += len;
+  }
+  const viewAdler = new DataView(zlibData.buffer, zPos, 4);
+  viewAdler.setUint32(0, adler, false);
+
+  const crc32 = (buf: Uint8Array): number => {
+    let c = 0xffffffff;
+    for (let i = 0; i < buf.length; i++) {
+      c ^= buf[i];
+      for (let k = 0; k < 8; k++) {
+        c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      }
+    }
+    return (c ^ 0xffffffff) >>> 0;
+  };
+
+  const makeChunk = (type: string, payload: Uint8Array): Uint8Array => {
+    const chunk = new Uint8Array(12 + payload.length);
+    const dv = new DataView(chunk.buffer);
+    dv.setUint32(0, payload.length, false);
+    for (let i = 0; i < 4; i++) chunk[4 + i] = type.charCodeAt(i);
+    chunk.set(payload, 8);
+    dv.setUint32(8 + payload.length, crc32(chunk.subarray(4, 8 + payload.length)), false);
+    return chunk;
+  };
+
+  const ihdr = new Uint8Array(13);
+  const ihdrDv = new DataView(ihdr.buffer);
+  ihdrDv.setUint32(0, w, false);
+  ihdrDv.setUint32(4, h, false);
+  ihdr[8] = 8; // bit depth 8
+  ihdr[9] = 6; // color type 6 (RGBA)
+  ihdr[10] = 0;
+  ihdr[11] = 0;
+  ihdr[12] = 0;
+
+  const sig = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const cIhdr = makeChunk('IHDR', ihdr);
+  const cIdat = makeChunk('IDAT', zlibData);
+  const cIend = makeChunk('IEND', new Uint8Array(0));
+
+  const out = new Uint8Array(sig.length + cIhdr.length + cIdat.length + cIend.length);
+  out.set(sig, 0);
+  out.set(cIhdr, sig.length);
+  out.set(cIdat, sig.length + cIhdr.length);
+  out.set(cIend, sig.length + cIhdr.length + cIdat.length);
+  return out;
+}
+
+async function renderUnicodeWatermarkPng(
+  lines: string[],
+  sizePt: number,
+  rVal: number,
+  gVal: number,
+  bVal: number,
+  opacity: number
+): Promise<{ pngBytes: Uint8Array; widthPt: number; heightPt: number }> {
+  const scale = 2;
+  const fontPx = Math.max(16, Math.round(sizePt * scale));
+  const lineHeightPx = Math.round(fontPx * 1.28);
+  const fontFamily =
+    '"Noto Sans Bengali", "Hind Siliguri", "Nirmala UI", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans", sans-serif';
+  const r255 = Math.max(0, Math.min(255, Math.round(rVal * 255)));
+  const g255 = Math.max(0, Math.min(255, Math.round(gVal * 255)));
+  const b255 = Math.max(0, Math.min(255, Math.round(bVal * 255)));
+  const fillCss = `rgba(${r255}, ${g255}, ${b255}, ${opacity})`;
+  const fallbackWidthPx = Math.max(
+    64,
+    Math.ceil(Math.max(...lines.map((l) => Array.from(l).length)) * fontPx * 0.68 + fontPx)
+  );
+  const fallbackHeightPx = Math.max(32, Math.ceil(lines.length * lineHeightPx + fontPx * 0.6));
+
+  if (typeof OffscreenCanvas !== 'undefined') {
+    try {
+      const probe = new OffscreenCanvas(16, 16);
+      const probeCtx = probe.getContext('2d');
+      if (probeCtx) {
+        probeCtx.font = `bold ${fontPx}px ${fontFamily}`;
+        let maxLineW = 0;
+        for (const line of lines) {
+          const measured = probeCtx.measureText ? probeCtx.measureText(line).width : 0;
+          maxLineW = Math.max(maxLineW, measured || Array.from(line).length * fontPx * 0.65);
+        }
+        const canvasW = Math.max(48, Math.ceil(maxLineW + fontPx * 0.9));
+        const canvasH = fallbackHeightPx;
+        const canvas = new OffscreenCanvas(canvasW, canvasH);
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.font = `bold ${fontPx}px ${fontFamily}`;
+          ctx.fillStyle = fillCss;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          lines.forEach((line, idx) => {
+            const cy = canvasH / 2 + (idx - (lines.length - 1) / 2) * lineHeightPx;
+            ctx.fillText(line, canvasW / 2, cy);
+          });
+          const blob = await canvas.convertToBlob({ type: 'image/png' });
+          const pngBytes = new Uint8Array(await blob.arrayBuffer());
+          if (
+            pngBytes.length >= 8 &&
+            pngBytes[0] === 0x89 &&
+            pngBytes[1] === 0x50 &&
+            pngBytes[2] === 0x4e &&
+            pngBytes[3] === 0x47
+          ) {
+            return { pngBytes, widthPt: canvasW / scale, heightPt: canvasH / scale };
+          }
+        }
+      }
+    } catch (err) {
+      logger.debug('OffscreenCanvas Unicode watermark fallback note:', err);
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    try {
+      const probe = document.createElement('canvas');
+      const probeCtx = probe.getContext('2d');
+      if (probeCtx) {
+        probeCtx.font = `bold ${fontPx}px ${fontFamily}`;
+        let maxLineW = 0;
+        for (const line of lines) {
+          const measured = probeCtx.measureText ? probeCtx.measureText(line).width : 0;
+          maxLineW = Math.max(maxLineW, measured || Array.from(line).length * fontPx * 0.65);
+        }
+        const canvasW = Math.max(48, Math.ceil(maxLineW + fontPx * 0.9));
+        const canvasH = fallbackHeightPx;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.font = `bold ${fontPx}px ${fontFamily}`;
+          ctx.fillStyle = fillCss;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          lines.forEach((line, idx) => {
+            const cy = canvasH / 2 + (idx - (lines.length - 1) / 2) * lineHeightPx;
+            ctx.fillText(line, canvasW / 2, cy);
+          });
+          const dataUrl = canvas.toDataURL('image/png');
+          const b64 = dataUrl.split(',')[1] || '';
+          if (b64) {
+            const bin = atob(b64);
+            const pngBytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) pngBytes[i] = bin.charCodeAt(i);
+            if (
+              pngBytes.length >= 8 &&
+              pngBytes[0] === 0x89 &&
+              pngBytes[1] === 0x50 &&
+              pngBytes[2] === 0x4e &&
+              pngBytes[3] === 0x47
+            ) {
+              return { pngBytes, widthPt: canvasW / scale, heightPt: canvasH / scale };
+            }
+          }
+        }
+      }
+    } catch (err) {
+      logger.debug('HTMLCanvasElement Unicode watermark fallback note:', err);
+    }
+  }
+
+  // Headless Node / jsdom fallback when no 2D canvas implementation is available
+  const widthPt = Math.max(48, Math.round(fallbackWidthPx / scale));
+  const heightPt = Math.max(24, Math.round(fallbackHeightPx / scale));
+  const pngBytes = createMinimalRgbaPng(
+    64,
+    24,
+    r255,
+    g255,
+    b255,
+    Math.max(16, Math.min(255, Math.round(opacity * 255)))
+  );
+  return { pngBytes, widthPt, heightPt };
+}
+
 export async function watermarkPDF(
   bytes: Uint8Array,
   text: string,
@@ -411,7 +639,8 @@ export async function watermarkPDF(
 ): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
   try {
-    // Embed Noto Sans for Unicode support (CJK, Arabic, Cyrillic, emoji, etc.).
+    // Embed Noto Sans for Latin/Cyrillic/Greek support; complex scripts (Bengali, Devanagari,
+    // Arabic, CJK, emoji) automatically use the high-DPI Canvas PNG stamp fallback below.
     let font;
     try {
       const fontData = await getFontBytes();
@@ -462,36 +691,102 @@ export async function watermarkPDF(
       throw new Error('Watermark text cannot be empty.');
     }
 
-    for (const page of pages) {
-      const { width, height } = page.getSize();
-      const cropBox = page.getCropBox();
-      const ox = cropBox.x || 0;
-      const oy = cropBox.y || 0;
+    // Verify whether the embedded font contains every glyph AND the script does not require
+    // complex-script shaping (Bengali/Indic vowel reordering, Arabic/Hebrew RTL joining, CJK, emoji),
+    // preventing both WinAnsi crashes and silent .notdef tofu boxes when NotoSans-Regular lacks glyphs.
+    const COMPLEX_OR_NON_LATIN_SCRIPT_RE =
+      /[\u0590-\u08FF\u0900-\u109F\u1100-\u11FF\u1780-\u17FF\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]/;
+    const fontCharSet =
+      typeof font.getCharacterSet === 'function' ? new Set<number>(font.getCharacterSet()) : null;
 
-      lines.forEach((lineText, index) => {
-        const textWidth = font.widthOfTextAtSize(lineText, size);
-        const textHeight = size * 0.8;
+    let canEncodeDirectly = true;
+    for (const lineText of lines) {
+      if (COMPLEX_OR_NON_LATIN_SCRIPT_RE.test(lineText)) {
+        canEncodeDirectly = false;
+        break;
+      }
+      if (fontCharSet) {
+        for (const ch of Array.from(lineText)) {
+          const cp = ch.codePointAt(0) ?? 0;
+          if (cp > 0x20 && !fontCharSet.has(cp)) {
+            canEncodeDirectly = false;
+            break;
+          }
+        }
+        if (!canEncodeDirectly) break;
+      }
+      try {
+        font.encodeText(lineText);
+        font.widthOfTextAtSize(lineText, size);
+      } catch {
+        canEncodeDirectly = false;
+        break;
+      }
+    }
 
-        const lineOffsetLocalY = (lines.length / 2 - index - 0.5) * (size * 1.2);
-        const localCenterX = textWidth / 2;
-        const localCenterY = textHeight / 2 - lineOffsetLocalY;
+    if (canEncodeDirectly) {
+      for (const page of pages) {
+        const { width, height } = page.getSize();
+        const cropBox = page.getCropBox();
+        const ox = cropBox.x || 0;
+        const oy = cropBox.y || 0;
 
+        lines.forEach((lineText, index) => {
+          const textWidth = font.widthOfTextAtSize(lineText, size);
+          const textHeight = size * 0.8;
+
+          const lineOffsetLocalY = (lines.length / 2 - index - 0.5) * (size * 1.2);
+          const localCenterX = textWidth / 2;
+          const localCenterY = textHeight / 2 - lineOffsetLocalY;
+
+          const rotatedCenterX = localCenterX * cosTheta - localCenterY * sinTheta;
+          const rotatedCenterY = localCenterX * sinTheta + localCenterY * cosTheta;
+
+          const x = ox + width / 2 - rotatedCenterX;
+          const y = oy + height / 2 - rotatedCenterY;
+
+          page.drawText(lineText, {
+            x,
+            y,
+            size,
+            font,
+            color: rgb(rVal, gVal, bVal),
+            opacity,
+            rotate: degrees(rot),
+          });
+        });
+      }
+    } else {
+      const stamp = await renderUnicodeWatermarkPng(lines, size, rVal, gVal, bVal, opacity);
+      const pngImage = await pdfDoc.embedPng(stamp.pngBytes);
+
+      for (const page of pages) {
+        const { width, height } = page.getSize();
+        const cropBox = page.getCropBox();
+        const ox = cropBox.x || 0;
+        const oy = cropBox.y || 0;
+
+        const maxSpan = Math.max(48, Math.hypot(width, height) * 0.82);
+        const fitRatio = stamp.widthPt > maxSpan ? maxSpan / stamp.widthPt : 1;
+        const drawW = stamp.widthPt * fitRatio;
+        const drawH = stamp.heightPt * fitRatio;
+
+        const localCenterX = drawW / 2;
+        const localCenterY = drawH / 2;
         const rotatedCenterX = localCenterX * cosTheta - localCenterY * sinTheta;
         const rotatedCenterY = localCenterX * sinTheta + localCenterY * cosTheta;
 
         const x = ox + width / 2 - rotatedCenterX;
         const y = oy + height / 2 - rotatedCenterY;
 
-        page.drawText(lineText, {
+        page.drawImage(pngImage, {
           x,
           y,
-          size,
-          font,
-          color: rgb(rVal, gVal, bVal),
-          opacity,
+          width: drawW,
+          height: drawH,
           rotate: degrees(rot),
         });
-      });
+      }
     }
 
     return await pdfDoc.save();
@@ -1143,12 +1438,18 @@ async function recompressImageStream(
     (smaskObj instanceof PDFRawStream || smaskObj instanceof PDFDict);
 
   const maskObj = dict.lookup(PDFName.of('Mask'));
+  if (maskObj instanceof PDFArray) {
+    return {
+      success: false,
+      reason: 'Color-key /Mask array skipped to preserve exact chroma-key transparency',
+    };
+  }
   const hasRealMask =
     Boolean(maskObj) &&
     maskObj !== PDFName.of('None') &&
     (maskObj instanceof PDFRawStream || maskObj instanceof PDFDict);
 
-  const hasMask = hasRealSMask || hasRealMask;
+  void hasRealSMask;
 
   // Resolve Filter
   const filterObj = dict.lookup(PDFName.of('Filter'));
@@ -1478,8 +1779,9 @@ async function recompressImageStream(
     let targetWidth = bitmap.width;
     let targetHeight = bitmap.height;
 
-    // Downsample dimensions if larger than maxDimension, as long as it doesn't have a real mask
-    if (!hasMask && (targetWidth > maxDimension || targetHeight > maxDimension)) {
+    // Downsample dimensions if larger than maxDimension, as long as it doesn't have a stencil /Mask
+    // (/SMask soft-masked images scale independently in PDF unit space and keep their /SMask intact)
+    if (!hasRealMask && (targetWidth > maxDimension || targetHeight > maxDimension)) {
       const ratio = Math.min(maxDimension / targetWidth, maxDimension / targetHeight);
       targetWidth = Math.max(1, Math.round(targetWidth * ratio));
       targetHeight = Math.max(1, Math.round(targetHeight * ratio));
@@ -1599,7 +1901,7 @@ async function recompressImageStream(
     // progressively adjust quality & dimension to guarantee size reduction while preserving clarity
     if ((!outBytes || outBytes.length >= rawBytes.length) && rawBytes.length > 15000) {
       const step1Quality = Math.max(0.5, jpegQuality - 0.12);
-      const step1Scale = hasMask ? 1.0 : 0.85;
+      const step1Scale = hasRealMask ? 1.0 : 0.85;
       const step1Width = Math.max(1, Math.round(targetWidth * step1Scale));
       const step1Height = Math.max(1, Math.round(targetHeight * step1Scale));
       const step1Bytes = await renderBitmapToJpegBytes(step1Width, step1Height, step1Quality);
@@ -1609,7 +1911,7 @@ async function recompressImageStream(
         targetHeight = step1Height;
       } else {
         const step2Quality = Math.max(0.42, jpegQuality - 0.22);
-        const step2Scale = hasMask ? 1.0 : 0.7;
+        const step2Scale = hasRealMask ? 1.0 : 0.7;
         const step2Width = Math.max(1, Math.round(targetWidth * step2Scale));
         const step2Height = Math.max(1, Math.round(targetHeight * step2Scale));
         const step2Bytes = await renderBitmapToJpegBytes(step2Width, step2Height, step2Quality);
@@ -1761,20 +2063,25 @@ export async function compressPDF(
       // Best-effort cleanup of metadata & page thumbnails
     }
 
-    // Generate lossless candidate with object streams
-    let bestLosslessBytes: Uint8Array = safeBytes;
-    try {
-      bestLosslessBytes = await pdfDoc.save({ useObjectStreams: true });
-    } catch (saveErr) {
-      logger.warn('pdfDoc.save fallback during lossless compression:', saveErr);
-      bestLosslessBytes = safeBytes;
-    }
-
-    if (safeBytes.length > 2048 && bestLosslessBytes.length > safeBytes.length) {
-      bestLosslessBytes = safeBytes;
-    }
+    const compressStartMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const heapBefore =
+      (
+        globalThis.performance as unknown as {
+          memory?: { usedJSHeapSize?: number };
+        }
+      )?.memory?.usedJSHeapSize ?? null;
 
     if (level === 'basic') {
+      let bestLosslessBytes: Uint8Array = safeBytes;
+      try {
+        bestLosslessBytes = await pdfDoc.save({ useObjectStreams: true });
+      } catch (saveErr) {
+        logger.warn('pdfDoc.save fallback during lossless compression:', saveErr);
+        bestLosslessBytes = safeBytes;
+      }
+      if (bestLosslessBytes.length > safeBytes.length) {
+        return safeBytes;
+      }
       return bestLosslessBytes;
     }
 
@@ -1801,7 +2108,6 @@ export async function compressPDF(
             ? 2048
             : 1600;
 
-    let imageOptimizedBytes: Uint8Array | null = null;
     try {
       let totalStreamObjects = 0;
       let totalImageObjects = 0;
@@ -2040,24 +2346,38 @@ export async function compressPDF(
       logger.info(
         `[Stream Audit Summary] Examined ${totalImageObjects} image stream(s) (total ${totalInitialImageBytes} B / ${(totalInitialImageBytes / 1024 / 1024).toFixed(2)} MB). Recompressed images: ${replacedImagesCount}, deflated streams: ${replacedStreamsCount}. Post-compression image stream bytes: ${totalFinalImageBytes} B / ${(totalFinalImageBytes / 1024 / 1024).toFixed(2)} MB (Net image reduction: ${totalSaved} B / -${totalSavedPct}%).`
       );
-
-      if (replacedImagesCount > 0 || replacedStreamsCount > 0) {
-        imageOptimizedBytes = await pdfDoc.save({ useObjectStreams: true });
-        logger.info(
-          `Smart Optimization: Recompressed ${replacedImagesCount} images and ${replacedStreamsCount} streams. New size: ${imageOptimizedBytes.length} bytes (original: ${safeBytes.length} bytes)`
-        );
-      }
     } catch (imgErr) {
       logger.warn('Smart optimization skipped:', imgErr);
     }
 
-    let bestCandidate = bestLosslessBytes;
-    if (imageOptimizedBytes && imageOptimizedBytes.length < bestCandidate.length) {
-      bestCandidate = imageOptimizedBytes;
+    // Single serialization pass (eliminates double pdfDoc.save peak memory overhead on large PDFs)
+    let bestCandidate: Uint8Array = safeBytes;
+    try {
+      bestCandidate = await pdfDoc.save({ useObjectStreams: true });
+    } catch (saveErr) {
+      logger.warn('pdfDoc.save fallback after optimization:', saveErr);
+      bestCandidate = safeBytes;
     }
 
+    const elapsedMs = Math.round(
+      (typeof performance !== 'undefined' ? performance.now() : Date.now()) - compressStartMs
+    );
+    const heapAfter =
+      (
+        globalThis.performance as unknown as {
+          memory?: { usedJSHeapSize?: number };
+        }
+      )?.memory?.usedJSHeapSize ?? null;
+    const heapNote =
+      heapBefore !== null && heapAfter !== null
+        ? `, heapDelta=${((heapAfter - heapBefore) / 1048576).toFixed(2)}MB`
+        : '';
+    logger.info(
+      `[Compress Metrics] Level=${level}, Input=${safeBytes.length}B, Candidate=${bestCandidate.length}B, Duration=${elapsedMs}ms${heapNote}`
+    );
+
     // Strict Size Invariant: Output must NEVER exceed original safeBytes size.
-    if (bestCandidate.length > safeBytes.length) {
+    if (bestCandidate.length >= safeBytes.length) {
       return safeBytes;
     }
     return bestCandidate;
