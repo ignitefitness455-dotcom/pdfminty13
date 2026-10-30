@@ -1,5 +1,5 @@
 const getStoredConfig = (): Record<string, string> => {
-  if (typeof window === 'undefined') return {};
+  if (typeof window === 'undefined' || !import.meta.env.DEV) return {};
   try {
     const raw = localStorage.getItem('pdfminty_custom_firebase_config');
     return raw ? JSON.parse(raw) : {};
@@ -63,13 +63,13 @@ export const saveCustomFirebaseConfig = (config: {
   messagingSenderId?: string;
   appId?: string;
 }) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !import.meta.env.DEV) return;
   localStorage.setItem('pdfminty_custom_firebase_config', JSON.stringify(config));
   window.location.reload();
 };
 
 export const clearCustomFirebaseConfig = () => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !import.meta.env.DEV) return;
   localStorage.removeItem('pdfminty_custom_firebase_config');
   window.location.reload();
 };

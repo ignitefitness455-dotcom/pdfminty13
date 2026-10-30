@@ -321,7 +321,7 @@ export const AiAnalyzePage: React.FC = () => {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
   // Usage quota state & real-time Firestore Pro status
-  const { user, isPro, upgradeToPro } = useAuth();
+  const { user, firebaseUser, isPro, upgradeToPro } = useAuth();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const maxAllowedPages = isPro ? 50 : 15;
   const PRO_DAILY_AI_LIMIT = 50;
@@ -574,9 +574,17 @@ export const AiAnalyzePage: React.FC = () => {
           content: m.content,
         }));
 
+      const requestHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (firebaseUser && typeof firebaseUser.getIdToken === 'function') {
+        const idToken = await firebaseUser.getIdToken();
+        if (idToken) {
+          requestHeaders.Authorization = `Bearer ${idToken}`;
+        }
+      }
+
       const response = await fetch('/api/gemini-proxy', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: requestHeaders,
         body: JSON.stringify({
           textContent: extractedText,
           query: trimmed,

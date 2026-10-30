@@ -621,27 +621,20 @@ export const PrivacyPolicyPage: React.FC = () => {
               <p>
                 {t('privacyPolicy.secCmpIntro', {
                   defaultValue:
-                    'For visitors located in the European Economic Area (EEA), the United Kingdom, and Switzerland, PDFMinty deploys a Google-Certified Consent Management Platform (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — in strict adherence to the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.',
+                    'For visitors located in the European Economic Area (EEA), the United Kingdom, Switzerland, and worldwide, PDFMinty enforces strict opt-in cookie controls powered by Google Consent Mode v2.',
                 })}
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  <strong>CMP Provider &amp; Certification:</strong> Our consent management
-                  infrastructure integrates{' '}
-                  <a
-                    href="https://www.cookiebot.com/en/privacy-policy/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
-                  >
-                    Cookiebot by Usercentrics
-                  </a>{' '}
-                  (IAB TCF ID: 134), certified under Google&apos;s EU User Consent Policy.
+                  <strong>Granular Consent Controls:</strong> You can review, grant, or withdraw
+                  individual consent categories at any time via the{' '}
+                  <strong>Cookie &amp; Privacy Preferences</strong> dialog in the website footer.
                 </li>
                 <li>
                   <strong>Default Privacy Protection:</strong> Under Google Consent Mode v2, all
-                  advertising signals (<code>ad_storage</code>, <code>ad_user_data</code>, and{' '}
-                  <code>ad_personalization</code>) default to <code>denied</code> until you grant
+                  advertising and analytics storage signals (<code>ad_storage</code>,{' '}
+                  <code>ad_user_data</code>, <code>ad_personalization</code>, and{' '}
+                  <code>analytics_storage</code>) default to <code>denied</code> until you grant
                   affirmative consent. Core PDF processing runs 100% locally in your browser and
                   requires no advertising cookies.
                 </li>

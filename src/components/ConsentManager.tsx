@@ -19,7 +19,7 @@ const STORAGE_KEY = 'pdfminty_consent_v2';
 const CURRENT_VERSION = '2.2';
 
 /**
- * Dispatches Google Consent Mode v2 updates, dataLayer events, and IAB TCF notifications.
+ * Dispatches Google Consent Mode v2 updates and dataLayer events, and persists consent locally.
  */
 export function applyConsentSettings(settings: ConsentSettings) {
   if (typeof window === 'undefined') return;
@@ -27,7 +27,6 @@ export function applyConsentSettings(settings: ConsentSettings) {
   const win = window as unknown as {
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
-    __notifyTCFListeners?: () => void;
   };
 
   // 1. Google Consent Mode v2 update
@@ -47,12 +46,7 @@ export function applyConsentSettings(settings: ConsentSettings) {
     consent_settings: settings,
   });
 
-  // 3. IAB TCF v2.2 listener notification
-  if (typeof win.__notifyTCFListeners === 'function') {
-    win.__notifyTCFListeners();
-  }
-
-  // 4. LocalStorage persistence
+  // 3. LocalStorage persistence
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch {
@@ -66,8 +60,8 @@ export const ConsentManager: React.FC = () => {
   const [preferencesOpen, setPreferencesOpen] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // Granular preference state
-  const [analyticsGranted, setAnalyticsGranted] = useState<boolean>(true);
+  // Granular preference state (strictly opt-in / denied by default)
+  const [analyticsGranted, setAnalyticsGranted] = useState<boolean>(false);
   const [adStorageGranted, setAdStorageGranted] = useState<boolean>(false);
   const [adUserDataGranted, setAdUserDataGranted] = useState<boolean>(false);
   const [adPersonalizationGranted, setAdPersonalizationGranted] = useState<boolean>(false);
@@ -190,13 +184,13 @@ export const ConsentManager: React.FC = () => {
                     {t('consentBanner.title', { defaultValue: 'We respect your privacy' })}
                   </h3>
                   <span className="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hidden sm:inline-block">
-                    TCF v2.2 &amp; CMP
+                    Consent Mode v2
                   </span>
                 </div>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
                   {t('consentBanner.description', {
                     defaultValue:
-                      'PdfMinty processes files 100% locally in your web browser with zero server uploads for core tools. We and our certified partners use cookies and device identifiers to analyze site traffic, measure usage, and deliver relevant advertisements in compliance with the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.',
+                      'PdfMinty processes files 100% locally in your web browser with zero server uploads for core tools. With your permission, we and our partners use cookies and device identifiers to measure anonymous site usage and display relevant advertisements via Google Consent Mode v2.',
                   })}
                 </p>
                 <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/80 pt-0.5">
@@ -272,7 +266,7 @@ export const ConsentManager: React.FC = () => {
                   <p className="text-[11px] text-on-surface-variant">
                     {t('consentBanner.cmpNotice', {
                       defaultValue:
-                        'Google-Certified CMP (Cookiebot / Usercentrics, CMP ID 134) • IAB TCF v2.2 Compliant',
+                        'Google Consent Mode v2 • Granular Cookie & Privacy Controls',
                     })}
                   </p>
                 </div>

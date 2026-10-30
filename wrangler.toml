@@ -23,3 +23,6 @@ compatibility_flags = ["nodejs_compat"]
 binding = "RATELIMIT_KV"
 id = "a43016cede9e4e92bc4ee8776b952cfb"
 preview_id = "a43016cede9e4e92bc4ee8776b952cfb"
+
+[vars]
+FIREBASE_PROJECT_ID = "pdfminty-9836d"

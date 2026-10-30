@@ -388,11 +388,10 @@ export const TermsOfServicePage: React.FC = () => {
                 .
               </li>
               <li>
-                <strong>Consent Management Platform (CMP):</strong> For visitors within the European
-                Economic Area (EEA), United Kingdom, and Switzerland, PdfMinty implements a
-                certified Consent Management Platform (Cookiebot by Usercentrics, IAB TCF ID: 134)
-                adhering to Google Consent Mode v2. All advertising storage is denied by default
-                until you grant explicit consent.
+                <strong>Cookie &amp; Consent Preferences:</strong> For visitors within the European
+                Economic Area (EEA), United Kingdom, Switzerland, and worldwide, PdfMinty implements
+                granular opt-in consent controls adhering to Google Consent Mode v2. All advertising
+                and analytics storage signals default to denied until you grant explicit consent.
               </li>
             </ul>
           </section>

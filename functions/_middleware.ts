@@ -304,6 +304,7 @@ export const onRequest: PagesFunction = async (context) => {
       '/api/gemini-proxy',
       '/api/health',
       '/api/subscribe',
+      '/api/webhooks/lemonsqueezy',
     ];
 
     // Helper to check if a path is invalid/needs to be blocked with a 404 JSON response

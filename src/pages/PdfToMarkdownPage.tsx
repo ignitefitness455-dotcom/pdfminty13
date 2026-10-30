@@ -18,6 +18,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import type { ExtractedMarkdownImage, PdfToMarkdownResult } from '../core/pdf-operations';
 import { WorkerManager } from '../core/WorkerManager';
@@ -213,6 +214,7 @@ function renderMarkdownToJsx(
 
 export const PdfToMarkdownPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { firebaseUser } = useAuth();
   const { showToast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [extractImages, setExtractImages] = useState<boolean>(false);
@@ -295,9 +297,21 @@ export const PdfToMarkdownPage: React.FC = () => {
         return `data:image/jpeg;base64,${btoa(binary)}`;
       });
 
+      const requestHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (firebaseUser && typeof firebaseUser.getIdToken === 'function') {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          if (idToken) {
+            requestHeaders.Authorization = `Bearer ${idToken}`;
+          }
+        } catch {
+          // Proceed unauthenticated if token refresh fails on optional OCR auth
+        }
+      }
+
       const res = await fetch('/api/gemini-proxy', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: requestHeaders,
         body: JSON.stringify({
           mode: 'ocr',
           imagesBase64: base64Images,

@@ -15,6 +15,18 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.token.email_verified == true;
     }
 
+    function isValidDisplayName(data) {
+      return !('displayName' in data)
+             || data.displayName == null
+             || (data.displayName is string && data.displayName.size() <= 200);
+    }
+
+    function isValidPhotoUrl(data) {
+      return !('photoURL' in data)
+             || data.photoURL == null
+             || (data.photoURL is string && data.photoURL.size() <= 2048);
+    }
+
     // Default deny all unmatched collections and documents
     match /{document=**} {
       allow read, write: if false;
@@ -22,45 +34,101 @@ service cloud.firestore {
 
     // 1. Private User Profile Documents
     // Strictly isolated: each authenticated user can only access their own document.
-    // Client NEVER writes `isPro` or `plan: 'pro'` — only the privileged backend writes pro status.
+    // Client NEVER writes `isPro`, `plan`, or subscription fields — only the privileged backend writes pro status.
+    // Client writes are strictly key-whitelisted so user PDFs or arbitrary blobs can NEVER be stored in Firestore.
     match /users/{userId} {
       allow read: if isOwner(userId);
 
-      // Create: User can only create their own profile document and cannot set `isPro` or `plan: 'pro'`
+      // Create: Strict key whitelist for basic profile metadata only
       allow create: if isOwner(userId)
+                    && request.resource.data.keys().hasOnly([
+                         'uid',
+                         'email',
+                         'displayName',
+                         'photoURL',
+                         'emailVerified',
+                         'createdAt',
+                         'updatedAt'
+                       ])
                     && request.resource.data.uid == userId
                     && request.resource.data.email is string
                     && request.resource.data.email.size() <= 320
-                    && !('isPro' in request.resource.data)
-                    && (!('plan' in request.resource.data) || request.resource.data.plan == 'free');
+                    && isValidDisplayName(request.resource.data)
+                    && isValidPhotoUrl(request.resource.data)
+                    && request.resource.data.emailVerified is bool;
 
-      // Update: User can update their profile metadata, but can NEVER write or modify `isPro` or `plan`
+      // Update: User can update only basic profile metadata; can NEVER touch `isPro`, `plan`, or `subscription*`
       allow update: if isOwner(userId)
                     && request.resource.data.uid == userId
-                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro', 'plan']);
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                         'email',
+                         'displayName',
+                         'photoURL',
+                         'emailVerified',
+                         'updatedAt'
+                       ])
+                    && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 320))
+                    && isValidDisplayName(request.resource.data)
+                    && isValidPhotoUrl(request.resource.data)
+                    && (!('emailVerified' in request.resource.data) || request.resource.data.emailVerified is bool);
 
       // Delete: Standard deletion allowed only by owner
       allow delete: if isOwner(userId);
 
-      // Subcollection: Periodic Usage Quotas & Metrics
+      // Subcollection: Periodic Usage Quotas & Metrics (key-whitelisted & monotonic non-decreasing)
       match /usage/{period} {
         allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-                              && request.resource.data.aiAnalysesUsed is number
-                              && request.resource.data.aiAnalysesUsed >= 0
-                              && (!('ocrPagesProcessed' in request.resource.data) || (request.resource.data.ocrPagesProcessed is number && request.resource.data.ocrPagesProcessed >= 0))
-                              && (!('heavyOperationsCount' in request.resource.data) || (request.resource.data.heavyOperationsCount is number && request.resource.data.heavyOperationsCount >= 0));
+
+        allow create: if isOwner(userId)
+                      && request.resource.data.keys().hasOnly([
+                           'period',
+                           'aiAnalysesUsed',
+                           'ocrPagesProcessed',
+                           'heavyOperationsCount',
+                           'updatedAt'
+                         ])
+                      && (!('period' in request.resource.data) || (request.resource.data.period is string && request.resource.data.period == period))
+                      && request.resource.data.aiAnalysesUsed is number
+                      && request.resource.data.aiAnalysesUsed >= 0
+                      && (!('ocrPagesProcessed' in request.resource.data) || (request.resource.data.ocrPagesProcessed is number && request.resource.data.ocrPagesProcessed >= 0))
+                      && (!('heavyOperationsCount' in request.resource.data) || (request.resource.data.heavyOperationsCount is number && request.resource.data.heavyOperationsCount >= 0));
+
+        allow update: if isOwner(userId)
+                      && request.resource.data.keys().hasOnly([
+                           'period',
+                           'aiAnalysesUsed',
+                           'ocrPagesProcessed',
+                           'heavyOperationsCount',
+                           'updatedAt'
+                         ])
+                      && request.resource.data.aiAnalysesUsed is number
+                      && request.resource.data.aiAnalysesUsed >= resource.data.get('aiAnalysesUsed', 0)
+                      && (!('ocrPagesProcessed' in request.resource.data) || (request.resource.data.ocrPagesProcessed is number && request.resource.data.ocrPagesProcessed >= resource.data.get('ocrPagesProcessed', 0)))
+                      && (!('heavyOperationsCount' in request.resource.data) || (request.resource.data.heavyOperationsCount is number && request.resource.data.heavyOperationsCount >= resource.data.get('heavyOperationsCount', 0)));
+
         allow delete: if false; // preserve audit counters
       }
     }
 
     // 2. Feedback Submissions
-    // Public creation allowed with validated content; reading restricted to system admins
+    // Public creation allowed with strictly whitelisted keys and bounded lengths; reading restricted to system admins
     match /feedback/{feedbackId} {
       allow read: if isAuthenticated() && request.auth.token.admin == true;
-      allow create: if request.resource.data.message is string
+      allow create: if request.resource.data.keys().hasOnly([
+                         'message',
+                         'email',
+                         'category',
+                         'rating',
+                         'page',
+                         'createdAt'
+                       ])
+                    && request.resource.data.message is string
                     && request.resource.data.message.size() >= 2
                     && request.resource.data.message.size() <= 2000
+                    && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 320))
+                    && (!('category' in request.resource.data) || (request.resource.data.category is string && request.resource.data.category.size() <= 64))
+                    && (!('rating' in request.resource.data) || (request.resource.data.rating is number && request.resource.data.rating >= 1 && request.resource.data.rating <= 5))
+                    && (!('page' in request.resource.data) || (request.resource.data.page is string && request.resource.data.page.size() <= 256))
                     && request.resource.data.createdAt is timestamp;
       allow update, delete: if false;
     }

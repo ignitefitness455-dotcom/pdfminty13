@@ -1427,7 +1427,7 @@
     "secRetentionTitle": "6. 数据保留、账户删除与访问权限撤销",
     "secRetentionDesc": "我们仅在您的 PDFMinty 账户处于活跃状态期间保留您的账户资料。您可以随时通过 Google 安全设置 (https://myaccount.google.com/permissions) 撤销访问权限，并通过账户仪表板或发送邮件至 support@pdfminty.com 请求永久删除您的账户（将在 7 个工作日内彻底清除）。",
     "secCmpTitle": "9. 同意管理平台 (CMP) 与 Cookie 偏好设置（欧洲经济区、英国和瑞士）",
-    "secCmpIntro": "对于位于欧洲经济区 (EEA)、英国和瑞士的访问者，PDFMinty 部署了经 Google 认证的同意管理平台 (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — 严格遵循 IAB TCF v2.2 和 Google Consent Mode v2。"
+    "secCmpIntro": "对于位于欧洲经济区 (EEA)、英国、瑞士及全球的访问者，PDFMinty 通过 Google Consent Mode v2 实施严格的选择加入 (Opt-in) Cookie 控制。"
   },
   "contact": {
     "hereToHelp": "We're Here to Help",
@@ -1571,7 +1571,7 @@
   },
   "consentBanner": {
     "title": "我们尊重您的隐私",
-    "description": "PdfMinty 的核心工具 100% 在您的浏览器本地处理文件，无需上传到任何服务器。我们与经过认证的合作伙伴使用 Cookie 和技术信号来分析流量并投放相关广告，符合 IAB Europe TCF v2.2 与 Google Consent Mode v2 标准。",
+    "description": "PdfMinty 核心工具在浏览器本地 100% 处理文件，无需上传服务器。经您许可，我们通过 Google Consent Mode v2 使用 Cookie 衡量匿名使用情况并展示相关广告。",
     "acceptAll": "接受全部",
     "rejectAll": "拒绝全部",
     "managePreferences": "管理偏好设置",
@@ -1580,7 +1580,7 @@
     "close": "关闭",
     "preferencesTitle": "Cookie 与隐私偏好",
     "preferencesSubtitle": "管理您对 Cookie 及技术数据处理的同意设置。更改将立即生效。",
-    "cmpNotice": "Google 认证 CMP (Cookiebot / Usercentrics, CMP ID 134) • 符合 IAB TCF v2.2",
+    "cmpNotice": "Google Consent Mode v2 • 精细化 Cookie 与隐私控制",
     "learnMore": "了解更多信息，请参阅我们的",
     "privacyPolicy": "隐私政策",
     "categories": {

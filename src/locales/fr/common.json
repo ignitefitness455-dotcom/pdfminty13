@@ -1427,7 +1427,7 @@
     "secRetentionTitle": "6. Conservation des Données, Suppression de Compte et Révocation d’Accès",
     "secRetentionDesc": "Nous conservons votre profil uniquement tant que votre compte PDFMinty est actif. Vous pouvez révoquer l’accès via les Paramètres de Sécurité Google (https://myaccount.google.com/permissions) et demander la suppression définitive depuis votre Tableau de Bord ou par e-mail à support@pdfminty.com (suppression sous 7 jours ouvrables).",
     "secCmpTitle": "9. Plateforme de Gestion du Consentement (CMP) et Préférences de Cookies (EEE, Royaume-Uni et Suisse)",
-    "secCmpIntro": "Pour les visiteurs situés dans l’Espace Économique Européen (EEE), au Royaume-Uni et en Suisse, PDFMinty déploie une CMP certifiée par Google — Cookiebot by Usercentrics (CMP ID : 134) — conformément au cadre IAB TCF v2.2 et à Google Consent Mode v2."
+    "secCmpIntro": "Pour les visiteurs situés dans l'Espace Économique Européen (EEE), au Royaume-Uni, en Suisse et dans le monde entier, PDFMinty applique des contrôles stricts de consentement explicite via Google Consent Mode v2."
   },
   "contact": {
     "hereToHelp": "We're Here to Help",
@@ -1571,7 +1571,7 @@
   },
   "consentBanner": {
     "title": "Nous respectons votre vie privée",
-    "description": "PdfMinty traite vos fichiers à 100 % localement dans votre navigateur sans téléversement sur serveur pour ses outils de base. Nous et nos partenaires certifiés utilisons des cookies et signaux techniques pour mesurer l audience et afficher des annonces pertinentes selon le cadre IAB Europe TCF v2.2 et Google Consent Mode v2.",
+    "description": "PdfMinty traite les fichiers 100 % localement dans votre navigateur sans téléversement serveur pour les outils principaux. Avec votre accord, nous utilisons des cookies via Google Consent Mode v2 pour mesurer l’audience et afficher des annonces pertinentes.",
     "acceptAll": "Tout accepter",
     "rejectAll": "Tout refuser",
     "managePreferences": "Gérer les préférences",
@@ -1580,7 +1580,7 @@
     "close": "Fermer",
     "preferencesTitle": "Préférences relatives aux cookies et à la confidentialité",
     "preferencesSubtitle": "Gérez vos choix de consentement pour les cookies et le traitement des données. Vos choix s appliquent immédiatement.",
-    "cmpNotice": "CMP certifiée par Google (Cookiebot / Usercentrics, CMP ID 134) • Conforme IAB TCF v2.2",
+    "cmpNotice": "Google Consent Mode v2 • Contrôles granulaires des cookies et de la confidentialité",
     "learnMore": "En savoir plus dans notre",
     "privacyPolicy": "Politique de confidentialité",
     "categories": {

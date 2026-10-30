@@ -959,14 +959,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                   <ExternalLink className="w-3 h-3" />
                 </a>
 
-                <button
-                  type="button"
-                  onClick={() => setShowConfigModal(true)}
-                  className="inline-flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
-                >
-                  <Settings className="w-3 h-3" />
-                  <span>{isBn ? 'কাস্টম Firebase প্রজেক্ট সেট করুন' : 'Custom Firebase Project'}</span>
-                </button>
+                {import.meta.env.DEV && (
+                  <button
+                    type="button"
+                    onClick={() => setShowConfigModal(true)}
+                    className="inline-flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  >
+                    <Settings className="w-3 h-3" />
+                    <span>{isBn ? 'কাস্টম Firebase প্রজেক্ট সেট করুন' : 'Custom Firebase Project'}</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -1325,8 +1327,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
         </div>
       )}
 
-      {/* Custom Firebase Configuration Modal */}
-      {showConfigModal && (
+      {/* Custom Firebase Configuration Modal (Development Only) */}
+      {import.meta.env.DEV && showConfigModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadein">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative space-y-4">
             <button

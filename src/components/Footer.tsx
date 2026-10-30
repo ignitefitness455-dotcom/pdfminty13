@@ -229,21 +229,15 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                   onClick={() => {
                     const win = window as unknown as {
                       openCookiePreferences?: () => void;
-                      Cookiebot?: { renew?: () => void; show?: () => void };
                       googlefc?: { showRevocationMessage?: () => void };
-                      __tcfapi?: (command: string, version: number, callback: () => void) => void;
                     };
-                    if (typeof win.openCookiePreferences === 'function') {
-                      win.openCookiePreferences();
-                    } else if (win.Cookiebot && typeof win.Cookiebot.renew === 'function') {
-                      win.Cookiebot.renew();
-                    } else if (
+                    if (
                       win.googlefc &&
                       typeof win.googlefc.showRevocationMessage === 'function'
                     ) {
                       win.googlefc.showRevocationMessage();
-                    } else if (typeof win.__tcfapi === 'function') {
-                      win.__tcfapi('displayConsentUi', 2, () => {});
+                    } else if (typeof win.openCookiePreferences === 'function') {
+                      win.openCookiePreferences();
                     } else {
                       window.dispatchEvent(new CustomEvent('open-cmp-preferences'));
                     }

@@ -1,4 +1,9 @@
-import { getCorsOrigin, getCorsHeaders } from '../utils/cors';
+import { getCorsOrigin, getCorsHeaders, isAllowedRequestOrigin } from '../utils/cors';
+import {
+  extractBearerToken,
+  verifyFirebaseIdToken,
+  verifyFirestoreProStatus,
+} from '../utils/firebase-auth';
 import { checkRateLimit } from '../utils/rate-limiter';
 
 interface Env {
@@ -10,6 +15,7 @@ interface Env {
   GROQ_MODEL?: string;
   GORK_MODEL?: string;
   GROK_MODEL?: string;
+  FIREBASE_PROJECT_ID?: string;
   RATELIMIT_KV?: KVNamespace;
 }
 
@@ -296,6 +302,158 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           'Content-Type': 'application/json',
         } as HeadersInit,
       });
+    }
+
+    // Server-side authentication & Pro tier enforcement when FIREBASE_PROJECT_ID is configured
+    const firebaseProjectId = (env.FIREBASE_PROJECT_ID || '').trim();
+    if (firebaseProjectId) {
+      let bearerToken: string | null = null;
+      try {
+        bearerToken = extractBearerToken(request);
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Malformed Authorization header. Expected Bearer token.' }),
+          {
+            status: 401,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            } as HeadersInit,
+          }
+        );
+      }
+
+      if (mode === 'chat' || mode === 'summary' || mode === 'qa') {
+        if (!bearerToken) {
+          return new Response(
+            JSON.stringify({
+              error: 'Authentication required. Please sign in to your PDFMinty Pro account.',
+            }),
+            {
+              status: 401,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              } as HeadersInit,
+            }
+          );
+        }
+
+        let claims;
+        try {
+          claims = await verifyFirebaseIdToken(bearerToken, firebaseProjectId);
+        } catch {
+          return new Response(
+            JSON.stringify({
+              error: 'Invalid or expired authentication session. Please sign in again.',
+            }),
+            {
+              status: 401,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              } as HeadersInit,
+            }
+          );
+        }
+
+        let isProUser = false;
+        try {
+          isProUser = await verifyFirestoreProStatus(firebaseProjectId, claims.sub, bearerToken);
+        } catch {
+          return new Response(
+            JSON.stringify({
+              error: 'Unable to verify subscription status right now. Please retry shortly.',
+            }),
+            {
+              status: 503,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              } as HeadersInit,
+            }
+          );
+        }
+
+        if (!isProUser) {
+          return new Response(
+            JSON.stringify({
+              error: 'PDFMinty Pro subscription required for AI document analysis.',
+            }),
+            {
+              status: 403,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+              } as HeadersInit,
+            }
+          );
+        }
+      } else {
+        // mode === 'ocr'
+        if (bearerToken) {
+          try {
+            await verifyFirebaseIdToken(bearerToken, firebaseProjectId);
+          } catch {
+            return new Response(
+              JSON.stringify({
+                error: 'Invalid or expired authentication session. Please sign in again.',
+              }),
+              {
+                status: 401,
+                headers: {
+                  ...corsHeaders,
+                  'Content-Type': 'application/json',
+                } as HeadersInit,
+              }
+            );
+          }
+        } else {
+          if (!isAllowedRequestOrigin(request)) {
+            return new Response(
+              JSON.stringify({
+                error: 'Forbidden request origin for unauthenticated OCR request.',
+              }),
+              {
+                status: 403,
+                headers: {
+                  ...corsHeaders,
+                  'Content-Type': 'application/json',
+                } as HeadersInit,
+              }
+            );
+          }
+
+          const guestOcrRateLimit = await checkRateLimit({
+            request,
+            kv: env.RATELIMIT_KV,
+            secret: env.GEMINI_API_KEY || env.GROQ_API_KEY || 'pdfminty_gemini_salt',
+            scope: 'gemini_guest_ocr',
+            limit: 10,
+            windowSec: 3600,
+            burstLimit: 3,
+            burstWindowSec: 10,
+          });
+
+          if (!guestOcrRateLimit.allowed) {
+            return new Response(
+              JSON.stringify({
+                error:
+                  guestOcrRateLimit.error ||
+                  'Guest OCR rate limit exceeded (10 requests/hour). Sign in for higher limits.',
+              }),
+              {
+                status: 429,
+                headers: {
+                  ...corsHeaders,
+                  ...guestOcrRateLimit.responseHeaders,
+                  'Content-Type': 'application/json',
+                } as HeadersInit,
+              }
+            );
+          }
+        }
+      }
     }
 
     const truncated = typeof textContent === 'string' ? textContent.slice(0, MAX_TEXT_LENGTH) : '';

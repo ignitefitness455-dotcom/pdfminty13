@@ -1432,7 +1432,7 @@
     "secRetentionTitle": "6. Datenspeicherung, Kontolöschung & Widerruf des Zugriffs",
     "secRetentionDesc": "Wir speichern Ihr Kontoprofil nur so lange, wie Sie ein aktives Konto bei PDFMinty unterhalten. Sie können den Zugriff jederzeit in den Google-Sicherheitseinstellungen (https://myaccount.google.com/permissions) widerrufen und Ihr Konto über das Dashboard oder per E-Mail an support@pdfminty.com dauerhaft löschen lassen (Löschung innerhalb von 7 Werktagen).",
     "secCmpTitle": "9. Consent Management Platform (CMP) & Cookie-Einstellungen (EWR, UK & Schweiz)",
-    "secCmpIntro": "Für Besucher aus dem Europäischen Wirtschaftsraum (EWR), Großbritannien und der Schweiz setzt PDFMinty eine Google-zertifizierte Consent Management Platform (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — gemäß IAB TCF v2.2 und Google Consent Mode v2 ein."
+    "secCmpIntro": "Für Besucher im Europäischen Wirtschaftsraum (EWR), im Vereinigten Königreich, in der Schweiz und weltweit setzt PDFMinty strikte Opt-in-Cookie-Einstellungen über Google Consent Mode v2 durch."
   },
   "contact": {
     "hereToHelp": "Wir sind hier, um zu helfen",
@@ -1598,7 +1598,7 @@
   },
   "consentBanner": {
     "title": "Wir respektieren Ihre Privatsphäre",
-    "description": "PdfMinty verarbeitet Ihre Dateien zu 100 % lokal in Ihrem Browser ohne Server-Uploads für Standard-Tools. Wir und unsere zertifizierten Partner nutzen Cookies und technische Signale zur Reichweitenmessung und Anzeige relevanter Werbung gemäß dem IAB Europe TCF v2.2 und Google Consent Mode v2.",
+    "description": "PdfMinty verarbeitet Dateien zu 100 % lokal in Ihrem Webbrowser ohne Server-Uploads für Kernwerkzeuge. Mit Ihrer Zustimmung verwenden wir Cookies über Google Consent Mode v2 zur Nutzungsanalyse und für relevante Anzeigen.",
     "acceptAll": "Alle akzeptieren",
     "rejectAll": "Alle ablehnen",
     "managePreferences": "Einstellungen verwalten",
@@ -1607,7 +1607,7 @@
     "close": "Schließen",
     "preferencesTitle": "Cookie- & Datenschutzeinstellungen",
     "preferencesSubtitle": "Verwalten Sie Ihre Einwilligung für Cookies und Datenverarbeitung. Ihre Auswahl wird sofort wirksam.",
-    "cmpNotice": "Google-zertifizierte CMP (Cookiebot / Usercentrics, CMP ID 134) • IAB TCF v2.2 konform",
+    "cmpNotice": "Google Consent Mode v2 • Detaillierte Cookie- & Datenschutzeinstellungen",
     "learnMore": "Mehr erfahren in unserer",
     "privacyPolicy": "Datenschutzerklärung",
     "categories": {

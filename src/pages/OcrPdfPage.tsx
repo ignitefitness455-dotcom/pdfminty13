@@ -32,9 +32,9 @@ interface OcrPagePreview {
 
 export const OcrPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
-  const { user } = useAuth();
+  const { user, firebaseUser, isPro: authIsPro } = useAuth();
   const { tier } = resolveCurrentSession(user);
-  const isPro = tier === 'pro' || user?.plan === 'pro';
+  const isPro = Boolean(authIsPro || tier === 'pro' || user?.plan === 'pro');
   const maxBatchPages = isPro ? 15 : 5;
   const maxPreviewPages = isPro ? 25 : 10;
 
@@ -280,9 +280,21 @@ export const OcrPdfPage: React.FC = () => {
       if (myToken !== operationTokenRef.current) return;
 
       // Invoke the Gemini AI proxy endpoint for OCR extraction
+      const requestHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (firebaseUser && typeof firebaseUser.getIdToken === 'function') {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          if (idToken) {
+            requestHeaders.Authorization = `Bearer ${idToken}`;
+          }
+        } catch {
+          // Proceed unauthenticated if token refresh fails on optional OCR auth
+        }
+      }
+
       const res = await fetch('/api/gemini-proxy', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: requestHeaders,
         body: JSON.stringify({
           mode: 'ocr',
           imagesBase64: imageBase64s,

@@ -30,6 +30,27 @@ export function getCorsOrigin(request: Request): string {
   return isAllowedOrigin(origin) ? origin : '';
 }
 
+/**
+ * Verifies that an incoming browser request originates from an explicitly
+ * allowlisted PdfMinty origin (via `Origin`, falling back to `Referer`).
+ */
+export function isAllowedRequestOrigin(request: Request): boolean {
+  const origin = (request.headers.get('Origin') || '').trim();
+  if (origin) {
+    return isAllowedOrigin(origin);
+  }
+  const referer = (request.headers.get('Referer') || '').trim();
+  if (!referer) {
+    return false;
+  }
+  try {
+    const refererOrigin = new URL(referer).origin;
+    return isAllowedOrigin(refererOrigin);
+  } catch {
+    return false;
+  }
+}
+
 export function getCorsHeaders(
   origin: string,
   contentType = 'application/json',
@@ -37,7 +58,7 @@ export function getCorsHeaders(
 ): Record<string, string> {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': methods,
-    'Access-Control-Allow-Headers': 'Content-Type, Origin',
+    'Access-Control-Allow-Headers': 'Content-Type, Origin, Authorization',
     'Access-Control-Max-Age': '86400',
     'Content-Type': contentType,
     // Always Vary on Origin so caches don't accidentally serve an ACAO header

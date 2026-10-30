@@ -1188,7 +1188,7 @@
     "sec4Or": "or by visiting",
     "sec4Partner": "For more details on how Google processes data when you visit partner sites, please see Google's official policy at",
     "secCmpTitle": "9. Consent Management Platform (CMP) & Cookie Preferences (EEA, UK & Switzerland)",
-    "secCmpIntro": "For visitors located in the European Economic Area (EEA), the United Kingdom, and Switzerland, PDFMinty deploys a Google-Certified Consent Management Platform (CMP) — Cookiebot by Usercentrics (CMP ID: 134) — in strict adherence to the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.",
+    "secCmpIntro": "For visitors located in the European Economic Area (EEA), the United Kingdom, Switzerland, and worldwide, PDFMinty enforces strict opt-in cookie controls powered by Google Consent Mode v2.",
     "sec5Title": "10. Web Analytics, Error Telemetry & Abuse Prevention",
     "sec5Desc": "PDFMinty uses privacy-respecting website performance analytics (Google Analytics 4 with IP anonymization enabled and Cloudflare Web Analytics) to measure aggregate traffic trends, page load speeds, and core web vitals. We never log document filenames, PDF text contents, or personal identities in analytics events.",
     "sec6Title": "12. International Privacy Rights (GDPR, UK GDPR, CCPA/CPRA & Global Laws)",
@@ -1646,7 +1646,7 @@
   },
   "consentBanner": {
     "title": "We respect your privacy",
-    "description": "PdfMinty processes files 100% locally in your web browser with zero server uploads for core tools. We and our certified partners use cookies and device identifiers to analyze site traffic, measure usage, and deliver relevant advertisements in compliance with the IAB Europe Transparency and Consent Framework (TCF v2.2) and Google Consent Mode v2.",
+    "description": "PdfMinty processes files 100% locally in your web browser with zero server uploads for core tools. With your permission, we and our partners use cookies and device identifiers to measure anonymous site usage and display relevant advertisements via Google Consent Mode v2.",
     "acceptAll": "Accept All",
     "rejectAll": "Reject All",
     "managePreferences": "Manage Preferences",
@@ -1655,7 +1655,7 @@
     "close": "Close",
     "preferencesTitle": "Cookie & Privacy Preferences",
     "preferencesSubtitle": "Manage your consent choices for cookies and technical data processing. Changes take effect immediately.",
-    "cmpNotice": "Google-Certified CMP (Cookiebot / Usercentrics, CMP ID 134) • IAB TCF v2.2 Compliant",
+    "cmpNotice": "Google Consent Mode v2 • Granular Cookie & Privacy Controls",
     "learnMore": "Learn more in our",
     "privacyPolicy": "Privacy Policy",
     "categories": {
