@@ -40,7 +40,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   // Guest: 100MB (or custom tool limit), Logged-in Free: 150MB, Pro: 500MB
   const effectiveMaxMB = isPro
     ? Math.max(maxSizeMB, 500)
-    : user
+    : user || tier === 'free'
       ? Math.max(maxSizeMB, 150)
       : maxSizeMB;
   const [isDragActive, setIsDragActive] = useState(false);

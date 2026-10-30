@@ -27,6 +27,7 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
@@ -71,6 +72,7 @@ const parsePageSequence = (input: string, maxPages: number): number[] => {
 
 export const ReorderPdfPage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const isBn = i18n.language === 'bn' || i18n.language?.startsWith('bn');
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -411,6 +413,10 @@ export const ReorderPdfPage: React.FC = () => {
   // Execute Reorder and Save PDF
   const handleReorder = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (items.length === 0) {
       setError(
         isBn

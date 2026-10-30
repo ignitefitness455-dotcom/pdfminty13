@@ -25,6 +25,7 @@ import { PdfPreview } from '../components/PdfPreview';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
@@ -34,6 +35,7 @@ export type CompressionMode = 'recommended' | 'extreme' | 'low';
 
 export const CompressPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionMode, setCompressionMode] = useState<CompressionMode>('recommended');
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -93,6 +95,10 @@ export const CompressPdfPage: React.FC = () => {
 
   const handleCompress = async () => {
     if (!selectedFile || isProcessing || isProcessingRef.current) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
 
     isProcessingRef.current = true;
     const myToken = ++operationTokenRef.current;
@@ -224,7 +230,7 @@ export const CompressPdfPage: React.FC = () => {
 
   const handleManualDownload = () => {
     if (compressedBlob) {
-      downloadBlob(compressedBlob, downloadName);
+      void downloadBlob(compressedBlob, downloadName, { skipQuotaRecord: true });
     } else if (downloadUrl) {
       const link = document.createElement('a');
       link.href = downloadUrl;

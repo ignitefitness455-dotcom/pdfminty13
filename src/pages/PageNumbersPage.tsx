@@ -6,12 +6,14 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const PageNumbersPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pattern, setPattern] = useState<string>('Page {n} of {total}');
   const [patternWarning, setPatternWarning] = useState<string | null>(null);
@@ -105,6 +107,10 @@ export const PageNumbersPage: React.FC = () => {
 
   const handleApply = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (!pattern.trim()) {
       setError('Please provide a pattern config string.');
       return;

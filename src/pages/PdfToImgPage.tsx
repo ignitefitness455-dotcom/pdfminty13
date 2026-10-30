@@ -7,12 +7,14 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const PdfToImgPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [imageUrls, setImageUrls] = useState<{ page: number; dataUrl: string; format: string }[]>(
@@ -69,6 +71,10 @@ export const PdfToImgPage: React.FC = () => {
 
   const handleExport = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     const myToken = ++operationTokenRef.current;
 
     imageUrls.forEach((item) => URL.revokeObjectURL(item.dataUrl));

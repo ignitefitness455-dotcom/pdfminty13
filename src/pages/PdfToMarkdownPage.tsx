@@ -20,10 +20,12 @@ import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import type { ExtractedMarkdownImage, PdfToMarkdownResult } from '../core/pdf-operations';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
+import { recordDailyTask } from '../utils/usageLimit';
 
 function renderInlineFormatting(text: string): React.ReactNode[] {
   // Simple parser for **bold**, *italic*, ***bold italic***
@@ -216,6 +218,7 @@ export const PdfToMarkdownPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { firebaseUser } = useAuth();
   const { showToast } = useToast();
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [extractImages, setExtractImages] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -254,6 +257,10 @@ export const PdfToMarkdownPage: React.FC = () => {
 
   const handleRunAiOcr = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (!hasOcrConsent) {
       setError(
         'Please acknowledge the Cloud AI Vision consent checkbox before transcribing scanned pages.'
@@ -332,6 +339,7 @@ export const PdfToMarkdownPage: React.FC = () => {
       setPageCount(rendered.length);
       setIsScannedResult(false);
       setProgress({ current: 3, total: 3 });
+      recordDailyTask(null, 'pdf_to_markdown');
       showToast('Successfully extracted Markdown via Multimodal AI Vision OCR!', 'success');
     } catch (err: unknown) {
       if (myToken !== operationTokenRef.current) return;
@@ -349,6 +357,10 @@ export const PdfToMarkdownPage: React.FC = () => {
 
   const handleConvert = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -380,6 +392,7 @@ export const PdfToMarkdownPage: React.FC = () => {
       setImages(result.images || []);
       setPageCount(result.pageCount || 1);
       setIsScannedResult(!!result.isScannedOrImageOnly);
+      recordDailyTask(null, 'pdf_to_markdown');
       showToast(
         'Successfully converted PDF to Markdown Free — Convert PDF to Editable MD!',
         'success'
@@ -428,11 +441,11 @@ export const PdfToMarkdownPage: React.FC = () => {
         zip.file(`images/${img.filename}`, img.dataBytes);
       }
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      await downloadBlob(zipBlob, `pdfminty_${baseName}_markdown.zip`);
+      await downloadBlob(zipBlob, `pdfminty_${baseName}_markdown.zip`, { skipQuotaRecord: true });
       showToast('Downloaded Markdown + Images ZIP bundle!', 'success');
     } else {
       const blob = new Blob([markdownText], { type: 'text/markdown;charset=utf-8' });
-      await downloadBlob(blob, `${baseName}.md`);
+      await downloadBlob(blob, `${baseName}.md`, { skipQuotaRecord: true });
       showToast('Downloaded clean Markdown file!', 'success');
     }
   };

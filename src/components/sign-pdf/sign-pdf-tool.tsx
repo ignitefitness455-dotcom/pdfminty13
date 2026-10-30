@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useUsageLimit } from '../../contexts/UsageLimitContext';
 import { PDFSanitizer } from '../../core/PDFSanitizer';
 import { downloadBlob, sanitizeDownloadFilename } from '../../utils/download';
-import { recordDailyTask } from '../../utils/usageLimit';
 import { Button } from '../ui/button';
 
 import { exportSignedPdf } from './export';
@@ -26,8 +26,9 @@ const EMPTY_SIGNATURES: SignatureSet = {
 
 export function SignPdfTool() {
   const { t } = useTranslation('common');
-  const { user } = useAuth();
-  const isPro = user?.plan === 'pro';
+  const { user, isPro: authIsPro } = useAuth();
+  const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
   const maxSavedSignatures = isPro ? 5 : 1;
   const storageKey = `pdfminty_saved_signatures_${user?.uid || 'guest'}`;
   // Guest: 100MB, Logged-in Free: 150MB, Pro: 500MB
@@ -114,6 +115,10 @@ export function SignPdfTool() {
 
   const openFile = useCallback(
     async (nextFile: File) => {
+      if (!canPerformTask()) {
+        openLimitModal({ reason: 'task_limit' });
+        return;
+      }
       if (nextFile.type !== 'application/pdf' && !nextFile.name.toLowerCase().endsWith('.pdf')) {
         setError(t('signPdf.errors.choosePdf', { defaultValue: 'Please choose a PDF file.' }));
         return;
@@ -188,7 +193,7 @@ export function SignPdfTool() {
         }
       }
     },
-    [limitMB, t]
+    [canPerformTask, limitMB, openLimitModal, t]
   );
 
   const [isDetecting, setIsDetecting] = useState(false);
@@ -350,17 +355,16 @@ export function SignPdfTool() {
 
   const exportPdf = async () => {
     if (!bytes || !fields.length) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     setExporting(true);
     try {
       const output = await exportSignedPdf({ bytes, pages, fields, signatures, dateText });
       const filename = sanitizeDownloadFilename(
         `${file?.name.replace(/\.pdf$/i, '') || 'document'}-signed.pdf`
       );
-      try {
-        recordDailyTask(user, 'sign_pdf');
-      } catch {
-        // Non-blocking
-      }
       const blob = new Blob([output as unknown as BlobPart], { type: 'application/pdf' });
       await downloadBlob(blob, filename);
     } catch (err) {

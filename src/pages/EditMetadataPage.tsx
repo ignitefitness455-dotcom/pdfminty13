@@ -6,11 +6,13 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 
 export default function EditMetadataPage() {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,6 +88,10 @@ export default function EditMetadataPage() {
 
   const handleProcess = async () => {
     if (!file) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     const currentToken = ++operationTokenRef.current;
     setIsSuccess(false);
     if (downloadUrl) {

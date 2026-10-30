@@ -27,11 +27,13 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
   overrideDesc,
 }) => {
   const { t, i18n } = useTranslation('common');
-  const { user } = useAuth();
-  const isPro = user?.plan === 'pro';
-  const isLoggedIn = !!user;
+  const { user, isPro: authIsPro } = useAuth();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
   const tool = TOOLS.find((item) => item.slug === slug);
-  const sizeLimit = limitMB || getToolLimit(slug, isPro, isLoggedIn).maxSingleMB;
+  const tierLimitMB = getToolLimit(slug, isPro, isLoggedIn).maxSingleMB;
+  const sizeLimit =
+    isPro || isLoggedIn ? Math.max(limitMB || 0, tierLimitMB) : limitMB || tierLimitMB;
 
   const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
   const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)

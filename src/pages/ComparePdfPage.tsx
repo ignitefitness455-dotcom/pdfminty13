@@ -22,6 +22,7 @@ import { recordLocalProcessing } from '../components/NetworkPrivacyInspector';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getFriendlyErrorMessage, getPdfJs } from '../core';
 import { PDFSanitizer } from '../core/PDFSanitizer';
 import { sanitizeDownloadFilename } from '../utils/download';
@@ -134,6 +135,7 @@ function computeLineDiff(linesA: string[], linesB: string[]): DiffLine[] {
 }
 
 export const ComparePdfPage: React.FC = () => {
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);
 
@@ -182,13 +184,17 @@ export const ComparePdfPage: React.FC = () => {
     setDocA(docB);
     setDocB(tempDoc);
 
-    // Re-compare with flipped docs
+    // Re-compare with flipped docs without deducting a second quota task
     if (fileB && fileA) {
-      runComparison(fileB, fileA);
+      void runComparison(fileB, fileA, true);
     }
   };
 
-  const runComparison = async (fA: File, fB: File) => {
+  const runComparison = async (fA: File, fB: File, skipQuotaRecord = false) => {
+    if (!skipQuotaRecord && !canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     const myToken = ++operationTokenRef.current;
     setIsComparing(true);
     setError(null);
@@ -227,7 +233,9 @@ export const ComparePdfPage: React.FC = () => {
         bytesA.byteLength + bytesB.byteLength,
         `PDF Diff: ${fA.name} vs ${fB.name}`
       );
-      recordDailyTask(null, 'compare_pdf');
+      if (!skipQuotaRecord) {
+        recordDailyTask(null, 'compare_pdf');
+      }
 
       const [loadedA, loadedB] = await Promise.all([
         pdfjs.getDocument({ data: bytesA }).promise,

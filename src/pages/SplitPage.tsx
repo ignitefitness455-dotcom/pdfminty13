@@ -7,6 +7,7 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlobsSequentially, sanitizeDownloadFilename } from '../utils/download';
@@ -14,6 +15,7 @@ import { logger } from '../utils/logger';
 
 export const SplitPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [ranges, setRanges] = useState<string>('1');
@@ -69,6 +71,10 @@ export const SplitPage: React.FC = () => {
 
   const handleSplit = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (!ranges.trim()) {
       setError(
         t('splitPdf.rangeError', {

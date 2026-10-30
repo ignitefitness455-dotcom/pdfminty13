@@ -6,6 +6,7 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
@@ -13,6 +14,7 @@ import { logger } from '../utils/logger';
 
 export const RotatePage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [degrees, setDegrees] = useState<number>(90);
   const [loading, setLoading] = useState(false);
@@ -109,6 +111,10 @@ export const RotatePage: React.FC = () => {
 
   const handleRotate = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     setLoading(true);
     setError(null);
     setIsSuccess(false);

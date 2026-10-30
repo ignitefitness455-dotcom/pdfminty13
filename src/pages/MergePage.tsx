@@ -17,6 +17,7 @@ import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { getToolLimit } from '../config/constants';
 import { useAuth } from '../contexts/AuthContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob } from '../utils/download';
@@ -24,9 +25,10 @@ import { logger } from '../utils/logger';
 
 export const MergePage: React.FC = () => {
   const { t } = useTranslation('merge-pdf');
-  const { user } = useAuth();
-  const isPro = user?.plan === 'pro';
-  const isLoggedIn = !!user;
+  const { user, isPro: authIsPro } = useAuth();
+  const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
   const currentLimits = getToolLimit('merge-pdf', isPro, isLoggedIn);
   const [files, setFiles] = useState<File[]>([]);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -122,6 +124,10 @@ export const MergePage: React.FC = () => {
 
   const handleMerge = async () => {
     if (loading || isSubmittingRef.current) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (files.length < 2) {
       setError(
         t('errors.minFilesRequired', {

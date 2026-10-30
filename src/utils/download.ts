@@ -53,17 +53,19 @@ export function sanitizeDownloadFilename(filename: string, defaultName = 'docume
 export async function downloadBlob(
   blob: Blob,
   filename: string,
-  _options?: { fallbackOnly?: boolean }
+  options?: { fallbackOnly?: boolean; skipQuotaRecord?: boolean }
 ): Promise<void> {
   // Reliable universal download using Blob URL and hidden anchor tag.
   // Works cleanly in all browsers, mobile devices, and sandboxed iframes.
   const safeFilename = sanitizeDownloadFilename(filename);
 
   // Automatically count successful task execution without retaining document filename in state
-  try {
-    recordDailyTask(null, 'pdf_download');
-  } catch {
-    // Non-blocking quota recording
+  if (!options?.skipQuotaRecord) {
+    try {
+      recordDailyTask(null, 'pdf_download');
+    } catch {
+      // Non-blocking quota recording
+    }
   }
 
   const url = URL.createObjectURL(blob);
@@ -92,13 +94,25 @@ export async function downloadBlob(
  * Trigger a batch download of multiple blobs with a small delay between each
  * to avoid browser popup blockers (most browsers cap simultaneous downloads
  * at 1 per user gesture, with a 1-2 second window after).
+ * Counts as a single logical task rather than deducting 1 task per split file.
  */
 export async function downloadBlobsSequentially(
   items: { blob: Blob; filename: string }[],
-  delayMs = 600
+  delayMs = 600,
+  options?: { skipQuotaRecord?: boolean }
 ): Promise<void> {
+  if (items.length === 0) return;
+
+  if (!options?.skipQuotaRecord) {
+    try {
+      recordDailyTask(null, 'pdf_batch_download');
+    } catch {
+      // Non-blocking quota recording
+    }
+  }
+
   for (const item of items) {
-    await downloadBlob(item.blob, item.filename, { fallbackOnly: true });
+    await downloadBlob(item.blob, item.filename, { fallbackOnly: true, skipQuotaRecord: true });
     if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
   }
 }

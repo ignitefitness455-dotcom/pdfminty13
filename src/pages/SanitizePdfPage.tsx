@@ -29,11 +29,11 @@ import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getPdfJs } from '../core';
 import { PDFSanitizer } from '../core/PDFSanitizer';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
-import { recordDailyTask } from '../utils/usageLimit';
 
 export type PiiCategory = 'card' | 'phone' | 'nid' | 'email' | 'secret' | 'custom' | 'manual';
 
@@ -140,6 +140,7 @@ export function detectPiiInTextItem(
 
 export default function SanitizePdfPage() {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [activeTab, setActiveTab] = useState<'redact' | 'strip'>('redact');
   const [file, setFile] = useState<File | null>(null);
   const [fileBytes, setFileBytes] = useState<Uint8Array | null>(null);
@@ -550,6 +551,10 @@ export default function SanitizePdfPage() {
   // Perform permanent redaction and sanitization
   const handleExecuteRedaction = async () => {
     if (!fileBytes || !file) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
 
     try {
       setIsProcessing(true);
@@ -736,7 +741,6 @@ export default function SanitizePdfPage() {
         skipEncryptionCheck: true,
       });
       recordLocalProcessing(savedBytes.byteLength, 'Redacted & Sanitized PDF');
-      recordDailyTask(null, 'sanitize_pdf');
 
       const blob = new Blob([savedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(
@@ -765,6 +769,10 @@ export default function SanitizePdfPage() {
   // Original structural sanitize handler (Tab 2)
   const handleStructuralSanitize = async () => {
     if (!file) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
 
     try {
       setIsProcessing(true);
@@ -783,7 +791,6 @@ export default function SanitizePdfPage() {
       }>('sanitizePDF', { bytes });
 
       setWarnings(result.warnings);
-      recordDailyTask(null, 'sanitize_pdf');
 
       const blob = new Blob([result.bytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(file.name.replace(/\.pdf$/i, '') + '-sanitized.pdf');

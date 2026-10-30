@@ -19,11 +19,12 @@ import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getPdfJs } from '../core/index';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
-import { resolveCurrentSession } from '../utils/usageLimit';
+import { recordDailyTask, resolveCurrentSession } from '../utils/usageLimit';
 
 interface OcrPagePreview {
   index: number;
@@ -33,6 +34,7 @@ interface OcrPagePreview {
 export const OcrPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, firebaseUser, isPro: authIsPro } = useAuth();
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const { tier } = resolveCurrentSession(user);
   const isPro = Boolean(authIsPro || tier === 'pro' || user?.plan === 'pro');
   const maxBatchPages = isPro ? 15 : 5;
@@ -213,6 +215,10 @@ export const OcrPdfPage: React.FC = () => {
 
   const handleStartOcr = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (selectedPages.size === 0) {
       setError('Please select at least one page to transcribe.');
       return;
@@ -314,6 +320,7 @@ export const OcrPdfPage: React.FC = () => {
 
       const data = (await res.json()) as { success: boolean; result: string };
       setOcrResult(data.result || 'No text could be extracted from the document.');
+      recordDailyTask(user, 'ocr_pdf');
     } catch (err: unknown) {
       if (
         myToken !== operationTokenRef.current ||
@@ -342,14 +349,14 @@ export const OcrPdfPage: React.FC = () => {
     if (!ocrResult) return;
     const blob = new Blob([ocrResult], { type: 'text/plain;charset=utf-8' });
     const name = `pdfminty_ocr_${selectedFile?.name.replace(/\.[^/.]+$/, '')}.txt`;
-    downloadBlob(blob, name);
+    void downloadBlob(blob, name, { skipQuotaRecord: true });
   };
 
   const handleDownloadMd = () => {
     if (!ocrResult) return;
     const blob = new Blob([ocrResult], { type: 'text/markdown;charset=utf-8' });
     const name = `pdfminty_ocr_${selectedFile?.name.replace(/\.[^/.]+$/, '')}.md`;
-    downloadBlob(blob, name);
+    void downloadBlob(blob, name, { skipQuotaRecord: true });
   };
 
   const isQuotaError = !!(

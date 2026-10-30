@@ -6,13 +6,19 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const ImgToPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
+  const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const currentLimits = getToolLimit('image-to-pdf', isPro, Boolean(user));
   const [images, setImages] = useState<{ file: File; id: string; url: string }[]>([]);
   const [pageSize, setPageSize] = useState<'fit' | 'A4' | 'Letter'>('fit');
   const [loading, setLoading] = useState(false);
@@ -54,20 +60,21 @@ export const ImgToPdfPage: React.FC = () => {
     const existingTotalBytes = images.reduce((acc, img) => acc + img.file.size, 0);
     const newTotalBytes = newFiles.reduce((acc, f) => acc + f.size, 0);
     const combinedBytes = existingTotalBytes + newTotalBytes;
-    const maxTotalBytes = (TOOL_SIZE_LIMITS['image-to-pdf'].maxTotalMB || 100) * 1024 * 1024;
+    const maxTotalMB = currentLimits.maxTotalMB || 150;
+    const maxTotalBytes = maxTotalMB * 1024 * 1024;
 
     if (combinedBytes > maxTotalBytes) {
       setError(
         t('imageToPdf.maxSizeError', {
           size: (combinedBytes / 1024 / 1024).toFixed(2),
-          limit: TOOL_SIZE_LIMITS['image-to-pdf'].maxTotalMB,
+          limit: maxTotalMB,
           defaultValue: `Uploading failed! The combined size of all your images (${(
             combinedBytes /
             1024 /
             1024
           ).toFixed(
             2
-          )} MB) exceeds the absolute combined limit of ${TOOL_SIZE_LIMITS['image-to-pdf'].maxTotalMB} MB. Please use fewer/smaller images.`,
+          )} MB) exceeds the absolute combined limit of ${maxTotalMB} MB. Please use fewer/smaller images.`,
         })
       );
       return;
@@ -121,6 +128,10 @@ export const ImgToPdfPage: React.FC = () => {
   };
 
   const handleConvert = async () => {
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (images.length === 0) {
       setError(
         t('imageToPdf.minFilesError', { defaultValue: 'Please add at least 1 image file.' })
@@ -177,7 +188,7 @@ export const ImgToPdfPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="img_to_pdf_container">
       <SEO slug="image-to-pdf" />
-      <ToolHeader slug="image-to-pdf" limitMB={TOOL_SIZE_LIMITS['image-to-pdf'].maxSingleMB} />
+      <ToolHeader slug="image-to-pdf" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -192,7 +203,7 @@ export const ImgToPdfPage: React.FC = () => {
               onFilesSelected={handleFilesSelected}
               multiple
               accept="image/png, image/jpeg, image/jpg, image/webp, image/avif, image/gif, image/bmp, image/heic, image/heif"
-              maxSizeMB={TOOL_SIZE_LIMITS['image-to-pdf'].maxSingleMB}
+              maxSizeMB={currentLimits.maxSingleMB}
             />
           </div>
 

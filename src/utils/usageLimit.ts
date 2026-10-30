@@ -153,7 +153,9 @@ export interface UsageStatus {
 /**
  * Returns complete usage statistics for the given session.
  */
-export const getUsageStatus = (user?: { uid?: string; plan?: 'free' | 'pro' } | null): UsageStatus => {
+export const getUsageStatus = (
+  user?: { uid?: string; plan?: 'free' | 'pro'; isPro?: boolean } | null
+): UsageStatus => {
   const { tier, uid } = resolveCurrentSession(user);
   const data = getStoredUsage();
   const config = TIER_LIMITS[tier];
@@ -200,15 +202,24 @@ let lastRecordedTimestamp = 0;
 let lastRecordedKey = '';
 
 /**
+ * Resets the 500ms deduplicator state (intended for deterministic unit tests).
+ */
+export const _resetUsageDeduplicatorForTesting = (): void => {
+  lastRecordedTimestamp = 0;
+  lastRecordedKey = '';
+};
+
+/**
  * Records a completed task, incrementing today's counter.
  * Includes a 500ms deduplication window to guard against duplicate events.
  */
 export const recordDailyTask = (
-  user?: { uid?: string; plan?: 'free' | 'pro' } | null,
+  user?: { uid?: string; plan?: 'free' | 'pro'; isPro?: boolean } | null,
   taskIdentifier = 'task'
 ): { success: boolean; remaining: number | 'unlimited'; tier: UserTier } => {
+  const { tier, uid } = resolveCurrentSession(user);
   const now = Date.now();
-  const dedupKey = `${taskIdentifier}_${user?.uid || 'guest'}`;
+  const dedupKey = `${taskIdentifier}_${uid || 'guest'}`;
 
   // If duplicate call within 500ms, consider it already recorded
   if (now - lastRecordedTimestamp < 500 && lastRecordedKey === dedupKey) {
@@ -223,7 +234,6 @@ export const recordDailyTask = (
   lastRecordedTimestamp = now;
   lastRecordedKey = dedupKey;
 
-  const { tier, uid } = resolveCurrentSession(user);
   const data = getStoredUsage();
   const config = TIER_LIMITS[tier];
 

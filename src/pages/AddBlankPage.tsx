@@ -6,12 +6,14 @@ import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const AddBlankPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [positionType, setPositionType] = useState<'start' | 'end' | 'custom'>('end');
   const [customIndex, setCustomIndex] = useState<number>(2);
@@ -67,6 +69,10 @@ export const AddBlankPage: React.FC = () => {
 
   const handleInsert = async () => {
     if (!selectedFile) return;
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     setError(null);
     setIsSuccess(false);
     if (downloadUrl) {
