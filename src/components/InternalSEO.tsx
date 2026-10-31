@@ -6,6 +6,7 @@ import { PRIMARY_AUTHOR } from '../config/author';
 import { ROUTES } from '../config/routes';
 import { SITE_URL, SITE_NAME, TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import type { ToolSEOInfo } from '../config/seo-data';
+import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
 import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
@@ -149,7 +150,7 @@ export const Breadcrumbs: React.FC = () => {
 
 export default function InternalSEO() {
   const location = useLocation();
-  const [fullTools, setFullTools] = useState<ToolSEOInfo[] | null>(null);
+  const [fullTools, setFullTools] = useState<ToolSEOInfo[] | null>(getCachedFullTools);
 
   const nonce = React.useMemo(() => {
     if (typeof document === 'undefined') return undefined;
@@ -172,16 +173,55 @@ export default function InternalSEO() {
     }
   }
 
+  const isToolSlug = React.useMemo(
+    () => Boolean(baseSlug && TOOLS.some((item) => item.slug === baseSlug)),
+    [baseSlug]
+  );
+
   useEffect(() => {
-    if (!baseSlug || baseSlug === 'blog' || fullTools) return;
+    if (!isToolSlug || fullTools) return;
+    const cached = getCachedFullTools();
+    if (cached) {
+      setFullTools(cached);
+      return;
+    }
     let active = true;
-    void import('../config/seo-data').then((mod) => {
-      if (active) setFullTools(mod.TOOLS);
-    });
+    let timerId: number | undefined;
+    const win =
+      typeof window !== 'undefined'
+        ? (window as Window & {
+            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+            cancelIdleCallback?: (id: number) => void;
+          })
+        : undefined;
+
+    const triggerLoad = () => {
+      void loadFullToolsCatalog().then((loaded) => {
+        if (active) setFullTools(loaded);
+      });
+    };
+
+    if (win && typeof win.requestIdleCallback === 'function') {
+      const idleId = win.requestIdleCallback(triggerLoad, { timeout: 1200 });
+      return () => {
+        active = false;
+        win.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    if (typeof window !== 'undefined') {
+      timerId = window.setTimeout(triggerLoad, 180);
+    } else {
+      triggerLoad();
+    }
+
     return () => {
       active = false;
+      if (timerId !== undefined && typeof window !== 'undefined') {
+        window.clearTimeout(timerId);
+      }
     };
-  }, [baseSlug, fullTools]);
+  }, [isToolSlug, fullTools]);
 
   const structuredData = React.useMemo<Record<string, unknown>[]>(() => {
     const list: Record<string, unknown>[] = [];

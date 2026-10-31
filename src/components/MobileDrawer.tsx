@@ -27,6 +27,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
+import { prefetchToolChunk } from '../config/homeConfig';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
@@ -171,6 +172,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-700/60">
               <Link
                 to={ROUTES.DASHBOARD}
+                onPointerDown={() => prefetchToolChunk('dashboard')}
+                onMouseEnter={() => prefetchToolChunk('dashboard')}
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition-colors shadow-sm flex items-center justify-center gap-1.5"
               >
@@ -225,6 +228,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 to={ROUTES.SIGN_IN}
+                onPointerDown={() => prefetchToolChunk('sign-in')}
+                onMouseEnter={() => prefetchToolChunk('sign-in')}
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 text-center"
                 id="sidebar-signin-button"
@@ -235,6 +240,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
               <Link
                 to={ROUTES.SIGN_UP}
+                onPointerDown={() => prefetchToolChunk('sign-up')}
+                onMouseEnter={() => prefetchToolChunk('sign-up')}
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition-all text-center"
                 id="sidebar-signup-button"
@@ -250,6 +257,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         {tier !== 'pro' && (
           <Link
             to={ROUTES.PRICING}
+            onPointerDown={() => prefetchToolChunk('pricing')}
+            onMouseEnter={() => prefetchToolChunk('pricing')}
             onClick={() => setMobileMenuOpen(false)}
             className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-emerald-500/5 hover:from-emerald-500/20 hover:to-teal-500/20 border border-emerald-500/30 transition-all flex items-center justify-between gap-3 group block"
             id="sidebar-pricing-button"
@@ -304,6 +313,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 <Link
                   key={tool.path}
                   to={tool.path}
+                  onPointerDown={() => prefetchToolChunk(tool.path)}
+                  onMouseEnter={() => prefetchToolChunk(tool.path)}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all ${
                     location.pathname === tool.path

@@ -58,24 +58,50 @@ export const prefetchMap: Record<string, () => Promise<unknown>> = {
   'about-us': () => import('../pages/AboutUsPage'),
   contact: () => import('../pages/ContactPage'),
   login: () => import('../pages/AuthPage'),
+  'sign-in': () => import('../pages/AuthPage'),
+  signin: () => import('../pages/AuthPage'),
   signup: () => import('../pages/AuthPage'),
+  'sign-up': () => import('../pages/AuthPage'),
   dashboard: () => import('../pages/DashboardPage'),
+  'adobe-acrobat-alternative': () => import('../pages/AdobeAlternativePage'),
+  'privacy-policy': () => import('../pages/PrivacyPolicyPage'),
+  'terms-of-service': () => import('../pages/TermsOfServicePage'),
+  'mobile-drawer': () => import('../components/MobileDrawer'),
 };
 
 const prefetchedSet = new Set<string>();
 let sharedLayoutChunksPrefetched = false;
 
 export const prefetchToolChunk = (slug: string): void => {
-  const key = slug.replace(/^\/+|\/+$/g, '').toLowerCase();
-  if (!sharedLayoutChunksPrefetched) {
-    sharedLayoutChunksPrefetched = true;
-    void import('../components/ToolContentSection').catch(() => {});
+  const cleaned = slug.replace(/^\/+|\/+$/g, '').toLowerCase();
+  const segments = cleaned.split('/').filter(Boolean);
+  const key =
+    segments.length > 1 && ['en', 'bn', 'de', 'es', 'fr', 'hi', 'zh'].includes(segments[0])
+      ? segments.slice(1).join('/')
+      : cleaned;
+
+  if (!key) return;
+  if (! prefetchedSet.has(key)) {
+    prefetchedSet.add(key);
+    const loader = prefetchMap[key];
+    if (loader) {
+      loader().catch((err: unknown) => logger.debug('[prefetch] chunk error:', err));
+    }
   }
-  if (prefetchedSet.has(key)) return;
-  prefetchedSet.add(key);
-  const loader = prefetchMap[key];
-  if (loader) {
-    loader().catch((err: unknown) => logger.debug('[prefetch] chunk error:', err));
+
+  if (!sharedLayoutChunksPrefetched && typeof window !== 'undefined') {
+    sharedLayoutChunksPrefetched = true;
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    };
+    const preloadShared = () => {
+      void import('../components/ToolContentSection').catch(() => {});
+    };
+    if (typeof win.requestIdleCallback === 'function') {
+      win.requestIdleCallback(preloadShared, { timeout: 1500 });
+    } else {
+      window.setTimeout(preloadShared, 300);
+    }
   }
 };
 

@@ -873,9 +873,9 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
     fs.mkdirSync(pricingTargetFolder, { recursive: true });
   }
 
-  const pricingTitle = "Pricing Plans — Affordable Privacy-First PDF Tools | PDFMinty";
+  const pricingTitle = "Pricing Plans — $2.49/mo Pro & $50 Lifetime Deal | PDFMinty";
   const pricingDesc =
-    "Simple, affordable pricing for PDFMinty. 100% free forever core tier with budget-friendly upgrades for 500MB batch processing, Priority Gemini 2.5 Flash AI analysis, and batch OCR.";
+    "Simple, transparent USD pricing for PDFMinty. 100% free forever core tier, $2.49/month Pro subscription, or $50 one-time Lifetime Pro access for 500MB batch processing, Gemini AI analysis, and batch OCR.";
   const pricingUrl = `${SITE_URL}/pricing/`;
 
   const pricingHeadMeta = `
@@ -914,16 +914,17 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 
   const pricingArticleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
           <h1>Pick the plan that fits your workflow</h1>
-          <p>Start 100% free with all 24 browser PDF tools. Upgrade only if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.</p>
-          <h2>Free Forever Plan</h2>
+          <p>Start 100% free with all 24 browser PDF tools. Upgrade to Pro ($2.49/month) or Lifetime Pro ($50 one-time) if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.</p>
+          <h2>Free Forever Plan ($0)</h2>
           <ul>
             <li>All 24 in-browser core PDF tools with 100% client-side WebAssembly privacy</li>
             <li>Guest (No Login): 100 MB file limit and 5 free tasks per day</li>
             <li>Free Account (Logged In): 150 MB file limit and 10 free tasks per day</li>
             <li>Works offline once loaded — zero server uploads for standard tools</li>
           </ul>
-          <h2>PDFMinty Pro Plan</h2>
+          <h2>PDFMinty Pro Plan ($2.49 / month) &amp; Lifetime Deal ($50 One-Time)</h2>
           <ul>
+            <li>Pro Monthly ($2.49/mo) or Lifetime Deal ($50 one-time payment)</li>
             <li>Up to 500 MB batch file processing limits</li>
             <li>Unlimited daily PDF operations across all client-side tools</li>
             <li>Priority Gemini AI document analysis &amp; OCR quotas</li>
@@ -941,7 +942,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 
   // ----------------------------------------------------
   // Generate SPA Entry HTML for Auth & Account Routes
-  // (/login/, /signup/, /dashboard/) so Cloudflare Pages
+  // (/login/, /sign-in/, /signup/, /sign-up/, /dashboard/) so Cloudflare Pages
   // never falls through to dist/404.html on direct navigation
   // ----------------------------------------------------
   const noindexSpaRoutes = [
@@ -951,7 +952,17 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
       desc: "Sign in to your PDFMinty account to manage your PDF workflow and preferences.",
     },
     {
+      slug: "sign-in",
+      title: "Sign In — PDFMinty",
+      desc: "Sign in to your PDFMinty account to manage your PDF workflow and preferences.",
+    },
+    {
       slug: "signup",
+      title: "Create Account — PDFMinty",
+      desc: "Create a free PDFMinty account for higher daily task limits and cloud preferences.",
+    },
+    {
+      slug: "sign-up",
       title: "Create Account — PDFMinty",
       desc: "Create a free PDFMinty account for higher daily task limits and cloud preferences.",
     },

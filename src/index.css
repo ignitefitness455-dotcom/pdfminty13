@@ -191,6 +191,18 @@ body {
     color 0.15s;
 }
 
+a,
+button,
+[role='button'],
+input,
+select,
+textarea,
+summary,
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 h1,
 h2,
 h3,

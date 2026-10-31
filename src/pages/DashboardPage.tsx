@@ -121,7 +121,7 @@ export const DashboardPage: React.FC = () => {
 
   // Upgrade & Subscription Modals State
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<'monthly' | 'annual' | 'lifetime'>('monthly');
+  const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<'monthly' | 'lifetime'>('monthly');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showRenewModal, setShowRenewModal] = useState(false);
@@ -1736,8 +1736,8 @@ export const DashboardPage: React.FC = () => {
                     </div>
                     <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                       {isBn
-                        ? 'বার্ষিক বিলিংয়ে ১০% ছাড় ($2.24/মাস • $26.88/বছর)'
-                        : 'Save 10% with Annual Billing ($2.24/mo • $26.88/yr)'}
+                        ? 'মাসিক প্ল্যান: মাত্র $2.49/মাস (যেকোনো সময় বাতিলযোগ্য)'
+                        : 'Monthly Plan: Just $2.49/month (Cancel anytime)'}
                     </p>
                     <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
                       <li className="flex items-center gap-2">
@@ -2094,39 +2094,28 @@ export const DashboardPage: React.FC = () => {
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {isBn
-                  ? 'মাসিক, বার্ষিক (১০% ছাড়) অথবা আজীবন এককালীন প্ল্যান বেছে নিন'
-                  : 'Choose Monthly, Annual (10% Off), or Lifetime One-Time Access'}
+                  ? 'মাসিক ($2.49/মাস) অথবা আজীবন এককালীন ($50) প্ল্যান বেছে নিন'
+                  : 'Choose Monthly ($2.49/mo) or Lifetime One-Time Access ($50)'}
               </p>
             </div>
 
             {/* Plan Selector Tabs inside Dashboard Modal */}
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-bold">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setSelectedUpgradePlan('monthly')}
-                className={`py-2 px-2 rounded-xl transition-all cursor-pointer ${
+                className={`py-2 px-3 rounded-xl transition-all cursor-pointer ${
                   selectedUpgradePlan === 'monthly'
                     ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400'
                 }`}
               >
-                {isBn ? 'মাসিক ($2.49)' : 'Monthly ($2.49)'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedUpgradePlan('annual')}
-                className={`py-2 px-2 rounded-xl transition-all cursor-pointer ${
-                  selectedUpgradePlan === 'annual'
-                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400'
-                }`}
-              >
-                {isBn ? 'বার্ষিক (10% ছাড়)' : 'Annual (10% Off)'}
+                {isBn ? 'মাসিক ($2.49/মাস)' : 'Monthly ($2.49/mo)'}
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedUpgradePlan('lifetime')}
-                className={`py-2 px-2 rounded-xl transition-all cursor-pointer ${
+                className={`py-2 px-3 rounded-xl transition-all cursor-pointer ${
                   selectedUpgradePlan === 'lifetime'
                     ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400'
@@ -2142,22 +2131,14 @@ export const DashboardPage: React.FC = () => {
                   ? isBn
                     ? 'এককালীন পেমেন্ট • আজীবন মেয়াদ'
                     : 'One-Time Payment • Lifetime Access'
-                  : selectedUpgradePlan === 'annual'
-                    ? isBn
-                      ? 'বার্ষিক প্রো প্ল্যান (১০% সাশ্রয়)'
-                      : 'Annual Unlimited Pro (Save 10%)'
-                    : isBn
-                      ? 'মাসিক আনলিমিটেড প্ল্যান'
-                      : 'Monthly Unlimited Pro'}
+                  : isBn
+                    ? 'মাসিক আনলিমিটেড প্ল্যান'
+                    : 'Monthly Unlimited Pro'}
               </span>
               <div className="text-3xl font-black text-slate-900 dark:text-white">
                 {selectedUpgradePlan === 'lifetime' ? (
                   <>
                     $50 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ one-time</span>
-                  </>
-                ) : selectedUpgradePlan === 'annual' ? (
-                  <>
-                    $2.24 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ mo ($26.88/yr)</span>
                   </>
                 ) : (
                   <>
@@ -2215,13 +2196,9 @@ export const DashboardPage: React.FC = () => {
                     ? isBn
                       ? 'লাইফটাইম নিশ্চিত করুন ($50)'
                       : 'Confirm Lifetime ($50)'
-                    : selectedUpgradePlan === 'annual'
-                      ? isBn
-                        ? 'নিশ্চিত করুন ($26.88/বছর)'
-                        : 'Confirm Annual ($26.88/yr)'
-                      : isBn
-                        ? 'নিশ্চিত করুন ($2.49/মাস)'
-                        : 'Confirm & Upgrade ($2.49)'}
+                    : isBn
+                      ? 'নিশ্চিত করুন ($2.49/মাস)'
+                      : 'Confirm & Upgrade ($2.49/mo)'}
               </button>
             </div>
           </div>

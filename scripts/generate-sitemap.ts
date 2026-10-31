@@ -98,11 +98,27 @@ export function generateSitemapXml(): SitemapGenerationResult {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD at build time
 
   // 1. Static Core Pages (sitemap-pages.xml)
-  const staticRoutes: Array<{ path: string; priority: string; changefreq: string; lastmod?: string; isI18n?: boolean }> = [
+  const staticRoutes: Array<{
+    path: string;
+    priority: string;
+    changefreq: string;
+    lastmod?: string;
+    isI18n?: boolean;
+    title?: string;
+    caption?: string;
+  }> = [
     { path: '/', priority: '1.0', changefreq: 'daily', isI18n: true, lastmod: today },
     { path: '/blog/', priority: '0.9', changefreq: 'daily', lastmod: today },
     { path: '/adobe-acrobat-alternative/', priority: '0.8', changefreq: 'weekly', lastmod: '2026-10-18' },
-    { path: '/pricing/', priority: '0.7', changefreq: 'monthly', lastmod: '2026-10-18' },
+    {
+      path: '/pricing/',
+      priority: '0.7',
+      changefreq: 'monthly',
+      lastmod: today,
+      title: 'Pricing Plans — $2.49/mo Pro & $50 Lifetime Deal | PDFMinty',
+      caption:
+        'Simple, transparent USD pricing for PDFMinty. Free forever core tier, $2.49/month Pro plan, and $50 one-time Lifetime Pro access.',
+    },
     { path: '/about-us/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
     { path: '/contact/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
     { path: '/privacy-policy/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
@@ -127,8 +143,11 @@ export function generateSitemapXml(): SitemapGenerationResult {
       changefreq: route.changefreq,
       priority: route.priority,
       imageLoc: `${baseUrl}/og-image.png`,
-      title: matchedTool?.metaTitle || 'PdfMinty — Free Privacy-First PDF Toolkit',
-      caption: matchedTool?.shortDescription || 'Free in-browser PDF utilities with zero server uploads',
+      title: route.title || matchedTool?.metaTitle || 'PdfMinty — Free Privacy-First PDF Toolkit',
+      caption:
+        route.caption ||
+        matchedTool?.shortDescription ||
+        'Free in-browser PDF utilities with zero server uploads',
       hreflangs: route.isI18n ? homepageHreflangs : undefined,
     });
 

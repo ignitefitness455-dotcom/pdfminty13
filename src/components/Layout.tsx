@@ -23,10 +23,11 @@ import {
   ShieldBan,
   GitCompare,
 } from 'lucide-react';
-import React, { useState, createContext, useContext, useMemo } from 'react';
+import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
+import { prefetchToolChunk } from '../config/homeConfig';
 import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import { useTheme } from '../contexts/ThemeContext';
 import {
@@ -166,17 +167,37 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return activeItem?.type === 'tool' ? activeItem.slug : null;
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const warmCriticalInteractiveChunks = () => {
+      prefetchToolChunk('mobile-drawer');
+      prefetchToolChunk('pricing');
+      prefetchToolChunk('sign-in');
+    };
+    if (typeof win.requestIdleCallback === 'function') {
+      const id = win.requestIdleCallback(warmCriticalInteractiveChunks, { timeout: 2000 });
+      return () => win.cancelIdleCallback?.(id);
+    }
+    const timer = window.setTimeout(warmCriticalInteractiveChunks, 800);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <LayoutContext.Provider value={layoutContextValue}>
       <div
         className="min-h-screen flex flex-col bg-transparent text-on-background font-sans transition-colors duration-200 selection:bg-primary-fixed/30 overflow-x-hidden w-full relative"
         id="app_shell"
       >
-        {/* Apple-style Premium Mesh Gradient Background with mobile-optimized blur */}
-        <div className="fixed inset-0 -z-20 pointer-events-none transform-gpu bg-gradient-to-br from-slate-100 via-white to-slate-200 dark:from-slate-900 dark:via-black dark:to-slate-950">
-          <div className="hidden sm:block absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-teal-400/20 dark:bg-teal-600/20 blur-[100px] sm:blur-[140px] transform-gpu" />
-          <div className="hidden sm:block absolute top-[20%] right-[-10%] w-[40%] h-[60%] rounded-full bg-emerald-400/20 dark:bg-emerald-600/20 blur-[100px] sm:blur-[140px] transform-gpu" />
-          <div className="hidden sm:block absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] rounded-full bg-blue-300/20 dark:bg-blue-900/20 blur-[100px] sm:blur-[140px] transform-gpu" />
+        {/* Zero-filter GPU-friendly ambient mesh background */}
+        <div
+          className="fixed inset-0 -z-20 pointer-events-none bg-gradient-to-br from-slate-100 via-white to-slate-200 dark:from-slate-900 dark:via-black dark:to-slate-950"
+          aria-hidden="true"
+        >
+          <div className="hidden sm:block absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(20,184,166,0.12)_0%,transparent_45%),radial-gradient(circle_at_85%_40%,rgba(16,185,129,0.12)_0%,transparent_45%),radial-gradient(circle_at_45%_90%,rgba(59,130,246,0.10)_0%,transparent_50%)]" />
         </div>
         <LanguageSuggestionBanner />
         <Header

@@ -198,7 +198,6 @@ export async function detectCountryAsync(): Promise<GeoLocationInfo> {
  * Calculates rounded, formatted prices for a given country
  * Official USD baseline:
  * - Pro Monthly: $2.49/month
- * - Pro Annual (10% off): $26.88/year ($2.24/month)
  * - Lifetime Deal: $50 one-time
  */
 export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricing {
@@ -214,10 +213,10 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 2.24,
-        annualTotal: 26.88,
-        formattedMonthly: '$2.24',
-        formattedAnnual: '$26.88',
+        monthlyEquivalent: 2.49,
+        annualTotal: 29.88,
+        formattedMonthly: '$2.49',
+        formattedAnnual: '$29.88',
       },
       proMonthly: {
         amount: 2.49,
@@ -234,10 +233,10 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 197,
-        annualTotal: 2365,
-        formattedMonthly: '₹197',
-        formattedAnnual: '₹2,365',
+        monthlyEquivalent: 219,
+        annualTotal: 2628,
+        formattedMonthly: '₹219',
+        formattedAnnual: '₹2,628',
       },
       proMonthly: {
         amount: 219,
@@ -254,10 +253,10 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 1.79,
-        annualTotal: 21.49,
-        formattedMonthly: '£1.79',
-        formattedAnnual: '£21.49',
+        monthlyEquivalent: 1.99,
+        annualTotal: 23.88,
+        formattedMonthly: '£1.99',
+        formattedAnnual: '£23.88',
       },
       proMonthly: {
         amount: 1.99,
@@ -274,10 +273,10 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     return {
       free,
       proAnnual: {
-        monthlyEquivalent: 2.06,
-        annualTotal: 24.73,
-        formattedMonthly: '€2.06',
-        formattedAnnual: '€24.73',
+        monthlyEquivalent: 2.29,
+        annualTotal: 27.48,
+        formattedMonthly: '€2.29',
+        formattedAnnual: '€27.48',
       },
       proMonthly: {
         amount: 2.29,
@@ -290,15 +289,14 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     };
   }
 
-  // Dynamic calculation for other currencies (10% off annual, $50 lifetime baseline)
+  // Dynamic calculation for other currencies ($2.49/mo Pro, $50 Lifetime baseline)
   const isHighDenom = rateToUsd >= 50; // JPY, PKR, etc.
-
-  const annualTotalRaw = 26.88 * rateToUsd;
-  const annualTotal = isHighDenom ? Math.round(annualTotalRaw / 10) * 10 : Math.round(annualTotalRaw * 100) / 100;
-  const monthlyEquiv = isHighDenom ? Math.round(annualTotal / 12) : Math.round((annualTotal / 12) * 100) / 100;
 
   const monthlyRaw = 2.49 * rateToUsd;
   const monthly = isHighDenom ? Math.round(monthlyRaw) : Math.round(monthlyRaw * 100) / 100;
+
+  const annualTotalRaw = monthly * 12;
+  const annualTotal = isHighDenom ? Math.round(annualTotalRaw / 10) * 10 : Math.round(annualTotalRaw * 100) / 100;
 
   const lifetimeRaw = 50 * rateToUsd;
   const lifetime = isHighDenom ? Math.round(lifetimeRaw / 10) * 10 : Math.round(lifetimeRaw);
@@ -312,9 +310,9 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
   return {
     free,
     proAnnual: {
-      monthlyEquivalent: monthlyEquiv,
+      monthlyEquivalent: monthly,
       annualTotal,
-      formattedMonthly: format(monthlyEquiv),
+      formattedMonthly: format(monthly),
       formattedAnnual: format(annualTotal),
     },
     proMonthly: {

@@ -212,6 +212,8 @@ export const Header: React.FC<HeaderProps> = React.memo(
             <div className="flex items-center gap-1.5 shrink-0">
               <Link
                 to={ROUTES.DASHBOARD}
+                onMouseEnter={() => prefetchToolChunk('dashboard')}
+                onPointerDown={() => prefetchToolChunk('dashboard')}
                 className="relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 bg-slate-50/80 dark:bg-slate-900/60 text-xs font-semibold text-slate-900 dark:text-white transition-all shrink-0"
                 title={user.displayName ? `${user.displayName} — Workspace` : 'Workspace'}
               >
@@ -268,6 +270,8 @@ export const Header: React.FC<HeaderProps> = React.memo(
           {setMobileMenuOpen && (
             <button
               type="button"
+              onMouseEnter={() => prefetchToolChunk('mobile-drawer')}
+              onPointerDown={() => prefetchToolChunk('mobile-drawer')}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 lg:hidden transition-colors cursor-pointer flex items-center justify-center shrink-0"
               aria-expanded={mobileMenuOpen}

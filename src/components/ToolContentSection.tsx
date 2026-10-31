@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { NORD_AFFILIATE_LINKS } from '../config/constants';
+import { prefetchToolChunk } from '../config/homeConfig';
 import { TOOLS_CATALOG } from '../config/seo-catalog';
 import type { ToolSEOInfo } from '../config/seo-data';
 import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
@@ -27,20 +28,55 @@ interface ToolContentSectionProps {
   slug?: string;
 }
 
-export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: propTool, slug: propSlug }) => {
-  const { t, i18n } = useTranslation('common');
-  const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(getCachedFullTools);
+export const ToolContentSection: React.FC<ToolContentSectionProps> = React.memo(
+  ({ tool: propTool, slug: propSlug }) => {
+    const { t, i18n } = useTranslation('common');
+    const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(getCachedFullTools);
 
-  React.useEffect(() => {
-    if (propTool || getCachedFullTools()) return;
-    let active = true;
-    void loadFullToolsCatalog().then((loaded) => {
-      if (active) setFullTools(loaded);
-    });
-    return () => {
-      active = false;
-    };
-  }, [propTool]);
+    React.useEffect(() => {
+      if (propTool) return;
+      const cached = getCachedFullTools();
+      if (cached) {
+        setFullTools(cached);
+        return;
+      }
+      let active = true;
+      let timerId: number | undefined;
+      const win =
+        typeof window !== 'undefined'
+          ? (window as Window & {
+              requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+              cancelIdleCallback?: (id: number) => void;
+            })
+          : undefined;
+
+      const triggerLoad = () => {
+        void loadFullToolsCatalog().then((loaded) => {
+          if (active) setFullTools(loaded);
+        });
+      };
+
+      if (win && typeof win.requestIdleCallback === 'function') {
+        const idleId = win.requestIdleCallback(triggerLoad, { timeout: 1000 });
+        return () => {
+          active = false;
+          win.cancelIdleCallback?.(idleId);
+        };
+      }
+
+      if (typeof window !== 'undefined') {
+        timerId = window.setTimeout(triggerLoad, 150);
+      } else {
+        triggerLoad();
+      }
+
+      return () => {
+        active = false;
+        if (timerId !== undefined && typeof window !== 'undefined') {
+          window.clearTimeout(timerId);
+        }
+      };
+    }, [propTool]);
 
   const catalogFallback = propSlug
     ? (TOOLS_CATALOG.find((item) => item.slug === propSlug) as ToolSEOInfo | undefined)
@@ -96,6 +132,11 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: pr
   const localizedLongFormBody = t(`tools.${slug}.longFormBody`, {
     defaultValue: isEn ? longFormBody : '',
   });
+  const sanitizedLongFormHtml = localizedLongFormBody
+    ? localizedLongFormBody
+        .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
+        .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>')
+    : '';
 
   const handleCtaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -482,6 +523,8 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: pr
                           <Link
                             key={idx}
                             to={link.url}
+                            onPointerDown={() => prefetchToolChunk(toolSlug)}
+                            onMouseEnter={() => prefetchToolChunk(toolSlug)}
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-border-muted text-xs sm:text-sm font-bold text-on-surface hover:text-emerald-600 transition-colors"
                           >
                             <span>{localizedTitle}</span>
@@ -524,7 +567,7 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: pr
       )}
 
       {/* 9. Long form body if additional explanatory text exists */}
-      {localizedLongFormBody && (
+      {sanitizedLongFormHtml && (
         <article
           className="max-w-3xl mx-auto pt-8 border-t border-border-muted
             [&_h2]:text-xl sm:[&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-on-surface dark:[&_h2]:text-slate-100 [&_h2]:tracking-tight [&_h2]:mt-10 [&_h2]:mb-4 
@@ -535,9 +578,7 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: pr
             [&_strong]:font-semibold [&_strong]:text-on-surface dark:[&_strong]:text-white
             [&_a]:text-emerald-600 dark:[&_a]:text-emerald-400 [&_a]:underline hover:[&_a]:opacity-80"
           dangerouslySetInnerHTML={{
-            __html: localizedLongFormBody
-              .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
-              .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>'),
+            __html: sanitizedLongFormHtml,
           }}
         />
       )}
@@ -571,6 +612,8 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = ({ tool: pr
       </section>
     </div>
   );
-};
+});
+
+ToolContentSection.displayName = 'ToolContentSection';
 
 export default ToolContentSection;

@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
+import { prefetchToolChunk } from '../config/homeConfig';
 import { RELATED_TOOL_MAPPING } from '../config/seo-catalog';
 
 import { useLayout } from './Layout';
 
-export const RelatedTools: React.FC = () => {
+export const RelatedTools: React.FC = React.memo(() => {
   const { t } = useTranslation('common');
   const { pathname = '/' } = useLocation() || {};
   const { toolsList = [] } = useLayout() || {};
@@ -56,6 +57,8 @@ export const RelatedTools: React.FC = () => {
           <Link
             key={tool.slug}
             to={`/${tool.slug}/`}
+            onPointerDown={() => prefetchToolChunk(tool.slug)}
+            onMouseEnter={() => prefetchToolChunk(tool.slug)}
             className="p-3.5 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 transition-all hover:shadow-sm flex flex-col justify-between"
           >
             <div>
@@ -71,4 +74,7 @@ export const RelatedTools: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+RelatedTools.displayName = 'RelatedTools';
+

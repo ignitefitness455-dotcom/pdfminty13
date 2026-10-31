@@ -43,7 +43,6 @@ export const PricingPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [checkoutModalPlan, setCheckoutModalPlan] = useState<string | null>(null);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
 
@@ -214,42 +213,6 @@ export const PricingPage: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Monthly / Annual Toggle Switch */}
-        <div className="mt-8 flex justify-center">
-          <div className="inline-flex items-center p-1.5 bg-slate-200/80 dark:bg-slate-800/80 rounded-2xl shadow-inner select-none border border-slate-300/60 dark:border-white/10">
-            <button
-              type="button"
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                billingCycle === 'monthly'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <span>{isBn ? 'মাসিক বিলিং' : 'Monthly Billing'}</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black">
-                { `${pricing.proMonthly.formatted}/mo`}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillingCycle('annual')}
-              className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                billingCycle === 'annual'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <span>{isBn ? 'বার্ষিক বিলিং' : 'Annual Billing'}</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-wide uppercase">
-                {isBn
-                  ? `10% ছাড় (${pricing.proAnnual.formattedMonthly}/মাস)`
-                  : `Save 10% (${pricing.proAnnual.formattedMonthly}/mo)`}
-              </span>
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Pricing Cards Grid */}
@@ -350,18 +313,10 @@ export const PricingPage: React.FC = () => {
             {/* Unified Pricing Header */}
             <div className="mt-6 mb-1 flex items-baseline">
               <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                {billingCycle === 'annual'
-                  ? pricing.proAnnual.formattedMonthly
-                  : pricing.proMonthly.formatted}
+                {pricing.proMonthly.formatted}
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-400 ml-2 font-bold">
-                {billingCycle === 'annual'
-                  ? isBn
-                    ? `/ মাস (${pricing.proAnnual.formattedAnnual}/বছর)`
-                    : `/ mo (${pricing.proAnnual.formattedAnnual}/year)`
-                  : isBn
-                    ? '/ মাস'
-                    : '/ month'}
+                {isBn ? '/ মাস' : '/ month'}
               </span>
             </div>
 
@@ -370,13 +325,9 @@ export const PricingPage: React.FC = () => {
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 <span>
-                  {billingCycle === 'monthly'
-                    ? (isBn
-                        ? `মাসিক প্ল্যান: মাত্র ${pricing.proMonthly.formatted} / মাস (যেকোনো সময় বাতিলযোগ্য)`
-                        : `Monthly Plan: Just ${pricing.proMonthly.formatted} / month (Cancel anytime)`)
-                    : (isBn
-                        ? `বার্ষিক প্ল্যান: মাত্র ${pricing.proAnnual.formattedMonthly}/মাস (${pricing.proAnnual.formattedAnnual}/বছর • 10% সাশ্রয়)`
-                        : `Annual Plan: Just ${pricing.proAnnual.formattedMonthly}/mo (${pricing.proAnnual.formattedAnnual}/yr • Save 10%)`)}
+                  {isBn
+                    ? `মাসিক প্ল্যান: মাত্র ${pricing.proMonthly.formatted} / মাস (যেকোনো সময় বাতিলযোগ্য)`
+                    : `Monthly Plan: Just ${pricing.proMonthly.formatted} / month (Cancel anytime)`}
                 </span>
               </div>
             </div>
@@ -452,7 +403,7 @@ export const PricingPage: React.FC = () => {
                 <span>
                   {isProcessingCheckout
                     ? 'Redirecting to Checkout...'
-                    : `Upgrade to Pro (${billingCycle === 'annual' ? `${pricing.proAnnual.formattedMonthly}/month` : `${pricing.proMonthly.formatted}/month`})`}
+                    : `Upgrade to Pro (${pricing.proMonthly.formatted}/month)`}
                 </span>
               </button>
             )}
@@ -573,7 +524,7 @@ export const PricingPage: React.FC = () => {
                   {isBn ? 'ফ্রি' : 'Free'}
                 </th>
                 <th className="p-4 font-bold text-emerald-600 dark:text-emerald-400">
-                  Pro ({pricing.proAnnual.formattedMonthly}/mo)
+                  Pro ({pricing.proMonthly.formatted}/mo)
                 </th>
                 <th className="p-4 font-bold text-slate-800 dark:text-slate-200">
                   Lifetime ({pricing.lifetime.formatted})
@@ -780,11 +731,9 @@ export const PricingPage: React.FC = () => {
                   Checkout — {checkoutModalPlan}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {billingCycle === 'annual' && checkoutModalPlan === 'Pro'
-                    ? `${pricing.proAnnual.formattedAnnual} / year (~${pricing.proAnnual.formattedMonthly}/mo • $26.88 USD)`
-                    : checkoutModalPlan === 'Pro'
-                      ? `${pricing.proMonthly.formatted} / month ($2.49 USD/mo)`
-                      : `${pricing.lifetime.formatted} one-time payment ($50 USD)`}
+                  {checkoutModalPlan === 'Pro'
+                    ? `${pricing.proMonthly.formatted} / month ($2.49 USD/mo)`
+                    : `${pricing.lifetime.formatted} one-time payment ($50 USD)`}
                 </p>
               </div>
             </div>
@@ -803,7 +752,7 @@ export const PricingPage: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 dark:text-slate-400">Billing Cycle:</span>
                 <span className="font-bold text-slate-900 dark:text-white capitalize">
-                  {checkoutModalPlan === 'Lifetime' ? 'One-Time' : billingCycle}
+                  {checkoutModalPlan === 'Lifetime' ? 'One-Time' : 'Monthly'}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-1 border-t border-slate-200 dark:border-slate-700">
