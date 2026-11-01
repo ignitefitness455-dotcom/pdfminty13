@@ -71,22 +71,34 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                 </Link>
               </li>
               <li>
-                <Link to={ROUTES.SPLIT} className="hover:text-emerald-500 transition-colors">
+                <Link
+                  to={getLocalizedPath('split-pdf', activeLocale)}
+                  className="hover:text-emerald-500 transition-colors"
+                >
                   {t('footer.links.splitPdf', { defaultValue: 'Split PDF Pages' })}
                 </Link>
               </li>
               <li>
-                <Link to={ROUTES.GRAYSCALE} className="hover:text-emerald-500 transition-colors">
+                <Link
+                  to={getLocalizedPath('grayscale-pdf', activeLocale)}
+                  className="hover:text-emerald-500 transition-colors"
+                >
                   {t('footer.links.grayscalePdf', { defaultValue: 'Grayscale PDF' })}
                 </Link>
               </li>
               <li>
-                <Link to={ROUTES.PROTECT} className="hover:text-emerald-500 transition-colors">
+                <Link
+                  to={getLocalizedPath('protect-pdf', activeLocale)}
+                  className="hover:text-emerald-500 transition-colors"
+                >
                   {t('footer.links.protectPdf', { defaultValue: 'Protect & Encrypt PDF' })}
                 </Link>
               </li>
               <li>
-                <Link to={ROUTES.PDF_TO_IMG} className="hover:text-emerald-500 transition-colors">
+                <Link
+                  to={getLocalizedPath('pdf-to-image', activeLocale)}
+                  className="hover:text-emerald-500 transition-colors"
+                >
                   {t('footer.links.pdfToImg', { defaultValue: 'Convert PDF to Image' })}
                 </Link>
               </li>

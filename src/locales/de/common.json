@@ -319,6 +319,14 @@
     "repair-pdf": {
       "name": "PDF reparieren",
       "desc": "Versuchen Sie, beschädigte oder fehlerhafte PDF-Dateien wiederherzustellen"
+    },
+    "compress-pdf": {
+      "name": "PDF komprimieren",
+      "desc": "PDF-Dateigröße bei gleichbleibender Qualität reduzieren"
+    },
+    "compare-pdf": {
+      "name": "PDF vergleichen",
+      "desc": "Zwei PDF-Dateien nebeneinander vergleichen und Textunterschiede erkennen"
     }
   },
   "toolCommon": {
@@ -350,7 +358,9 @@
     "localMemory": "Nur im lokalen Arbeitsspeicher",
     "maxSize": "Maximale Dateigröße: {{size}}MB",
     "chooseFile": "Dateien durchsuchen",
-    "selectPdf": "PDF-Datei auswählen"
+    "selectPdf": "PDF-Datei auswählen",
+    "browseAria": "Drücken Sie die Eingabetaste oder Leertaste zum Durchsuchen.",
+    "inputAria": "Dateieingabe"
   },
   "emptyState": {
     "title": "Laden Sie ein PDF hoch, um zu beginnen",
@@ -1543,7 +1553,7 @@
     "error": "Failed to process subscription. Please try again."
   },
   "relatedTools": {
-    "title": "Related PDF Tools"
+    "title": "Verwandte PDF-Werkzeuge"
   },
   "toolWorkspace": {
     "selectPrompt": "Please select at least one file.",
@@ -1594,7 +1604,10 @@
     "creatorPlaceholder": "Anwendung oder Ersteller..."
   },
   "breadcrumbs": {
-    "label": "Brotkrumen-Navigation"
+    "label": "Brotkrumen-Navigation",
+    "home": "Startseite",
+    "blog": "Blog",
+    "tools": "Werkzeuge"
   },
   "consentBanner": {
     "title": "Wir respektieren Ihre Privatsphäre",

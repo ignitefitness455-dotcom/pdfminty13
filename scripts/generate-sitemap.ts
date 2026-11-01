@@ -249,6 +249,12 @@ export function generateSitemapXml(): SitemapGenerationResult {
                 locLang,
                 `${cleanSlug}.json`
               );
+              const commonLocalePath = path.join(
+                __dirname,
+                '../src/locales',
+                locLang,
+                'common.json'
+              );
               if (fs.existsSync(localeFilePath)) {
                 const parsedLocale = JSON.parse(fs.readFileSync(localeFilePath, 'utf8')) as {
                   seo?: { metaTitle?: string; metaDescription?: string };
@@ -261,6 +267,20 @@ export function generateSitemapXml(): SitemapGenerationResult {
                 }
                 if (parsedLocale.seo?.metaDescription) {
                   locCaption = parsedLocale.seo.metaDescription;
+                }
+              } else if (fs.existsSync(commonLocalePath)) {
+                const parsedCommon = JSON.parse(fs.readFileSync(commonLocalePath, 'utf8')) as {
+                  tools?: Record<string, { name?: string; desc?: string }>;
+                  footer?: { badges?: { privacyFirst?: string } };
+                };
+                const toolEntry = parsedCommon.tools?.[cleanSlug];
+                const privacyBadge =
+                  parsedCommon.footer?.badges?.privacyFirst || 'In-Browser Privacy First';
+                if (toolEntry?.name) {
+                  locTitle = `${toolEntry.name} — ${privacyBadge} | PDFMinty`;
+                }
+                if (toolEntry?.desc) {
+                  locCaption = toolEntry.desc;
                 }
               }
             } catch {

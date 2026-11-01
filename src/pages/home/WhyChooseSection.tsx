@@ -76,7 +76,7 @@ export const WhyChooseSection: React.FC = () => {
             <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.whyChoose.freeDesc', {
                 defaultValue:
-                  'Enjoy file editing and organizing with no paywalls, subscriptions, artificial limits, or watermarks.',
+                  'Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks.',
               })}
             </p>
           </div>

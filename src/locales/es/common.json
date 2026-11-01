@@ -285,6 +285,16 @@
       "name": "Reparar PDF",
       "desc": "Reconstruye tablas dañadas y recupera texto legible de archivos corruptos.",
       "h1": "Reparar PDF Online — Arreglar Archivos Dañados Gratis"
+    },
+    "compress-pdf": {
+      "name": "Comprimir PDF",
+      "desc": "Reduce el tamaño de tu archivo PDF manteniendo la calidad visual.",
+      "h1": "Comprimir PDF Online — Reducir Tamaño de PDF Gratis"
+    },
+    "compare-pdf": {
+      "name": "Comparar PDF",
+      "desc": "Compara dos archivos PDF lado a lado para detectar diferencias de texto.",
+      "h1": "Comparar PDF Online — Detectar Diferencias Entre PDFs Gratis"
     }
   },
   "toolCommon": {
@@ -306,7 +316,8 @@
     "allPages": "Todas las páginas",
     "selectedPages": "Páginas seleccionadas",
     "preview": "Vista previa",
-    "apply": "Aplicar cambios"
+    "apply": "Aplicar cambios",
+    "pdfDocument": "Documento PDF"
   },
   "fileUploader": {
     "dragDrop": "Arrastra y suelta tus archivos aquí",
@@ -315,7 +326,9 @@
     "localMemory": "Solo en memoria local del navegador",
     "maxSize": "Tamaño máximo: {{size}}MB",
     "chooseFile": "Examinar archivos",
-    "selectPdf": "Selecciona un archivo PDF"
+    "selectPdf": "Selecciona un archivo PDF",
+    "browseAria": "Presiona Enter o Espacio para examinar.",
+    "inputAria": "Entrada de archivo"
   },
   "emptyState": {
     "title": "Sube un PDF para comenzar",
@@ -728,7 +741,7 @@
     "error": "Failed to process subscription. Please try again."
   },
   "relatedTools": {
-    "title": "Related PDF Tools"
+    "title": "Herramientas PDF relacionadas"
   },
   "relatedBlogs": {
     "title": "Guías y artículos recomendados",
@@ -1581,7 +1594,10 @@
     "creatorPlaceholder": "Application or Creator..."
   },
   "breadcrumbs": {
-    "label": "Breadcrumb"
+    "label": "Ruta de navegación",
+    "home": "Inicio",
+    "blog": "Blog",
+    "tools": "Herramientas"
   },
   "errorBoundary": {
     "somethingWentWrong": "Something went wrong",

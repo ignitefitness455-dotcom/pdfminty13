@@ -22,6 +22,12 @@ import { prefetchToolChunk } from '../config/homeConfig';
 import { TOOLS_CATALOG } from '../config/seo-catalog';
 import type { ToolSEOInfo } from '../config/seo-data';
 import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 interface ToolContentSectionProps {
   tool?: ToolSEOInfo;
@@ -31,6 +37,10 @@ interface ToolContentSectionProps {
 export const ToolContentSection: React.FC<ToolContentSectionProps> = React.memo(
   ({ tool: propTool, slug: propSlug }) => {
     const { t, i18n } = useTranslation('common');
+    const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+    const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+      ? (rawLang as SupportedLocale)
+      : DEFAULT_LOCALE;
     const [fullTools, setFullTools] = React.useState<ToolSEOInfo[] | null>(getCachedFullTools);
 
     React.useEffect(() => {
@@ -515,14 +525,14 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = React.memo(
                     </h3>
                     <div className="flex flex-wrap gap-2.5">
                       {relatedToolsList.map((link, idx) => {
-                        const toolSlug = link.url.replace(/^\//, '');
+                        const toolSlug = link.url.replace(/^\/+|\/+$/g, '');
                         const localizedTitle = t(`tools.${toolSlug}.name`, {
                           defaultValue: link.title,
                         });
                         return (
                           <Link
                             key={idx}
-                            to={link.url}
+                            to={getLocalizedPath(toolSlug, activeLocale)}
                             onPointerDown={() => prefetchToolChunk(toolSlug)}
                             onMouseEnter={() => prefetchToolChunk(toolSlug)}
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-border-muted text-xs sm:text-sm font-bold text-on-surface hover:text-emerald-600 transition-colors"

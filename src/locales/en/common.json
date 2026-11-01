@@ -138,7 +138,7 @@
       "noAccountTitle": "No Account Required",
       "noAccountDesc": "Skip signups and passwords. Access fast, direct tools instantly without creating an account or leaving personal data.",
       "freeTitle": "Completely Free",
-      "freeDesc": "Merge, split, sign, and edit PDFs for free with zero watermarks on your exported files.",
+      "freeDesc": "Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks.",
       "fastTitle": "Instant Processing",
       "fastDesc": "No waiting for uploads or cloud queues. Your device's processor handles files immediately with zero transfer lag.",
       "offlineTitle": "Works Offline",
@@ -149,7 +149,7 @@
     "howItWorks": {
       "badge": "100% In-Browser Privacy",
       "title": "Fast, Private Document Processing",
-      "desc": "PDFMinty processes your documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, file size limits, or cloud storage risks. Process confidential contracts, tax forms, and financial records with guaranteed zero data leakage.",
+      "desc": "PDFMinty processes standard documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, queue wait times, or cloud storage risks. Process confidential contracts, tax forms, and financial records with local browser privacy.",
       "dragDrop": "Drag & Drop PDF here",
       "orBrowse": "or click to browse locally",
       "stepsHeading": "How It Works in 3 Simple Steps",
@@ -168,7 +168,7 @@
       "items": [
         {
           "q": "How does PdfMinty process my PDF files privately?",
-          "a": "PdfMinty executes our standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
+          "a": "PdfMinty executes our 22 standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
         },
         {
           "q": "Is PdfMinty completely free to use?",
@@ -176,7 +176,7 @@
         },
         {
           "q": "Do my files ever leave my computer or mobile device?",
-          "a": "For our standard PDF tools, no — processing happens entirely in your local browser memory and works offline once loaded. The only exceptions are the opt-in AI Analyze and OCR PDF tools, which send extracted text or page images to Google Gemini only after you explicitly check a consent box."
+          "a": "For our 22 standard PDF tools, no — processing happens entirely in your local browser memory and works offline once loaded. The only exceptions are the 2 opt-in AI Analyze and OCR PDF tools, which send extracted text or page images to Google Gemini only after you explicitly check a consent box."
         },
         {
           "q": "What file formats and PDF versions are supported?",
@@ -200,7 +200,7 @@
     "trustBadge": {
       "eyebrow": "Community Verified",
       "title": "Recognized & Featured Across Leading Platforms",
-      "description": "PdfMinty is recognized on top product directories as a trusted privacy-first, client-side PDF utility. Your documents are processed entirely in your browser and never touch a remote server.",
+      "description": "PdfMinty is recognized on top product directories as a trusted privacy-first, client-side PDF utility. Your documents are processed locally in your browser for all 22 standard tools (with explicit consent required for opt-in AI/OCR tools).",
       "launchbuffTitle": "Featured on LaunchBuff",
       "launchstagTitle": "Featured on Launchstag",
       "privacyBadge": "100% In-Browser Privacy",
@@ -343,6 +343,14 @@
     "repair-pdf": {
       "name": "Repair PDF",
       "desc": "Attempt to recover and rebuild corrupted or broken PDF files"
+    },
+    "compress-pdf": {
+      "name": "Compress PDF",
+      "desc": "Reduce PDF file size while preserving visual quality"
+    },
+    "compare-pdf": {
+      "name": "Compare PDF",
+      "desc": "Compare two PDF files side-by-side to spot text differences"
     }
   },
   "toolCommon": {
@@ -1339,7 +1347,10 @@
     "creatorPlaceholder": "Application or Creator..."
   },
   "breadcrumbs": {
-    "label": "Breadcrumb"
+    "label": "Breadcrumb",
+    "home": "Home",
+    "blog": "Blog",
+    "tools": "Tools"
   },
   "errorBoundary": {
     "somethingWentWrong": "Something went wrong",

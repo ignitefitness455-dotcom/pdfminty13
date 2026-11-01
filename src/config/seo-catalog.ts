@@ -9,13 +9,13 @@ export const SITE_NAME = "PDFMinty";
 
 export const HOMEPAGE_META = {
   "title": "PDFMinty — Free Privacy-First PDF Toolkit",
-  "description": "Free privacy-first PDF toolkit. Merge, split, protect, sign, OCR, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality."
+  "description": "Free privacy-first PDF toolkit with 24 tools. Merge, split, compress, protect, sign, and edit PDFs locally in your browser with zero server uploads."
 };
 
 export const FAQS = [
   {
     "q": "How does PdfMinty process my PDF files privately?",
-    "a": "PdfMinty executes our 20+ standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading files to any server. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
+    "a": "PdfMinty executes our 22 standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
   },
   {
     "q": "Is PdfMinty completely free to use?",
@@ -23,7 +23,7 @@ export const FAQS = [
   },
   {
     "q": "Do my files ever leave my computer or mobile device?",
-    "a": "For our 20+ standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exceptions are the opt-in AI Analyze and OCR PDF tools, which send extracted text or page images to Google Gemini only after you explicitly check a consent box."
+    "a": "For our 22 standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exceptions are the 2 opt-in AI Analyze and OCR PDF tools, which send extracted text or page images to Google Gemini only after you explicitly check a consent box."
   },
   {
     "q": "What file formats and PDF versions are supported?",
@@ -262,9 +262,9 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "name": "Sanitize PDF",
     "ogImage": "/og-image.png",
     "shortDescription": "Remove embedded scripts and hidden metadata",
-    "metaTitle": "Sanitize PDF Free — Remove Hidden Data & Scripts | PDFMinty",
+    "metaTitle": "Sanitize PDF Free — Remove Hidden Metadata & Scripts | PDFMinty",
     "metaDescription": "Securely sanitize PDF files. Remove hidden metadata, embedded scripts, and malicious launch actions offline for free.",
-    "h1": "Sanitize PDF Free — Remove Hidden Data & Metadata",
+    "h1": "Sanitize PDF Free — Remove Hidden Metadata & Scripts",
     "icon": "ShieldBan",
     "iconColor": "text-security-green",
     "homeRank": 20,
@@ -663,7 +663,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "name": "Unlock PDF",
     "ogImage": "/og-unlock-pdf.png",
     "shortDescription": "Decrypt pages to clean format",
-    "metaTitle": "Unlock PDF Free — Remove PDF Password Security | PDFMinty",
+    "metaTitle": "Unlock PDF Free — Remove Password & Restrictions | PDFMinty",
     "metaDescription": "Decrypt standard password protections from your PDFs. Strip file-restrictions and render your unlocked documents instantly in-browser.",
     "h1": "Unlock PDF Free — Remove Password & Restrictions",
     "icon": "Lock",
@@ -810,7 +810,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "shortDescription": "Summarize or ask questions via secure, privacy-guaranteed AI",
     "metaTitle": "AI PDF Analyzer Free — Chat & Summarize PDFs | PDFMinty",
     "metaDescription": "Analyze PDF files with AI. Securely summarize, chat with, and extract deep structural details from your PDF contents with privacy in mind.",
-    "h1": "AI PDF Analyzer Free — Chat & Summarize PDF Documents",
+    "h1": "AI PDF Analyzer Free — Chat & Summarize PDFs",
     "icon": "Sparkles",
     "iconColor": "text-security-green",
     "badge": "ai_hybrid",
@@ -1142,7 +1142,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "name": "How to Batch Process 50 PDFs in Under 2 Minutes",
     "ogImage": "/og-image.png",
     "shortDescription": "Eliminate slow one-by-one cloud uploads. Learn how to combine dozens of PDFs or images in one pass, export multi-page ZIPs, and run fast local workflows in PDFMinty.",
-    "metaTitle": "Batch Merge & Process PDFs Locally Fast | PDFMinty",
+    "metaTitle": "How to Batch Process 50 PDFs in Under 2 Minutes | PDFMinty",
     "metaDescription": "Combine dozens of PDFs or images at once and process multi-page exports locally in your browser without slow cloud upload queues or privacy risks.",
     "h1": "How to Batch Process 50 PDFs in Under 2 Minutes",
     "icon": "Cpu",
@@ -1199,15 +1199,15 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "name": "About Us",
     "ogImage": "/og-image.png",
     "shortDescription": "Learn about PdfMinty — a privacy-first, 100% client-side PDF toolkit created and engineered by Mohammed Tanveer Munshi (Dhaka, Bangladesh).",
-    "metaTitle": "About Us | PdfMinty — Free Online PDF Tools",
-    "metaDescription": "Learn about PdfMinty, a privacy-first client-side PDF toolkit engineered by Mohammed Tanveer Munshi in Dhaka, Bangladesh. Explore our 22 free PDF tools.",
-    "h1": "About Us | PdfMinty — Free Online PDF Tools",
+    "metaTitle": "About Us | PDFMinty — Free Online PDF Tools",
+    "metaDescription": "Learn about PdfMinty, a privacy-first client-side PDF toolkit engineered by Mohammed Tanveer Munshi in Dhaka, Bangladesh. Explore our 24 free PDF tools.",
+    "h1": "About Us | PDFMinty — Free Online PDF Tools",
     "icon": "ShieldCheck",
     "category": "info",
     "priority": 0.6,
     "changefreq": "monthly",
     "type": "article",
-    "readingTimeMinutes": 3
+    "readingTimeMinutes": 4
   },
   {
     "id": "contact",
@@ -1285,7 +1285,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "name": "ILovePDF vs Smallpdf vs PdfMinty: Which PDF Tool Wins in 2026?",
     "ogImage": "/og-image.png",
     "shortDescription": "Comparing ILovePDF vs Smallpdf vs PdfMinty? See which PDF tool is fastest, safest, and most affordable in 2026.",
-    "metaTitle": "ILovePDF vs Smallpdf vs PdfMinty (2026) | PdfMinty",
+    "metaTitle": "ILovePDF vs Smallpdf vs PdfMinty (2026) | PDFMinty",
     "metaDescription": "Comparing ILovePDF vs Smallpdf vs PdfMinty? See which PDF tool is fastest, safest, and most affordable in 2026. Spoiler: one of them never uploads your files.",
     "h1": "ILovePDF vs Smallpdf vs PdfMinty: Which PDF Tool Wins in 2026?",
     "icon": "Scale",
@@ -1296,7 +1296,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "status": "published",
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-24",
-    "readingTimeMinutes": 5
+    "readingTimeMinutes": 6
   },
   {
     "id": "blog-how-to-compress-a-pdf-without-losing-quality-2026",
@@ -1555,9 +1555,9 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "name": "How to Fix \"PDF File Size Too Large\" for Email and Portal Uploads",
     "ogImage": "/og-image.png",
     "shortDescription": "Solve PDF file size limit errors for Gmail, Outlook, job portals, and visa applications without losing quality.",
-    "metaTitle": "Shrink PDF Under 2MB or 10MB for Portal Uploads | PdfMinty",
+    "metaTitle": "Shrink PDF Under 10MB, 2MB, or 500KB for Uploads | PDFMinty",
     "metaDescription": "Fix 'File Too Large' errors on job, visa, university, and 25MB email portals. Practical steps to hit strict 10MB, 2MB, or 500KB upload caps privately.",
-    "h1": "How to Fix \"PDF File Size Too Large\" for Email and Portal Uploads (Under 2MB or 500KB)",
+    "h1": "How to Fix \"PDF File Size Too Large\" for Email and Portal Uploads (Under 10MB, 2MB, or 500KB)",
     "icon": "Minimize2",
     "category": "Optimization",
     "priority": 0.85,
@@ -1576,7 +1576,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "ogImage": "/og-image.png",
     "shortDescription": "Comprehensive Privacy Policy for PDFMinty: 100% client-side PDF processing, Google OAuth 2.0 Limited Use compliance, Google Gemini AI opt-in disclosures, AdSense, GDPR & CCPA rights.",
     "metaTitle": "Privacy Policy — Zero-Upload PDF Tools & OAuth | PDFMinty",
-    "metaDescription": "Read PDFMinty's Privacy Policy: 20+ standard PDF tools run 100% locally in your browser with zero uploads, plus Google OAuth, opt-in Gemini AI, and GDPR terms.",
+    "metaDescription": "Read PDFMinty's Privacy Policy: 22 standard PDF tools run 100% locally in your browser with zero uploads, plus Google OAuth, opt-in Gemini AI, and GDPR terms.",
     "h1": "Privacy Policy",
     "icon": "Shield",
     "category": "static",
@@ -1631,8 +1631,8 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "ogImage": "/og-image.png",
     "shortDescription": "Learn how to sign PDF documents for free without Adobe Acrobat subscriptions or DocuSign accounts. Compare workflows, privacy implications, and zero-upload alternatives.",
     "metaTitle": "5 Ways to Sign a PDF Without Adobe or DocuSign | PDFMinty",
-    "metaDescription": "Skip $15-$23/month subscriptions for one-off contracts. Compare macOS Preview, Windows Edge, and zero-upload browser signing tools against DocuSign.",
-    "h1": "How to Sign a PDF Without Adobe Acrobat or a DocuSign Subscription",
+    "metaDescription": "Skip $20-$30/mo fees for contracts. Compare 5 free ways to sign PDFs: browser zero-upload signing, macOS Preview, Windows Edge, mobile, and LibreOffice.",
+    "h1": "5 Ways to Sign a PDF Without Adobe Acrobat or a DocuSign Subscription",
     "icon": "FilePenLine",
     "category": "blog",
     "priority": 0.75,
@@ -1641,7 +1641,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "status": "published",
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-27",
-    "readingTimeMinutes": 4
+    "readingTimeMinutes": 5
   },
   {
     "id": "blog-why-is-my-pdf-so-large",

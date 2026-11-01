@@ -60,6 +60,10 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   '/blog/pdf-form-wont-let-you-type': '/blog/pdf-form-wont-let-me-type/',
   '/blog/cant-type-in-pdf-form': '/blog/pdf-form-wont-let-me-type/',
   '/blog/how-to-fill-out-a-pdf-form-that-is-not-fillable': '/blog/pdf-form-wont-let-me-type/',
+  '/blog/pdf-file-size-too-large-email-upload':
+    '/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/',
+  '/blog/how-to-sign-a-pdf-without-adobe-or-docusign':
+    '/blog/how-to-sign-pdf-without-adobe-or-docusign/',
 };
 
 // Static indexable pages that are always valid
@@ -82,9 +86,13 @@ const NON_DEFAULT_LOCALES = new Set<SupportedLocale>(
   SUPPORTED_LOCALES.filter((loc): loc is Exclude<SupportedLocale, 'en'> => loc !== 'en')
 );
 
-// Localized subpaths that actually exist as pre-rendered pages or valid routes
-// Currently, only 'merge-pdf' has dedicated localized pages across supported non-default locales
-const LOCALIZED_VALID_SUBROUTES = new Set(['merge-pdf']);
+// All 24 canonical tool slugs (type === 'tool')
+const VALID_TOOL_SLUGS = new Set(
+  TOOLS.filter((item) => item.type === 'tool').map((item) => item.slug)
+);
+
+// Localized subpaths that exist as pre-rendered pages and valid routes across all supported non-default locales
+const LOCALIZED_VALID_SUBROUTES = VALID_TOOL_SLUGS;
 
 function checkValidRoute(cleanPath: string): boolean {
   if (
@@ -184,7 +192,10 @@ export const onRequest: PagesFunction = async (context) => {
       rawPath.startsWith('/assets/') ||
       rawPath.startsWith('/fonts/') ||
       rawPath.startsWith('/icons/') ||
-      /\.(js|css|png|jpe?g|svg|gif|ico|webp|woff2?|ttf|wasm|webmanifest|xml|txt|map|json)$/i.test(
+      rawPath.startsWith('/cmaps/') ||
+      rawPath.startsWith('/standard_fonts/') ||
+      rawPath.startsWith('/og-images/') ||
+      /\.(js|css|png|jpe?g|svg|gif|ico|webp|woff2?|ttf|pfb|bcmap|wasm|webmanifest|xml|txt|map|json)$/i.test(
         rawPath
       );
 
@@ -272,6 +283,32 @@ export const onRequest: PagesFunction = async (context) => {
     if (!targetPathname.startsWith('/api') && targetPathname !== lowerCandidate) {
       targetPathname = lowerCandidate;
       shouldRedirect = true;
+    }
+
+    // 5b. Canonicalize /en/* to /* and unlocalized /<lang>/<tool-slug>/ to /<tool-slug>/ (301)
+    if (!targetPathname.startsWith('/api') && !targetPathname.includes('.')) {
+      const cleanSegments = targetPathname.replace(/^\//, '').replace(/\/$/, '').split('/').filter(Boolean);
+      const firstSeg = cleanSegments[0] as SupportedLocale | undefined;
+      const restSeg = cleanSegments.slice(1).join('/');
+
+      if (firstSeg === 'en') {
+        if (!restSeg) {
+          targetPathname = '/';
+          shouldRedirect = true;
+        } else if (checkValidRoute(restSeg)) {
+          targetPathname = `/${restSeg}/`;
+          shouldRedirect = true;
+        }
+      } else if (
+        firstSeg &&
+        NON_DEFAULT_LOCALES.has(firstSeg) &&
+        restSeg &&
+        !LOCALIZED_VALID_SUBROUTES.has(restSeg) &&
+        VALID_TOOL_SLUGS.has(restSeg)
+      ) {
+        targetPathname = `/${restSeg}/`;
+        shouldRedirect = true;
+      }
     }
 
     // 6. Trailing slash enforcement for valid directory/HTML routes (not files, not /api)

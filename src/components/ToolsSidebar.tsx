@@ -1,5 +1,5 @@
 import { Wrench, ChevronRight, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -12,6 +12,49 @@ export interface ToolSidebarItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+/**
+ * Canonical ordering of all 24 PDFMinty tools based on global internet search
+ * demand and everyday user workflow popularity.
+ */
+export const POPULAR_PDF_TOOLS_ORDER = [
+  'merge-pdf',
+  'compress-pdf',
+  'split-pdf',
+  'pdf-to-image',
+  'image-to-pdf',
+  'sign-pdf',
+  'ocr-pdf',
+  'rotate-pdf',
+  'delete-pages-pdf',
+  'extract-pages-pdf',
+  'reorder-pdf',
+  'unlock-pdf',
+  'protect-pdf',
+  'add-page-numbers',
+  'watermark-pdf',
+  'ai-analyze-pdf',
+  'repair-pdf',
+  'flatten-pdf',
+  'compare-pdf',
+  'grayscale-pdf',
+  'pdf-to-markdown',
+  'edit-pdf-metadata',
+  'sanitize-pdf',
+  'add-blank-page',
+] as const;
+
+const POPULAR_TOOL_RANK_MAP = new Map<string, number>(
+  POPULAR_PDF_TOOLS_ORDER.map((slug, index) => [slug, index + 1])
+);
+
+export function sortToolsByPopularity<T extends { slug: string }>(items: readonly T[]): T[] {
+  return [...items].sort((a, b) => {
+    const rankA = POPULAR_TOOL_RANK_MAP.get(a.slug) ?? 999;
+    const rankB = POPULAR_TOOL_RANK_MAP.get(b.slug) ?? 999;
+    return rankA - rankB;
+  });
+}
+
 interface ToolsSidebarProps {
   items: ToolSidebarItem[];
   activeToolSlug: string | null;
@@ -21,6 +64,8 @@ export const ToolsSidebar: React.FC<ToolsSidebarProps> = React.memo(
   ({ items, activeToolSlug }) => {
     const { t } = useTranslation('common');
     const [mobileOpen, setMobileOpen] = useState(false);
+
+    const sortedItems = useMemo(() => sortToolsByPopularity(items), [items]);
 
     const sectionTitle = t('mobileDrawer.sectionTools', { defaultValue: 'PDF Tools' });
 
@@ -78,7 +123,7 @@ export const ToolsSidebar: React.FC<ToolsSidebarProps> = React.memo(
                 aria-label={sectionTitle}
                 className="flex-1 overflow-y-auto p-2.5 space-y-0.5"
               >
-                {items.map((item) => {
+                {sortedItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeToolSlug === item.slug;
                   return (
@@ -132,7 +177,7 @@ export const ToolsSidebar: React.FC<ToolsSidebarProps> = React.memo(
               aria-label={sectionTitle}
               className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-thin"
             >
-              {items.map((item) => {
+              {sortedItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeToolSlug === item.slug;
                 return (

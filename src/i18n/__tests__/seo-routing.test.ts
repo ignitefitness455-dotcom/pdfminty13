@@ -35,22 +35,27 @@ describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
   it('accurately resolves localized paths and language switcher targets with trailing slashes', () => {
     expect(isI18nToolSlug('merge-pdf')).toBe(true);
     expect(isI18nToolSlug('/merge-pdf/')).toBe(true);
-    expect(isI18nToolSlug('split-pdf')).toBe(false);
+    expect(isI18nToolSlug('split-pdf')).toBe(true);
+    expect(isI18nToolSlug('compare-pdf')).toBe(true);
+    expect(isI18nToolSlug('blog')).toBe(false);
+    expect(isI18nToolSlug('pricing')).toBe(false);
 
     expect(getLocalizedPath('', 'en')).toBe('/');
     expect(getLocalizedPath('', 'de')).toBe('/de/');
     expect(getLocalizedPath('merge-pdf', 'fr')).toBe('/fr/merge-pdf/');
     expect(getLocalizedPath('merge-pdf', 'en')).toBe('/merge-pdf/');
-    expect(getLocalizedPath('compare-pdf', 'es')).toBe('/compare-pdf/');
+    expect(getLocalizedPath('compare-pdf', 'es')).toBe('/es/compare-pdf/');
+    expect(getLocalizedPath('pricing', 'es')).toBe('/pricing/');
 
     expect(getSwitchLocalePath('/', 'de')).toBe('/de/');
     expect(getSwitchLocalePath('/de/', 'en')).toBe('/');
     expect(getSwitchLocalePath('/merge-pdf/', 'fr')).toBe('/fr/merge-pdf/');
     expect(getSwitchLocalePath('/fr/merge-pdf/', 'en')).toBe('/merge-pdf/');
+    expect(getSwitchLocalePath('/compare-pdf/', 'es')).toBe('/es/compare-pdf/');
+    expect(getSwitchLocalePath('/es/compare-pdf/', 'en')).toBe('/compare-pdf/');
     // Non-localized routes stay on their canonical root path when switching UI language
     expect(getSwitchLocalePath('/blog/', 'de')).toBe('/blog/');
     expect(getSwitchLocalePath('/pricing/', 'bn')).toBe('/pricing/');
-    expect(getSwitchLocalePath('/compare-pdf/', 'es')).toBe('/compare-pdf/');
   });
 
   it('generates canonical URLs and bidirectional hreflang clusters with x-default', () => {
@@ -58,6 +63,7 @@ describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
     expect(getCanonicalUrl('', 'de')).toBe('https://pdfminty.com/de/');
     expect(getCanonicalUrl('merge-pdf', 'fr')).toBe('https://pdfminty.com/fr/merge-pdf/');
     expect(getCanonicalUrl('compare-pdf', 'en')).toBe('https://pdfminty.com/compare-pdf/');
+    expect(getCanonicalUrl('compare-pdf', 'es')).toBe('https://pdfminty.com/es/compare-pdf/');
     expect(getCanonicalUrl('pricing', 'en')).toBe('https://pdfminty.com/pricing/');
 
     const homeHreflangs = getHreflangs('');
@@ -72,8 +78,14 @@ describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
       'https://pdfminty.com/de/merge-pdf/'
     );
 
+    const compareHreflangs = getHreflangs('compare-pdf');
+    expect(compareHreflangs.length).toBe(SUPPORTED_LOCALES.length + 1);
+    expect(compareHreflangs.find((h) => h.hreflang === 'es')?.href).toBe(
+      'https://pdfminty.com/es/compare-pdf/'
+    );
+
     // Non-i18n routes emit empty hreflang cluster
-    expect(getHreflangs('compare-pdf')).toEqual([]);
+    expect(getHreflangs('pricing')).toEqual([]);
     expect(getHreflangs('blog')).toEqual([]);
   });
 
@@ -125,4 +137,35 @@ describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
     expect(combined).not.toContain('https://pdfminty.com/dashboard');
     expect(combined).not.toContain('404');
   });
+
+  it('ensures all hardcoded blog links in BlogPage.tsx resolve to valid article slugs with trailing slashes', () => {
+    const blogPageSrc = fs.readFileSync(
+      path.resolve(__dirname, '../../pages/BlogPage.tsx'),
+      'utf8'
+    );
+    const validArticleSlugs = new Set(
+      TOOLS.filter((item) => item.type === 'article').map((item) => `/${item.slug}/`)
+    );
+    const toRegex = /\bto="(\/blog\/[^"]+)"/g;
+    let match: RegExpExecArray | null;
+    const foundLinks: string[] = [];
+    while ((match = toRegex.exec(blogPageSrc)) !== null) {
+      foundLinks.push(match[1]);
+      expect(match[1].endsWith('/')).toBe(true);
+      expect(validArticleSlugs.has(match[1])).toBe(true);
+    }
+    expect(foundLinks.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('ensures edge middleware protects case-sensitive cmaps and standard_fonts assets from lowercase redirects', () => {
+    const middlewareSrc = fs.readFileSync(
+      path.resolve(__dirname, '../../../functions/_middleware.ts'),
+      'utf8'
+    );
+    expect(middlewareSrc).toContain("rawPath.startsWith('/cmaps/')");
+    expect(middlewareSrc).toContain("rawPath.startsWith('/standard_fonts/')");
+    expect(middlewareSrc).toContain("rawPath.startsWith('/og-images/')");
+    expect(middlewareSrc).toMatch(/pfb\|bcmap/);
+  });
 });
+

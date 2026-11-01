@@ -6,9 +6,20 @@ import { Link } from 'react-router-dom';
 
 import { ROUTES } from '../config/routes';
 import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 export const NotFoundPage: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
+  const homePath = getLocalizedPath('', activeLocale);
   const popularTools = TOOLS.filter((t) => t.type === 'tool').slice(0, 6);
 
   return (
@@ -36,7 +47,7 @@ export const NotFoundPage: React.FC = () => {
           })}
         </p>
         <Link
-          to={ROUTES.HOME}
+          to={homePath || ROUTES.HOME}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-emerald-500 transition-all mb-10"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -52,10 +63,10 @@ export const NotFoundPage: React.FC = () => {
             {popularTools.map((tool) => (
               <Link
                 key={tool.slug}
-                to={`/${tool.slug}/`}
+                to={getLocalizedPath(tool.slug, activeLocale)}
                 className="px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-700 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 transition-all"
               >
-                {tool.name}
+                {t(`tools.${tool.slug}.name`, { defaultValue: tool.name })}
               </Link>
             ))}
           </div>

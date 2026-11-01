@@ -50,23 +50,18 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
     if (tDesc && tDesc !== 'seo.metaDescription') {
       localizedDescription = tDesc;
     }
-  } else if (currentLocale !== DEFAULT_LOCALE && baseSlug === 'sign-pdf') {
-    const tTitle = t('signPdf.title', { ns: 'common', defaultValue: '' });
-    if (tTitle && tTitle !== 'signPdf.title') {
-      localizedTitle = `${tTitle} - ${SITE_NAME}`;
-    }
-    const tDesc = t('signPdf.description', { ns: 'common', defaultValue: '' });
-    if (tDesc && tDesc !== 'signPdf.description') {
-      localizedDescription = tDesc;
-    }
   } else if (currentLocale !== DEFAULT_LOCALE && baseSlug) {
     const tH1 = t(`tools.${baseSlug}.h1`, { ns: 'common', defaultValue: '' });
     const tName = t(`tools.${baseSlug}.name`, { ns: 'common', defaultValue: '' });
     const tDesc = t(`tools.${baseSlug}.desc`, { ns: 'common', defaultValue: '' });
+    const tPrivacyFirst = t('footer.badges.privacyFirst', {
+      ns: 'common',
+      defaultValue: 'In-Browser Privacy First',
+    });
     if (tH1 && tH1 !== `tools.${baseSlug}.h1`) {
       localizedTitle = `${tH1} | ${SITE_NAME}`;
     } else if (tName && tName !== `tools.${baseSlug}.name`) {
-      localizedTitle = `${tName} | ${SITE_NAME}`;
+      localizedTitle = `${tName} — ${tPrivacyFirst} | ${SITE_NAME}`;
     }
     if (tDesc && tDesc !== `tools.${baseSlug}.desc`) {
       localizedDescription = tDesc;
@@ -100,7 +95,7 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       ? item.keywords.join(', ')
       : item.keywords
     : item?.name
-      ? `${item.name.toLowerCase()}, ${item.slug.replace(/-/g, ' ')}, pdf tools`
+      ? `${item.name.toLowerCase()}, ${item.slug.replace(/^(?:blog|compare)\//, '').replace(/-/g, ' ')}, pdf tools`
       : 'pdf toolkit, client-side pdf editor, privacy pdf tools, local pdf tools, free browser pdf tools';
 
   return (

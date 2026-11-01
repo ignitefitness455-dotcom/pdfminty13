@@ -335,13 +335,13 @@ export const BlogPage: React.FC = () => {
             Fill Non-Fillable PDF Forms
           </Link>
           <Link
-            to="/blog/pdf-file-size-too-large-email-upload/"
+            to="/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/"
             className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
           >
             Shrink PDF Under 2MB
           </Link>
           <Link
-            to="/blog/how-to-sign-a-pdf-without-adobe-or-docusign/"
+            to="/blog/how-to-sign-pdf-without-adobe-or-docusign/"
             className="text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
           >
             Sign PDF Without Adobe

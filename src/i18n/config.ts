@@ -124,8 +124,33 @@ export const LOCALE_METADATA: Record<SupportedLocale, LocaleMetadata> = {
   },
 };
 
-// Tool slugs configured with localized routing enabled (Option B: only tools with complete 7-locale translations)
-export const I18N_TOOL_SLUGS = ['merge-pdf'] as const;
+// All 24 canonical PDF tool slugs configured with localized routing across all 7 supported locales
+export const I18N_TOOL_SLUGS = [
+  'merge-pdf',
+  'split-pdf',
+  'rotate-pdf',
+  'delete-pages-pdf',
+  'extract-pages-pdf',
+  'reorder-pdf',
+  'watermark-pdf',
+  'add-page-numbers',
+  'add-blank-page',
+  'protect-pdf',
+  'unlock-pdf',
+  'image-to-pdf',
+  'pdf-to-image',
+  'pdf-to-markdown',
+  'ai-analyze-pdf',
+  'grayscale-pdf',
+  'flatten-pdf',
+  'repair-pdf',
+  'edit-pdf-metadata',
+  'sanitize-pdf',
+  'sign-pdf',
+  'ocr-pdf',
+  'compress-pdf',
+  'compare-pdf',
+] as const;
 
 export function isI18nToolSlug(slug: string): boolean {
   const clean = slug.replace(/^\//, '').replace(/\/$/, '');

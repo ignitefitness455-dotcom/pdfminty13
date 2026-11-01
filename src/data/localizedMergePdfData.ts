@@ -1115,7 +1115,14 @@ export function buildLocalizedMergePdfHtml(data: LocalizedMergePdfData, _locale:
     .join('\n');
 
   const relatedHtml = data.relatedTools
-    .map((t) => `            <li><a href="${t.url}">${t.text}</a></li>`)
+    .map((t) => {
+      const cleanUrl = t.url.replace(/^\/+|\/+$/g, '');
+      const href =
+        _locale && _locale !== 'en' && cleanUrl && !cleanUrl.includes('/')
+          ? `/${_locale}/${cleanUrl}/`
+          : t.url;
+      return `            <li><a href="${href}">${t.text}</a></li>`;
+    })
     .join('\n');
 
   return `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">

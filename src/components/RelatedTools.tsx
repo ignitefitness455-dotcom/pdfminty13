@@ -4,13 +4,23 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { prefetchToolChunk } from '../config/homeConfig';
 import { RELATED_TOOL_MAPPING } from '../config/seo-catalog';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+  getLocalizedPath,
+} from '../i18n/config';
 
 import { useLayout } from './Layout';
 
 export const RelatedTools: React.FC = React.memo(() => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { pathname = '/' } = useLocation() || {};
   const { toolsList = [] } = useLayout() || {};
+  const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
+  const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLocale)
+    : DEFAULT_LOCALE;
 
   const related = useMemo(() => {
     if (!pathname || pathname === '/' || !Array.isArray(toolsList) || toolsList.length === 0)
@@ -56,7 +66,7 @@ export const RelatedTools: React.FC = React.memo(() => {
         {related.map((tool) => (
           <Link
             key={tool.slug}
-            to={`/${tool.slug}/`}
+            to={getLocalizedPath(tool.slug, activeLocale)}
             onPointerDown={() => prefetchToolChunk(tool.slug)}
             onMouseEnter={() => prefetchToolChunk(tool.slug)}
             className="p-3.5 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 transition-all hover:shadow-sm flex flex-col justify-between"

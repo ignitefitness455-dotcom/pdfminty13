@@ -263,6 +263,14 @@
     "repair-pdf": {
       "name": "Réparer PDF",
       "desc": "Reconstruisez les tables d'index corrompues et récupérez le texte lisible."
+    },
+    "compress-pdf": {
+      "name": "Compresser PDF",
+      "desc": "Réduisez la taille de vos fichiers PDF tout en préservant la qualité."
+    },
+    "compare-pdf": {
+      "name": "Comparer PDF",
+      "desc": "Comparez deux fichiers PDF côte à côte pour repérer les différences."
     }
   },
   "auto": {},
@@ -716,44 +724,44 @@
     "error": "Failed to process subscription. Please try again."
   },
   "toolCommon": {
-    "returnToDashboard": "Return to Dashboard",
-    "limit": "Limit: {{limit}}MB",
-    "selectPdf": "Select a PDF to begin",
-    "changeFile": "Change File",
-    "settings": "Settings",
+    "returnToDashboard": "Retour au tableau de bord",
+    "limit": "Limite : {{limit}}MB",
+    "selectPdf": "Sélectionnez un PDF pour commencer",
+    "changeFile": "Changer de fichier",
+    "settings": "Paramètres",
     "options": "Options",
-    "process": "Process",
-    "processing": "Processing...",
-    "download": "Download File",
-    "downloadAll": "Download All Files",
-    "reset": "Start Over",
-    "success": "Processing completed successfully! Download below.",
-    "error": "An error occurred while processing.",
+    "process": "Traiter",
+    "processing": "Traitement en cours...",
+    "download": "Télécharger le fichier",
+    "downloadAll": "Télécharger tous les fichiers",
+    "reset": "Recommencer",
+    "success": "Traitement terminé avec succès ! Téléchargez ci-dessous.",
+    "error": "Une erreur est survenue lors du traitement.",
     "fileInfo": "{{name}} ({{size}} MB)",
-    "pageRange": "Page Range",
-    "allPages": "All Pages",
-    "selectedPages": "Selected Pages",
-    "preview": "Live Preview",
-    "apply": "Apply Changes",
-    "pdfDocument": "PDF Document"
+    "pageRange": "Plage de pages",
+    "allPages": "Toutes les pages",
+    "selectedPages": "Pages sélectionnées",
+    "preview": "Aperçu en direct",
+    "apply": "Appliquer les modifications",
+    "pdfDocument": "Document PDF"
   },
   "fileUploader": {
-    "dragDrop": "Drag and drop your files here",
-    "orBrowse": "or click to browse from your device",
-    "clientSide": "🔒 Client-Side In-Browser Processing",
-    "localMemory": "Local Browser Memory Only",
-    "maxSize": "Max file size: {{size}}MB",
-    "chooseFile": "Browse Files",
-    "selectPdf": "Select a PDF file",
-    "browseAria": "Press Enter or Space to browse.",
-    "inputAria": "File input"
+    "dragDrop": "Glissez et déposez vos fichiers ici",
+    "orBrowse": "ou cliquez pour parcourir depuis votre appareil",
+    "clientSide": "🔒 Traitement 100% local dans le navigateur",
+    "localMemory": "Mémoire locale du navigateur uniquement",
+    "maxSize": "Taille maximale du fichier : {{size}}MB",
+    "chooseFile": "Parcourir les fichiers",
+    "selectPdf": "Sélectionner un fichier PDF",
+    "browseAria": "Appuyez sur Entrée ou Espace pour parcourir.",
+    "inputAria": "Sélection de fichier"
   },
   "emptyState": {
     "title": "Upload a PDF to get started",
     "desc": "Choose a document above to process, edit, or configure using this tool."
   },
   "relatedTools": {
-    "title": "Related PDF Tools"
+    "title": "Outils PDF associés"
   },
   "relatedBlogs": {
     "title": "Recommended Guides & Articles",
@@ -1562,7 +1570,10 @@
     "creatorPlaceholder": "Application or Creator..."
   },
   "breadcrumbs": {
-    "label": "Breadcrumb"
+    "label": "Fil d'Ariane",
+    "home": "Accueil",
+    "blog": "Blog",
+    "tools": "Outils"
   },
   "errorBoundary": {
     "somethingWentWrong": "Something went wrong",

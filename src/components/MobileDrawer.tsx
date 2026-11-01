@@ -81,13 +81,13 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
   const quickTools = [
     { name: t('tools.merge-pdf.name', { defaultValue: 'Merge PDF' }), path: mergePath, icon: Layers, color: 'text-emerald-500 bg-emerald-500/10' },
-    { name: t('tools.split-pdf.name', { defaultValue: 'Split PDF' }), path: ROUTES.SPLIT, icon: Scissors, color: 'text-sky-500 bg-sky-500/10' },
-    { name: t('tools.protect-pdf.name', { defaultValue: 'Protect PDF' }), path: ROUTES.PROTECT, icon: Lock, color: 'text-amber-500 bg-amber-500/10' },
-    { name: t('tools.unlock-pdf.name', { defaultValue: 'Unlock PDF' }), path: ROUTES.UNLOCK, icon: KeyRound, color: 'text-teal-500 bg-teal-500/10' },
-    { name: t('tools.sanitize-pdf.name', { defaultValue: 'Sanitize & PII' }), path: ROUTES.SANITIZE_PDF, icon: ShieldBan, color: 'text-rose-500 bg-rose-500/10' },
-    { name: t('tools.sign-pdf.name', { defaultValue: 'Sign & Stamp' }), path: ROUTES.SIGN_PDF, icon: FilePenLine, color: 'text-indigo-500 bg-indigo-500/10' },
-    { name: t('tools.compare-pdf.name', { defaultValue: 'Compare PDF' }), path: ROUTES.COMPARE_PDF, icon: GitCompare, color: 'text-purple-500 bg-purple-500/10' },
-    { name: t('tools.compress-pdf.name', { defaultValue: 'Compress PDF' }), path: ROUTES.COMPRESS, icon: Minimize2, color: 'text-emerald-600 bg-emerald-600/10' },
+    { name: t('tools.compress-pdf.name', { defaultValue: 'Compress PDF' }), path: getLocalizedPath('compress-pdf', activeLocale), icon: Minimize2, color: 'text-emerald-600 bg-emerald-600/10' },
+    { name: t('tools.split-pdf.name', { defaultValue: 'Split PDF' }), path: getLocalizedPath('split-pdf', activeLocale), icon: Scissors, color: 'text-sky-500 bg-sky-500/10' },
+    { name: t('tools.sign-pdf.name', { defaultValue: 'Sign & Stamp' }), path: getLocalizedPath('sign-pdf', activeLocale), icon: FilePenLine, color: 'text-indigo-500 bg-indigo-500/10' },
+    { name: t('tools.protect-pdf.name', { defaultValue: 'Protect PDF' }), path: getLocalizedPath('protect-pdf', activeLocale), icon: Lock, color: 'text-amber-500 bg-amber-500/10' },
+    { name: t('tools.unlock-pdf.name', { defaultValue: 'Unlock PDF' }), path: getLocalizedPath('unlock-pdf', activeLocale), icon: KeyRound, color: 'text-teal-500 bg-teal-500/10' },
+    { name: t('tools.compare-pdf.name', { defaultValue: 'Compare PDF' }), path: getLocalizedPath('compare-pdf', activeLocale), icon: GitCompare, color: 'text-purple-500 bg-purple-500/10' },
+    { name: t('tools.sanitize-pdf.name', { defaultValue: 'Sanitize & PII' }), path: getLocalizedPath('sanitize-pdf', activeLocale), icon: ShieldBan, color: 'text-rose-500 bg-rose-500/10' },
   ];
 
   return (

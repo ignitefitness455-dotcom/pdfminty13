@@ -11,61 +11,61 @@
       "contact": "संपर्क"
     },
     "themeToggle": {
-      "ariaLabel": "Toggle dark mode",
-      "switchToLight": "Switch to Light Mode",
-      "switchToDark": "Switch to Dark Mode"
+      "ariaLabel": "डार्क मोड टॉगल करें",
+      "switchToLight": "लाइट मोड में बदलें",
+      "switchToDark": "डार्क मोड में बदलें"
     },
     "mobileMenu": {
-      "ariaLabel": "Open mobile navigation menu",
-      "open": "Open menu",
-      "close": "Close menu"
+      "ariaLabel": "मोबाइल मेनू खोलें",
+      "open": "मेनू खोलें",
+      "close": "मेनू बंद करें"
     }
   },
   "footer": {
     "sections": {
       "coreTools": "मुख्य उपकरण",
       "popularTools": "लोकप्रिय उपकरण",
-      "resources": "Resources",
-      "companyLegal": "Company & Legal",
-      "converters": "Converters",
-      "legalTrust": "Legal & Trust"
+      "resources": "संसाधन और गाइड",
+      "companyLegal": "कंपनी और कानूनी",
+      "converters": "कनवर्टर",
+      "legalTrust": "कानूनी और सुरक्षा"
     },
     "copyright": "© {{year}} PdfMinty. सर्वाधिकार सुरक्षित।",
-    "brandDescription": "Free, privacy-first PDF utility suite. Core document tools run 100% locally in your browser without uploads. AI and OCR features utilize secure, encrypted API processing.",
+    "brandDescription": "निःशुल्क, गोपनीयता-प्रथम पीडीएफ टूलकिट। सभी मुख्य दस्तावेज़ उपकरण बिना किसी सर्वर अपलोड के 100% आपके ब्राउज़र में स्थानीय रूप से चलते हैं।",
     "links": {
-      "mergePdf": "Merge PDF Files",
-      "splitPdf": "Split PDF Pages",
-      "grayscalePdf": "Grayscale PDF",
-      "protectPdf": "Protect & Encrypt PDF",
-      "pdfToImg": "Convert PDF to Image",
-      "compressPdf": "Compress PDF",
-      "unlockPdf": "Unlock PDF",
-      "organizePdf": "Organize PDF",
-      "rotatePdf": "Rotate PDF",
-      "pdfToWord": "PDF to Word (DOCX)",
-      "pdfToText": "PDF to Text",
-      "pdfToZip": "PDF to ZIP",
-      "pdfToJpg": "PDF to JPG",
-      "jpgToPdf": "JPG to PDF",
-      "pngToPdf": "PNG to PDF",
-      "webpToPdf": "WEBP to PDF",
-      "knowledgeHub": "Knowledge Hub",
-      "compareSmallpdf": "PdfMinty vs SmallPDF",
-      "compareIlovepdf": "PdfMinty vs iLovePDF",
-      "adobeSecurity": "Adobe vs Browser Security",
-      "trustArticle": "Is Online PDF Safe?",
-      "aboutUs": "About Us",
-      "contactUs": "Contact Us",
-      "privacyPolicy": "Privacy Policy",
-      "termsOfService": "Terms of Service",
-      "howItWorks": "How It Works"
+      "mergePdf": "पीडीएफ जोड़ें (Merge PDF)",
+      "splitPdf": "पीडीएफ विभाजित करें (Split PDF)",
+      "grayscalePdf": "ग्रेस्केल पीडीएफ",
+      "protectPdf": "पीडीएफ सुरक्षित और एन्क्रिप्ट करें",
+      "pdfToImg": "पीडीएफ को इमेज में बदलें",
+      "compressPdf": "पीडीएफ कंप्रेस करें",
+      "unlockPdf": "पीडीएफ अनलॉक करें",
+      "organizePdf": "पीडीएफ व्यवस्थित करें",
+      "rotatePdf": "पीडीएफ घुमाएं",
+      "pdfToWord": "पीडीएफ से वर्ड (DOCX)",
+      "pdfToText": "पीडीएफ से टेक्स्ट",
+      "pdfToZip": "पीडीएफ से ज़िप",
+      "pdfToJpg": "पीडीएफ से जेपीजी",
+      "jpgToPdf": "जेपीजी से पीडीएफ",
+      "pngToPdf": "पीएनजी से पीडीएफ",
+      "webpToPdf": "वेबपी से पीडीएफ",
+      "knowledgeHub": "नॉलेज हब",
+      "compareSmallpdf": "PdfMinty बनाम SmallPDF",
+      "compareIlovepdf": "PdfMinty बनाम iLovePDF",
+      "adobeSecurity": "Adobe बनाम ब्राउज़र सुरक्षा",
+      "trustArticle": "क्या ऑनलाइन पीडीएफ सुरक्षित है?",
+      "aboutUs": "हमारे बारे में",
+      "contactUs": "संपर्क करें",
+      "privacyPolicy": "गोपनीयता नीति",
+      "termsOfService": "सेवा की शर्तें",
+      "howItWorks": "यह कैसे काम करता है"
     },
     "badges": {
-      "privacyFirst": "In-Browser Privacy First",
-      "clientSide": "Client-side PDF Suite",
-      "zeroLogs": "Zero Data Logs",
-      "openFree": "Open & Free",
-      "webAssembly": "WebAssembly Powered"
+      "privacyFirst": "ब्राउज़र में 100% गोपनीयता",
+      "clientSide": "क्लाइंट-साइड पीडीएफ सुइट",
+      "zeroLogs": "कोई डेटा लॉग नहीं",
+      "openFree": "निःशुल्क और खुला",
+      "webAssembly": "वेबअसेंबली द्वारा संचालित"
     }
   },
   "mobileDrawer": {
@@ -263,6 +263,14 @@
     "repair-pdf": {
       "name": "पीडीएफ रिपेयर करें",
       "desc": "क्षतिग्रस्त पीडीएफ फाइलों को ठीक करें और पठनीय टेक्स्ट पुनर्प्राप्त करें।"
+    },
+    "compress-pdf": {
+      "name": "पीडीएफ कंप्रेस करें",
+      "desc": "गुणवत्ता बनाए रखते हुए पीडीएफ फाइल का आकार कम करें।"
+    },
+    "compare-pdf": {
+      "name": "पीडीएफ तुलना करें",
+      "desc": "अंतर पहचानने के लिए दो पीडीएफ फाइलों की साथ-साथ तुलना करें।"
     }
   },
   "auto": {},
@@ -716,44 +724,44 @@
     "error": "Failed to process subscription. Please try again."
   },
   "toolCommon": {
-    "returnToDashboard": "Return to Dashboard",
-    "limit": "Limit: {{limit}}MB",
-    "selectPdf": "Select a PDF to begin",
-    "changeFile": "Change File",
-    "settings": "Settings",
-    "options": "Options",
-    "process": "Process",
-    "processing": "Processing...",
-    "download": "Download File",
-    "downloadAll": "Download All Files",
-    "reset": "Start Over",
-    "success": "Processing completed successfully! Download below.",
-    "error": "An error occurred while processing.",
+    "returnToDashboard": "डैशबोर्ड पर वापस जाएं",
+    "limit": "सीमा: {{limit}}MB",
+    "selectPdf": "शुरू करने के लिए एक पीडीएफ चुनें",
+    "changeFile": "फ़ाइल बदलें",
+    "settings": "सेटिंग्स",
+    "options": "विकल्प",
+    "process": "प्रोसेस करें",
+    "processing": "प्रोसेस हो रहा है...",
+    "download": "फ़ाइल डाउनलोड करें",
+    "downloadAll": "सभी फ़ाइलें डाउनलोड करें",
+    "reset": "फिर से शुरू करें",
+    "success": "प्रोसेसिंग सफलतापूर्वक पूरी हुई! नीचे डाउनलोड करें।",
+    "error": "प्रोसेसिंग के दौरान एक त्रुटि हुई।",
     "fileInfo": "{{name}} ({{size}} MB)",
-    "pageRange": "Page Range",
-    "allPages": "All Pages",
-    "selectedPages": "Selected Pages",
-    "preview": "Live Preview",
-    "apply": "Apply Changes",
-    "pdfDocument": "PDF Document"
+    "pageRange": "पेज रेंज",
+    "allPages": "सभी पेज",
+    "selectedPages": "चयनित पेज",
+    "preview": "लाइव प्रीव्यू",
+    "apply": "परिवर्तन लागू करें",
+    "pdfDocument": "पीडीएफ दस्तावेज़"
   },
   "fileUploader": {
-    "dragDrop": "Drag and drop your files here",
-    "orBrowse": "or click to browse from your device",
-    "clientSide": "🔒 Client-Side In-Browser Processing",
-    "localMemory": "Local Browser Memory Only",
-    "maxSize": "Max file size: {{size}}MB",
-    "chooseFile": "Browse Files",
-    "selectPdf": "Select a PDF file",
-    "browseAria": "Press Enter or Space to browse.",
-    "inputAria": "File input"
+    "dragDrop": "अपनी फ़ाइलें यहाँ खींचें और छोड़ें",
+    "orBrowse": "या अपने डिवाइस से चुनने के लिए क्लिक करें",
+    "clientSide": "🔒 100% क्लाइंट-साइड ब्राउज़र प्रोसेसिंग",
+    "localMemory": "केवल लोकल ब्राउज़र मेमोरी",
+    "maxSize": "अधिकतम फ़ाइल आकार: {{size}}MB",
+    "chooseFile": "फ़ाइलें चुनें",
+    "selectPdf": "एक पीडीएफ फ़ाइल चुनें",
+    "browseAria": "फ़ाइल चुनने के लिए Enter या Space दबाएं।",
+    "inputAria": "फ़ाइल इनपुट"
   },
   "emptyState": {
     "title": "Upload a PDF to get started",
     "desc": "Choose a document above to process, edit, or configure using this tool."
   },
   "relatedTools": {
-    "title": "Related PDF Tools"
+    "title": "संबंधित पीडीएफ उपकरण"
   },
   "relatedBlogs": {
     "title": "Recommended Guides & Articles",
@@ -1562,7 +1570,10 @@
     "creatorPlaceholder": "Application or Creator..."
   },
   "breadcrumbs": {
-    "label": "Breadcrumb"
+    "label": "ब्रेडक्रंब नेविगेशन",
+    "home": "होम",
+    "blog": "ब्लॉग",
+    "tools": "उपकरण"
   },
   "errorBoundary": {
     "somethingWentWrong": "Something went wrong",

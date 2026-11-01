@@ -48,7 +48,7 @@ export const AdobeAlternativePage: React.FC = () => {
     },
     {
       title: t('adobeAlternative.task2'),
-      href: ROUTES.GRAYSCALE,
+      href: ROUTES.COMPRESS,
       icon: Minimize2,
       color: 'text-indigo-500 bg-indigo-500/10',
     },

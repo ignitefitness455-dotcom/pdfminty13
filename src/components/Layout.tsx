@@ -45,7 +45,7 @@ import InternalSEO, { Breadcrumbs } from './InternalSEO';
 import LanguageSuggestionBanner from './LanguageSuggestionBanner';
 import { RelatedBlogs } from './RelatedBlogs';
 import { RelatedTools } from './RelatedTools';
-import { ToolsSidebar } from './ToolsSidebar';
+import { ToolsSidebar, sortToolsByPopularity } from './ToolsSidebar';
 
 const MobileDrawer = lazyWithRetry(() =>
   import('./MobileDrawer').then((m) => ({ default: m.MobileDrawer }))
@@ -130,23 +130,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const toolsList = useMemo<ToolInfo[]>(
     () =>
-      TOOLS.filter((toolItem) => toolItem.type === 'tool').map((toolItem) => ({
-        name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
-        slug: toolItem.slug,
-        description: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
-      })),
+      sortToolsByPopularity(TOOLS.filter((toolItem) => toolItem.type === 'tool')).map(
+        (toolItem) => ({
+          name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
+          slug: toolItem.slug,
+          description: t(`tools.${toolItem.slug}.desc`, {
+            defaultValue: toolItem.shortDescription,
+          }),
+        })
+      ),
     [t]
   );
 
   const menuItems = useMemo(
     () =>
-      TOOLS.filter((toolItem) => toolItem.type === 'tool').map((toolItem) => ({
-        slug: toolItem.slug,
-        name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
-        path: getLocalizedPath(toolItem.slug, activeLocale),
-        icon: iconMap[toolItem.icon] || HelpCircle,
-        desc: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
-      })),
+      sortToolsByPopularity(TOOLS.filter((toolItem) => toolItem.type === 'tool')).map(
+        (toolItem) => ({
+          slug: toolItem.slug,
+          name: t(`tools.${toolItem.slug}.name`, { defaultValue: toolItem.name }),
+          path: getLocalizedPath(toolItem.slug, activeLocale),
+          icon: iconMap[toolItem.icon] || HelpCircle,
+          desc: t(`tools.${toolItem.slug}.desc`, { defaultValue: toolItem.shortDescription }),
+        })
+      ),
     [activeLocale, iconMap, t]
   );
 

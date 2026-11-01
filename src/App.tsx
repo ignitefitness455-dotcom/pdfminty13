@@ -10,7 +10,12 @@ import { PWAController } from './components/PWAController';
 import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
 import { ROUTES } from './config/routes';
-import i18n, { SUPPORTED_LOCALES, DEFAULT_LOCALE, type SupportedLocale } from './i18n/config';
+import i18n, {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  isI18nToolSlug,
+  type SupportedLocale,
+} from './i18n/config';
 import { HomePage } from './pages/HomePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -126,6 +131,36 @@ const NotFoundPage = lazyWithRetry(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 );
 
+const LOCALIZED_TOOL_ROUTE_ENTRIES: Array<{
+  slug: string;
+  Component: React.ComponentType;
+}> = [
+  { slug: 'merge-pdf', Component: MergePage },
+  { slug: 'compress-pdf', Component: CompressPdfPage },
+  { slug: 'split-pdf', Component: SplitPage },
+  { slug: 'rotate-pdf', Component: RotatePage },
+  { slug: 'delete-pages-pdf', Component: DeletePagesPage },
+  { slug: 'extract-pages-pdf', Component: ExtractPagesPdfPage },
+  { slug: 'reorder-pdf', Component: ReorderPdfPage },
+  { slug: 'watermark-pdf', Component: WatermarkPage },
+  { slug: 'add-page-numbers', Component: PageNumbersPage },
+  { slug: 'add-blank-page', Component: AddBlankPage },
+  { slug: 'protect-pdf', Component: ProtectPage },
+  { slug: 'unlock-pdf', Component: UnlockPage },
+  { slug: 'image-to-pdf', Component: ImgToPdfPage },
+  { slug: 'pdf-to-image', Component: PdfToImgPage },
+  { slug: 'pdf-to-markdown', Component: PdfToMarkdownPage },
+  { slug: 'ai-analyze-pdf', Component: AiAnalyzePage },
+  { slug: 'grayscale-pdf', Component: GrayscalePdfPage },
+  { slug: 'flatten-pdf', Component: FlattenPdfPage },
+  { slug: 'repair-pdf', Component: RepairPdfPage },
+  { slug: 'edit-pdf-metadata', Component: EditMetadataPage },
+  { slug: 'sanitize-pdf', Component: SanitizePdfPage },
+  { slug: 'sign-pdf', Component: SignPdfPage },
+  { slug: 'ocr-pdf', Component: OcrPdfPage },
+  { slug: 'compare-pdf', Component: ComparePdfPage },
+];
+
 const LocaleRouteSync: React.FC = () => {
   const { pathname } = useLocation();
 
@@ -179,7 +214,7 @@ const ScrollToTop: React.FC = () => {
 
 /**
  * Normalizes browser URL to the canonical trailing-slash structure.
- * Also normalizes locale-prefixed paths (e.g. /bn/pricing/ -> /pricing/ while keeping 'bn' active,
+ * Also normalizes locale-prefixed paths on non-localized routes (e.g. /bn/pricing/ -> /pricing/ while keeping 'bn' active,
  * or /en/merge-pdf/ -> /merge-pdf/) so links in any language never hit a client-side 404.
  */
 const TrailingSlashRedirect: React.FC = () => {
@@ -207,7 +242,7 @@ const TrailingSlashRedirect: React.FC = () => {
       if (first === DEFAULT_LOCALE) {
         // /en/ -> / and /en/merge-pdf/ -> /merge-pdf/
         normalizedPath = restSlug ? `/${restSlug}/` : '/';
-      } else if (restSlug && restSlug !== 'merge-pdf') {
+      } else if (restSlug && !isI18nToolSlug(restSlug)) {
         // Non-English locale prefix on a shared canonical route (e.g., /bn/pricing/ -> /pricing/)
         normalizedPath = `/${restSlug}/`;
       }
@@ -254,18 +289,22 @@ export const App: React.FC = () => {
                   }
                 />
                 <Route path={`/${loc}`} element={<Navigate to={`/${loc}/`} replace />} />
-                <Route
-                  path={`/${loc}/merge-pdf/`}
-                  element={
-                    <ErrorBoundary resetKey={`merge-${loc}`}>
-                      <MergePage />
-                    </ErrorBoundary>
-                  }
-                />
-                <Route
-                  path={`/${loc}/merge-pdf`}
-                  element={<Navigate to={`/${loc}/merge-pdf/`} replace />}
-                />
+                {LOCALIZED_TOOL_ROUTE_ENTRIES.map(({ slug, Component }) => (
+                  <React.Fragment key={`loc-${loc}-${slug}`}>
+                    <Route
+                      path={`/${loc}/${slug}/`}
+                      element={
+                        <ErrorBoundary resetKey={`${slug}-${loc}`}>
+                          <Component />
+                        </ErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path={`/${loc}/${slug}`}
+                      element={<Navigate to={`/${loc}/${slug}/`} replace />}
+                    />
+                  </React.Fragment>
+                ))}
               </React.Fragment>
             ))}
             <Route
@@ -796,6 +835,32 @@ export const App: React.FC = () => {
             <Route
               path="/blog/how-to-fill-out-a-pdf-form-that-is-not-fillable/"
               element={<Navigate to="/blog/pdf-form-wont-let-me-type/" replace />}
+            />
+            <Route
+              path="/blog/pdf-file-size-too-large-email-upload"
+              element={
+                <Navigate
+                  to="/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/"
+                  replace
+                />
+              }
+            />
+            <Route
+              path="/blog/pdf-file-size-too-large-email-upload/"
+              element={
+                <Navigate
+                  to="/blog/how-to-fix-pdf-file-size-too-large-for-email-or-portal-upload/"
+                  replace
+                />
+              }
+            />
+            <Route
+              path="/blog/how-to-sign-a-pdf-without-adobe-or-docusign"
+              element={<Navigate to="/blog/how-to-sign-pdf-without-adobe-or-docusign/" replace />}
+            />
+            <Route
+              path="/blog/how-to-sign-a-pdf-without-adobe-or-docusign/"
+              element={<Navigate to="/blog/how-to-sign-pdf-without-adobe-or-docusign/" replace />}
             />
 
             {/* 404 fallback — shows real 404 page with noindex */}

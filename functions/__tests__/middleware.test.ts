@@ -121,13 +121,32 @@ describe('Cloudflare Pages Middleware - Redirect & Routing Tests', () => {
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
 
-  it('allows valid localized subpaths like /de/merge-pdf/ with 200 and index, follow', async () => {
-    const ctx = createMockContext('https://pdfminty.com/de/merge-pdf/');
-    const res = await onRequest(ctx);
+  it('allows valid localized tool subpaths like /de/merge-pdf/ and /de/compress-pdf/ with 200 and index, follow', async () => {
+    const mergeCtx = createMockContext('https://pdfminty.com/de/merge-pdf/');
+    const mergeRes = await onRequest(mergeCtx);
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get('X-Robots-Tag')).toBe('index, follow');
-    expect(res.headers.get('Content-Language')).toBe('de');
+    expect(mergeRes.status).toBe(200);
+    expect(mergeRes.headers.get('X-Robots-Tag')).toBe('index, follow');
+    expect(mergeRes.headers.get('Content-Language')).toBe('de');
+
+    const compressCtx = createMockContext('https://pdfminty.com/de/compress-pdf/');
+    const compressRes = await onRequest(compressCtx);
+
+    expect(compressRes.status).toBe(200);
+    expect(compressRes.headers.get('X-Robots-Tag')).toBe('index, follow');
+    expect(compressRes.headers.get('Content-Language')).toBe('de');
+  });
+
+  it('redirects /en/<tool-slug>/ to the canonical root /<tool-slug>/ route with 301 and normalizes /<lang>/<tool-slug> trailing slash', async () => {
+    const slashCtx = createMockContext('https://pdfminty.com/fr/compress-pdf');
+    const slashRes = await onRequest(slashCtx);
+    expect(slashRes.status).toBe(301);
+    expect(slashRes.headers.get('Location')).toBe('https://pdfminty.com/fr/compress-pdf/');
+
+    const enToolCtx = createMockContext('https://pdfminty.com/en/merge-pdf/');
+    const enRes = await onRequest(enToolCtx);
+    expect(enRes.status).toBe(301);
+    expect(enRes.headers.get('Location')).toBe('https://pdfminty.com/merge-pdf/');
   });
 
   it('always sets noindex, nofollow when upstream status is not 200 (e.g. 404 from Pages static asset lookup)', async () => {

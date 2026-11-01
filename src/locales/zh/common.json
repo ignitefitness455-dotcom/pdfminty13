@@ -11,61 +11,61 @@
       "contact": "联系我们"
     },
     "themeToggle": {
-      "ariaLabel": "Toggle dark mode",
-      "switchToLight": "Switch to Light Mode",
-      "switchToDark": "Switch to Dark Mode"
+      "ariaLabel": "切换深色模式",
+      "switchToLight": "切换到浅色模式",
+      "switchToDark": "切换到深色模式"
     },
     "mobileMenu": {
-      "ariaLabel": "Open mobile navigation menu",
-      "open": "Open menu",
-      "close": "Close menu"
+      "ariaLabel": "打开移动端导航菜单",
+      "open": "打开菜单",
+      "close": "关闭菜单"
     }
   },
   "footer": {
     "sections": {
       "coreTools": "核心工具",
       "popularTools": "热门工具",
-      "resources": "Resources",
-      "companyLegal": "Company & Legal",
-      "converters": "Converters",
-      "legalTrust": "Legal & Trust"
+      "resources": "资源与指南",
+      "companyLegal": "公司与法律",
+      "converters": "格式转换",
+      "legalTrust": "法律与隐私安全"
     },
     "copyright": "© {{year}} PdfMinty. 保留所有权利。",
-    "brandDescription": "Free, privacy-first PDF utility suite. Core document tools run 100% locally in your browser without uploads. AI and OCR features utilize secure, encrypted API processing.",
+    "brandDescription": "免费、隐私至上的 PDF 工具套件。核心文档工具 100% 在您的浏览器本地运行，无需上传文件到外部服务器。",
     "links": {
-      "mergePdf": "Merge PDF Files",
-      "splitPdf": "Split PDF Pages",
-      "grayscalePdf": "Grayscale PDF",
-      "protectPdf": "Protect & Encrypt PDF",
-      "pdfToImg": "Convert PDF to Image",
-      "compressPdf": "Compress PDF",
-      "unlockPdf": "Unlock PDF",
-      "organizePdf": "Organize PDF",
-      "rotatePdf": "Rotate PDF",
-      "pdfToWord": "PDF to Word (DOCX)",
-      "pdfToText": "PDF to Text",
-      "pdfToZip": "PDF to ZIP",
-      "pdfToJpg": "PDF to JPG",
-      "jpgToPdf": "JPG to PDF",
-      "pngToPdf": "PNG to PDF",
-      "webpToPdf": "WEBP to PDF",
-      "knowledgeHub": "Knowledge Hub",
-      "compareSmallpdf": "PdfMinty vs SmallPDF",
-      "compareIlovepdf": "PdfMinty vs iLovePDF",
-      "adobeSecurity": "Adobe vs Browser Security",
-      "trustArticle": "Is Online PDF Safe?",
-      "aboutUs": "About Us",
-      "contactUs": "Contact Us",
-      "privacyPolicy": "Privacy Policy",
-      "termsOfService": "Terms of Service",
-      "howItWorks": "How It Works"
+      "mergePdf": "合并 PDF 文件",
+      "splitPdf": "拆分 PDF 页面",
+      "grayscalePdf": "PDF 灰度转换",
+      "protectPdf": "加密与保护 PDF",
+      "pdfToImg": "PDF 转图片",
+      "compressPdf": "压缩 PDF",
+      "unlockPdf": "解锁 PDF",
+      "organizePdf": "整理 PDF 页面",
+      "rotatePdf": "旋转 PDF",
+      "pdfToWord": "PDF 转 Word (DOCX)",
+      "pdfToText": "PDF 转文本",
+      "pdfToZip": "PDF 转 ZIP",
+      "pdfToJpg": "PDF 转 JPG",
+      "jpgToPdf": "JPG 转 PDF",
+      "pngToPdf": "PNG 转 PDF",
+      "webpToPdf": "WEBP 转 PDF",
+      "knowledgeHub": "知识中心",
+      "compareSmallpdf": "PdfMinty 对比 SmallPDF",
+      "compareIlovepdf": "PdfMinty 对比 iLovePDF",
+      "adobeSecurity": "Adobe 对比浏览器隐私安全",
+      "trustArticle": "在线 PDF 工具安全吗？",
+      "aboutUs": "关于我们",
+      "contactUs": "联系我们",
+      "privacyPolicy": "隐私政策",
+      "termsOfService": "服务条款",
+      "howItWorks": "工作原理"
     },
     "badges": {
-      "privacyFirst": "In-Browser Privacy First",
-      "clientSide": "Client-side PDF Suite",
-      "zeroLogs": "Zero Data Logs",
-      "openFree": "Open & Free",
-      "webAssembly": "WebAssembly Powered"
+      "privacyFirst": "浏览器本地隐私至上",
+      "clientSide": "客户端本地 PDF 套件",
+      "zeroLogs": "零数据日志记录",
+      "openFree": "免费且开放",
+      "webAssembly": "WebAssembly 驱动"
     }
   },
   "mobileDrawer": {
@@ -263,6 +263,14 @@
     "repair-pdf": {
       "name": "修复 PDF",
       "desc": "重建损坏的交叉引用表并恢复可读的文档内容。"
+    },
+    "compress-pdf": {
+      "name": "压缩 PDF",
+      "desc": "在保持视觉清晰度的同时减小 PDF 文件体积。"
+    },
+    "compare-pdf": {
+      "name": "对比 PDF",
+      "desc": "并排比较两个 PDF 文件以快速发现文本差异。"
     }
   },
   "auto": {},
@@ -716,44 +724,44 @@
     "error": "Failed to process subscription. Please try again."
   },
   "toolCommon": {
-    "returnToDashboard": "Return to Dashboard",
-    "limit": "Limit: {{limit}}MB",
-    "selectPdf": "Select a PDF to begin",
-    "changeFile": "Change File",
-    "settings": "Settings",
-    "options": "Options",
-    "process": "Process",
-    "processing": "Processing...",
-    "download": "Download File",
-    "downloadAll": "Download All Files",
-    "reset": "Start Over",
-    "success": "Processing completed successfully! Download below.",
-    "error": "An error occurred while processing.",
+    "returnToDashboard": "返回控制面板",
+    "limit": "限制：{{limit}}MB",
+    "selectPdf": "选择一个 PDF 文件开始",
+    "changeFile": "更换文件",
+    "settings": "设置",
+    "options": "选项",
+    "process": "开始处理",
+    "processing": "正在处理...",
+    "download": "下载文件",
+    "downloadAll": "下载全部文件",
+    "reset": "重新开始",
+    "success": "处理成功完成！请在下方下载。",
+    "error": "处理过程中发生错误。",
     "fileInfo": "{{name}} ({{size}} MB)",
-    "pageRange": "Page Range",
-    "allPages": "All Pages",
-    "selectedPages": "Selected Pages",
-    "preview": "Live Preview",
-    "apply": "Apply Changes",
-    "pdfDocument": "PDF Document"
+    "pageRange": "页面范围",
+    "allPages": "全部页面",
+    "selectedPages": "已选页面",
+    "preview": "实时预览",
+    "apply": "应用更改",
+    "pdfDocument": "PDF 文档"
   },
   "fileUploader": {
-    "dragDrop": "Drag and drop your files here",
-    "orBrowse": "or click to browse from your device",
-    "clientSide": "🔒 Client-Side In-Browser Processing",
-    "localMemory": "Local Browser Memory Only",
-    "maxSize": "Max file size: {{size}}MB",
-    "chooseFile": "Browse Files",
-    "selectPdf": "Select a PDF file",
-    "browseAria": "Press Enter or Space to browse.",
-    "inputAria": "File input"
+    "dragDrop": "将文件拖放到此处",
+    "orBrowse": "或点击从您的设备浏览选择",
+    "clientSide": "🔒 100% 浏览器客户端本地处理",
+    "localMemory": "仅限本地浏览器内存",
+    "maxSize": "最大文件大小：{{size}}MB",
+    "chooseFile": "浏览文件",
+    "selectPdf": "选择 PDF 文件",
+    "browseAria": "按回车键或空格键浏览文件。",
+    "inputAria": "文件输入"
   },
   "emptyState": {
     "title": "Upload a PDF to get started",
     "desc": "Choose a document above to process, edit, or configure using this tool."
   },
   "relatedTools": {
-    "title": "Related PDF Tools"
+    "title": "相关 PDF 工具"
   },
   "relatedBlogs": {
     "title": "Recommended Guides & Articles",
@@ -1562,7 +1570,10 @@
     "creatorPlaceholder": "Application or Creator..."
   },
   "breadcrumbs": {
-    "label": "Breadcrumb"
+    "label": "面包屑导航",
+    "home": "首页",
+    "blog": "博客",
+    "tools": "工具"
   },
   "errorBoundary": {
     "somethingWentWrong": "Something went wrong",

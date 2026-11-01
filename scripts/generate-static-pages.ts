@@ -151,32 +151,32 @@ async function run(): Promise<void> {
   
   const optimizedBase: string = cleanBaseTemplate(baseHtml);
 
-  // Complete PDF tool links for rich crawlable static footer
+  // Complete PDF tool links ordered by global user popularity for rich crawlable static footer
   const STATIC_FOOTER_TOOL_LINKS = [
     { slug: 'merge-pdf', name: 'Merge PDF' },
+    { slug: 'compress-pdf', name: 'Compress PDF' },
     { slug: 'split-pdf', name: 'Split PDF' },
+    { slug: 'pdf-to-image', name: 'PDF to Image' },
+    { slug: 'image-to-pdf', name: 'Image to PDF' },
+    { slug: 'sign-pdf', name: 'Sign PDF' },
+    { slug: 'ocr-pdf', name: 'OCR PDF' },
     { slug: 'rotate-pdf', name: 'Rotate PDF' },
     { slug: 'delete-pages-pdf', name: 'Delete PDF Pages' },
     { slug: 'extract-pages-pdf', name: 'Extract PDF Pages' },
     { slug: 'reorder-pdf', name: 'Reorder PDF Pages' },
-    { slug: 'watermark-pdf', name: 'Watermark PDF' },
-    { slug: 'add-page-numbers', name: 'Add Page Numbers' },
-    { slug: 'add-blank-page', name: 'Add Blank Page' },
-    { slug: 'protect-pdf', name: 'Protect PDF' },
     { slug: 'unlock-pdf', name: 'Unlock PDF' },
-    { slug: 'image-to-pdf', name: 'Image to PDF' },
-    { slug: 'pdf-to-image', name: 'PDF to Image' },
-    { slug: 'pdf-to-markdown', name: 'PDF to Markdown' },
+    { slug: 'protect-pdf', name: 'Protect PDF' },
+    { slug: 'add-page-numbers', name: 'Add Page Numbers' },
+    { slug: 'watermark-pdf', name: 'Watermark PDF' },
     { slug: 'ai-analyze-pdf', name: 'AI Analyze PDF' },
-    { slug: 'grayscale-pdf', name: 'Grayscale PDF' },
-    { slug: 'flatten-pdf', name: 'Flatten PDF' },
     { slug: 'repair-pdf', name: 'Repair PDF' },
-    { slug: 'sign-pdf', name: 'Sign PDF' },
-    { slug: 'ocr-pdf', name: 'OCR PDF' },
+    { slug: 'flatten-pdf', name: 'Flatten PDF' },
+    { slug: 'compare-pdf', name: 'Compare PDF' },
+    { slug: 'grayscale-pdf', name: 'Grayscale PDF' },
+    { slug: 'pdf-to-markdown', name: 'PDF to Markdown' },
     { slug: 'edit-pdf-metadata', name: 'Edit PDF Metadata' },
     { slug: 'sanitize-pdf', name: 'Sanitize PDF' },
-    { slug: 'compress-pdf', name: 'Compress PDF' },
-    { slug: 'compare-pdf', name: 'Compare PDF' },
+    { slug: 'add-blank-page', name: 'Add Blank Page' },
   ];
 
   // Helper to build semantic lightweight static header for pre-rendered pages
@@ -202,12 +202,42 @@ async function run(): Promise<void> {
       </header>`;
   }
 
+  interface LocaleCommonJson {
+    header?: { siteName?: string; nav?: { home?: string; allTools?: string } };
+    footer?: { badges?: { privacyFirst?: string } };
+    toolCommon?: {
+      selectPdfFile?: string;
+      selectPdfFiles?: string;
+      processLocally?: string;
+      downloadResult?: string;
+    };
+    fileUploader?: { dropFilesHere?: string; upToSize?: string };
+    relatedTools?: { title?: string };
+    tools?: Record<string, { name?: string; desc?: string }>;
+  }
+
+  const localeCommonCache: Record<string, LocaleCommonJson> = {};
+  for (const loc of SUPPORTED_LOCALES) {
+    const commonPath = path.join(__dirname, `../src/locales/${loc}/common.json`);
+    if (fs.existsSync(commonPath)) {
+      try {
+        localeCommonCache[loc] = JSON.parse(fs.readFileSync(commonPath, 'utf8')) as LocaleCommonJson;
+      } catch {
+        // Ignore parse error
+      }
+    }
+  }
+
   // Helper to build semantic lightweight static footer with 4 rich columns
   function buildStaticFooter(locale: string = DEFAULT_LOCALE): string {
     const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
-    const toolsListHtml = STATIC_FOOTER_TOOL_LINKS
-      .map((t) => `              <li><a href="/${t.slug}/">${t.name}</a></li>`)
-      .join('\n');
+    const locDict = localeCommonCache[locale];
+    const toolsListHtml = STATIC_FOOTER_TOOL_LINKS.map((t) => {
+      const toolHref = locale === DEFAULT_LOCALE ? `/${t.slug}/` : `/${locale}/${t.slug}/`;
+      const toolName =
+        locale === DEFAULT_LOCALE ? t.name : locDict?.tools?.[t.slug]?.name || t.name;
+      return `              <li><a href="${toolHref}">${toolName}</a></li>`;
+    }).join('\n');
 
     return `      <footer data-prerender="true" class="site-footer">
         <div class="site-footer-inner">
@@ -541,7 +571,7 @@ ${footerHtml}
 
     const pageKeywords = item.keywords
       ? (Array.isArray(item.keywords) ? item.keywords.join(', ') : item.keywords)
-      : `${item.name.toLowerCase()}, ${item.slug.replace(/-/g, ' ')}, pdf tools`;
+      : `${item.name.toLowerCase()}, ${item.slug.replace(/^(?:blog|compare)\//, '').replace(/-/g, ' ')}, pdf tools`;
 
     const pageOgImage = `${SITE_URL}${item.ogImage || '/og-image.png'}`;
 
@@ -605,7 +635,8 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
     } else {
       if (item.faqs && item.faqs.length > 0) {
         const firstQuestionProbe = item.faqs[0].q.slice(0, 28).toLowerCase();
-        if (!finalBody.toLowerCase().includes(firstQuestionProbe)) {
+        const hasExistingFaqHeading = /<h2[^>]*>\s*(?:\d+\.\s*)?(?:Frequently Asked(?: Technical)? Questions|FAQ)\b/i.test(finalBody);
+        if (!hasExistingFaqHeading && !finalBody.toLowerCase().includes(firstQuestionProbe)) {
           finalBody += `
 <section aria-label="Frequently Asked Questions" class="my-10 space-y-4">
   <h2>Frequently Asked Questions</h2>
@@ -667,21 +698,96 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
             fs.mkdirSync(locTargetFolder, { recursive: true });
           }
           const locPageUrl = getCanonicalUrl(item.slug, locLang, SITE_URL);
-          
-          // Retrieve localized content for merge-pdf or other localized tools
+          const locCommon = localeCommonCache[locLang];
+          const locMergeFallback = MERGE_PDF_LOCALIZED_DATA[locLang];
+          const locToolEntry = locCommon?.tools?.[item.slug];
+          const locToolName = locToolEntry?.name || item.name;
+          const locToolDesc = locToolEntry?.desc || item.metaDescription;
+          const locPrivacyBadge =
+            locCommon?.footer?.badges?.privacyFirst || 'In-Browser Privacy First';
+
+          // Retrieve localized content for merge-pdf or build localized content for other tools
           const locData = item.slug === 'merge-pdf' ? MERGE_PDF_LOCALIZED_DATA[locLang] : undefined;
-          const locMetaTitle = locData ? locData.metaTitle : item.metaTitle;
-          const locMetaDesc = locData ? locData.metaDescription : item.metaDescription;
+          const locMetaTitle = locData
+            ? locData.metaTitle
+            : `${locToolName} — ${locPrivacyBadge} | ${SITE_NAME}`;
+          const locMetaDesc = locData
+            ? locData.metaDescription
+            : locToolDesc.length >= 60
+              ? locToolDesc
+              : `${locToolDesc} — ${locPrivacyBadge}.`;
 
           let locPreRenderedContent = preRenderedContent;
           if (locData) {
             const locArticleHtml = buildLocalizedMergePdfHtml(locData, locLang);
             locPreRenderedContent = wrapInPrerenderedShell(locArticleHtml, locLang);
+          } else {
+            const relatedSlugs = RELATED_TOOL_MAPPING[item.slug] || [];
+            const relatedToolsHtml = relatedSlugs
+              .map((relSlug: string) => {
+                const relTool = TOOLS.find((t: ToolSEOInfo) => t.slug === relSlug && t.type === 'tool');
+                if (!relTool) return '';
+                const relName = locCommon?.tools?.[relSlug]?.name || relTool.name;
+                const relDesc = locCommon?.tools?.[relSlug]?.desc || relTool.shortDescription;
+                return `              <li><a href="/${locLang}/${relSlug}/">${relName}</a> — ${relDesc}</li>`;
+              })
+              .filter(Boolean)
+              .join('\n');
+
+            const featuresHtml = (locMergeFallback?.features || [])
+              .map((f) => `              <li><strong>${f.title}</strong> ${f.desc}</li>`)
+              .join('\n');
+
+            const faqsHtml = (locMergeFallback?.faqs || [])
+              .slice(0, 3)
+              .map(
+                (faq) => `            <div>
+              <h4 class="font-bold text-slate-900 dark:text-white mb-1">${faq.q}</h4>
+              <p class="text-sm text-slate-600 dark:text-slate-300">${faq.a}</p>
+            </div>`
+              )
+              .join('\n');
+
+            const stepSelect = `1. ${locCommon?.toolCommon?.selectPdf || 'Select a PDF to begin'}`;
+            const stepDrop = locCommon?.fileUploader?.dragDrop || 'Drag and drop your files here';
+            const stepProcess = `2. ${locCommon?.toolCommon?.process || 'Process'}`;
+            const stepDownload = `3. ${locCommon?.toolCommon?.download || 'Download File'}`;
+            const relatedHeading =
+              locCommon?.relatedTools?.title || locMergeFallback?.relatedTitle || 'Related PDF Tools';
+            const whyHeading = locMergeFallback?.whyTitle || `${locToolName} — PDFMinty`;
+            const faqHeading = locMergeFallback?.faqTitle || 'FAQ';
+
+            const locArticleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
+          <h1>${locToolName}</h1>
+          <p class="lead text-lg font-medium text-slate-700 dark:text-slate-300">
+            ${locToolDesc}
+          </p>
+          <ol class="space-y-2 my-4">
+            <li><strong>${stepSelect}:</strong> ${stepDrop}</li>
+            <li><strong>${stepProcess}:</strong> ${locPrivacyBadge}</li>
+            <li><strong>${stepDownload}:</strong> ${locToolName}</li>
+          </ol>
+          <h2>${whyHeading}</h2>
+          <ul class="space-y-2 my-4">
+${featuresHtml}
+          </ul>
+          <h2>${faqHeading}</h2>
+          <div class="space-y-4 my-6">
+${faqsHtml}
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+            <h2>${relatedHeading}</h2>
+            <ul>
+${relatedToolsHtml}
+            </ul>
+          </div>
+        </article>`;
+            locPreRenderedContent = wrapInPrerenderedShell(locArticleHtml, locLang);
           }
 
           let locJsonLdMarkup = jsonLdMarkup;
           if (locData) {
-            const locSchemas: any[] = [
+            const locSchemas: Record<string, unknown>[] = [
               {
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
@@ -733,6 +839,39 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
                   "name": step.title.replace(':', ''),
                   "text": step.desc
                 }))
+              }
+            ];
+            locJsonLdMarkup = locSchemas.map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n  ');
+          } else {
+            const locSchemas: Record<string, unknown>[] = [
+              {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": `PdfMinty - ${locToolName}`,
+                "url": locPageUrl,
+                "description": locMetaDesc,
+                "applicationCategory": "UtilitiesApplication",
+                "operatingSystem": "All",
+                "browserRequirements": "Requires HTML5, WebAssembly",
+                "inLanguage": locLang
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": locCommon?.header?.nav?.home || "Home",
+                    "item": `${SITE_URL}/${locLang}/`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": locToolName,
+                    "item": locPageUrl
+                  }
+                ]
               }
             ];
             locJsonLdMarkup = locSchemas.map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n  ');
@@ -929,7 +1068,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
             <li>Unlimited daily PDF operations across all client-side tools</li>
             <li>Priority Gemini AI document analysis &amp; OCR quotas</li>
           </ul>
-          <p><a href="/">Explore all free PDF tools</a> or <a href="/contact/">contact us</a> for team and enterprise inquiries.</p>
+          <p><a href="/sign-up/">Create a Free Account or Upgrade to Pro</a> • <a href="/sign-in/">Sign In</a> • <a href="/">Explore all free PDF tools</a> • <a href="/contact/">Contact us</a> for team and enterprise inquiries.</p>
         </article>`;
 
   let pricingHtml = optimizedBase.replace("</head>", `${pricingHeadMeta}\n</head>`);
@@ -1002,31 +1141,31 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   const homepageContent = `
   <main class="prose max-w-6xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
     <h1>${HOMEPAGE_H1}</h1>
-    <p>PDFMinty is a free, privacy-first PDF toolkit with ${toolsCount} powerful tools that run entirely in your browser. Your files never leave your device — no server uploads, no sign-ups, no daily quotas. Merge, split, protect, convert, and edit PDFs with complete confidentiality.</p>
+    <p>PDFMinty is a free, privacy-first PDF toolkit with ${toolsCount} powerful tools. Our 22 standard PDF tools run 100% locally in your browser so your files never leave your device — no server uploads and no mandatory sign-up (plus 2 opt-in AI Analyze and OCR PDF tools powered by Google Gemini only with your explicit consent). Merge, split, protect, convert, and edit PDFs with complete confidentiality.</p>
  
-    <h2>All PDF Tools</h2>
+    <h2 id="all-tools">All PDF Tools</h2>
     <ul>
 ${toolsListHtml}
     </ul>
  
     <h2>Why Choose PDFMinty?</h2>
-    <p>Unlike other online PDF tools that upload your files to remote servers, PDFMinty processes everything locally in your browser using WebAssembly. This means:</p>
+    <p>Unlike traditional online PDF tools that upload every file to remote servers, PDFMinty processes standard PDF operations locally in your browser using WebAssembly. This means:</p>
     <ul>
-      <li><strong>Complete Privacy:</strong> Your documents never touch our servers</li>
-      <li><strong>No File Limits:</strong> Process files up to 100MB each, 150MB total</li>
+      <li><strong>Complete Privacy:</strong> Your documents never touch our servers for all 22 standard PDF tools</li>
+      <li><strong>Generous File Limits:</strong> Process files up to 100MB as a guest (150MB with a free account, 500MB on Pro)</li>
       <li><strong>Fast Processing:</strong> WebAssembly-powered operations complete in seconds</li>
-      <li><strong>No Registration:</strong> All tools are 100% free with no sign-up</li>
-      <li><strong>Works Offline:</strong> PWA-enabled — install and use without internet</li>
+      <li><strong>No Mandatory Registration:</strong> Guest users get 5 free tasks/day with no sign-up (10/day with a free account, unlimited on Pro)</li>
+      <li><strong>Works Offline:</strong> PWA-enabled — install and use standard tools without internet</li>
     </ul>
  
     <h2>How PDFMinty Protects Your Privacy</h2>
-    <p>Every PDF operation in PDFMinty happens client-side using JavaScript and WebAssembly. When you upload a file, it's loaded into your browser's memory, processed locally, and the result is generated on your device. The file is never transmitted over the network. This is fundamentally different from traditional online PDF tools that require you to upload files to their servers.</p>
+    <p>All 22 standard PDF operations in PDFMinty happen client-side using JavaScript and WebAssembly. When you select a file, it is loaded into your browser's memory, processed locally, and the result is generated on your device without transmitting the file over the network. The only exceptions are our 2 opt-in Cloud AI tools (AI Analyze PDF and OCR PDF), which require your explicit consent before sending extracted text or rendered page images to Google Gemini.</p>
  
     <p>Our privacy-first architecture makes PDFMinty ideal for processing sensitive documents like tax returns, medical records, financial statements, legal contracts, and any file containing personal information.</p>
  
     <h2>Frequently Asked Questions</h2>
     <h3>Is PDFMinty really free?</h3>
-    <p>Yes, PDFMinty is 100% free to use. All ${toolsCount} tools are available without subscription, payment, or registration.</p>
+    <p>Yes, PDFMinty is free to use. All ${toolsCount} tools are available without payment or registration (up to 5 free daily tasks for guests and 10 daily tasks with a free account, with optional Pro plans for unlimited daily usage and 500MB files).</p>
  
     <h3>Are my files uploaded to your server?</h3>
     <p>For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box.</p>
@@ -1233,7 +1372,7 @@ ${homepageHreflangs}
       ctaDesc: 'Entdecken Sie oben unsere vollständige Sammlung an PDF-Tools. Alle Werkzeuge sind kostenlos, privat und funktionieren sofort im Browser.',
       featuredOn: 'Vorgestellt & anerkannt auf',
       webAppDesc: 'Kostenloses, datenschutzorientiertes Online-PDF-Toolkit. PDFs zusammenfügen, teilen, drehen, schützen und bearbeiten — 100% lokal in Ihrem Browser ohne Server-Uploads.',
-      orgDesc: 'Datenschutzorientiertes, clientseitiges PDF-Toolkit mit 22 kostenlosen Werkzeugen ohne Server-Uploads.',
+      orgDesc: 'Datenschutzorientiertes, clientseitiges PDF-Toolkit mit 24 Werkzeugen (22 lokale Standard-Tools ohne Server-Uploads + 2 optionale KI-Tools).',
       websiteDesc: 'Kostenlose browserbasierte PDF-Tools — 100% privat, ohne Uploads und ohne Registrierung.',
       features: [
         'Mehrere PDF-Dateien zusammenfügen',
@@ -1282,7 +1421,7 @@ ${homepageHreflangs}
       ctaDesc: 'Parcourez notre collection complète d’outils PDF ci-dessus. Tous les outils sont gratuits, confidentiels et fonctionnent instantanément dans votre navigateur.',
       featuredOn: 'Reconnu et présenté sur',
       webAppDesc: 'Boîte à outils PDF en ligne gratuite et confidentielle. Fusionnez, divisez, faites pivoter, protégez et éditez vos PDF à 100% dans votre navigateur sans téléversement.',
-      orgDesc: 'Boîte à outils PDF côté client, axée sur la confidentialité, comprenant 22 outils gratuits sans serveur distant.',
+      orgDesc: 'Boîte à outils PDF côté client, axée sur la confidentialité, comprenant 24 outils (22 outils locaux sans serveur distant + 2 outils IA optionnels).',
       websiteDesc: 'Outils PDF gratuits dans le navigateur — 100% confidentiels, zéro téléversement et sans inscription.',
       features: [
         'Fusionner plusieurs fichiers PDF',
@@ -1331,7 +1470,7 @@ ${homepageHreflangs}
       ctaDesc: 'Explora nuestra colección completa de herramientas PDF arriba. Todas las herramientas son gratuitas, privadas y funcionan al instante en tu navegador.',
       featuredOn: 'Reconocido y destacado en',
       webAppDesc: 'Herramientas PDF en línea gratuitas y privadas. Une, divide, rota, protege y edita documentos PDF directamente en tu navegador sin subir archivos a servidores.',
-      orgDesc: 'Kit de herramientas PDF del lado del cliente, con privacidad garantizada y 22 utilidades gratuitas.',
+      orgDesc: 'Kit de herramientas PDF del lado del cliente, con privacidad garantizada y 24 utilidades (22 herramientas locales + 2 herramientas IA opcionales).',
       websiteDesc: 'Herramientas PDF gratuitas en el navegador — 100% privadas, sin subidas de archivos ni registros.',
       features: [
         'Unir varios archivos PDF',
@@ -1380,7 +1519,7 @@ ${homepageHreflangs}
       ctaDesc: 'উপরে আমাদের সম্পূর্ণ পিডিএফ টুলসের তালিকা দেখুন। সব টুল বিনামূল্যে, ব্যক্তিগত এবং ব্রাউজারে তাৎক্ষণিকভাবে কাজ করে।',
       featuredOn: 'স্বীকৃত ও ফিচার্ড হয়েছে',
       webAppDesc: 'সম্পূর্ণ বিনামূল্যে ও গোপনীয়তাবান্ধব অনলাইন পিডিএফ টুলকিট। ব্রাউজারের ভেতর সরাসরি পিডিএফ মার্জ, স্প্লিট, রোটেট, প্রটেক্ট এবং এডিট করুন কোনো সার্ভার আপলোড ছাড়াই।',
-      orgDesc: 'প্রাইভেসি-ফার্স্ট ক্লায়েন্ট-সাইড পিডিএফ টুলকিট যাতে রয়েছে ২২টি সম্পূর্ণ ফ্রি টুল।',
+      orgDesc: 'প্রাইভেসি-ফার্স্ট ক্লায়েন্ট-সাইড পিডিএফ টুলকিট যাতে রয়েছে ২৪টি টুল (২২টি লোকাল টুল + ২টি ঐচ্ছিক এআই টুল)।',
       websiteDesc: 'ব্রাউজার-ভিত্তিক ফ্রি পিডিএফ টুলস — ১০০% ব্যক্তিগত, জিরো ফাইল আপলোড এবং কোনো সাইন-আপ ছাড়াই।',
       features: [
         'একাধিক পিডিএফ ফাইল মার্জ বা একত্রিত করা',
@@ -1429,7 +1568,7 @@ ${homepageHreflangs}
       ctaDesc: 'ऊपर हमारे पीडीएफ उपकरणों का पूरा संग्रह देखें। सभी उपकरण मुफ़्त, सुरक्षित और आपके ब्राउज़र में तुरंत काम करते हैं।',
       featuredOn: 'इन मंचों पर प्रदर्शित',
       webAppDesc: 'मुफ़्त और प्राइवेसी-फर्स्ट ऑनलाइन पीडीएफ टूलकिट। अपने ब्राउज़र में सीधे पीडीएफ मर्ज, स्प्लिट, रोटेट, प्रोटेक्ट और एडिट करें — बिना किसी सर्वर अपलोड के।',
-      orgDesc: 'प्राइवेसी-फर्स्ट, क्लाइंट-साइड पीडीएफ टूलकिट जिसमें 22 मुफ़्त और सुरक्षित टूल्स उपलब्ध हैं।',
+      orgDesc: 'प्राइवेसी-फर्स्ट, क्लाइंट-साइड पीडीएफ टूलकिट जिसमें 24 सुरक्षित टूल्स (22 लोकल टूल्स + 2 वैकल्पिक AI टूल्स) उपलब्ध हैं।',
       websiteDesc: 'मुफ़्त ब्राउज़र-आधारित पीडीएफ उपकरण — 100% निजी, कोई सर्वर अपलोड नहीं, कोई पंजीकरण नहीं।',
       features: [
         'कई पीडीएफ फाइलों को एक साथ जोड़ें',
@@ -1478,7 +1617,7 @@ ${homepageHreflangs}
       ctaDesc: '浏览上方我们完整的 PDF 工具合集。所有工具均免费、私密，并在您的浏览器中即刻运行。',
       featuredOn: '精选收录平台',
       webAppDesc: '免费、注重隐私的在线 PDF 工具箱。完全在浏览器中合并、拆分、旋转、加密和编辑 PDF，零服务器上传，保护您的数据安全。',
-      orgDesc: '隐私优先的纯客户端 PDF 工具箱，提供 22 款无需服务器上传的免费工具。',
+      orgDesc: '隐私优先的客户端 PDF 工具箱，提供 24 款工具（22 款无需服务器上传的本地工具 + 2 款可选 AI 工具）。',
       websiteDesc: '免费基于浏览器的 PDF 工具 — 100% 私密，零文件上传，无需注册账户。',
       features: [
         '合并多个 PDF 文件',
@@ -1540,7 +1679,7 @@ ${homepageHreflangs}
     <h1>${locData.h1}</h1>
     <p>${locData.lead}</p>
  
-    <h2>${locData.toolsTitle}</h2>
+    <h2 id="all-tools">${locData.toolsTitle}</h2>
     <ul>
 ${euToolsListHtml}
     </ul>
