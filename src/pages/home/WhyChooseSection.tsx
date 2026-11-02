@@ -71,12 +71,12 @@ export const WhyChooseSection: React.FC = () => {
               <Gift className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
-              {t('home.whyChoose.freeTitle', { defaultValue: 'Completely Free' })}
+              {t('home.whyChoose.freeTitle', { defaultValue: 'Free Daily Tier' })}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.whyChoose.freeDesc', {
                 defaultValue:
-                  'Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks.',
+                  'Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks, plus optional Pro plans for unlimited usage.',
               })}
             </p>
           </div>

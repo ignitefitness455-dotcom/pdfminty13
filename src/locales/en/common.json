@@ -137,8 +137,8 @@
       "privacyDesc": "Your standard documents stay on your device. Local PDF operations run in browser memory for privacy-first handling.",
       "noAccountTitle": "No Account Required",
       "noAccountDesc": "Skip signups and passwords. Access fast, direct tools instantly without creating an account or leaving personal data.",
-      "freeTitle": "Completely Free",
-      "freeDesc": "Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks.",
+      "freeTitle": "Free Daily Tier",
+      "freeDesc": "Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks, plus optional Pro plans for unlimited usage.",
       "fastTitle": "Instant Processing",
       "fastDesc": "No waiting for uploads or cloud queues. Your device's processor handles files immediately with zero transfer lag.",
       "offlineTitle": "Works Offline",
@@ -171,8 +171,8 @@
           "a": "PdfMinty executes our 22 standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
         },
         {
-          "q": "Is PdfMinty completely free to use?",
-          "a": "Yes — Guests receive 5 free daily tasks with no account or credit card required, Free registered users receive 10 daily tasks, and exported files never carry watermarks."
+          "q": "Is PdfMinty free to use?",
+          "a": "Yes — PDFMinty offers a free tier across all 24 tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Pro ($2.49/month) and Lifetime ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and higher AI/OCR quotas."
         },
         {
           "q": "Do my files ever leave my computer or mobile device?",
@@ -190,7 +190,7 @@
     },
     "cta": {
       "title": "Ready to manage your PDFs with total privacy?",
-      "subtitle": "Select any tool above to process your documents privately on your device. Fast performance, no subscriptions, and privacy-first client-side processing.",
+      "subtitle": "Select any tool above to process your documents privately on your device. Fast performance, no mandatory sign-up, and privacy-first client-side processing.",
       "button": "Explore All Tools"
     },
     "toolCard": {

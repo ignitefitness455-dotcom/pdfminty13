@@ -124,26 +124,26 @@
       "privacyDesc": "Ihre Dokumente bleiben auf Ihrem Gerät. Lokale PDF-Operationen laufen im Browserspeicher für maximalen Datenschutz.",
       "noAccountTitle": "Keine Registrierung erforderlich",
       "noAccountDesc": "Überspringen Sie Registrierungen und Passwörter. Greifen Sie sofort auf schnelle Werkzeuge zu, ohne persönliche Daten zu hinterlassen.",
-      "freeTitle": "Vollständig kostenlos",
-      "freeDesc": "Genießen Sie Dateibearbeitung ohne Bezahlschranken, Abonnements, künstliche Limits oder Wasserzeichen.",
+      "freeTitle": "Kostenloses Tageskontingent",
+      "freeDesc": "PDFs kostenlos zusammenfügen, teilen, komprimieren, signieren und bearbeiten (5 Aufgaben/Tag für Gäste, 10 mit kostenlosem Konto) ohne Wasserzeichen, plus optionale Pro-Tarife.",
       "fastTitle": "Sofortige Verarbeitung",
       "fastDesc": "Kein Warten auf Uploads oder Cloud-Warteschlangen. Ihr Prozessor verarbeitet Dateien sofort ohne Übertragungsverzögerung.",
       "offlineTitle": "Funktioniert offline",
       "offlineDesc": "Nach dem Laden verarbeiten die Kernwerkzeuge Ihre PDF-Dateien lokal auf Ihrem Computer auch ohne Internetverbindung.",
-      "toolsCountTitle": "22+ spezialisierte Werkzeuge",
+      "toolsCountTitle": "24 spezialisierte PDF-Werkzeuge",
       "toolsCountDesc": "Vom Zusammenfügen und Teilen bis hin zu Verschlüsselung, OCR und Komprimierung – erledigen Sie jeden PDF-Workflow."
     },
     "howItWorks": {
       "badge": "100% browserbasierter Datenschutz",
       "title": "Schnelle, vertrauliche Dokumentenverarbeitung",
-      "desc": "PDFMinty verarbeitet Ihre Dokumente direkt auf Ihrem Computer oder Smartphone. Da Ihre Dateien auf Ihrem Gerät verbleiben, erfolgt die Verarbeitung sofort ohne Upload-Verzögerungen, Dateigrößenbeschränkungen oder Cloud-Speicherrisiken. Verarbeiten Sie vertrauliche Verträge und Steuerformulare mit garantiertem Datenschutz.",
+      "desc": "PDFMinty verarbeitet Standarddokumente direkt auf Ihrem Computer oder Smartphone. Da Ihre Dateien auf Ihrem Gerät verbleiben, erfolgt die Verarbeitung sofort ohne Upload-Verzögerungen, Warteschlangen oder Cloud-Speicherrisiken. Verarbeiten Sie vertrauliche Verträge und Steuerformulare mit lokalem Browser-Datenschutz.",
       "dragDrop": "PDF hierher ziehen & ablegen",
       "orBrowse": "oder klicken, um lokal auszuwählen",
       "stepsHeading": "So funktioniert es in 3 einfachen Schritten",
       "step1Title": "Wählen Sie Ihr Werkzeug",
-      "step1Desc": "Wählen Sie aus über 22 PDF-Werkzeugen zum Zusammenfügen, Teilen, Bearbeiten oder Schützen Ihrer Dateien.",
+      "step1Desc": "Wählen Sie aus 24 PDF-Werkzeugen zum Zusammenfügen, Teilen, Komprimieren, Signieren oder Schützen Ihrer Dateien.",
       "step2Title": "Dateien hinzufügen",
-      "step2Desc": "Ziehen Sie Ihre PDF-Dateien direkt in das Browserfenster. Alles bleibt lokal im Speicher.",
+      "step2Desc": "Ziehen Sie Ihre PDF-Dateien direkt in das Browserfenster. Standard-Tools halten alles lokal im Speicher.",
       "step3Title": "Verarbeiten & Herunterladen",
       "step3Desc": "Ihre PDF wird sofort auf Ihrer Hardware verarbeitet. Klicken Sie auf Herunterladen, um das Ergebnis zu speichern."
     },
@@ -154,15 +154,15 @@
       "items": [
         {
           "q": "Wie verarbeitet PdfMinty meine PDF-Dateien vertraulich?",
-          "a": "PdfMinty führt die Standard-PDF-Werkzeuge zu 100% lokal in Ihrem Webbrowser mittels WebAssembly und JavaScript aus, ohne dass Dateien auf Server hochgeladen werden. Einzige Ausnahme ist die KI-Analyse, die nur nach ausdrücklicher Zustimmung Text an Google Gemini sendet."
+          "a": "PdfMinty führt unsere 22 Standard-PDF-Werkzeuge zu 100% lokal in Ihrem Webbrowser mittels WebAssembly und JavaScript aus, ohne dass Dateien auf Server hochgeladen werden. Die einzigen Ausnahmen sind unsere 2 optionalen KI-Analyse- und OCR-PDF-Tools, die erst nach Ihrer ausdrücklichen Zustimmung Text oder Seitenbilder an Google Gemini senden."
         },
         {
-          "q": "Ist PdfMinty wirklich kostenlos nutzbar?",
-          "a": "Ja, 100% kostenlos ohne versteckte Gebühren, Abonnements, Nutzungslimits oder Registrierungspflicht."
+          "q": "Ist PdfMinty kostenlos nutzbar?",
+          "a": "Ja — PDFMinty bietet ein kostenloses Kontingent für alle 24 Werkzeuge: Gäste erhalten 5 kostenlose Aufgaben pro Tag (bis zu 100 MB pro Datei) ohne Konto oder Kreditkarte, und kostenlos registrierte Nutzer erhalten 10 Aufgaben pro Tag (bis zu 150 MB) ohne Wasserzeichen. Optionale Pro- ($2,49/Monat) und Lifetime-Tarife ($50 einmalig) bieten unbegrenzte tägliche Aufgaben und 500-MB-Dateien."
         },
         {
           "q": "Verlassen meine Dateien jemals mein Gerät?",
-          "a": "Bei den Standard-Werkzeugen nein – die Verarbeitung erfolgt vollständig im lokalen Browserspeicher und funktioniert sogar offline."
+          "a": "Bei unseren 22 Standard-PDF-Werkzeugen nein – die Verarbeitung erfolgt vollständig im lokalen Browserspeicher und funktioniert nach dem Laden auch offline. Die einzigen Ausnahmen sind die 2 optionalen KI-Analyse- und OCR-PDF-Tools nach Ihrer ausdrücklichen Zustimmung."
         },
         {
           "q": "Welche Dateiformate und PDF-Versionen werden unterstützt?",
@@ -170,13 +170,13 @@
         },
         {
           "q": "Wie unterscheidet sich PdfMinty von Diensten wie iLovePDF oder Smallpdf?",
-          "a": "Herkömmliche PDF-Dienste laden Ihre Dokumente auf Cloud-Server hoch. PdfMinty verarbeitet Dateien direkt auf Ihrem eigenen Gerät, wodurch Datenschutzrisiken und Wartezeiten entfallen."
+          "a": "Herkömmliche PDF-Dienste laden Ihre Dokumente auf Cloud-Server hoch. PdfMinty verarbeitet Standard-Tools direkt auf Ihrem eigenen Gerät, wodurch Datenschutzrisiken und Upload-Wartezeiten entfallen."
         }
       ]
     },
     "cta": {
       "title": "Bereit, Ihre PDFs mit vollem Datenschutz zu verwalten?",
-      "subtitle": "Wählen Sie oben ein Werkzeug aus, um Ihre Dokumente sicher und lokal auf Ihrem Gerät zu verarbeiten. Schnell, kostenlos und ohne Registrierung.",
+      "subtitle": "Wählen Sie oben ein Werkzeug aus, um Ihre Dokumente sicher auf Ihrem Gerät zu verarbeiten. Schnelle Leistung, keine Registrierungspflicht und datenschutzorientierte lokale Verarbeitung.",
       "button": "Alle Werkzeuge entdecken"
     },
     "toolCard": {

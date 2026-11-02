@@ -28,7 +28,7 @@ export const CtaSection: React.FC = () => {
         <p className="text-sm md:text-base text-on-surface-variant leading-relaxed font-normal">
           {t('home.cta.subtitle', {
             defaultValue:
-              'Select any tool above to process your documents privately on your device. Fast performance, no subscriptions, and privacy-first client-side processing.',
+              'Select any tool above to process your documents privately on your device. Fast performance, no mandatory sign-up, and privacy-first client-side processing.',
           })}
         </p>
         <div className="pt-4 flex flex-wrap items-center justify-center gap-3">

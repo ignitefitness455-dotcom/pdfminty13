@@ -20,7 +20,7 @@ export const HowItWorksSection: React.FC = () => {
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
             {t('home.howItWorks.desc', {
               defaultValue:
-                'PDFMinty processes your documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, file size limits, or cloud storage risks. Process confidential contracts, tax forms, and financial records with guaranteed zero data leakage.',
+                'PDFMinty processes standard documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, queue wait times, or cloud storage risks. Process confidential contracts, tax forms, and financial records with local browser privacy.',
             })}
           </p>
         </div>

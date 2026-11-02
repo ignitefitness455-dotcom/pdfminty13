@@ -118,26 +118,26 @@
       "privacyDesc": "Vos documents restent sur votre appareil. Les opérations PDF locales s'exécutent dans la mémoire du navigateur.",
       "noAccountTitle": "Aucun compte requis",
       "noAccountDesc": "Oubliez les inscriptions et mots de passe. Accédez directement à des outils rapides sans créer de compte ni laisser de données.",
-      "freeTitle": "Entièrement gratuit",
-      "freeDesc": "Profitez de la modification et de l'organisation de fichiers sans paywalls, abonnements, limites ou filigranes.",
+      "freeTitle": "Offre quotidienne gratuite",
+      "freeDesc": "Fusionnez, divisez, compressez, signez et modifiez vos PDF gratuitement (5 tâches/jour pour les invités, 10 avec un compte gratuit) sans filigrane, plus des formules Pro optionnelles.",
       "fastTitle": "Traitement instantané",
       "fastDesc": "Pas d'attente de téléversement ou de files d'attente dans le cloud. Le processeur de votre appareil traite les fichiers immédiatement.",
       "offlineTitle": "Fonctionne hors ligne",
       "offlineDesc": "Une fois chargés, les outils de base traitent vos fichiers PDF localement même sans connexion Internet active.",
-      "toolsCountTitle": "22+ outils spécialisés",
+      "toolsCountTitle": "24 outils PDF spécialisés",
       "toolsCountDesc": "De la fusion et division au chiffrement, OCR et compression — réalisez tous vos flux de travail PDF ici."
     },
     "howItWorks": {
       "badge": "100% confidentialité navigateur",
       "title": "Traitement de documents rapide et confidentiel",
-      "desc": "PDFMinty traite vos documents directement sur votre ordinateur ou téléphone. Parce que vos fichiers restent sur votre appareil, le traitement s'effectue instantanément sans délais de téléversement, limites de taille ou risques de stockage dans le cloud. Traitez vos documents confidentiels en toute sécurité.",
+      "desc": "PDFMinty traite les documents standard directement sur votre ordinateur ou téléphone. Parce que vos fichiers restent sur votre appareil, le traitement s'effectue instantanément sans délais de téléversement, files d'attente ni risques de stockage dans le cloud. Traitez vos documents confidentiels en toute sécurité.",
       "dragDrop": "Glissez & déposez le PDF ici",
       "orBrowse": "ou cliquez pour parcourir localement",
       "stepsHeading": "Comment ça marche en 3 étapes simples",
       "step1Title": "Sélectionnez votre outil",
-      "step1Desc": "Choisissez parmi plus de 22 outils PDF dédiés pour fusionner, diviser, modifier ou sécuriser vos fichiers.",
+      "step1Desc": "Choisissez parmi 24 outils PDF dédiés pour fusionner, diviser, compresser, signer ou sécuriser vos fichiers.",
       "step2Title": "Ajoutez vos fichiers",
-      "step2Desc": "Glissez-déposez vos fichiers PDF directement dans le navigateur. Tout reste en mémoire locale.",
+      "step2Desc": "Glissez-déposez vos fichiers PDF directement dans le navigateur. Les outils standard gardent vos fichiers en mémoire locale.",
       "step3Title": "Traiter & Télécharger",
       "step3Desc": "Votre PDF est traité instantanément sur votre appareil. Cliquez sur télécharger pour enregistrer le résultat immédiatement."
     },
@@ -148,15 +148,15 @@
       "items": [
         {
           "q": "Comment PdfMinty traite-t-il mes fichiers PDF de manière confidentielle ?",
-          "a": "PdfMinty exécute ses outils PDF à 100% localement dans votre navigateur à l'aide de WebAssembly et JavaScript, sans jamais téléverser de fichiers vers un serveur."
+          "a": "PdfMinty exécute nos 22 outils PDF standard à 100% localement dans votre navigateur à l'aide de WebAssembly et JavaScript, sans jamais téléverser de fichiers vers un serveur. Les seules exceptions sont nos 2 outils optionnels d'analyse IA et d'OCR PDF, qui n'envoient du texte ou des images de pages à Google Gemini qu'après votre consentement explicite."
         },
         {
-          "q": "PdfMinty est-il totalement gratuit ?",
-          "a": "Oui, 100% gratuit sans frais cachés, abonnements, quotas ou besoin de créer un compte."
+          "q": "PdfMinty est-il gratuit ?",
+          "a": "Oui — PDFMinty propose une offre gratuite sur l'ensemble des 24 outils : les invités disposent de 5 tâches quotidiennes gratuites (jusqu'à 100 Mo par fichier) sans compte ni carte bancaire, et les comptes gratuits bénéficient de 10 tâches par jour (jusqu'à 150 Mo) sans filigrane. Des formules optionnelles Pro (2,49 $/mois) et Lifetime (50 $ en paiement unique) offrent un usage quotidien illimité et des fichiers jusqu'à 500 Mo."
         },
         {
           "q": "Mes fichiers quittent-ils mon appareil ?",
-          "a": "Pour les outils standard, non : le traitement s'effectue entièrement dans la mémoire de votre navigateur et fonctionne même hors ligne."
+          "a": "Pour nos 22 outils PDF standard, non : le traitement s'effectue entièrement dans la mémoire locale de votre navigateur et fonctionne même hors ligne. Les seules exceptions sont les 2 outils optionnels d'analyse IA et d'OCR PDF après votre accord explicite."
         },
         {
           "q": "Quels formats et versions de PDF sont pris en charge ?",
@@ -164,13 +164,13 @@
         },
         {
           "q": "En quoi PdfMinty est-il différent des convertisseurs comme iLovePDF ?",
-          "a": "Les convertisseurs classiques téléversent vos documents sur des serveurs cloud. PdfMinty les traite directement sur votre processeur sans aucun risque de fuite de données."
+          "a": "Les convertisseurs classiques téléversent vos documents sur des serveurs cloud. PdfMinty traite les outils standard directement sur votre processeur sans risque de fuite de données."
         }
       ]
     },
     "cta": {
       "title": "Prêt à gérer vos PDF en toute confidentialité ?",
-      "subtitle": "Sélectionnez un outil ci-dessus pour traiter vos fichiers directement et en toute sécurité sur votre appareil.",
+      "subtitle": "Sélectionnez un outil ci-dessus pour traiter vos fichiers en toute sécurité sur votre appareil. Rapide, sans inscription obligatoire et traitement local respectueux de la vie privée.",
       "button": "Découvrir tous les outils"
     }
   },

@@ -118,26 +118,26 @@
       "privacyDesc": "Tus documentos permanecen en tu dispositivo. Las operaciones locales se ejecutan en la memoria del navegador.",
       "noAccountTitle": "Sin cuenta requerida",
       "noAccountDesc": "Olvídate de registros y contraseñas. Accede a herramientas rápidas directamente sin crear una cuenta ni dejar datos.",
-      "freeTitle": "Completamente gratis",
-      "freeDesc": "Disfruta de editar y organizar archivos sin muros de pago, suscripciones, límites artificiales ni marcas de agua.",
+      "freeTitle": "Nivel diario gratuito",
+      "freeDesc": "Une, divide, comprime, firma y edita PDFs gratis (5 tareas diarias para invitados, 10 con cuenta gratuita) sin marcas de agua, más planes Pro opcionales para uso ilimitado.",
       "fastTitle": "Procesamiento instantáneo",
       "fastDesc": "Sin esperas por subidas o colas en la nube. El procesador de tu dispositivo maneja los archivos al instante.",
       "offlineTitle": "Funciona sin conexión",
       "offlineDesc": "Una vez cargadas, las herramientas procesan tus archivos PDF localmente en tu ordenador incluso sin conexión a internet.",
-      "toolsCountTitle": "22+ herramientas especializadas",
+      "toolsCountTitle": "24 herramientas PDF especializadas",
       "toolsCountDesc": "Desde unir y dividir hasta cifrado, OCR y compresión: completa cualquier flujo de trabajo de PDF aquí."
     },
     "howItWorks": {
       "badge": "100% privacidad en el navegador",
       "title": "Procesamiento de documentos rápido y privado",
-      "desc": "PDFMinty procesa tus documentos directamente en tu ordenador o teléfono. Como tus archivos permanecen en tu dispositivo, el procesamiento ocurre al instante sin demoras de subida ni riesgos de almacenamiento en la nube. Procesa contratos confidenciales con total tranquilidad.",
+      "desc": "PDFMinty procesa los documentos estándar directamente en tu ordenador o teléfono. Como tus archivos permanecen en tu dispositivo, el procesamiento ocurre al instante sin demoras de subida, colas de espera ni riesgos de almacenamiento en la nube. Procesa contratos confidenciales con privacidad local.",
       "dragDrop": "Arrastra y suelta el PDF aquí",
       "orBrowse": "o haz clic para buscar localmente",
       "stepsHeading": "Cómo funciona en 3 sencillos pasos",
       "step1Title": "Selecciona tu herramienta",
-      "step1Desc": "Elige entre más de 22 herramientas PDF para unir, dividir, editar o proteger tus archivos.",
+      "step1Desc": "Elige entre 24 herramientas PDF para unir, dividir, comprimir, firmar o proteger tus archivos.",
       "step2Title": "Añade tus archivos",
-      "step2Desc": "Arrastra y suelta tus archivos PDF directamente en el navegador. Todo permanece localmente en la memoria.",
+      "step2Desc": "Arrastra y suelta tus archivos PDF directamente en el navegador. Las herramientas estándar mantienen tus archivos en la memoria local.",
       "step3Title": "Procesar y Descargar",
       "step3Desc": "Tu PDF se procesa al instante en tu hardware. Haz clic en descargar para guardar el resultado de inmediato."
     },
@@ -148,15 +148,15 @@
       "items": [
         {
           "q": "¿Cómo procesa PdfMinty mis archivos PDF de forma privada?",
-          "a": "PdfMinty ejecuta sus herramientas PDF 100% localmente dentro de tu navegador web mediante WebAssembly y JavaScript, sin subir archivos a ningún servidor."
+          "a": "PdfMinty ejecuta nuestras 22 herramientas PDF estándar al 100% localmente dentro de tu navegador web mediante WebAssembly y JavaScript, sin subir archivos a ningún servidor. Las únicas excepciones son nuestras 2 herramientas opcionales de Análisis IA y OCR PDF, que solo envían texto extraído o imágenes de páginas a Google Gemini tras tu consentimiento explícito."
         },
         {
-          "q": "¿PdfMinty es completamente gratuito?",
-          "a": "Sí, 100% gratuito sin tarifas ocultas, suscripciones, límites de uso ni necesidad de registrarte."
+          "q": "¿PdfMinty es gratuito?",
+          "a": "Sí — PDFMinty ofrece un nivel gratuito en las 24 herramientas: los invitados reciben 5 tareas diarias gratuitas (hasta 100 MB por archivo) sin cuenta ni tarjeta de crédito, y los usuarios registrados gratuitos reciben 10 tareas diarias (hasta 150 MB) sin marcas de agua. Los planes opcionales Pro ($2.49/mes) y Lifetime ($50 pago único) ofrecen tareas diarias ilimitadas y archivos de hasta 500 MB."
         },
         {
           "q": "¿Salen mis archivos de mi ordenador o móvil?",
-          "a": "Para las herramientas estándar, no: el procesamiento ocurre completamente en la memoria de tu navegador y funciona sin conexión."
+          "a": "Para nuestras 22 herramientas estándar, no: el procesamiento ocurre completamente en la memoria local de tu navegador y funciona sin conexión. Las únicas excepciones son las 2 herramientas opcionales de Análisis IA y OCR PDF tras tu consentimiento explícito."
         },
         {
           "q": "¿Qué formatos y versiones de PDF son compatibles?",
@@ -164,13 +164,13 @@
         },
         {
           "q": "¿En qué se diferencia PdfMinty de convertidores como iLovePDF?",
-          "a": "Los convertidores tradicionales suben tus documentos a servidores en la nube. PdfMinty los procesa localmente en tu propia CPU sin riesgos de privacidad."
+          "a": "Los convertidores tradicionales suben tus documentos a servidores en la nube. PdfMinty procesa las herramientas estándar localmente en tu propia CPU sin riesgos de privacidad."
         }
       ]
     },
     "cta": {
       "title": "¿Listo para gestionar tus PDFs con total privacidad?",
-      "subtitle": "Selecciona cualquier herramienta arriba para procesar tus documentos de forma privada y local en tu dispositivo.",
+      "subtitle": "Selecciona cualquier herramienta arriba para procesar tus documentos de forma privada en tu dispositivo. Alto rendimiento, sin registro obligatorio y procesamiento local.",
       "button": "Explorar todas las herramientas"
     }
   },

@@ -208,10 +208,13 @@ async function run(): Promise<void> {
     toolCommon?: {
       selectPdfFile?: string;
       selectPdfFiles?: string;
+      selectPdf?: string;
       processLocally?: string;
+      process?: string;
       downloadResult?: string;
+      download?: string;
     };
-    fileUploader?: { dropFilesHere?: string; upToSize?: string };
+    fileUploader?: { dropFilesHere?: string; upToSize?: string; dragDrop?: string };
     relatedTools?: { title?: string };
     tools?: Record<string, { name?: string; desc?: string }>;
   }
@@ -1165,19 +1168,19 @@ ${toolsListHtml}
  
     <h2>Frequently Asked Questions</h2>
     <h3>Is PDFMinty really free?</h3>
-    <p>Yes, PDFMinty is free to use. All ${toolsCount} tools are available without payment or registration (up to 5 free daily tasks for guests and 10 daily tasks with a free account, with optional Pro plans for unlimited daily usage and 500MB files).</p>
+    <p>Yes — PDFMinty offers a free tier across all ${toolsCount} tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Pro ($2.49/month) and Lifetime ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and higher AI/OCR quotas.</p>
  
     <h3>Are my files uploaded to your server?</h3>
-    <p>For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box.</p>
+    <p>For our 22 standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box.</p>
  
     <h3>What is the maximum file size?</h3>
-    <p>PDFMinty can handle individual PDF files up to 100MB and combined operations up to 150MB total. Performance depends on your device's memory and processing power.</p>
+    <p>PDFMinty handles individual PDF files up to 100MB for guests (150MB for free accounts, 500MB on Pro) and combined batch operations up to 150MB on the free tier (1,000MB on Pro). Performance also depends on your device's available memory.</p>
  
     <h3>Do I need to install any software?</h3>
     <p>No installation required. PDFMinty runs in any modern browser (Chrome, Firefox, Safari, Edge). You can also install it as a PWA for offline access.</p>
  
     <h2>Start Processing Your PDFs Now</h2>
-    <p>Browse our complete collection of PDF tools above. All tools are free, private, and work instantly in your browser.</p>
+    <p>Browse our complete collection of PDF tools above. Enjoy 5 free daily tasks with no sign-up required (10/day with a free account, or unlimited on Pro) and 100% local browser processing for all 22 standard tools.</p>
 
     <div style="margin-top: 2.5rem; text-align: center;">
       <p style="font-weight: 600; margin-bottom: 1rem;">Recognized &amp; Featured On</p>
@@ -1202,17 +1205,17 @@ ${toolsListHtml}
       {
         "@type": "Question",
         "name": "Is PDFMinty really free?",
-        "acceptedAnswer": {"@type": "Answer", "text": "Yes, PDFMinty is 100% free to use. All ${toolsCount} tools are available without subscription, payment, or registration."}
+        "acceptedAnswer": {"@type": "Answer", "text": "Yes — PDFMinty offers a free tier across all ${toolsCount} tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Pro ($2.49/month) and Lifetime ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and higher AI/OCR quotas."}
       },
       {
         "@type": "Question",
         "name": "Are my files uploaded to your server?",
-        "acceptedAnswer": {"@type": "Answer", "text": "For our standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box."}
+        "acceptedAnswer": {"@type": "Answer", "text": "For our 22 standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box."}
       },
       {
         "@type": "Question",
         "name": "What is the maximum file size?",
-        "acceptedAnswer": {"@type": "Answer", "text": "PDFMinty can handle individual PDF files up to 100MB and combined operations up to 150MB total. Performance depends on your device's memory and processing power."}
+        "acceptedAnswer": {"@type": "Answer", "text": "PDFMinty handles individual PDF files up to 100MB for guests (150MB for free accounts, 500MB on Pro) and combined batch operations up to 150MB on the free tier (1,000MB on Pro). Performance also depends on your device's available memory."}
       },
       {
         "@type": "Question",
@@ -1272,7 +1275,7 @@ ${homepageHreflangs}
     "name": "PDFMinty", "url": "${SITE_URL}/",
     "logo": { "@type": "ImageObject", "url": "${SITE_URL}/logo-512.png", "width": 512, "height": 512 },
     "image": "${SITE_URL}/og-image.png",
-    "description": "Privacy-first, client-side PDF toolkit with 22 free tools.",
+    "description": "Privacy-first PDF toolkit with ${toolsCount} tools (22 client-side standard tools + 2 opt-in AI/OCR tools).",
     "foundingDate": "2025",
     "contactPoint": {
       "@type": "ContactPoint", "contactType": "customer support",
@@ -1347,29 +1350,29 @@ ${homepageHreflangs}
       title: 'Kostenlose PDF-Tools — 100% privat im Browser | PDFMinty',
       desc: 'Kostenlose PDF-Tools direkt im Browser. PDF zusammenfügen, teilen, schützen und bearbeiten. Keine Uploads, keine Registrierung, 100% Datenschutz.',
       h1: 'Kostenlose browserbasierte PDF-Werkzeuge — 100% privat, ohne Uploads',
-      lead: `PDFMinty ist ein kostenloses, datenschutzorientiertes PDF-Toolkit mit ${toolsCount} leistungsstarken Werkzeugen direkt in Ihrem Browser. Ihre Dateien verlassen niemals Ihr Gerät — keine Server-Uploads, keine Registrierung, keine täglichen Limits. Fügen Sie PDFs zusammen, teilen, schützen, konvertieren und bearbeiten Sie sie mit voller Vertraulichkeit.`,
+      lead: `PDFMinty ist ein datenschutzorientiertes PDF-Toolkit mit ${toolsCount} leistungsstarken Werkzeugen. Unsere 22 Standard-PDF-Werkzeuge laufen zu 100% lokal in Ihrem Browser, sodass Ihre Dateien Ihr Gerät niemals verlassen — ohne Server-Uploads und ohne Registrierungspflicht (zuzüglich 2 optionaler KI-Analyse- und OCR-Tools mit Google Gemini nach Ihrer ausdrücklichen Zustimmung).`,
       toolsTitle: 'Alle PDF-Werkzeuge',
       whyTitle: 'Warum PDFMinty wählen?',
-      whyIntro: 'Im Gegensatz zu anderen Online-PDF-Tools, die Ihre Dateien auf entfernte Server hochladen, verarbeitet PDFMinty alles lokal in Ihrem Browser mittels WebAssembly. Das bedeutet:',
+      whyIntro: 'Im Gegensatz zu herkömmlichen Online-PDF-Tools, die Ihre Dateien auf entfernte Server hochladen, verarbeitet PDFMinty alle Standardoperationen lokal in Ihrem Browser mittels WebAssembly. Das bedeutet:',
       whyFeatures: [
-        { title: 'Vollständige Privatsphäre', desc: 'Ihre Dokumente berühren niemals unsere Server.' },
-        { title: 'Keine Dateilimits', desc: 'Verarbeiten Sie Dateien bis zu 100 MB einzeln und 150 MB insgesamt.' },
+        { title: 'Vollständige Privatsphäre', desc: 'Ihre Dokumente berühren bei allen 22 Standard-PDF-Tools niemals unsere Server.' },
+        { title: 'Großzügige Dateigrößen', desc: 'Verarbeiten Sie Dateien bis zu 100 MB als Gast (150 MB mit kostenlosem Konto, 500 MB mit Pro).' },
         { title: 'Schnelle Verarbeitung', desc: 'WebAssembly-gestützte Operationen werden in Sekundenschnelle abgeschlossen.' },
-        { title: 'Keine Registrierung', desc: 'Alle Tools sind zu 100% kostenlos ohne Anmeldung nutzbar.' },
-        { title: 'Funktioniert offline', desc: 'PWA-fähig — installieren und auch ohne Internetverbindung nutzen.' }
+        { title: 'Keine Registrierungspflicht', desc: 'Gäste erhalten 5 kostenlose Aufgaben pro Tag ohne Anmeldung (10/Tag mit kostenlosem Konto, unbegrenzt mit Pro).' },
+        { title: 'Funktioniert offline', desc: 'PWA-fähig — installieren und Standard-Tools auch ohne Internetverbindung nutzen.' }
       ],
       privacyTitle: 'Wie PDFMinty Ihre Privatsphäre schützt',
-      privacyP1: 'Jede PDF-Operation in PDFMinty erfolgt clientseitig mithilfe von JavaScript und WebAssembly. Wenn Sie eine Datei auswählen, wird sie in den Arbeitsspeicher Ihres Browsers geladen, lokal verarbeitet und das Ergebnis direkt auf Ihrem Gerät generiert. Die Datei wird niemals über das Netzwerk übertragen. Dies unterscheidet sich grundlegend von herkömmlichen Online-PDF-Tools, die einen Upload auf Server verlangen.',
+      privacyP1: 'Alle 22 Standard-PDF-Operationen in PDFMinty erfolgen clientseitig mithilfe von JavaScript und WebAssembly. Wenn Sie eine Datei auswählen, wird sie in den Arbeitsspeicher Ihres Browsers geladen, lokal verarbeitet und das Ergebnis direkt auf Ihrem Gerät generiert. Die einzigen Ausnahmen sind unsere 2 optionalen KI-Analyse- und OCR-Tools, die erst nach Ihrer ausdrücklichen Zustimmung Textauszüge oder Seitenbilder an Google Gemini übermitteln.',
       privacyP2: 'Unsere datenschutzorientierte Architektur macht PDFMinty ideal für die vertrauliche Bearbeitung sensibler Dokumente wie Steuererklärungen, medizinische Unterlagen, Finanzberichte, Verträge und persönliche Dokumente.',
       faqTitle: 'Häufig gestellte Fragen (FAQ)',
       faqs: [
-        { q: 'Wie verarbeitet PDFMinty meine PDFs vertraulich?', a: 'PDFMinty führt alle Verarbeitungen vollständig clientseitig in Ihrem Webbrowser mithilfe moderner WebAssembly- und JavaScript-Technologien aus. Ihre Dokumente werden direkt im lokalen Arbeitsspeicher Ihres Geräts geöffnet und verarbeitet. Es findet zu keinem Zeitpunkt ein Upload auf externe Server statt.' },
-        { q: 'Ist PDFMinty wirklich kostenlos?', a: `Ja, PDFMinty ist zu 100% kostenlos nutzbar. Alle ${toolsCount} Werkzeuge stehen ohne versteckte Kosten, ohne Abonnement und ohne Registrierung unbegrenzt zur Verfügung.` },
-        { q: 'Verlassen meine Dateien jemals mein Gerät?', a: 'Nein, bei allen unseren Standard-PDF-Werkzeugen verlassen Ihre Dateien niemals Ihren Computer oder Ihr Mobilgerät. Die einzige optionale Ausnahme ist das KI-Analysetool, das erst nach Ihrer ausdrücklichen Bestätigung ausgewählte Textauszüge an Google Gemini übermittelt.' },
-        { q: 'Wie hoch ist die maximale Dateigröße?', a: 'PDFMinty unterstützt einzelne PDF-Dateien bis zu 100 MB und kombinierte Stapeloperationen bis zu 150 MB. Die tatsächliche Leistung richtet sich nach dem verfügbaren Arbeitsspeicher Ihres Endgeräts.' }
+        { q: 'Wie verarbeitet PDFMinty meine PDFs vertraulich?', a: 'PDFMinty führt unsere 22 Standard-PDF-Werkzeuge vollständig clientseitig in Ihrem Webbrowser mithilfe von WebAssembly und JavaScript aus, ohne Dateien auf Server hochzuladen. Die einzigen Ausnahmen sind die 2 optionalen KI-Analyse- und OCR-Tools, die erst nach Ihrer ausdrücklichen Zustimmung Daten an Google Gemini senden.' },
+        { q: 'Ist PDFMinty kostenlos nutzbar?', a: `Ja — PDFMinty bietet ein kostenloses Kontingent für alle ${toolsCount} Werkzeuge: Gäste erhalten 5 kostenlose Aufgaben pro Tag (bis zu 100 MB pro Datei) ohne Konto oder Kreditkarte, und registrierte Nutzer erhalten 10 kostenlose Aufgaben pro Tag (bis zu 150 MB) ohne Wasserzeichen. Optionale Pro- ($2,49/Monat) und Lifetime-Tarife ($50 einmalig) bieten unbegrenzte tägliche Aufgaben und 500-MB-Dateien.` },
+        { q: 'Verlassen meine Dateien jemals mein Gerät?', a: 'Nein, bei allen 22 Standard-PDF-Werkzeugen verlassen Ihre Dateien niemals Ihren Computer oder Ihr Mobilgerät. Die einzigen optionalen Ausnahmen sind die 2 KI-Analyse- und OCR-Tools, die erst nach Ihrer ausdrücklichen Bestätigung Textauszüge oder Seitenbilder an Google Gemini übermitteln.' },
+        { q: 'Wie hoch ist die maximale Dateigröße?', a: 'PDFMinty unterstützt einzelne PDF-Dateien bis zu 100 MB für Gäste (150 MB mit kostenlosem Konto, 500 MB mit Pro) sowie kombinierte Stapeloperationen bis zu 150 MB im kostenlosen Tarif (1.000 MB mit Pro).' }
       ],
       ctaTitle: 'Starten Sie jetzt mit der Bearbeitung Ihrer PDFs',
-      ctaDesc: 'Entdecken Sie oben unsere vollständige Sammlung an PDF-Tools. Alle Werkzeuge sind kostenlos, privat und funktionieren sofort im Browser.',
+      ctaDesc: 'Entdecken Sie oben unsere vollständige Sammlung an PDF-Tools. Nutzen Sie 5 kostenlose Aufgaben täglich ohne Anmeldung (10/Tag mit kostenlosem Konto, unbegrenzt mit Pro).',
       featuredOn: 'Vorgestellt & anerkannt auf',
       webAppDesc: 'Kostenloses, datenschutzorientiertes Online-PDF-Toolkit. PDFs zusammenfügen, teilen, drehen, schützen und bearbeiten — 100% lokal in Ihrem Browser ohne Server-Uploads.',
       orgDesc: 'Datenschutzorientiertes, clientseitiges PDF-Toolkit mit 24 Werkzeugen (22 lokale Standard-Tools ohne Server-Uploads + 2 optionale KI-Tools).',
@@ -1396,29 +1399,29 @@ ${homepageHreflangs}
       title: 'Outils PDF gratuits et confidentiels en ligne | PDFMinty',
       desc: 'Suite d’outils PDF gratuits dans votre navigateur. Fusionnez, divisez, protégez et éditez vos fichiers PDF sans téléversement et en toute confidentialité.',
       h1: 'Outils PDF gratuits dans le navigateur — 100% confidentiels, zéro téléversement',
-      lead: `PDFMinty est une boîte à outils PDF gratuite et confidentielle comprenant ${toolsCount} outils puissants qui s'exécutent directement dans votre navigateur. Vos fichiers ne quittent jamais votre appareil — aucun téléversement, aucune inscription, aucun quota quotidien. Fusionnez, divisez, protégez, convertissez et modifiez des PDF en toute confidentialité.`,
+      lead: `PDFMinty est une boîte à outils PDF axée sur la confidentialité comprenant ${toolsCount} outils puissants. Nos 22 outils PDF standard s'exécutent à 100% localement dans votre navigateur afin que vos fichiers ne quittent jamais votre appareil — sans téléversement serveur ni inscription obligatoire (plus 2 outils optionnels d'analyse IA et d'OCR propulsés par Google Gemini uniquement avec votre consentement explicite).`,
       toolsTitle: 'Tous les outils PDF',
       whyTitle: 'Pourquoi choisir PDFMinty ?',
-      whyIntro: 'Contrairement à d’autres outils PDF en ligne qui téléversent vos fichiers sur des serveurs distants, PDFMinty traite tout localement dans votre navigateur grâce à WebAssembly. Cela signifie :',
+      whyIntro: 'Contrairement aux outils PDF en ligne traditionnels qui téléversent vos fichiers sur des serveurs distants, PDFMinty traite les opérations standard localement dans votre navigateur grâce à WebAssembly. Cela signifie :',
       whyFeatures: [
-        { title: 'Confidentialité totale', desc: 'Vos documents ne touchent jamais nos serveurs.' },
-        { title: 'Sans limites restrictives', desc: 'Traitez des fichiers jusqu’à 100 Mo chacun et 150 Mo au total.' },
+        { title: 'Confidentialité totale', desc: 'Vos documents ne touchent jamais nos serveurs pour nos 22 outils PDF standard.' },
+        { title: 'Limites de taille généreuses', desc: 'Traitez des fichiers jusqu’à 100 Mo en tant qu’invité (150 Mo avec un compte gratuit, 500 Mo avec Pro).' },
         { title: 'Traitement ultra-rapide', desc: 'Les opérations optimisées par WebAssembly s’exécutent en quelques secondes.' },
-        { title: 'Aucune inscription', desc: 'Tous les outils sont 100% gratuits sans création de compte.' },
-        { title: 'Fonctionne hors ligne', desc: 'Compatible PWA — installez et utilisez même sans connexion Internet.' }
+        { title: 'Sans inscription obligatoire', desc: 'Les invités bénéficient de 5 tâches gratuites par jour sans inscription (10/jour avec un compte gratuit, illimité avec Pro).' },
+        { title: 'Fonctionne hors ligne', desc: 'Compatible PWA — installez et utilisez les outils standard même sans connexion Internet.' }
       ],
       privacyTitle: 'Comment PDFMinty protège votre vie privée',
-      privacyP1: 'Chaque opération PDF sur PDFMinty s’exécute côté client grâce à JavaScript et WebAssembly. Lorsque vous sélectionnez un fichier, il est chargé dans la mémoire de votre navigateur, traité localement et le résultat est généré sur votre appareil. Le fichier n’est jamais transmis sur le réseau. Cela diffère fondamentalement des outils PDF en ligne traditionnels qui exigent le téléversement de vos fichiers sur leurs serveurs.',
+      privacyP1: 'Les 22 opérations PDF standard sur PDFMinty s’exécutent côté client grâce à JavaScript et WebAssembly. Lorsque vous sélectionnez un fichier, il est chargé dans la mémoire de votre navigateur, traité localement et le résultat est généré sur votre appareil. Les seules exceptions sont nos 2 outils optionnels d’analyse IA et d’OCR PDF, qui ne transmettent le texte extrait ou les images de pages à Google Gemini qu’après votre accord explicite.',
       privacyP2: 'Notre architecture axée sur la confidentialité fait de PDFMinty le choix idéal pour traiter des documents sensibles tels que déclarations fiscales, dossiers médicaux, relevés financiers et contrats juridiques.',
       faqTitle: 'Foire aux questions (FAQ)',
       faqs: [
-        { q: 'Comment PDFMinty traite-t-il mes fichiers PDF en toute confidentialité ?', a: 'PDFMinty effectue tous les traitements directement dans votre navigateur web grâce aux technologies WebAssembly et JavaScript. Vos documents sont traités localement dans la mémoire vive de votre appareil, sans jamais être envoyés vers un serveur distant.' },
-        { q: 'PDFMinty est-il vraiment gratuit ?', a: `Oui, PDFMinty est 100% gratuit. L'ensemble des ${toolsCount} outils est accessible sans aucun frais, sans abonnement et sans obligation de créer un compte.` },
-        { q: 'Mes fichiers quittent-ils un jour mon appareil ?', a: 'Non, pour tous nos outils PDF standard, vos fichiers ne quittent jamais votre ordinateur ni votre appareil mobile. La seule exception est l’outil d’analyse IA optionnel, qui ne transmet d’extraits textuels qu’après votre accord explicite.' },
-        { q: 'Quelle est la taille maximale de fichier autorisée ?', a: 'PDFMinty prend en charge des fichiers individuels jusqu’à 100 Mo et des opérations combinées par lot jusqu’à 150 Mo. Les performances dépendent de la mémoire disponible sur votre appareil.' }
+        { q: 'Comment PDFMinty traite-t-il mes fichiers PDF en toute confidentialité ?', a: 'PDFMinty exécute nos 22 outils PDF standard à 100% localement dans votre navigateur web grâce à WebAssembly et JavaScript sans téléverser vos fichiers sur un serveur. Les seules exceptions sont nos 2 outils optionnels d’analyse IA et d’OCR PDF, qui n’envoient des données à Google Gemini qu’après votre consentement explicite.' },
+        { q: 'PDFMinty est-il gratuit ?', a: `Oui — PDFMinty propose une offre gratuite sur l'ensemble des ${toolsCount} outils : les invités disposent de 5 tâches quotidiennes gratuites (jusqu'à 100 Mo par fichier) sans compte ni carte bancaire, et les comptes gratuits bénéficient de 10 tâches par jour (jusqu'à 150 Mo) sans filigrane. Des formules optionnelles Pro (2,49 $/mois) et Lifetime (50 $ en paiement unique) offrent un usage quotidien illimité et des fichiers jusqu'à 500 Mo.` },
+        { q: 'Mes fichiers quittent-ils un jour mon appareil ?', a: 'Non, pour nos 22 outils PDF standard, vos fichiers ne quittent jamais votre ordinateur ni votre appareil mobile. Les seules exceptions sont les 2 outils optionnels d’analyse IA et d’OCR PDF, qui ne transmettent d’extraits textuels ou d’images de pages à Google Gemini qu’après votre accord explicite.' },
+        { q: 'Quelle est la taille maximale de fichier autorisée ?', a: 'PDFMinty prend en charge des fichiers individuels jusqu’à 100 Mo pour les invités (150 Mo avec un compte gratuit, 500 Mo avec Pro) et des opérations par lot jusqu’à 150 Mo sur l’offre gratuite (1 000 Mo avec Pro).' }
       ],
       ctaTitle: 'Commencez à traiter vos fichiers PDF dès maintenant',
-      ctaDesc: 'Parcourez notre collection complète d’outils PDF ci-dessus. Tous les outils sont gratuits, confidentiels et fonctionnent instantanément dans votre navigateur.',
+      ctaDesc: 'Parcourez notre collection complète d’outils PDF ci-dessus. Profitez de 5 tâches gratuites par jour sans inscription (10/jour avec un compte gratuit, illimité avec Pro).',
       featuredOn: 'Reconnu et présenté sur',
       webAppDesc: 'Boîte à outils PDF en ligne gratuite et confidentielle. Fusionnez, divisez, faites pivoter, protégez et éditez vos PDF à 100% dans votre navigateur sans téléversement.',
       orgDesc: 'Boîte à outils PDF côté client, axée sur la confidentialité, comprenant 24 outils (22 outils locaux sans serveur distant + 2 outils IA optionnels).',
@@ -1445,29 +1448,29 @@ ${homepageHreflangs}
       title: 'PdfMinty — Herramientas PDF gratis y privadas (100% en el navegador)',
       desc: 'Herramientas PDF gratuitas en tu navegador. Une, divide, protege y edita PDFs sin subir archivos a servidores. 100% privado y seguro.',
       h1: 'Herramientas PDF gratuitas en el navegador — 100% privadas, sin subidas',
-      lead: `PDFMinty es un conjunto de herramientas PDF gratuito y centrado en la privacidad con ${toolsCount} potentes herramientas que se ejecutan directamente en tu navegador. Tus archivos nunca salen de tu dispositivo: sin subidas a servidores, sin registros ni cuotas diarias. Une, divide, protege, convierte y edita PDFs con total confidencialidad.`,
+      lead: `PDFMinty es un conjunto de herramientas PDF centrado en la privacidad con ${toolsCount} potentes herramientas. Nuestras 22 herramientas PDF estándar se ejecutan al 100% localmente en tu navegador para que tus archivos nunca salgan de tu dispositivo: sin subidas a servidores ni registro obligatorio (más 2 herramientas opcionales de análisis IA y OCR con Google Gemini solo bajo tu consentimiento explícito).`,
       toolsTitle: 'Todas las herramientas PDF',
       whyTitle: '¿Por qué elegir PDFMinty?',
-      whyIntro: 'A diferencia de otras herramientas PDF en línea que suben tus archivos a servidores remotos, PDFMinty procesa todo localmente en tu navegador usando WebAssembly. Esto significa:',
+      whyIntro: 'A diferencia de las herramientas PDF en línea tradicionales que suben tus archivos a servidores remotos, PDFMinty procesa las operaciones estándar localmente en tu navegador usando WebAssembly. Esto significa:',
       whyFeatures: [
-        { title: 'Privacidad completa', desc: 'Tus documentos nunca tocan nuestros servidores.' },
-        { title: 'Sin límites de archivos', desc: 'Procesa archivos de hasta 100 MB cada uno, 150 MB en total.' },
+        { title: 'Privacidad completa', desc: 'Tus documentos nunca tocan nuestros servidores en las 22 herramientas PDF estándar.' },
+        { title: 'Límites de archivo amplios', desc: 'Procesa archivos de hasta 100 MB como invitado (150 MB con cuenta gratuita, 500 MB en Pro).' },
         { title: 'Procesamiento rápido', desc: 'Las operaciones con tecnología WebAssembly se completan en segundos.' },
-        { title: 'Sin registro', desc: 'Todas las herramientas son 100% gratuitas sin necesidad de registrarse.' },
-        { title: 'Funciona sin conexión', desc: 'Compatible con PWA: instala y usa incluso sin conexión a internet.' }
+        { title: 'Sin registro obligatorio', desc: 'Los invitados disponen de 5 tareas diarias gratis sin registro (10/día con cuenta gratuita, ilimitadas en Pro).' },
+        { title: 'Funciona sin conexión', desc: 'Compatible con PWA: instala y usa las herramientas estándar incluso sin conexión a internet.' }
       ],
       privacyTitle: 'Cómo protege PDFMinty tu privacidad',
-      privacyP1: 'Cada operación de PDF en PDFMinty ocurre del lado del cliente utilizando JavaScript y WebAssembly. Cuando cargas un archivo, se almacena en la memoria de tu navegador, se procesa localmente y el resultado se genera en tu dispositivo. El archivo nunca se transmite por internet. Esto es fundamentalmente diferente a las herramientas PDF convencionales que suben tus archivos a servidores.',
+      privacyP1: 'Las 22 operaciones estándar de PDF en PDFMinty ocurren del lado del cliente utilizando JavaScript y WebAssembly. Cuando cargas un archivo, se almacena en la memoria de tu navegador, se procesa localmente y el resultado se genera en tu dispositivo. Las únicas excepciones son nuestras 2 herramientas opcionales de Análisis IA y OCR PDF, que solo envían texto extraído o imágenes de páginas a Google Gemini tras tu consentimiento explícito.',
       privacyP2: 'Nuestra arquitectura orientada a la privacidad convierte a PDFMinty en la solución ideal para procesar documentos confidenciales como declaraciones de impuestos, registros médicos, estados financieros y contratos legales.',
       faqTitle: 'Preguntas frecuentes (FAQ)',
       faqs: [
-        { q: '¿Cómo procesa PDFMinty mis archivos PDF de forma privada?', a: 'PDFMinty procesa todos los documentos de forma 100% local en su navegador web mediante WebAssembly y JavaScript. Los archivos se abren en la memoria de su dispositivo y nunca se cargan en servidores externos.' },
-        { q: '¿PDFMinty es realmente gratuito?', a: `Sí, PDFMinty es 100% gratuito. Las ${toolsCount} herramientas están disponibles sin suscripciones, sin tarifas ocultas y sin necesidad de crear una cuenta.` },
-        { q: '¿Salen alguna vez mis archivos de mi dispositivo?', a: 'No, en todas nuestras herramientas estándar de PDF, sus archivos nunca salen de su ordenador o teléfono móvil. La única excepción opcional es la herramienta de análisis con IA, que solo envía texto tras su consentimiento expreso.' },
-        { q: '¿Cuál es el tamaño máximo de archivo permitido?', a: 'PDFMinty admite archivos PDF individuales de hasta 100 MB y operaciones combinadas de hasta 150 MB en total. El rendimiento depende de la memoria RAM disponible en su equipo.' }
+        { q: '¿Cómo procesa PDFMinty mis archivos PDF de forma privada?', a: 'PDFMinty ejecuta nuestras 22 herramientas estándar de forma 100% local en su navegador web mediante WebAssembly y JavaScript sin subir archivos a servidores externos. Las únicas excepciones son las 2 herramientas opcionales de Análisis IA y OCR PDF, que requieren su consentimiento explícito antes de enviar datos a Google Gemini.' },
+        { q: '¿PDFMinty es gratuito?', a: `Sí — PDFMinty ofrece un nivel gratuito en las ${toolsCount} herramientas: los invitados reciben 5 tareas diarias gratuitas (hasta 100 MB por archivo) sin cuenta ni tarjeta de crédito, y los usuarios con cuenta gratuita reciben 10 tareas diarias (hasta 150 MB) sin marcas de agua. Los planes opcionales Pro ($2.49/mes) y Lifetime ($50 pago único) ofrecen tareas diarias ilimitadas y archivos de hasta 500 MB.` },
+        { q: '¿Salen alguna vez mis archivos de mi dispositivo?', a: 'No, en nuestras 22 herramientas estándar de PDF, sus archivos nunca salen de su ordenador o teléfono móvil. Las únicas excepciones opcionales son las 2 herramientas de Análisis IA y OCR PDF, que solo envían texto o imágenes de páginas a Google Gemini tras su consentimiento expreso.' },
+        { q: '¿Cuál es el tamaño máximo de archivo permitido?', a: 'PDFMinty admite archivos PDF individuales de hasta 100 MB para invitados (150 MB con cuenta gratuita, 500 MB en Pro) y operaciones por lotes de hasta 150 MB en el nivel gratuito (1,000 MB en Pro).' }
       ],
       ctaTitle: 'Comienza a procesar tus archivos PDF ahora',
-      ctaDesc: 'Explora nuestra colección completa de herramientas PDF arriba. Todas las herramientas son gratuitas, privadas y funcionan al instante en tu navegador.',
+      ctaDesc: 'Explora nuestra colección completa de herramientas PDF arriba. Disfruta de 5 tareas diarias gratuitas sin registro (10/día con cuenta gratuita, o ilimitadas en Pro).',
       featuredOn: 'Reconocido y destacado en',
       webAppDesc: 'Herramientas PDF en línea gratuitas y privadas. Une, divide, rota, protege y edita documentos PDF directamente en tu navegador sin subir archivos a servidores.',
       orgDesc: 'Kit de herramientas PDF del lado del cliente, con privacidad garantizada y 24 utilidades (22 herramientas locales + 2 herramientas IA opcionales).',
@@ -1494,29 +1497,29 @@ ${homepageHreflangs}
       title: 'PdfMinty — বিনামূল্যে গোপনীয়তা-বান্ধব পিডিএফ টুলস (১০০% ব্রাউজারে)',
       desc: 'ব্রাউজারেই বিনামূল্যে পিডিএফ টুলস। কোনো সার্ভার আপলোড বা নিবন্ধন ছাড়া পিডিএফ যুক্ত করুন, ভাগ করুন, সংকুচিত করুন এবং সুরক্ষিত করুন। ১০০% গোপনীয়তা।',
       h1: 'ফ্রি ব্রাউজার-ভিত্তিক পিডিএফ টুলস — ১০০% প্রাইভেট, কোনো আপলোড নেই',
-      lead: `PDFMinty হলো একটি সম্পূর্ণ বিনামূল্যে ও প্রাইভেসিবান্ধব পিডিএফ টুলকিট যাতে রয়েছে ${toolsCount}টি শক্তিশালী টুল যা পুরোপুরি আপনার ব্রাউজারে চলে। আপনার ফাইল কখনো ডিভাইস থেকে বাইরে যায় না — কোনো সার্ভার আপলোড নেই, কোনো সাইন-আপ নেই, কোনো দৈনিক লিমিট নেই। সম্পূর্ণ গোপনীয়তার সাথে পিডিএফ মার্জ, স্প্লিট, প্রটেক্ট, কনভার্ট এবং এডিট করুন।`,
+      lead: `PDFMinty হলো একটি প্রাইভেসি-ফার্স্ট পিডিএফ টুলকিট যাতে রয়েছে ${toolsCount}টি শক্তিশালী টুল। আমাদের ২২টি স্ট্যান্ডার্ড পিডিএফ টুল ১০০% আপনার ব্রাউজারে লোকালভাবে চলে, ফলে আপনার ফাইল কখনো ডিভাইস থেকে বাইরে যায় না — কোনো সার্ভার আপলোড বা বাধ্যতামূলক সাইন-আপ নেই (সাথে আপনার সুস্পষ্ট সম্মতিতে Google Gemini চালিত ২টি ঐচ্ছিক AI Analyze ও OCR PDF টুল)।`,
       toolsTitle: 'সকল পিডিএফ টুলস',
       whyTitle: 'কেন PDFMinty বেছে নেবেন?',
-      whyIntro: 'অন্যান্য অনলাইন পিডিএফ টুলের মতো নয় যা আপনার ফাইলগুলো রিমোট সার্ভারে আপলোড করে, PDFMinty ওয়েবঅ্যাসেম্বলি (WebAssembly) প্রযুক্তি ব্যবহার করে আপনার ব্রাউজারে সম্পূর্ণ লোকালভাবে ফাইল প্রসেস করে। এর সুবিধা:',
+      whyIntro: 'অন্যান্য অনলাইন পিডিএফ টুলের মতো নয় যা আপনার ফাইলগুলো রিমোট সার্ভারে আপলোড করে, PDFMinty ওয়েবঅ্যাসেম্বলি (WebAssembly) প্রযুক্তি ব্যবহার করে স্ট্যান্ডার্ড অপারেশনগুলো আপনার ব্রাউজারে সম্পূর্ণ লোকালভাবে প্রসেস করে। এর সুবিধা:',
       whyFeatures: [
-        { title: 'সম্পূর্ণ গোপনীয়তা', desc: 'আপনার ডকুমেন্ট কখনোই আমাদের সার্ভারে যায় না।' },
-        { title: 'কোনো ফাইলের বাধা নেই', desc: 'প্রতিটি ফাইল ১০০ মেগাবাইট এবং মোট ১৫০ মেগাবাইট পর্যন্ত প্রসেস করুন।' },
+        { title: 'সম্পূর্ণ গোপনীয়তা', desc: '২২টি স্ট্যান্ডার্ড পিডিএফ টুলের ক্ষেত্রে আপনার ডকুমেন্ট কখনোই আমাদের সার্ভারে যায় না।' },
+        { title: 'বড় ফাইল সাপোর্ট', desc: 'গেস্ট হিসেবে ১০০ মেগাবাইট পর্যন্ত ফাইল প্রসেস করুন (ফ্রি অ্যাকাউন্টে ১৫০ মেগাবাইট, প্রো প্ল্যানে ৫০০ মেগাবাইট)।' },
         { title: 'দ্রুত প্রসেসিং', desc: 'ওয়েবঅ্যাসেম্বলি প্রযুক্তির কারণে কয়েক সেকেন্ডে কাজ সম্পন্ন হয়।' },
-        { title: 'কোনো রেজিস্ট্রেশন নেই', desc: 'কোনো সাইন-আপ ছাড়াই সমস্ত টুল ১০০% ফ্রি।' },
-        { title: 'অফলাইনে কাজ করে', desc: 'PWA সমৃদ্ধ — ইন্টারনেট সংযোগ ছাড়াই ইন্সটল করে ব্যবহার করুন।' }
+        { title: 'বাধ্যতামূলক রেজিস্ট্রেশন নেই', desc: 'গেস্ট ব্যবহারকারীরা সাইন-আপ ছাড়াই প্রতিদিন ৫টি ফ্রি টাস্ক পান (ফ্রি অ্যাকাউন্টে ১০টি/দিন, প্রো প্ল্যানে আনলিমিটেড)।' },
+        { title: 'অফলাইনে কাজ করে', desc: 'PWA সমৃদ্ধ — ইন্টারনেট সংযোগ ছাড়াই ইন্সটল করে স্ট্যান্ডার্ড টুলগুলো ব্যবহার করুন।' }
       ],
       privacyTitle: 'PDFMinty কীভাবে আপনার গোপনীয়তা রক্ষা করে',
-      privacyP1: 'PDFMinty-এর প্রতিটি পিডিএফ অপারেশন জাভাস্ক্রিপ্ট এবং ওয়েবঅ্যাসেম্বলি ব্যবহার করে ক্লায়েন্ট-সাইডে সম্পন্ন হয়। আপনি যখন একটি ফাইল নির্বাচন করেন, এটি সরাসরি ব্রাউজারের মেমরিতে লোড হয়, লোকালভাবে প্রসেস হয় এবং আপনার ডিভাইসেই আউটপুট তৈরি হয়। ফাইলটি কখনোই ইন্টারনেটে বা কোনো দূরবর্তী সার্ভারে পাঠানো হয় না।',
+      privacyP1: 'PDFMinty-এর ২২টি স্ট্যান্ডার্ড পিডিএফ অপারেশন জাভাস্ক্রিপ্ট এবং ওয়েবঅ্যাসেম্বলি ব্যবহার করে ক্লায়েন্ট-সাইডে সম্পন্ন হয়। আপনি যখন একটি ফাইল নির্বাচন করেন, এটি সরাসরি ব্রাউজারের মেমরিতে লোড হয়, লোকালভাবে প্রসেস হয় এবং আপনার ডিভাইসেই আউটপুট তৈরি হয়। একমাত্র ব্যতিক্রম আমাদের ২টি ঐচ্ছিক AI Analyze এবং OCR PDF টুল, যা আপনার সুস্পষ্ট সম্মতির পরেই কেবল এক্সট্র্যাক্ট করা টেক্সট বা পেজ ইমেজ Google Gemini-তে পাঠায়।',
       privacyP2: 'আমাদের প্রাইভেসি-ফার্স্ট আর্কিটেকচার ট্যাক্স রিটার্ন, মেডিকেল রেকর্ড, ফিনান্সিয়াল স্টেটমেন্ট, আইনি চুক্তি এবং ব্যক্তিগত যেকোনো সংবেদনশীল ডকুমেন্ট প্রসেস করার জন্য PDFMinty-কে অত্যন্ত নিরাপদ ও বিশ্বস্ত করে তোলে।',
       faqTitle: 'সচরাচর জিজ্ঞাসিত প্রশ্নাবলী (FAQ)',
       faqs: [
-        { q: 'PDFMinty কীভাবে আমার PDF গোপনীয়ভাবে প্রসেস করে?', a: 'PDFMinty ক্লায়েন্ট-সাইড জাভাস্ক্রিপ্ট এবং আধুনিক ওয়েবঅ্যাসেম্বলি (WebAssembly) প্রযুক্তি ব্যবহার করে আপনার ব্রাউজারের ভেতর সম্পূর্ণ লোকালভাবে ফাইল প্রসেস করে। ফাইলগুলো সরাসরি আপনার ডিভাইসের মেমরিতে প্রক্রিয়াজাত হয় এবং কখনোই কোনো রিমোট সার্ভারে আপলোড হয় না।' },
-        { q: 'PDFMinty কি সম্পূর্ণ ফ্রি?', a: `হ্যাঁ, PDFMinty ব্যবহার করা ১০০% সম্পূর্ণ ফ্রি। আমাদের সকল ${toolsCount}টি টুল কোনো প্রকার সাবস্ক্রিপশন, পেমেন্ট বা রেজিস্ট্রেশন ছাড়াই আজীবন ব্যবহারের জন্য উন্মুক্ত।` },
-        { q: 'আমার ফাইল কি কখনো আমার ডিভাইস ছাড়ায়?', a: 'না, আমাদের সাধারণ পিডিএফ টুলগুলোর ক্ষেত্রে আপনার ফাইল কখনোই কম্পিউটার বা মোবাইল ডিভাইস ছেড়ে ইন্টারনেটে যায় না। একমাত্র ব্যতিক্রম ঐচ্ছিক এআই অ্যানালাইজ টুল, যা ব্যবহারকারীর সুস্পষ্ট সম্মতির পরেই টেক্সট পাঠায়।' },
-        { q: 'সর্বোচ্চ কত সাইজের ফাইল প্রসেস করা যায়?', a: 'PDFMinty একক ফাইলে সর্বোচ্চ ১০০ মেগাবাইট এবং সম্মিলিত অপারেশনে সর্বোচ্চ ১৫০ মেগাবাইট পর্যন্ত ফাইল সাপোর্ট করে। এটি মূলত আপনার ডিভাইসের র‍্যাম ও মেমরির উপর নির্ভর করে।' }
+        { q: 'PDFMinty কীভাবে আমার PDF গোপনীয়ভাবে প্রসেস করে?', a: 'PDFMinty আমাদের ২২টি স্ট্যান্ডার্ড পিডিএফ টুল ক্লায়েন্ট-সাইড জাভাস্ক্রিপ্ট এবং ওয়েবঅ্যাসেম্বলি (WebAssembly) ব্যবহার করে আপনার ব্রাউজারের ভেতর ১০০% লোকালভাবে প্রসেস করে। একমাত্র ব্যতিক্রম ২টি ঐচ্ছিক AI Analyze ও OCR PDF টুল, যা আপনার সুস্পষ্ট সম্মতির পরেই Google Gemini-তে ডেটা পাঠায়।' },
+        { q: 'PDFMinty কি বিনামূল্যে ব্যবহার করা যায়?', a: `হ্যাঁ — PDFMinty-এর সকল ${toolsCount}টি টুলে ফ্রি টিয়ার রয়েছে: গেস্ট ব্যবহারকারীরা কোনো অ্যাকাউন্ট বা ক্রেডিট কার্ড ছাড়াই প্রতিদিন ৫টি ফ্রি টাস্ক (প্রতি ফাইল ১০০MB পর্যন্ত) পান এবং ফ্রি রেজিস্টার্ড ব্যবহারকারীরা কোনো ওয়াটারমার্ক ছাড়াই প্রতিদিন ১০টি টাস্ক (প্রতি ফাইল ১৫০MB পর্যন্ত) পান। আনলিমিটেড দৈনিক কাজ ও ৫০০MB ফাইলের জন্য ঐচ্ছিক Pro ($2.49/মাস) এবং Lifetime ($50 এককালীন) প্ল্যান রয়েছে।` },
+        { q: 'আমার ফাইল কি কখনো আমার ডিভাইস ছাড়ায়?', a: 'না, আমাদের ২২টি স্ট্যান্ডার্ড পিডিএফ টুলের ক্ষেত্রে আপনার ফাইল কখনোই কম্পিউটার বা মোবাইল ডিভাইস ছেড়ে ইন্টারনেটে যায় না। একমাত্র ব্যতিক্রম ২টি ঐচ্ছিক AI Analyze এবং OCR PDF টুল, যা ব্যবহারকারীর সুস্পষ্ট সম্মতির পরেই টেক্সট বা পেজ ইমেজ পাঠায়।' },
+        { q: 'সর্বোচ্চ কত সাইজের ফাইল প্রসেস করা যায়?', a: 'PDFMinty গেস্ট ব্যবহারকারীদের জন্য একক ফাইলে সর্বোচ্চ ১০০ মেগাবাইট (ফ্রি অ্যাকাউন্টে ১৫০ মেগাবাইট, প্রো প্ল্যানে ৫০০ মেগাবাইট) এবং ফ্রি টিয়ারে সম্মিলিত অপারেশনে সর্বোচ্চ ১৫০ মেগাবাইট (প্রো প্ল্যানে ১,০০০ মেগাবাইট) পর্যন্ত ফাইল সাপোর্ট করে।' }
       ],
       ctaTitle: 'এখনই আপনার PDF প্রসেসিং শুরু করুন',
-      ctaDesc: 'উপরে আমাদের সম্পূর্ণ পিডিএফ টুলসের তালিকা দেখুন। সব টুল বিনামূল্যে, ব্যক্তিগত এবং ব্রাউজারে তাৎক্ষণিকভাবে কাজ করে।',
+      ctaDesc: 'উপরে আমাদের সম্পূর্ণ পিডিএফ টুলসের তালিকা দেখুন। সাইন-আপ ছাড়াই প্রতিদিন ৫টি ফ্রি টাস্ক উপভোগ করুন (ফ্রি অ্যাকাউন্টে ১০টি/দিন, অথবা প্রো প্ল্যানে আনলিমিটেড)।',
       featuredOn: 'স্বীকৃত ও ফিচার্ড হয়েছে',
       webAppDesc: 'সম্পূর্ণ বিনামূল্যে ও গোপনীয়তাবান্ধব অনলাইন পিডিএফ টুলকিট। ব্রাউজারের ভেতর সরাসরি পিডিএফ মার্জ, স্প্লিট, রোটেট, প্রটেক্ট এবং এডিট করুন কোনো সার্ভার আপলোড ছাড়াই।',
       orgDesc: 'প্রাইভেসি-ফার্স্ট ক্লায়েন্ট-সাইড পিডিএফ টুলকিট যাতে রয়েছে ২৪টি টুল (২২টি লোকাল টুল + ২টি ঐচ্ছিক এআই টুল)।',
@@ -1543,29 +1546,29 @@ ${homepageHreflangs}
       title: 'PdfMinty — मुफ्त प्राइवेसी-फर्स्ट पीडीएफ टूल्स (100% ब्राउज़र में)',
       desc: 'आपके ब्राउज़र में मुफ्त पीडीएफ टूल्स। सर्वर अपलोड या रजिस्ट्रेशन के बिना पीडीएफ मर्ज, स्प्लिट और प्रोटेक्ट करें। 100% प्राइवेसी।',
       h1: 'मुफ़्त ब्राउज़र-आधारित पीडीएफ उपकरण — 100% निजी, कोई अपलोड नहीं',
-      lead: `PDFMinty एक मुफ़्त, प्राइवेसी-फर्स्ट पीडीएफ टूलकिट है जिसमें ${toolsCount} शक्तिशाली उपकरण हैं जो पूरी तरह से आपके ब्राउज़र में चलते हैं। आपकी फ़ाइलें कभी भी आपके डिवाइस से बाहर नहीं जाती हैं — कोई सर्वर अपलोड नहीं, कोई साइन-अप नहीं, कोई दैनिक सीमा नहीं। पूर्ण गोपनीयता के साथ पीडीएफ मर्ज, स्प्लिट, प्रोटेक्ट, कन्वर्ट और एडिट करें।`,
+      lead: `PDFMinty एक प्राइवेसी-फर्स्ट पीडीएफ टूलकिट है जिसमें ${toolsCount} शक्तिशाली उपकरण हैं। हमारे 22 मानक पीडीएफ उपकरण 100% आपके ब्राउज़र में स्थानीय रूप से चलते हैं ताकि आपकी फ़ाइलें कभी भी आपके डिवाइस से बाहर न जाएं — कोई सर्वर अपलोड नहीं और कोई अनिवार्य साइन-अप नहीं (साथ ही आपकी स्पष्ट सहमति से Google Gemini द्वारा संचालित 2 वैकल्पिक AI Analyze और OCR PDF उपकरण)।`,
       toolsTitle: 'सभी पीडीएफ उपकरण',
       whyTitle: 'PDFMinty क्यों चुनें?',
-      whyIntro: 'अन्य ऑनलाइन पीडीएफ उपकरणों के विपरीत जो आपकी फ़ाइलों को रिमोट सर्वर पर अपलोड करते हैं, PDFMinty WebAssembly का उपयोग करके आपके ब्राउज़र में सब कुछ स्थानीय रूप से प्रोसेस करता है। इसका मतलब है:',
+      whyIntro: 'अन्य ऑनलाइन पीडीएफ उपकरणों के विपरीत जो आपकी फ़ाइलों को रिमोट सर्वर पर अपलोड करते हैं, PDFMinty WebAssembly का उपयोग करके मानक कार्यों को आपके ब्राउज़र में स्थानीय रूप से प्रोसेस करता है। इसका मतलब है:',
       whyFeatures: [
-        { title: 'पूर्ण गोपनीयता', desc: 'आपके दस्तावेज़ कभी भी हमारे सर्वर पर नहीं जाते हैं।' },
-        { title: 'फ़ाइल सीमा से मुक्त', desc: 'प्रत्येक फ़ाइल 100MB तक और कुल 150MB तक प्रोसेस करें।' },
+        { title: 'पूर्ण गोपनीयता', desc: 'सभी 22 मानक पीडीएफ उपकरणों के लिए आपके दस्तावेज़ कभी भी हमारे सर्वर पर नहीं जाते हैं।' },
+        { title: 'बड़ी फ़ाइल सीमा', desc: 'अतिथि के रूप में 100MB तक की फ़ाइलें प्रोसेस करें (मुफ़्त खाते के साथ 150MB, Pro पर 500MB)।' },
         { title: 'तेज़ प्रोसेसिंग', desc: 'WebAssembly-संचालित कार्य कुछ ही सेकंड में पूरे होते हैं।' },
-        { title: 'कोई पंजीकरण नहीं', desc: 'बिना साइन-अप के सभी उपकरण 100% मुफ़्त हैं।' },
-        { title: 'ऑफ़लाइन काम करता है', desc: 'PWA-सक्षम — बिना इंटरनेट के इंस्टॉल और उपयोग करें।' }
+        { title: 'अनिवार्य पंजीकरण नहीं', desc: 'अतिथि उपयोगकर्ताओं को बिना साइन-अप के प्रतिदिन 5 मुफ़्त कार्य मिलते हैं (मुफ़्त खाते में 10/दिन, Pro में असीमित)।' },
+        { title: 'ऑफ़लाइन काम करता है', desc: 'PWA-सक्षम — बिना इंटरनेट के इंस्टॉल करें और मानक उपकरणों का उपयोग करें।' }
       ],
       privacyTitle: 'PDFMinty आपकी गोपनीयता की रक्षा कैसे करता है',
-      privacyP1: 'PDFMinty में प्रत्येक पीडीएफ ऑपरेशन जावास्क्रिप्ट और WebAssembly का उपयोग करके क्लाइंट-साइड पर होता है। जब आप कोई फ़ाइल चुनते हैं, तो वह आपके ब्राउज़र की मेमोरी में लोड होती है, स्थानीय रूप से प्रोसेस होती है और परिणाम आपके डिवाइस पर ही तैयार होता है। फ़ाइल कभी भी नेटवर्क पर प्रेषित नहीं होती है।',
+      privacyP1: 'PDFMinty में सभी 22 मानक पीडीएफ ऑपरेशन जावास्क्रिप्ट और WebAssembly का उपयोग करके क्लाइंट-साइड पर होते हैं। जब आप कोई फ़ाइल चुनते हैं, तो वह आपके ब्राउज़र की मेमोरी में लोड होती है, स्थानीय रूप से प्रोसेस होती है और परिणाम आपके डिवाइस पर ही तैयार होता है। केवल हमारे 2 वैकल्पिक AI Analyze और OCR PDF टूल्स आपकी स्पष्ट सहमति के बाद ही Google Gemini को टेक्स्ट या पेज इमेज भेजते हैं।',
       privacyP2: 'हमारा प्राइवेसी-फर्स्ट आर्किटेक्चर PDFMinty को टैक्स रिटर्न, मेडिकल रिकॉर्ड, वित्तीय विवरण, कानूनी अनुबंध और व्यक्तिगत जानकारी वाले किसी भी संवेदनशील दस्तावेज़ को प्रोसेस करने के लिए आदर्श बनाता है।',
       faqTitle: 'अक्सर पूछे जाने वाले प्रश्न (FAQ)',
       faqs: [
-        { q: 'PDFMinty मेरी पीडीएफ फाइलों को निजी तौर पर कैसे प्रोसेस करता है?', a: 'PDFMinty वेबअसेम्बली (WebAssembly) और जावास्क्रिप्ट का उपयोग करके पूरी तरह से आपके ब्राउज़र के भीतर फाइलों को प्रोसेस करता है। दस्तावेज़ सीधे आपके डिवाइस की मेमोरी में प्रोसेस होते हैं और कभी किसी सर्वर पर अपलोड नहीं होते।' },
-        { q: 'क्या PDFMinty वास्तव में पूरी तरह मुफ़्त है?', a: `हाँ, PDFMinty उपयोग करने के लिए 100% पूरी तरह से मुफ़्त है। सभी ${toolsCount} उपकरण बिना किसी सदस्यता, शुल्क या साइन-अप के उपलब्ध हैं।` },
-        { q: 'क्या मेरी फाइलें कभी मेरे डिवाइस से बाहर जाती हैं?', a: 'नहीं, हमारे सभी मानक पीडीएफ उपकरणों के लिए फाइलें कभी भी आपके कंप्यूटर या मोबाइल को छोड़कर बाहर नहीं जाती हैं। केवल वैकल्पिक AI एनालाइज टूल आपकी स्पष्ट सहमति के बाद ही टेक्स्ट भेजता है।' },
-        { q: 'अधिकतम फाइल आकार कितना है?', a: 'PDFMinty 100MB तक की एकल फाइलों और बैच ऑपरेशन में कुल 150MB तक की फाइलों को प्रोसेस कर सकता है। वास्तविक क्षमता आपके डिवाइस की मेमोरी पर निर्भर करती है।' }
+        { q: 'PDFMinty मेरी पीडीएफ फाइलों को निजी तौर पर कैसे प्रोसेस करता है?', a: 'PDFMinty हमारे 22 मानक पीडीएफ उपकरणों को WebAssembly और जावास्क्रिप्ट का उपयोग करके पूरी तरह से आपके ब्राउज़र के भीतर प्रोसेस करता है। केवल 2 वैकल्पिक AI Analyze और OCR PDF टूल्स आपकी स्पष्ट सहमति के बाद ही Google Gemini को डेटा भेजते हैं।' },
+        { q: 'क्या PDFMinty का उपयोग मुफ़्त है?', a: `हाँ — PDFMinty सभी ${toolsCount} उपकरणों पर मुफ़्त टियर प्रदान करता है: अतिथियों को बिना किसी खाते या क्रेडिट कार्ड के प्रतिदिन 5 मुफ़्त कार्य (प्रति फ़ाइल 100MB तक) मिलते हैं, और मुफ़्त पंजीकृत उपयोगकर्ताओं को बिना किसी वॉटरमार्क के प्रतिदिन 10 कार्य (150MB तक) मिलते हैं। असीमित दैनिक कार्यों और 500MB फ़ाइलों के लिए वैकल्पिक Pro ($2.49/माह) और Lifetime ($50 एकबारगी) प्लान उपलब्ध हैं।` },
+        { q: 'क्या मेरी फाइलें कभी मेरे डिवाइस से बाहर जाती हैं?', a: 'नहीं, हमारे सभी 22 मानक पीडीएफ उपकरणों के लिए फाइलें कभी भी आपके कंप्यूटर या मोबाइल को छोड़कर बाहर नहीं जाती हैं। केवल 2 वैकल्पिक AI Analyze और OCR PDF टूल आपकी स्पष्ट सहमति के बाद ही टेक्स्ट या पेज इमेज भेजते हैं।' },
+        { q: 'अधिकतम फाइल आकार कितना है?', a: 'PDFMinty अतिथियों के लिए 100MB तक की एकल फाइलों (मुफ़्त खाते के लिए 150MB, Pro पर 500MB) और मुफ़्त टियर में कुल 150MB तक के बैच ऑपरेशन (Pro पर 1,000MB) को प्रोसेस कर सकता है।' }
       ],
       ctaTitle: 'अभी अपनी पीडीएफ प्रोसेस करना शुरू करें',
-      ctaDesc: 'ऊपर हमारे पीडीएफ उपकरणों का पूरा संग्रह देखें। सभी उपकरण मुफ़्त, सुरक्षित और आपके ब्राउज़र में तुरंत काम करते हैं।',
+      ctaDesc: 'ऊपर हमारे पीडीएफ उपकरणों का पूरा संग्रह देखें। बिना साइन-अप के प्रतिदिन 5 मुफ़्त कार्यों का आनंद लें (मुफ़्त खाते के साथ 10/दिन, या Pro पर असीमित)।',
       featuredOn: 'इन मंचों पर प्रदर्शित',
       webAppDesc: 'मुफ़्त और प्राइवेसी-फर्स्ट ऑनलाइन पीडीएफ टूलकिट। अपने ब्राउज़र में सीधे पीडीएफ मर्ज, स्प्लिट, रोटेट, प्रोटेक्ट और एडिट करें — बिना किसी सर्वर अपलोड के।',
       orgDesc: 'प्राइवेसी-फर्स्ट, क्लाइंट-साइड पीडीएफ टूलकिट जिसमें 24 सुरक्षित टूल्स (22 लोकल टूल्स + 2 वैकल्पिक AI टूल्स) उपलब्ध हैं।',
@@ -1592,29 +1595,29 @@ ${homepageHreflangs}
       title: 'PdfMinty — 免费的隐私优先PDF工具（100%在浏览器中运行）',
       desc: '直接在浏览器中使用的免费PDF工具。无需服务器上传或注册，即可合并、拆分和保护PDF。100%隐私安全。',
       h1: '免费的基于浏览器的 PDF 工具 — 100% 私密，零上传',
-      lead: `PDFMinty 是一套免费、注重隐私的 PDF 工具箱，拥有 ${toolsCount} 款完全在浏览器中运行的强大工具。您的文件绝不会离开您的设备——无服务器上传、无需注册、无每日限额。完全私密地合并、拆分、保护、转换和编辑 PDF。`,
+      lead: `PDFMinty 是一套注重隐私的 PDF 工具箱，拥有 ${toolsCount} 款强大工具。我们的 22 款标准 PDF 工具 100% 在您的浏览器本地运行，文件绝不会离开您的设备——零服务器上传、无需强制注册（另含 2 款可选的 AI 分析与 OCR PDF 工具，仅在您明确勾选同意后使用 Google Gemini 处理）。`,
       toolsTitle: '所有 PDF 工具',
       whyTitle: '为什么选择 PDFMinty？',
-      whyIntro: '与其他将文件上传到远程服务器的在线 PDF 工具不同，PDFMinty 使用 WebAssembly 在您的浏览器中进行 100% 本地处理。这意味着：',
+      whyIntro: '与其他将文件上传到远程服务器的传统在线 PDF 工具不同，PDFMinty 使用 WebAssembly 在您的浏览器中本地处理标准 PDF 操作。这意味着：',
       whyFeatures: [
-        { title: '完全隐私', desc: '您的文档绝不会接触我们的服务器。' },
-        { title: '大文件支持', desc: '支持处理单文件最高 100MB，总计 150MB 的文档。' },
+        { title: '完全隐私', desc: '使用全部 22 款标准 PDF 工具时，您的文档绝不会接触我们的服务器。' },
+        { title: '大文件支持', desc: '访客单文件最高支持 100MB（免费账户 150MB，Pro 版 500MB）。' },
         { title: '疾速处理', desc: '基于 WebAssembly 技术，数秒内完成处理。' },
-        { title: '无需注册', desc: '所有工具 100% 免费，无需注册账户。' },
-        { title: '离线可用', desc: '支持 PWA — 无需互联网即可安装和随时使用。' }
+        { title: '无需强制注册', desc: '访客无需注册即可每天免费使用 5 次任务（免费账户每日 10 次，Pro 版无限次）。' },
+        { title: '离线可用', desc: '支持 PWA — 无需互联网即可安装并使用标准本地工具。' }
       ],
       privacyTitle: 'PDFMinty 如何保护您的隐私',
-      privacyP1: 'PDFMinty 中的每项 PDF 操作均使用 JavaScript 和 WebAssembly 在客户端本地运行。当您载入文件时，它直接加载到您的浏览器内存中进行本地运算，生成的结果也直接保存在您的设备上。文件绝不会在网络上传输，这与需要上传到远程服务器的传统在线 PDF 工具存在本质区别。',
+      privacyP1: 'PDFMinty 中的 22 项标准 PDF 操作均使用 JavaScript 和 WebAssembly 在客户端本地运行。当您载入文件时，它直接加载到您的浏览器内存中进行本地运算，生成的结果也直接保存在您的设备上。唯一的例外是我们 2 款可选的 AI 分析与 OCR PDF 工具，它们仅在您主动勾选同意后才会将提取的文本或页面图像发送至 Google Gemini。',
       privacyP2: '我们的隐私优先架构使 PDFMinty 成为处理敏感机密文件（如纳税申报单、医疗记录、财务报表、法律合同以及包含个人身份信息的任何文件）的理想之选。',
       faqTitle: '常见问题解答 (FAQ)',
       faqs: [
-        { q: 'PDFMinty 如何私密安全地处理我的 PDF 文件？', a: 'PDFMinty 利用 WebAssembly 和 JavaScript 技术在您的网页浏览器本地完成所有计算与处理。文件仅加载至您设备的内存中并在本地运行，绝不会上传至任何远程服务器。' },
-        { q: 'PDFMinty 是完全免费的吗？', a: `是的，PDFMinty 100% 完全免费使用。全部 ${toolsCount} 款工具均无任何订阅费、无隐藏付费，也无需注册任何账号。` },
-        { q: '我的文件会离开我的电脑或移动设备吗？', a: '不会。对于所有常规 PDF 工具，您的文件绝不会离开您的设备或浏览器。唯一的例外是可选的 AI 分析工具，且仅在您主动勾选授权后才会传输提取的文本。' },
-        { q: '支持的最大文件大小是多少？', a: 'PDFMinty 支持单个最大 100MB 的 PDF 文件，批量合并等操作总计支持最高 150MB。具体处理能力取决于您设备的可用内存。' }
+        { q: 'PDFMinty 如何私密安全地处理我的 PDF 文件？', a: 'PDFMinty 利用 WebAssembly 和 JavaScript 技术在您的网页浏览器本地完成全部 22 款标准工具的计算与处理，绝不上传至远程服务器。唯一的例外是 2 款可选的 AI 分析与 OCR 工具，仅在您明确授权后才会将数据发送至 Google Gemini。' },
+        { q: 'PDFMinty 是免费的吗？', a: `是的 — PDFMinty 为全部 ${toolsCount} 款工具提供免费额度：访客无需注册或绑定信用卡即可享受每日 5 次免费任务（单文件最高 100MB），免费注册账户每日可享 10 次任务（单文件最高 150MB），且导出绝无水印。此外还提供可选的 Pro（$2.49/月）和终身版（$50 一次性付费）方案，解锁无限次每日任务与 500MB 大文件支持。` },
+        { q: '我的文件会离开我的电脑或移动设备吗？', a: '对于全部 22 款常规标准 PDF 工具，您的文件绝不会离开您的设备或浏览器。唯一的例外是 2 款可选的 AI 分析与 OCR 工具，且仅在您主动勾选授权后才会传输提取的文本或页面图像。' },
+        { q: '支持的最大文件大小是多少？', a: 'PDFMinty 访客模式支持单个最大 100MB 的 PDF 文件（免费账户 150MB，Pro 版 500MB），免费版批量合并等操作总计支持最高 150MB（Pro 版 1,000MB）。' }
       ],
       ctaTitle: '立即开始处理您的 PDF',
-      ctaDesc: '浏览上方我们完整的 PDF 工具合集。所有工具均免费、私密，并在您的浏览器中即刻运行。',
+      ctaDesc: '浏览上方我们完整的 PDF 工具合集。无需注册即可每日免费处理 5 次任务（免费账户每日 10 次，Pro 版无限次）。',
       featuredOn: '精选收录平台',
       webAppDesc: '免费、注重隐私的在线 PDF 工具箱。完全在浏览器中合并、拆分、旋转、加密和编辑 PDF，零服务器上传，保护您的数据安全。',
       orgDesc: '隐私优先的客户端 PDF 工具箱，提供 24 款工具（22 款无需服务器上传的本地工具 + 2 款可选 AI 工具）。',

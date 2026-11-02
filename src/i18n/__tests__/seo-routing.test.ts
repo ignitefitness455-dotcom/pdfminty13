@@ -167,5 +167,38 @@ describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
     expect(middlewareSrc).toContain("rawPath.startsWith('/og-images/')");
     expect(middlewareSrc).toMatch(/pfb\|bcmap/);
   });
+
+  it('ensures public homepage, FAQ, JSON-LD, and all 7 locale home sections accurately state free daily limits and optional Pro plans', () => {
+    const indexHtml = fs.readFileSync(path.resolve(__dirname, '../../../index.html'), 'utf8');
+    const staticGenSrc = fs.readFileSync(
+      path.resolve(__dirname, '../../../scripts/generate-static-pages.ts'),
+      'utf8'
+    );
+
+    expect(indexHtml).not.toContain('without subscription, payment, or registration');
+    expect(indexHtml).not.toContain('no subscription, no watermarks, and no hidden fees');
+    expect(indexHtml).toContain('5 free daily tasks');
+    expect(indexHtml).toContain('Optional Pro');
+
+    expect(staticGenSrc).not.toContain('without subscription, payment, or registration');
+    expect(staticGenSrc).not.toContain('ohne Abonnement und ohne Registrierung unbegrenzt');
+    expect(staticGenSrc).not.toContain('sans abonnement et sans obligation de créer un compte');
+    expect(staticGenSrc).not.toContain('সাবস্ক্রিপশন, পেমেন্ট বা রেজিস্ট্রেশন ছাড়াই আজীবন');
+    expect(staticGenSrc).not.toContain('keine täglichen Limits');
+    expect(staticGenSrc).not.toContain('aucun quota quotidien');
+    expect(staticGenSrc).not.toContain('কোনো দৈনিক লিমিট নেই');
+
+    for (const locale of SUPPORTED_LOCALES) {
+      const commonPath = path.resolve(__dirname, `../../locales/${locale}/common.json`);
+      const commonJson = JSON.parse(fs.readFileSync(commonPath, 'utf8'));
+      const homeSerialized = JSON.stringify(commonJson.home);
+      expect(homeSerialized).not.toContain('no subscriptions');
+      expect(homeSerialized).not.toContain('without subscription, payment, or registration');
+      expect(homeSerialized).not.toContain('ohne versteckte Gebühren, Abonnements, Nutzungslimits');
+      expect(homeSerialized).not.toContain('লুকানো ফি, সাবস্ক্রিপশন, ব্যবহারের সীমা');
+      expect(homeSerialized).toContain('Pro');
+    }
+  });
 });
+
 
