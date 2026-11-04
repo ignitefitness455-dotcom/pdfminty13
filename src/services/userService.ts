@@ -1,13 +1,5 @@
 import type { AppUser } from '../contexts/AuthContext';
-import {
-  db,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  onSnapshot,
-  serverTimestamp,
-} from '../lib/firebase';
+import { db, doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp } from '../lib/firebase';
 
 export interface FirestoreUserProfile {
   uid: string;
@@ -68,7 +60,9 @@ export async function syncUserProfileToFirestore(user: AppUser): Promise<void> {
 /**
  * Fetches user profile data from Firestore.
  */
-export async function fetchUserProfileFromFirestore(uid: string): Promise<FirestoreUserProfile | null> {
+export async function fetchUserProfileFromFirestore(
+  uid: string
+): Promise<FirestoreUserProfile | null> {
   if (!db || !uid) {
     return null;
   }

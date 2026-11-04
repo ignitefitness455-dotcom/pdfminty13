@@ -24,11 +24,7 @@ import { ROUTES } from '../config/routes';
 import { TOOLS_CATALOG, type ToolCatalogItem } from '../config/seo-catalog';
 import type { ToolSEOInfo } from '../config/seo-data';
 import { getCachedFullTools, loadFullToolsCatalog } from '../config/seo-data-loader';
-import {
-  SUPPORTED_LOCALES,
-  DEFAULT_LOCALE,
-  loadLocalizedArticleBodies,
-} from '../i18n/config';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, loadLocalizedArticleBodies } from '../i18n/config';
 
 function matchesArticleRoute(
   p: { id: string; slug: string; type: 'tool' | 'article' },
@@ -103,7 +99,8 @@ export const BlogPostPage: React.FC = () => {
 
   // Clean HTML to guarantee strictly only ONE title heading on the page and add section anchor IDs
   const { cleanArticleBody, articleSections } = React.useMemo(() => {
-    if (!article) return { cleanArticleBody: '', articleSections: [] as Array<{ id: string; title: string }> };
+    if (!article)
+      return { cleanArticleBody: '', articleSections: [] as Array<{ id: string; title: string }> };
     const canonicalBody = article.longFormBody || article.shortDescription || '';
     const localizedBody = isDefaultLocale
       ? canonicalBody
@@ -422,9 +419,7 @@ export const BlogPostPage: React.FC = () => {
               to={ROUTES.COMPRESS}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-sm shrink-0 no-underline"
             >
-              <span>
-                {t('blog.openCompressTool', { defaultValue: 'Open Compress PDF →' })}
-              </span>
+              <span>{t('blog.openCompressTool', { defaultValue: 'Open Compress PDF →' })}</span>
             </Link>
           </div>
         )}

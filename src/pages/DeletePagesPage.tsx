@@ -14,15 +14,77 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
+const MAX_THUMBNAIL_RENDER_BYTES = 50 * 1024 * 1024; // 50 MB threshold for PDF.js thumbnail rasterization
+const MAX_INTERACTIVE_GRID_PAGES = 500;
+
+function parseDeletePageSelection(
+  input: string,
+  totalPages: number
+): { validPages: number[]; invalidTokens: string[] } {
+  const tokens = input
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  const invalidTokens: string[] = [];
+  const validPages: number[] = [];
+  const seen = new Set<number>();
+
+  for (const token of tokens) {
+    if (/^\d+\s*[-–—]\s*\d+$/.test(token)) {
+      const [startStr, endStr] = token.split(/\s*[-–—]\s*/);
+      const start = Number(startStr);
+      const end = Number(endStr);
+      if (
+        !Number.isInteger(start) ||
+        !Number.isInteger(end) ||
+        start < 1 ||
+        end < start ||
+        (totalPages > 0 && end > totalPages)
+      ) {
+        invalidTokens.push(token);
+        continue;
+      }
+      for (let p = start; p <= end; p++) {
+        if (!seen.has(p)) {
+          seen.add(p);
+          validPages.push(p);
+        }
+      }
+    } else if (/^-?\d+$/.test(token)) {
+      const p = Number(token);
+      if (!Number.isInteger(p) || p < 1 || (totalPages > 0 && p > totalPages)) {
+        invalidTokens.push(token);
+        continue;
+      }
+      if (!seen.has(p)) {
+        seen.add(p);
+        validPages.push(p);
+      }
+    } else {
+      invalidTokens.push(token);
+    }
+  }
+
+  return { validPages, invalidTokens };
+}
+
 export const DeletePagesPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('delete-pages-pdf', isPro, isLoggedIn);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pagesStr, setPagesStr] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -35,10 +97,11 @@ export const DeletePagesPage: React.FC = () => {
   const [downloadName, setDownloadName] = useState<string>('');
 
   const operationTokenRef = React.useRef(0);
+  const isSubmittingRef = React.useRef<boolean>(false);
   const urlsRef = React.useRef<string[]>([]);
 
   React.useEffect(() => {
-    urlsRef.current = thumbnails.map((t) => t.dataUrl);
+    urlsRef.current = thumbnails.map((t) => t.dataUrl).filter(Boolean);
   }, [thumbnails]);
 
   React.useEffect(() => {
@@ -63,7 +126,9 @@ export const DeletePagesPage: React.FC = () => {
   const handleFilesSelected = async (files: File[]) => {
     if (files.length > 0) {
       const myToken = ++operationTokenRef.current;
-      thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
+      thumbnails.forEach((t) => {
+        if (t.dataUrl) URL.revokeObjectURL(t.dataUrl);
+      });
       const file = files[0];
       setSelectedFile(file);
       setError(null);
@@ -75,17 +140,18 @@ export const DeletePagesPage: React.FC = () => {
         setDownloadUrl(null);
       }
 
-      let rawBuffer: ArrayBuffer;
       let docPageCount = 0;
       try {
-        rawBuffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(rawBuffer);
+        const countBuffer = await file.arrayBuffer();
+        const countBytes = new Uint8Array(countBuffer);
         if (myToken !== operationTokenRef.current) return;
         // Get page count independently of thumbnail rendering so manual deletion
-        // still works even if pdfToImage fails.
-        docPageCount = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
-          bytes,
-        });
+        // still works even if pdfToImage fails. Pass transferable buffer to avoid structured-clone duplication.
+        docPageCount = await WorkerManager.getInstance().runOperation<number>(
+          'getPageCount',
+          { bytes: countBytes },
+          [countBytes.buffer]
+        );
         if (myToken !== operationTokenRef.current) return;
         setTotalPages(docPageCount);
       } catch (err: unknown) {
@@ -98,9 +164,21 @@ export const DeletePagesPage: React.FC = () => {
         return;
       }
 
+      // Skip heavy PDF.js canvas rasterization for files > 50MB to preserve Worker memory
+      if (file.size > MAX_THUMBNAIL_RENDER_BYTES) {
+        const gridCount = Math.min(docPageCount, MAX_INTERACTIVE_GRID_PAGES);
+        const placeholderGrid = Array.from({ length: gridCount }, (_, idx) => ({
+          page: idx + 1,
+          dataUrl: '',
+        }));
+        setThumbnails(placeholderGrid);
+        setRenderingThumbnails(false);
+        return;
+      }
+
       setRenderingThumbnails(true);
       try {
-        const fileBytes = new Uint8Array(rawBuffer);
+        const fileBytes = new Uint8Array(await file.arrayBuffer());
         if (myToken !== operationTokenRef.current) return;
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
@@ -123,7 +201,8 @@ export const DeletePagesPage: React.FC = () => {
             dataUrl: URL.createObjectURL(blob),
           };
         });
-        for (let p = mapped.length + 1; p <= docPageCount; p++) {
+        const maxGridPages = Math.min(docPageCount, MAX_INTERACTIVE_GRID_PAGES);
+        for (let p = mapped.length + 1; p <= maxGridPages; p++) {
           mapped.push({ page: p, dataUrl: '' });
         }
         if (myToken !== operationTokenRef.current) return;
@@ -146,11 +225,8 @@ export const DeletePagesPage: React.FC = () => {
   };
 
   const parsedPagesToDelete = React.useMemo(() => {
-    return pagesStr
-      .split(',')
-      .map((p) => parseInt(p.trim(), 10))
-      .filter((p) => !isNaN(p));
-  }, [pagesStr]);
+    return parseDeletePageSelection(pagesStr, totalPages).validPages;
+  }, [pagesStr, totalPages]);
 
   const togglePageDeletion = (pageNumber: number) => {
     let newPages: number[];
@@ -173,7 +249,7 @@ export const DeletePagesPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
@@ -187,8 +263,15 @@ export const DeletePagesPage: React.FC = () => {
       return;
     }
 
+    const activeToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
+    setIsSuccess(false);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
 
     try {
       // Use the totalPages state (fetched via getPageCount), not thumbnails.length.
@@ -199,29 +282,10 @@ export const DeletePagesPage: React.FC = () => {
             defaultValue: 'Could not determine document page count. Please try re-uploading.',
           })
         );
-        setLoading(false);
         return;
       }
-      const parsed = pagesStr
-        .split(',')
-        .map((p) => parseInt(p.trim(), 10))
-        .filter((p) => !isNaN(p));
 
-      // Reject out-of-range and non-positive values. Surface a clear error so the
-      // user knows which tokens were rejected.
-      const invalidTokens: string[] = [];
-      const validPages: number[] = [];
-      const seen = new Set<number>();
-
-      for (const p of parsed) {
-        if (!Number.isInteger(p) || p < 1 || p > totalPages) {
-          invalidTokens.push(String(p));
-          continue;
-        }
-        if (seen.has(p)) continue; // silently dedupe
-        seen.add(p);
-        validPages.push(p);
-      }
+      const { validPages, invalidTokens } = parseDeletePageSelection(pagesStr, totalPages);
 
       if (invalidTokens.length > 0) {
         setError(
@@ -231,7 +295,6 @@ export const DeletePagesPage: React.FC = () => {
             defaultValue: `Invalid page number(s): ${invalidTokens.join(', ')}. Document has ${totalPages} page(s). Use numbers between 1 and ${totalPages}.`,
           })
         );
-        setLoading(false);
         return;
       }
 
@@ -241,17 +304,15 @@ export const DeletePagesPage: React.FC = () => {
             defaultValue: 'Please enter at least one valid page number to delete.',
           })
         );
-        setLoading(false);
         return;
       }
 
-      if (validPages.length === totalPages) {
+      if (validPages.length >= totalPages) {
         setError(
           t('deletePages.cannotDeleteAll', {
             defaultValue: 'Cannot delete all pages of the document.',
           })
         );
-        setLoading(false);
         return;
       }
 
@@ -261,14 +322,29 @@ export const DeletePagesPage: React.FC = () => {
         { bytes: fileBytes, pageIndices: validPages },
         [fileBytes.buffer]
       );
+
+      if (activeToken !== operationTokenRef.current) return;
+
       const blob = new Blob([parsedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_stripped_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
-      await downloadBlob(blob, name);
       setIsSuccess(true);
+
+      addActivityItem({
+        toolName: 'Delete Pages',
+        toolId: 'delete-pages',
+        fileName: selectedFile.name,
+        fileSizeFormatted: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Edit',
+        savings: `${validPages.length} ${validPages.length === 1 ? 'page' : 'pages'} removed`,
+      });
+
+      await downloadBlob(blob, name);
     } catch (err: unknown) {
+      if (activeToken !== operationTokenRef.current) return;
       logger.error('Delete pages error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -279,6 +355,7 @@ export const DeletePagesPage: React.FC = () => {
           })
       );
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   };
@@ -286,21 +363,18 @@ export const DeletePagesPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="delete_pages_container">
       <SEO slug="delete-pages-pdf" />
-      <ToolHeader
-        slug="delete-pages-pdf"
-        limitMB={TOOL_SIZE_LIMITS['delete-pages-pdf'].maxSingleMB}
-      />
+      <ToolHeader slug="delete-pages-pdf" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <Trash2 className="w-5 h-5 text-rose-600" />
 
             {!selectedFile ? (
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept="application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['delete-pages-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div
@@ -322,11 +396,14 @@ export const DeletePagesPage: React.FC = () => {
                   onClick={() => {
                     operationTokenRef.current++; // Invalidate in-flight rendering
                     // Revoke existing blob URLs to prevent memory leaks.
-                    thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
+                    thumbnails.forEach((t) => {
+                      if (t.dataUrl) URL.revokeObjectURL(t.dataUrl);
+                    });
                     setSelectedFile(null);
                     setThumbnails([]);
                     setPagesStr('');
                     setTotalPages(0); // Reset page count
+                    setError(null);
                     setIsSuccess(false);
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);
@@ -380,11 +457,14 @@ export const DeletePagesPage: React.FC = () => {
                     type="button"
                     onClick={() => {
                       operationTokenRef.current++;
-                      thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
+                      thumbnails.forEach((t) => {
+                        if (t.dataUrl) URL.revokeObjectURL(t.dataUrl);
+                      });
                       setSelectedFile(null);
                       setThumbnails([]);
                       setPagesStr('');
                       setTotalPages(0);
+                      setError(null);
                       setIsSuccess(false);
                       if (downloadUrl) {
                         URL.revokeObjectURL(downloadUrl);
@@ -414,22 +494,24 @@ export const DeletePagesPage: React.FC = () => {
           )}
 
           {selectedFile && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-extrabold text-slate-700">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="text-sm font-extrabold text-slate-700 dark:text-slate-200">
                   {t('deletePages.selectPagesToDelete', { defaultValue: 'Select Pages to Delete' })}
                 </h3>
                 {thumbnails.length > 0 && (
                   <div className="flex items-center space-x-2">
                     <button
+                      type="button"
                       onClick={selectAll}
-                      className="text-xs font-semibold text-rose-600 hover:underline bg-slate-50 py-1 px-2.5 rounded-lg border border-slate-200"
+                      className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline bg-slate-50 dark:bg-slate-800 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer"
                     >
                       {t('deletePages.deleteAll', { defaultValue: 'Delete All' })}
                     </button>
                     <button
+                      type="button"
                       onClick={clearSelection}
-                      className="text-xs font-semibold text-slate-500 hover:underline bg-slate-50 py-1 px-2.5 rounded-lg border border-slate-200"
+                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline bg-slate-50 dark:bg-slate-800 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer"
                     >
                       {t('deletePages.keepAll', { defaultValue: 'Keep All' })}
                     </button>
@@ -459,19 +541,21 @@ export const DeletePagesPage: React.FC = () => {
                     return (
                       <button
                         key={item.page}
+                        type="button"
                         id={`delete-page-thumbnail-btn-${item.page}`}
                         onClick={() => togglePageDeletion(item.page)}
+                        aria-pressed={isSelected}
                         aria-label={t('deletePages.pageAriaLabel', {
                           page: item.page,
                           defaultValue: `Page ${item.page}`,
                         })}
-                        className={`group relative aspect-[3/4] bg-slate-50 border-2 rounded-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 transition-all p-1 flex flex-col justify-between ${
+                        className={`group relative aspect-[3/4] bg-slate-50 dark:bg-slate-800 border-2 rounded-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 transition-all p-1 flex flex-col justify-between cursor-pointer ${
                           isSelected
                             ? 'border-rose-500 ring-4 ring-rose-500/10'
-                            : 'border-slate-200 hover:border-slate-300'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                         }`}
                       >
-                        <div className="absolute top-2 left-2 z-10 p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+                        <div className="absolute top-2 left-2 z-10 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm">
                           {isSelected ? (
                             <CheckSquare className="w-4 h-4 text-rose-600" />
                           ) : (
@@ -479,7 +563,7 @@ export const DeletePagesPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="w-full h-[85%] bg-white rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
+                        <div className="w-full h-[85%] bg-white dark:bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
                           {item.dataUrl ? (
                             <img
                               src={item.dataUrl}
@@ -502,7 +586,7 @@ export const DeletePagesPage: React.FC = () => {
 
                         <div className="w-full flex items-center justify-center pt-1">
                           <span
-                            className={`text-[10px] font-extrabold ${isSelected ? 'text-rose-600' : 'text-slate-500'}`}
+                            className={`text-[10px] font-extrabold ${isSelected ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}
                           >
                             {t('deletePages.pageNumber', {
                               page: item.page,
@@ -515,8 +599,8 @@ export const DeletePagesPage: React.FC = () => {
                   })}
                 </div>
               ) : (
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                  <p className="text-xs text-slate-500">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {t('deletePages.couldNotLoadPreviews', {
                       defaultValue: 'Could not load individual page previews.',
                     })}
@@ -526,8 +610,8 @@ export const DeletePagesPage: React.FC = () => {
             </div>
           )}
 
-          <div className="bg-amber-50 p-4 rounded-xl flex items-start space-x-2 border border-amber-200 text-xs text-amber-800 leading-normal">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl flex items-start space-x-2 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-200 leading-normal">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <p className="font-bold">
                 {t('deletePages.cautionTitle', { defaultValue: 'Cautionary notice:' })}
@@ -543,16 +627,16 @@ export const DeletePagesPage: React.FC = () => {
         </div>
 
         {/* Configurations column */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('deletePages.targetPagesTitle', { defaultValue: 'Target Pages' })}
             </h3>
 
             <div className="space-y-2">
               <label
                 htmlFor="pages_csv"
-                className="text-xs font-bold text-slate-600 uppercase tracking-wider block"
+                className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block"
               >
                 {t('deletePages.pagesToDeleteLabel', { defaultValue: 'Pages to delete:' })}
               </label>
@@ -562,7 +646,7 @@ export const DeletePagesPage: React.FC = () => {
                 value={pagesStr}
                 onChange={(e) => setPagesStr(e.target.value)}
                 placeholder={t('deletePages.placeholder', { defaultValue: 'e.g. 2, 5, 8' })}
-                className="w-full border border-slate-300 rounded-xl py-2 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full min-h-[44px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl py-2 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
                 disabled={!selectedFile}
               />
             </div>
@@ -574,21 +658,27 @@ export const DeletePagesPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
-              <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 p-3 rounded-lg"
+                id="delete_pages_error_box"
+                role="alert"
+                aria-live="assertive"
+              >
+                <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
 
             <button
+              type="button"
               onClick={handleDelete}
               disabled={!selectedFile || loading}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-rose-600/10 ${
+              className={`w-full min-h-[44px] py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-rose-600/10 ${
                 selectedFile && !loading
                   ? 'bg-rose-600 hover:bg-rose-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (

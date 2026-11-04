@@ -160,10 +160,7 @@ export class WorkerManager {
       case 'deletePagesPDF':
         return await ops.deletePagesPDF(p.bytes as Uint8Array, p.pageIndices as number[]);
       case 'reorderPDF':
-        return await ops.reorderPDF(
-          p.bytes as Uint8Array,
-          p.newOrder as ReorderPageTarget[]
-        );
+        return await ops.reorderPDF(p.bytes as Uint8Array, p.newOrder as ReorderPageTarget[]);
       case 'watermarkPDF':
         return await ops.watermarkPDF(
           p.bytes as Uint8Array,
@@ -189,8 +186,7 @@ export class WorkerManager {
         return await ops.imagesToPDF(
           p.imageBlobs as { buf: Uint8Array; type: string; name?: string }[],
           p.options as
-            | { pageSize?: keyof typeof import('../config/constants').PDF_PAGE_SIZES }
-            | undefined
+            { pageSize?: keyof typeof import('../config/constants').PDF_PAGE_SIZES } | undefined
         );
       case 'compressPDF':
         return await ops.compressPDF(
@@ -208,7 +204,8 @@ export class WorkerManager {
           p.scale as number | undefined,
           p.maxPages as number | undefined,
           p.format as 'image/png' | 'image/jpeg' | undefined,
-          p.startPage as number | undefined
+          p.startPage as number | undefined,
+          p.pageNumbers as number[] | undefined
         );
       case 'getPageCount':
         return await ops.getPageCount(p.bytes as Uint8Array);
@@ -228,7 +225,10 @@ export class WorkerManager {
       }
       case 'sanitizePDF': {
         const { PDFSanitizer } = await import('./PDFSanitizer');
-        return PDFSanitizer.sanitize(p.bytes as Uint8Array);
+        const { UPLOAD_LIMITS } = await import('../config/constants');
+        return await PDFSanitizer.sanitizeDocument(p.bytes as Uint8Array, {
+          maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+        });
       }
       case 'pdfToMarkdown': {
         return await ops.pdfToMarkdown(

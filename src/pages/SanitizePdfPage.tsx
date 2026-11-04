@@ -21,17 +21,21 @@ import {
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 import { FileUploader } from '../components/FileUploader';
 import { recordLocalProcessing } from '../components/NetworkPrivacyInspector';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit, UPLOAD_LIMITS } from '../config/constants';
+import { ROUTES } from '../config/routes';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getPdfJs } from '../core';
 import { PDFSanitizer } from '../core/PDFSanitizer';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 
 export type PiiCategory = 'card' | 'phone' | 'nid' | 'email' | 'secret' | 'custom' | 'manual';
@@ -139,6 +143,7 @@ export function detectPiiInTextItem(
 
 export default function SanitizePdfPage() {
   const { t } = useTranslation('common');
+  const { user, isPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const [activeTab, setActiveTab] = useState<'redact' | 'strip'>('redact');
   const [file, setFile] = useState<File | null>(null);
@@ -149,8 +154,13 @@ export default function SanitizePdfPage() {
   const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number }[]>([]);
   const [pageTextCounts, setPageTextCounts] = useState<number[]>([]);
   const [scannedPagesProgress, setScannedPagesProgress] = useState<number>(0);
-  const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
-  const [currentPageDim, setCurrentPageDim] = useState<{ width: number; height: number } | null>(null);
+  const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+  const [currentPageDim, setCurrentPageDim] = useState<{ width: number; height: number } | null>(
+    null
+  );
 
   // PII Detection states
   const [isScanning, setIsScanning] = useState(false);
@@ -158,12 +168,19 @@ export default function SanitizePdfPage() {
   const [manualBoxes, setManualBoxes] = useState<ManualBox[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<'all' | PiiCategory>('all');
   const [customSearchQuery, setCustomSearchQuery] = useState('');
-  const [redactStyle, setRedactStyle] = useState<'blackout' | 'redacted_text' | 'whiteout'>('blackout');
+  const [redactStyle, setRedactStyle] = useState<'blackout' | 'redacted_text' | 'whiteout'>(
+    'blackout'
+  );
 
   // Drawing state (stored as normalized 0..1 ratios relative to the rendered canvas)
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawStartNorm, setDrawStartNorm] = useState<{ x: number; y: number } | null>(null);
-  const [currentDrawNorm, setCurrentDrawNorm] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [currentDrawNorm, setCurrentDrawNorm] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
   // Common processing states
   const [isProcessing, setIsProcessing] = useState(false);
@@ -183,8 +200,9 @@ export default function SanitizePdfPage() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const pdfJsDocRef = useRef<PDFDocumentProxy | null>(null);
   const operationTokenRef = useRef(0);
+  const isSubmittingRef = useRef(false);
 
-  const limitMB = TOOL_SIZE_LIMITS['sanitize-pdf']?.maxSingleMB || 100;
+  const limitMB = getToolLimit('sanitize-pdf', isPro, Boolean(user)).maxSingleMB;
 
   useEffect(() => {
     return () => {
@@ -210,7 +228,6 @@ export default function SanitizePdfPage() {
   // Load PDF and run progressive PII detection
   const handleFileSelected = async (selectedFile: File) => {
     const currentToken = ++operationTokenRef.current;
-    setFile(selectedFile);
     setError(null);
     setWarnings([]);
     setIsSuccess(false);
@@ -226,6 +243,24 @@ export default function SanitizePdfPage() {
       setDownloadUrl(null);
     }
 
+    if (selectedFile.size === 0) {
+      setFile(null);
+      setFileBytes(null);
+      setPdfJsDoc(null);
+      setTotalPages(0);
+      setError('The selected PDF file is empty (0 bytes). Please choose a valid PDF document.');
+      return;
+    }
+
+    if (selectedFile.size > limitMB * 1024 * 1024) {
+      setFile(null);
+      setFileBytes(null);
+      setPdfJsDoc(null);
+      setTotalPages(0);
+      setError(`File exceeds the ${limitMB}MB limit for your current plan.`);
+      return;
+    }
+
     try {
       setIsScanning(true);
       if (pdfJsDocRef.current) {
@@ -239,11 +274,9 @@ export default function SanitizePdfPage() {
       const uint8 = new Uint8Array(arrayBuffer);
       if (await PDFSanitizer.isEncrypted(uint8)) {
         throw new Error(
-          'This PDF is password-protected or encrypted. Please unlock it first using the Unlock PDF tool before sanitizing or redacting.'
+          'SECURED_LOCKED: This PDF is password-protected or encrypted. Please unlock it first using the Unlock PDF tool before sanitizing or redacting.'
         );
       }
-      setFileBytes(uint8);
-      recordLocalProcessing(uint8.byteLength, `Sanitize/Redact: ${selectedFile.name}`);
 
       const pdfjs = await getPdfJs();
       const loadingTask = pdfjs.getDocument({ data: uint8.slice() });
@@ -254,6 +287,16 @@ export default function SanitizePdfPage() {
         });
         return;
       }
+      if (loadedDoc.numPages === 0) {
+        await loadedDoc.destroy().catch(() => {
+          /* ignore */
+        });
+        throw new Error('This PDF contains 0 pages.');
+      }
+
+      setFile(selectedFile);
+      setFileBytes(uint8);
+      recordLocalProcessing(uint8.byteLength, `Sanitize/Redact: ${selectedFile.name}`);
       pdfJsDocRef.current = loadedDoc;
       setPdfJsDoc(loadedDoc);
       setTotalPages(loadedDoc.numPages);
@@ -301,6 +344,10 @@ export default function SanitizePdfPage() {
     } catch (err: unknown) {
       if (operationTokenRef.current === currentToken) {
         const message = err instanceof Error ? err.message : 'Failed to scan document.';
+        setFile(null);
+        setFileBytes(null);
+        setPdfJsDoc(null);
+        setTotalPages(0);
         setError(message);
       }
     } finally {
@@ -386,10 +433,12 @@ export default function SanitizePdfPage() {
     if (!customSearchQuery.trim() || !pdfJsDoc) return;
     const rawTerm = customSearchQuery.trim();
     const normTerm = normalizeDigitsToAscii(rawTerm).toLowerCase();
+    const currentToken = operationTokenRef.current;
 
     const searchAsync = async () => {
       const newItems: PiiEntity[] = [];
       for (let p = 1; p <= totalPages; p++) {
+        if (operationTokenRef.current !== currentToken) return;
         const page = await pdfJsDoc.getPage(p);
         try {
           const textContent = await page.getTextContent();
@@ -426,6 +475,7 @@ export default function SanitizePdfPage() {
           page.cleanup();
         }
       }
+      if (operationTokenRef.current !== currentToken) return;
       setEntities((prev) => [...prev, ...newItems]);
       setCustomSearchQuery('');
     };
@@ -487,9 +537,7 @@ export default function SanitizePdfPage() {
 
     // Require at least 1% width/height drag to avoid accidental taps creating tiny dots
     if (currentDrawNorm.w > 0.01 && currentDrawNorm.h > 0.008) {
-      const dim =
-        pageDimensions[currentPage - 1] ||
-        currentPageDim || { width: 612, height: 792 };
+      const dim = pageDimensions[currentPage - 1] || currentPageDim || { width: 612, height: 792 };
 
       const pdfX = currentDrawNorm.x * dim.width;
       const pdfY = dim.height - (currentDrawNorm.y + currentDrawNorm.h) * dim.height;
@@ -549,11 +597,14 @@ export default function SanitizePdfPage() {
 
   // Perform permanent redaction and sanitization
   const handleExecuteRedaction = async () => {
-    if (!fileBytes || !file) return;
+    if (!fileBytes || !file || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+
+    const currentToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
 
     try {
       setIsProcessing(true);
@@ -566,8 +617,8 @@ export default function SanitizePdfPage() {
         setDownloadUrl(null);
       }
 
-      const { PDFDocument, rgb, StandardFonts } = await import('@cantoo/pdf-lib');
-      const pdfDoc = await PDFDocument.load(fileBytes);
+      const { PDFDocument, PDFName, rgb, StandardFonts } = await import('@cantoo/pdf-lib');
+      const pdfDoc = await PDFDocument.load(fileBytes, { updateMetadata: false });
       const pages = pdfDoc.getPages();
       const helvetica = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
@@ -587,7 +638,6 @@ export default function SanitizePdfPage() {
         setError(
           'No sensitive items or manual boxes are selected. Tap "Draw Redact Box" on the page preview and drag over the text/photo area you want to black out, or switch to "Metadata & Script Purger".'
         );
-        setIsProcessing(false);
         return;
       }
 
@@ -644,6 +694,7 @@ export default function SanitizePdfPage() {
           const flattenedDoc = await PDFDocument.create();
           const redactScale = 2.0;
           for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+            if (operationTokenRef.current !== currentToken) return;
             if (!modifiedPages.has(pIdx)) {
               const [copiedPage] = await flattenedDoc.copyPages(pdfDoc, [pIdx]);
               flattenedDoc.addPage(copiedPage);
@@ -678,7 +729,8 @@ export default function SanitizePdfPage() {
             const pageBoxes = allRedactBoxes.filter((b) => b.pageIndex === pIdx);
             for (const box of pageBoxes) {
               const sx = ((box.x - 2) / dim.width) * viewport.width;
-              const sy = ((dim.height - (box.y - 2) - (box.height + 4)) / dim.height) * viewport.height;
+              const sy =
+                ((dim.height - (box.y - 2) - (box.height + 4)) / dim.height) * viewport.height;
               const sw = ((box.width + 4) / dim.width) * viewport.width;
               const sh = ((box.height + 4) / dim.height) * viewport.height;
 
@@ -729,17 +781,34 @@ export default function SanitizePdfPage() {
         }
       }
 
-      // Purge metadata & identifiers
+      if (operationTokenRef.current !== currentToken) return;
+
+      // Purge Info dictionary metadata & catalog XMP/action structures
       finalDoc.setTitle('');
       finalDoc.setAuthor('');
       finalDoc.setSubject('');
       finalDoc.setKeywords([]);
-      finalDoc.setProducer('PDFMinty Privacy Shield');
-      finalDoc.setCreator('PDFMinty Client-Side Engine');
-      finalDoc.setModificationDate(new Date());
+      finalDoc.setProducer('');
+      finalDoc.setCreator('');
+      finalDoc.setCreationDate(new Date(0));
+      finalDoc.setModificationDate(new Date(0));
 
-      const rawSavedBytes = await finalDoc.save({ useObjectStreams: true });
+      finalDoc.catalog.delete(PDFName.of('Metadata'));
+      finalDoc.catalog.delete(PDFName.of('OpenAction'));
+      finalDoc.catalog.delete(PDFName.of('AA'));
+      finalDoc.catalog.delete(PDFName.of('Names'));
+      finalDoc.catalog.delete(PDFName.of('AcroForm'));
+
+      for (const p of finalDoc.getPages()) {
+        p.node.delete(PDFName.of('AA'));
+        p.node.delete(PDFName.of('Annots'));
+      }
+
+      const rawSavedBytes = await finalDoc.save({ useObjectStreams: false });
+      if (operationTokenRef.current !== currentToken) return;
+
       const { bytes: savedBytes } = PDFSanitizer.sanitize(rawSavedBytes, {
+        maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
         skipEncryptionCheck: true,
       });
       recordLocalProcessing(savedBytes.byteLength, 'Redacted & Sanitized PDF');
@@ -759,22 +828,38 @@ export default function SanitizePdfPage() {
       });
 
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: t('tools.sanitizePdf.title', { defaultValue: 'Sanitize PDF' }),
+        toolId: 'sanitize-pdf',
+        fileName: name,
+        fileSizeFormatted: `${(blob.size / (1024 * 1024)).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Security',
+      });
       setIsSuccess(true);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Redaction failed.';
-      setError(message);
+      if (operationTokenRef.current === currentToken) {
+        const message = err instanceof Error ? err.message : 'Redaction failed.';
+        setError(message);
+      }
     } finally {
-      setIsProcessing(false);
+      isSubmittingRef.current = false;
+      if (operationTokenRef.current === currentToken) {
+        setIsProcessing(false);
+      }
     }
   };
 
   // Original structural sanitize handler (Tab 2)
   const handleStructuralSanitize = async () => {
-    if (!file) return;
+    if (!file || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+
+    const currentToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
 
     try {
       setIsProcessing(true);
@@ -787,12 +872,16 @@ export default function SanitizePdfPage() {
       }
 
       const bytes = new Uint8Array(await file.arrayBuffer());
+      if (operationTokenRef.current !== currentToken) return;
+
       const result = await WorkerManager.getInstance().runOperation<{
         bytes: Uint8Array;
         warnings: string[];
       }>('sanitizePDF', { bytes });
+      if (operationTokenRef.current !== currentToken) return;
 
       setWarnings(result.warnings);
+      recordLocalProcessing(result.bytes.byteLength, 'Deep Structural Sanitized PDF');
 
       const blob = new Blob([result.bytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(file.name.replace(/\.pdf$/i, '') + '-sanitized.pdf');
@@ -800,12 +889,25 @@ export default function SanitizePdfPage() {
       setDownloadUrl(url);
       setDownloadName(name);
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: t('tools.sanitizePdf.title', { defaultValue: 'Sanitize PDF' }),
+        toolId: 'sanitize-pdf',
+        fileName: name,
+        fileSizeFormatted: `${(blob.size / (1024 * 1024)).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Security',
+      });
       setIsSuccess(true);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message || 'Failed to sanitize document.');
+      if (operationTokenRef.current === currentToken) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        setError(message || 'Failed to sanitize document.');
+      }
     } finally {
-      setIsProcessing(false);
+      isSubmittingRef.current = false;
+      if (operationTokenRef.current === currentToken) {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -845,19 +947,54 @@ export default function SanitizePdfPage() {
   const getCategoryBadge = (cat: PiiCategory) => {
     switch (cat) {
       case 'card':
-        return { label: 'Credit Card', icon: CreditCard, color: 'text-amber-600 bg-amber-50 border-amber-200' };
+        return {
+          label: 'Credit Card',
+          icon: CreditCard,
+          color:
+            'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800',
+        };
       case 'phone':
-        return { label: 'Phone', icon: Phone, color: 'text-blue-600 bg-blue-50 border-blue-200' };
+        return {
+          label: 'Phone',
+          icon: Phone,
+          color:
+            'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800',
+        };
       case 'nid':
-        return { label: 'NID / SSN', icon: Fingerprint, color: 'text-purple-600 bg-purple-50 border-purple-200' };
+        return {
+          label: 'NID / SSN',
+          icon: Fingerprint,
+          color:
+            'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800',
+        };
       case 'email':
-        return { label: 'Email', icon: Mail, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
+        return {
+          label: 'Email',
+          icon: Mail,
+          color:
+            'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800',
+        };
       case 'secret':
-        return { label: 'Secret / Token', icon: KeyRound, color: 'text-rose-600 bg-rose-50 border-rose-200' };
+        return {
+          label: 'Secret / Token',
+          icon: KeyRound,
+          color:
+            'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800',
+        };
       case 'custom':
-        return { label: 'Search Match', icon: Search, color: 'text-teal-600 bg-teal-50 border-teal-200' };
+        return {
+          label: 'Search Match',
+          icon: Search,
+          color:
+            'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800',
+        };
       case 'manual':
-        return { label: 'Manual Box', icon: PenTool, color: 'text-slate-700 bg-slate-100 border-slate-300' };
+        return {
+          label: 'Manual Box',
+          icon: PenTool,
+          color:
+            'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700',
+        };
     }
   };
 
@@ -917,6 +1054,26 @@ export default function SanitizePdfPage() {
             </p>
           </div>
 
+          {error && (
+            <div
+              role="alert"
+              className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-700 dark:text-rose-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{error.replace(/^SECURED_LOCKED:\s*/i, '')}</span>
+              </div>
+              {/SECURED_LOCKED|password|encrypted/i.test(error) && (
+                <Link
+                  to={ROUTES.UNLOCK}
+                  className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold whitespace-nowrap transition self-start sm:self-auto"
+                >
+                  Unlock PDF →
+                </Link>
+              )}
+            </div>
+          )}
+
           <FileUploader
             onFilesSelected={(files) => {
               if (files && files.length > 0) {
@@ -940,7 +1097,9 @@ export default function SanitizePdfPage() {
                 <FileText className="w-5 h-5" />
               </div>
               <div className="truncate max-w-xs sm:max-w-md">
-                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{file.name}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  {file.name}
+                </p>
                 <p className="text-xs text-slate-400">
                   {(file.size / 1024 / 1024).toFixed(2)} MB • {totalPages} Pages •{' '}
                   <span className="text-emerald-600 font-semibold">
@@ -1083,8 +1242,10 @@ export default function SanitizePdfPage() {
                             Scanned / Photo Page Detected (No Embedded Text Layer)
                           </p>
                           <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5 leading-relaxed">
-                            Page {currentPage} is a camera photo or scanned image without selectable PDF text. Automatic text pattern detection cannot read inside images—tap{' '}
-                            <strong>Draw Redact Box</strong> and drag over any phone number, NID, name, or QR code to black it out permanently.
+                            Page {currentPage} is a camera photo or scanned image without selectable
+                            PDF text. Automatic text pattern detection cannot read inside images—tap{' '}
+                            <strong>Draw Redact Box</strong> and drag over any phone number, NID,
+                            name, or QR code to black it out permanently.
                           </p>
                         </div>
                       </div>
@@ -1119,7 +1280,10 @@ export default function SanitizePdfPage() {
                         isDrawingMode ? 'cursor-crosshair touch-none' : 'cursor-default'
                       }`}
                     >
-                      <canvas ref={canvasRef} className="shadow-lg rounded max-w-full h-auto block" />
+                      <canvas
+                        ref={canvasRef}
+                        className="shadow-lg rounded max-w-full h-auto block"
+                      />
 
                       {/* Bounding box highlights on canvas for current page */}
                       {canvasSize.width > 0 &&
@@ -1127,9 +1291,13 @@ export default function SanitizePdfPage() {
                         currentPageEntities.map((ent) => {
                           const leftPct = (ent.x / activePageDim.width) * 100;
                           const topPct =
-                            ((activePageDim.height - ent.y - ent.height) / activePageDim.height) * 100;
+                            ((activePageDim.height - ent.y - ent.height) / activePageDim.height) *
+                            100;
                           const widthPct = Math.max(2, (ent.width / activePageDim.width) * 100);
-                          const heightPct = Math.max(1.5, (ent.height / activePageDim.height) * 100);
+                          const heightPct = Math.max(
+                            1.5,
+                            (ent.height / activePageDim.height) * 100
+                          );
 
                           return (
                             <div
@@ -1163,7 +1331,8 @@ export default function SanitizePdfPage() {
                         currentPageManualBoxes.map((box) => {
                           const leftPct = (box.x / activePageDim.width) * 100;
                           const topPct =
-                            ((activePageDim.height - box.y - box.height) / activePageDim.height) * 100;
+                            ((activePageDim.height - box.y - box.height) / activePageDim.height) *
+                            100;
                           const widthPct = (box.width / activePageDim.width) * 100;
                           const heightPct = (box.height / activePageDim.height) * 100;
 
@@ -1178,7 +1347,9 @@ export default function SanitizePdfPage() {
                               }}
                               className="absolute bg-black text-white border border-rose-500 group flex items-center justify-between p-1"
                             >
-                              <span className="text-[9px] font-bold text-white truncate">BLACK-OUT</span>
+                              <span className="text-[9px] font-bold text-white truncate">
+                                BLACK-OUT
+                              </span>
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -1244,7 +1415,7 @@ export default function SanitizePdfPage() {
                       onClick={() => setSelectedFilter('all')}
                       className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
                         selectedFilter === 'all'
-                          ? 'bg-slate-900 text-white border-slate-900'
+                          ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100'
                           : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                       }`}
                     >
@@ -1256,7 +1427,7 @@ export default function SanitizePdfPage() {
                         className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
                           selectedFilter === 'card'
                             ? 'bg-amber-600 text-white border-amber-600'
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                            : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
                         }`}
                       >
                         💳 Card ({countsByCategory.card})
@@ -1268,7 +1439,7 @@ export default function SanitizePdfPage() {
                         className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
                           selectedFilter === 'phone'
                             ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-blue-50 text-blue-800 border-blue-200'
+                            : 'bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800'
                         }`}
                       >
                         📞 Phone ({countsByCategory.phone})
@@ -1280,7 +1451,7 @@ export default function SanitizePdfPage() {
                         className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
                           selectedFilter === 'nid'
                             ? 'bg-purple-600 text-white border-purple-600'
-                            : 'bg-purple-50 text-purple-800 border-purple-200'
+                            : 'bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800'
                         }`}
                       >
                         🪪 NID ({countsByCategory.nid})
@@ -1292,7 +1463,7 @@ export default function SanitizePdfPage() {
                         className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
                           selectedFilter === 'email'
                             ? 'bg-emerald-600 text-white border-emerald-600'
-                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                         }`}
                       >
                         ✉️ Email ({countsByCategory.email})
@@ -1304,7 +1475,7 @@ export default function SanitizePdfPage() {
                         className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition cursor-pointer ${
                           selectedFilter === 'manual'
                             ? 'bg-rose-600 text-white border-rose-600'
-                            : 'bg-rose-50 text-rose-800 border-rose-200'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
                         }`}
                       >
                         ⬛ Manual ({countsByCategory.manual})
@@ -1354,7 +1525,7 @@ export default function SanitizePdfPage() {
                               className="pt-2 flex items-center justify-between text-xs gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1.5 rounded-lg transition"
                             >
                               <div className="flex items-center gap-2.5 truncate flex-1">
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 text-rose-700 bg-rose-50 border-rose-200">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800">
                                   <PenTool className="w-2.5 h-2.5" />
                                   Manual Box #{idx + 1}
                                 </span>
@@ -1465,7 +1636,10 @@ export default function SanitizePdfPage() {
                   {/* Action Button */}
                   <div className="pt-3">
                     {error && (
-                      <div className="mb-3 text-xs text-rose-600 bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+                      <div
+                        role="alert"
+                        className="mb-3 text-xs text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/30 p-2.5 rounded-xl border border-rose-200 dark:border-rose-800/60"
+                      >
                         {error}
                       </div>
                     )}
@@ -1508,7 +1682,8 @@ export default function SanitizePdfPage() {
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    This engine uses an isolated WebAssembly Worker to parse low-level PDF stream objects, completely erasing:
+                    This engine uses an isolated WebAssembly Worker to parse low-level PDF stream
+                    objects, completely erasing:
                   </p>
                   <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-400 list-disc pl-5">
                     <li>Embedded JavaScript scripts (/JS, /JavaScript)</li>
@@ -1538,13 +1713,17 @@ export default function SanitizePdfPage() {
                     {t('sanitizePdf.actionsTitle', { defaultValue: 'Sanitize Actions' })}
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Instantly purge all hidden scripts and personal metadata while keeping the visual layout intact.
+                    Instantly purge all hidden scripts and personal metadata while keeping the
+                    visual layout intact.
                   </p>
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                   {error && (
-                    <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg">
+                    <div
+                      role="alert"
+                      className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/60 p-3 rounded-lg"
+                    >
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
@@ -1595,7 +1774,9 @@ export default function SanitizePdfPage() {
               True Black-out vs Fake Transparency
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Many cheap tools merely draw a black box over text, leaving the underlying words selectable and copy-pasteable. PdfMinty's Privacy AI Shield permanently burns opaque barriers into the PDF vector layer and strips underlying text streams.
+              Many cheap tools merely draw a black box over text, leaving the underlying words
+              selectable and copy-pasteable. PdfMinty's Privacy AI Shield permanently burns opaque
+              barriers into the PDF vector layer and strips underlying text streams.
             </p>
           </div>
 
@@ -1605,7 +1786,8 @@ export default function SanitizePdfPage() {
               Corporate & Bank Compliance
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Compliance frameworks (GDPR, HIPAA, GLBA) prohibit uploading customer NIDs or credit cards to random cloud servers. PdfMinty executes 100% locally in your browser RAM.
+              Compliance frameworks (GDPR, HIPAA, GLBA) prohibit uploading customer NIDs or credit
+              cards to random cloud servers. PdfMinty executes 100% locally in your browser RAM.
             </p>
           </div>
         </div>

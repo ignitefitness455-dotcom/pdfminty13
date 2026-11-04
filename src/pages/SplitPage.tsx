@@ -1,4 +1,4 @@
-import { Scissors, AlertCircle, Info, Download, CheckCircle2 } from 'lucide-react';
+import { Scissors, AlertCircle, Info, Download, CheckCircle2, Archive } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,16 +6,26 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
-import { downloadBlobsSequentially, sanitizeDownloadFilename } from '../utils/download';
+import {
+  downloadBlob,
+  downloadBlobsSequentially,
+  sanitizeDownloadFilename,
+} from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const SplitPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('split-pdf', isPro, isLoggedIn);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [ranges, setRanges] = useState<string>('1');
@@ -23,8 +33,10 @@ export const SplitPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [splitFiles, setSplitFiles] = useState<
-    { url: string; filename: string; sizeBytes: number }[]
+    { url: string; filename: string; sizeBytes: number; blob: Blob }[]
   >([]);
+  const isSubmittingRef = React.useRef<boolean>(false);
+  const activeFileIdRef = React.useRef<number>(0);
 
   React.useEffect(() => {
     return () => {
@@ -41,6 +53,7 @@ export const SplitPage: React.FC = () => {
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
       const file = files[0];
+      const requestId = ++activeFileIdRef.current;
       setSelectedFile(file);
       setTotalPages(0);
       setError(null);
@@ -53,11 +66,16 @@ export const SplitPage: React.FC = () => {
             { bytes },
             [bytes.buffer]
           );
+          if (activeFileIdRef.current !== requestId) return;
           if (typeof count === 'number' && count > 0) {
             setTotalPages(count);
           }
-        } catch {
-          // Ignore page count probe errors on mock/invalid files
+        } catch (err: unknown) {
+          if (activeFileIdRef.current !== requestId) return;
+          const msg = err instanceof Error ? err.message : '';
+          if (/password protected|encrypted|secured_locked/i.test(msg)) {
+            setError(msg);
+          }
         }
       })();
     }
@@ -69,8 +87,30 @@ export const SplitPage: React.FC = () => {
     return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   };
 
+  const handleDownloadAllZip = async (
+    itemsToZip: { blob: Blob; filename: string }[] = splitFiles,
+    skipQuotaRecord = true
+  ) => {
+    if (itemsToZip.length === 0 || !selectedFile) return;
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      for (const item of itemsToZip) {
+        zip.file(item.filename, item.blob);
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const zipName = sanitizeDownloadFilename(
+        `${selectedFile.name.replace(/\.pdf$/i, '')}_split_parts.zip`,
+        'split_parts.zip'
+      );
+      await downloadBlob(zipBlob, zipName, { skipQuotaRecord });
+    } catch (err) {
+      logger.error('Failed to generate ZIP archive for split PDFs:', err);
+    }
+  };
+
   const handleSplit = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
@@ -84,6 +124,8 @@ export const SplitPage: React.FC = () => {
       return;
     }
 
+    const requestId = activeFileIdRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
     clearSplitFiles();
@@ -95,6 +137,10 @@ export const SplitPage: React.FC = () => {
         { bytes: fileBytes, ranges },
         [fileBytes.buffer]
       );
+
+      if (activeFileIdRef.current !== requestId) {
+        return;
+      }
 
       const items = results.map((bytes, idx) => {
         const blob = new Blob([bytes as unknown as BlobPart], { type: 'application/pdf' });
@@ -110,13 +156,8 @@ export const SplitPage: React.FC = () => {
         };
       });
 
-      setSplitFiles(
-        items.map((item) => ({
-          url: item.url,
-          filename: item.filename,
-          sizeBytes: item.sizeBytes,
-        }))
-      );
+      setSplitFiles(items);
+      setIsSuccess(true);
 
       addActivityItem({
         toolName: 'Split PDF',
@@ -125,12 +166,16 @@ export const SplitPage: React.FC = () => {
         fileSizeFormatted: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
         status: 'completed',
         tag: 'Merge',
-        savings: `${items.length} files`,
+        savings: `${items.length} ${items.length === 1 ? 'file' : 'files'}`,
       });
 
-      await downloadBlobsSequentially(items, 600);
-      setIsSuccess(true);
+      if (items.length > 5) {
+        await handleDownloadAllZip(items, false);
+      } else {
+        await downloadBlobsSequentially(items, 400);
+      }
     } catch (err: unknown) {
+      if (activeFileIdRef.current !== requestId) return;
       logger.error('Split error:', err);
       const errMsg = err instanceof Error ? err.message : String(err);
       setError(
@@ -141,6 +186,7 @@ export const SplitPage: React.FC = () => {
           })
       );
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   };
@@ -160,7 +206,7 @@ export const SplitPage: React.FC = () => {
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept="application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['split-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div
@@ -180,6 +226,7 @@ export const SplitPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
+                    activeFileIdRef.current++;
                     setSelectedFile(null);
                     setTotalPages(0);
                     setError(null);
@@ -250,10 +297,24 @@ export const SplitPage: React.FC = () => {
                   ))}
                 </div>
               )}
-              <div className="pt-1">
+              <div className="pt-1 flex flex-wrap items-center gap-2">
+                {splitFiles.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => void handleDownloadAllZip(splitFiles, true)}
+                    id="download_all_split_zip_btn"
+                    className="inline-flex items-center gap-2 min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl shadow-sm transition-colors cursor-pointer text-xs"
+                  >
+                    <Archive className="w-3.5 h-3.5 shrink-0" />
+                    <span>
+                      {t('splitPdf.downloadAllZip', { defaultValue: 'Download All as ZIP' })}
+                    </span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
+                    activeFileIdRef.current++;
                     setSelectedFile(null);
                     setTotalPages(0);
                     setError(null);

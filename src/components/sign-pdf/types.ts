@@ -1,4 +1,5 @@
-export type FieldKind = 'signature' | 'initials' | 'name' | 'date' | 'text' | 'checkmark' | 'cross' | 'stamp';
+export type FieldKind =
+  'signature' | 'initials' | 'name' | 'date' | 'text' | 'checkmark' | 'cross' | 'stamp';
 
 export type SignatureAsset = {
   /** PNG data URL, transparent background */

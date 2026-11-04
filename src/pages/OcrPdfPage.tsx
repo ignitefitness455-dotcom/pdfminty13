@@ -8,6 +8,7 @@ import {
   Check,
   FileCheck2,
   Crown,
+  XCircle,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,11 +17,12 @@ import { Link } from 'react-router-dom';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getPdfJs } from '../core/index';
+import { PDFSanitizer } from '../core/PDFSanitizer';
 import { WorkerManager } from '../core/WorkerManager';
 import { downloadBlob } from '../utils/download';
 import { logger } from '../utils/logger';
@@ -31,12 +33,77 @@ interface OcrPagePreview {
   dataUrl: string;
 }
 
+const MAX_OCR_IMAGE_BYTES = 1800 * 1024; // ~1.8 MB binary (~2.4 MB base64, well below 4 MB proxy cap)
+const MAX_OCR_IMAGE_DIMENSION = 2200;
+
+function uint8ToBase64DataUrl(bytes: Uint8Array, mimeType: string): string {
+  const safeMime =
+    mimeType && mimeType.startsWith('image/')
+      ? mimeType.toLowerCase() === 'image/jpg'
+        ? 'image/jpeg'
+        : mimeType.toLowerCase()
+      : 'image/jpeg';
+  const chunks: string[] = [];
+  for (let i = 0; i < bytes.byteLength; i += 8192) {
+    chunks.push(String.fromCharCode(...bytes.subarray(i, i + 8192)));
+  }
+  return `data:${safeMime};base64,${btoa(chunks.join(''))}`;
+}
+
+async function encodeImageFileForOcr(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const rawBytes = new Uint8Array(buffer);
+  const mimeType = file.type || 'image/jpeg';
+
+  // Compress/downscale large image uploads on a white canvas so high-res photos never trigger HTTP 413
+  if (rawBytes.byteLength > MAX_OCR_IMAGE_BYTES && typeof createImageBitmap === 'function') {
+    let bitmap: ImageBitmap | null = null;
+    try {
+      bitmap = await createImageBitmap(new Blob([rawBytes], { type: mimeType }));
+      if (bitmap.width > 0 && bitmap.height > 0 && typeof document !== 'undefined') {
+        const scale = Math.min(
+          1,
+          MAX_OCR_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height)
+        );
+        const targetW = Math.max(1, Math.round(bitmap.width * scale));
+        const targetH = Math.max(1, Math.round(bitmap.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, targetW, targetH);
+          ctx.drawImage(bitmap, 0, 0, targetW, targetH);
+          const compressedBlob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, 'image/jpeg', 0.85)
+          );
+          if (compressedBlob) {
+            const compressedBytes = new Uint8Array(await compressedBlob.arrayBuffer());
+            if (compressedBytes.byteLength > 0) {
+              return uint8ToBase64DataUrl(compressedBytes, 'image/jpeg');
+            }
+          }
+        }
+      }
+    } catch {
+      // Fall back to raw bytes if canvas/bitmap decoding is unavailable
+    } finally {
+      bitmap?.close?.();
+    }
+  }
+
+  return uint8ToBase64DataUrl(rawBytes, mimeType);
+}
+
 export const OcrPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, firebaseUser, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const { tier } = resolveCurrentSession(user);
   const isPro = Boolean(authIsPro || tier === 'pro' || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const effectiveLimitMB = isPro ? 500 : getToolLimit('ocr-pdf', isPro, isLoggedIn).maxSingleMB;
   const maxBatchPages = isPro ? 15 : 5;
   const maxPreviewPages = isPro ? 25 : 10;
 
@@ -76,15 +143,14 @@ export const OcrPdfPage: React.FC = () => {
   // Load document and render page previews if it is a PDF
   useEffect(() => {
     const handleFileLoad = async () => {
-      if (!selectedFile) {
-        setPagePreviews([]);
-        setSelectedPages(new Set());
-        setOcrResult('');
-        return;
-      }
-
+      setPagePreviews([]);
+      setSelectedPages(new Set());
       setOcrResult('');
       setError(null);
+
+      if (!selectedFile) {
+        return;
+      }
 
       // Handle image file uploads directly
       if (selectedFile.type.startsWith('image/')) {
@@ -101,6 +167,15 @@ export const OcrPdfPage: React.FC = () => {
       try {
         const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
         if (myToken !== operationTokenRef.current) return;
+
+        const isEncrypted = await PDFSanitizer.isEncrypted(fileBytes);
+        if (myToken !== operationTokenRef.current) return;
+        if (isEncrypted) {
+          setError(
+            'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+          );
+          return;
+        }
 
         const pdfjs = await getPdfJs();
         const doc = await pdfjs.getDocument({ data: fileBytes.slice() }).promise;
@@ -124,7 +199,13 @@ export const OcrPdfPage: React.FC = () => {
               if (context) {
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
-                await page.render({ canvasContext: context, viewport }).promise;
+                context.fillStyle = '#ffffff';
+                context.fillRect(0, 0, viewport.width, viewport.height);
+                await page.render({
+                  canvasContext: context,
+                  viewport,
+                  background: 'rgb(255, 255, 255)',
+                }).promise;
                 const blob = await new Promise<Blob | null>((resolve) =>
                   canvas.toBlob(resolve, 'image/jpeg', 0.85)
                 );
@@ -153,7 +234,9 @@ export const OcrPdfPage: React.FC = () => {
               committedPreviews = true;
               setPagePreviews([...loadedPreviews]);
             }
-            setSelectedPages(new Set([0]));
+            if (loadedPreviews.length > 0) {
+              setSelectedPages(new Set([0]));
+            }
           } else if (!committedPreviews) {
             loadedPreviews.forEach((p) => URL.revokeObjectURL(p.dataUrl));
           }
@@ -167,9 +250,21 @@ export const OcrPdfPage: React.FC = () => {
             /* ignore */
           });
         }
-      } catch (err) {
+      } catch (err: unknown) {
         logger.error('Failed to parse document for OCR previews:', err);
-        setError('Failed to analyze the PDF file. It might be corrupted or encrypted.');
+        const errName = (err as { name?: string })?.name || '';
+        const errMsg = err instanceof Error ? err.message : String(err);
+        if (
+          errName === 'PasswordException' ||
+          errMsg.includes('SECURED_LOCKED') ||
+          errMsg.toLowerCase().includes('password')
+        ) {
+          setError(
+            'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+          );
+        } else {
+          setError('Failed to analyze the PDF file. It might be corrupted or encrypted.');
+        }
       } finally {
         if (myToken === operationTokenRef.current) {
           setRenderingPreviews(false);
@@ -177,7 +272,7 @@ export const OcrPdfPage: React.FC = () => {
       }
     };
 
-    handleFileLoad();
+    void handleFileLoad();
   }, [selectedFile, maxPreviewPages]);
 
   const handleFilesSelected = (files: File[]) => {
@@ -213,8 +308,14 @@ export const OcrPdfPage: React.FC = () => {
     setError(null);
   };
 
+  const handleCancelOcr = () => {
+    operationTokenRef.current++;
+    abortControllerRef.current?.abort();
+    setLoading(false);
+  };
+
   const handleStartOcr = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
@@ -243,47 +344,44 @@ export const OcrPdfPage: React.FC = () => {
       const imageBase64s: string[] = [];
 
       if (selectedFile.type.startsWith('image/')) {
-        // Direct image convert to base64
-        const buffer = await selectedFile.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        const chunks: string[] = [];
-        for (let i = 0; i < bytes.byteLength; i += 8192) {
-          chunks.push(String.fromCharCode(...bytes.subarray(i, i + 8192)));
-        }
-        imageBase64s.push(`data:${selectedFile.type};base64,${btoa(chunks.join(''))}`);
+        const encoded = await encodeImageFileForOcr(selectedFile);
+        if (myToken !== operationTokenRef.current) return;
+        imageBase64s.push(encoded);
       } else {
-        // PDF pages conversion
+        // PDF pages conversion via single-pass worker call
         const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
         if (myToken !== operationTokenRef.current) return;
 
         const pagesArray = Array.from(selectedPages).sort((a, b) => a - b);
+        const pageNumbersOneBased = pagesArray.map((idx) => idx + 1);
+        const targetScale = pagesArray.length > 5 ? 1.25 : 1.5;
 
-        for (const pageNum of pagesArray) {
-          // Single-page worker render for high accuracy
-          const rendered = await WorkerManager.getInstance().runOperation<
-            { page: number; imageBytes: Uint8Array }[]
-          >('pdfToImage', {
-            bytes: fileBytes,
-            originalName: selectedFile.name,
-            scale: 1.5, // slightly higher scale for extremely accurate OCR readability
-            maxPages: 1,
-            format: 'image/jpeg',
-            startPage: pageNum + 1,
-          });
+        const renderedBatch = await WorkerManager.getInstance().runOperation<
+          { page: number; imageBytes: Uint8Array }[]
+        >('pdfToImage', {
+          bytes: fileBytes.slice(),
+          originalName: selectedFile.name,
+          scale: targetScale,
+          maxPages: pageNumbersOneBased.length,
+          format: 'image/jpeg',
+          startPage: pageNumbersOneBased[0] || 1,
+          pageNumbers: pageNumbersOneBased,
+        });
 
-          if (myToken !== operationTokenRef.current) return;
-          if (rendered && rendered.length > 0) {
-            const imgBytes = rendered[0].imageBytes;
-            const chunks: string[] = [];
-            for (let i = 0; i < imgBytes.byteLength; i += 8192) {
-              chunks.push(String.fromCharCode(...imgBytes.subarray(i, i + 8192)));
-            }
-            imageBase64s.push(`data:image/jpeg;base64,${btoa(chunks.join(''))}`);
+        if (myToken !== operationTokenRef.current) return;
+
+        if (renderedBatch && renderedBatch.length > 0) {
+          for (const item of renderedBatch) {
+            imageBase64s.push(uint8ToBase64DataUrl(item.imageBytes, 'image/jpeg'));
           }
         }
       }
 
       if (myToken !== operationTokenRef.current) return;
+
+      if (imageBase64s.length === 0) {
+        throw new Error('Could not render any selected pages for OCR transcription.');
+      }
 
       // Invoke the Gemini AI proxy endpoint for OCR extraction
       const requestHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -338,11 +436,17 @@ export const OcrPdfPage: React.FC = () => {
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!ocrResult) return;
-    navigator.clipboard.writeText(ocrResult);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(ocrResult);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (copyErr) {
+      logger.warn('Clipboard write failed:', copyErr);
+    }
   };
 
   const handleDownloadTxt = () => {
@@ -359,49 +463,59 @@ export const OcrPdfPage: React.FC = () => {
     void downloadBlob(blob, name, { skipQuotaRecord: true });
   };
 
-  const isQuotaError = !!(
+  const isQuotaError = Boolean(
     error &&
-    (error.toLowerCase().includes('quota') ||
-      error.toLowerCase().includes('limit') ||
-      error.toLowerCase().includes('429') ||
-      error.toLowerCase().includes('exhausted') ||
-      error.toLowerCase().includes('busy'))
+      (error.toLowerCase().includes('quota') ||
+        error.toLowerCase().includes('limit') ||
+        error.toLowerCase().includes('429') ||
+        error.toLowerCase().includes('exhausted') ||
+        error.toLowerCase().includes('busy'))
+  );
+
+  const isLockedError = Boolean(
+    error &&
+      (error.includes('SECURED_LOCKED') ||
+        error.toLowerCase().includes('password') ||
+        error.toLowerCase().includes('encrypted'))
   );
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto" id="ocr_pdf_page_container">
       <SEO slug="ocr-pdf" />
-      <ToolHeader slug="ocr-pdf" limitMB={isPro ? 500 : TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB} />
+      <ToolHeader slug="ocr-pdf" limitMB={effectiveLimitMB} />
 
       {!selectedFile ? (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <FileUploader
             onFilesSelected={handleFilesSelected}
             accept=".pdf,application/pdf,image/png,image/jpeg,image/webp"
-            maxSizeMB={isPro ? 500 : TOOL_SIZE_LIMITS['ocr-pdf'].maxSingleMB}
+            maxSizeMB={effectiveLimitMB}
           />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left panel: File details and layout selection */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div className="truncate pr-4">
-                  <p className="text-sm font-bold text-slate-800 truncate">{selectedFile.name}</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {selectedFile.name}
+                  </p>
                   <p className="text-xs text-slate-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
                     {selectedFile.type.startsWith('image/') ? 'Image File' : 'PDF Document'}
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     operationTokenRef.current++;
                     abortControllerRef.current?.abort();
                     setLoading(false);
                     setSelectedFile(null);
                   }}
-                  className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 py-1 px-3 rounded-lg transition-colors cursor-pointer"
+                  className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 py-1 px-3 rounded-lg transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
                 </button>
@@ -410,7 +524,7 @@ export const OcrPdfPage: React.FC = () => {
               {!selectedFile.type.startsWith('image/') && (
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                       {isPro && <Crown className="w-3.5 h-3.5 text-amber-500" />}
                       <span>
                         {isPro
@@ -424,7 +538,7 @@ export const OcrPdfPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleSelectBatchPages}
-                        className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 underline cursor-pointer"
+                        className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 underline cursor-pointer"
                       >
                         Select Batch ({Math.min(pagePreviews.length, maxBatchPages)})
                       </button>
@@ -439,45 +553,53 @@ export const OcrPdfPage: React.FC = () => {
                         })}
                       </span>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-2 xs:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-1.5 bg-slate-50 rounded-xl border border-slate-200">
-                      {pagePreviews.map((p) => (
-                        <button
-                          key={p.index}
-                          onClick={() => togglePageSelection(p.index)}
-                          className={`relative aspect-[3/4] rounded-lg border-2 overflow-hidden transition-all bg-white group ${
-                            selectedPages.has(p.index)
-                              ? 'border-emerald-600 shadow-sm'
-                              : 'border-slate-200 hover:border-slate-400'
-                          }`}
-                        >
-                          <img
-                            src={p.dataUrl}
-                            alt={`Page ${p.index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                          <div
-                            className={`absolute inset-0 flex items-center justify-center bg-slate-900/40 transition-opacity ${
-                              selectedPages.has(p.index)
-                                ? 'opacity-100'
-                                : 'opacity-0 group-hover:opacity-40'
+                  ) : pagePreviews.length > 0 ? (
+                    <div className="grid grid-cols-2 xs:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                      {pagePreviews.map((p) => {
+                        const isSelected = selectedPages.has(p.index);
+                        return (
+                          <button
+                            key={p.index}
+                            type="button"
+                            aria-pressed={isSelected}
+                            aria-label={`Page ${p.index + 1}`}
+                            onClick={() => togglePageSelection(p.index)}
+                            className={`relative aspect-[3/4] rounded-lg border-2 overflow-hidden transition-all bg-white dark:bg-slate-900 group ${
+                              isSelected
+                                ? 'border-emerald-600 shadow-sm'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400'
                             }`}
                           >
+                            <img
+                              src={p.dataUrl}
+                              alt={`Page ${p.index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
                             <div
-                              className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                                selectedPages.has(p.index)
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-white text-slate-900'
+                              className={`absolute inset-0 flex items-center justify-center bg-slate-900/40 transition-opacity ${
+                                isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
                               }`}
                             >
-                              {selectedPages.has(p.index) ? '✓' : p.index + 1}
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                                  isSelected
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-white text-slate-900'
+                                }`}
+                              >
+                                {isSelected ? '✓' : p.index + 1}
+                              </div>
                             </div>
-                          </div>
-                          <span className="absolute bottom-1 right-1 font-mono text-[8px] bg-slate-950/70 text-white px-1.5 py-0.5 rounded-md">
-                            Page {p.index + 1}
-                          </span>
-                        </button>
-                      ))}
+                            <span className="absolute bottom-1 right-1 font-mono text-[8px] bg-slate-950/70 text-white px-1.5 py-0.5 rounded-md">
+                              Page {p.index + 1}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700">
+                      No page previews available for this document.
                     </div>
                   )}
                 </div>
@@ -487,7 +609,7 @@ export const OcrPdfPage: React.FC = () => {
                 <div className="space-y-1">
                   <label
                     htmlFor="ocr_language_select"
-                    className="text-xs font-bold text-slate-600 uppercase tracking-wider block"
+                    className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block"
                   >
                     Document Language:
                   </label>
@@ -495,12 +617,15 @@ export const OcrPdfPage: React.FC = () => {
                     id="ocr_language_select"
                     value={ocrLanguage}
                     onChange={(e) => setOcrLanguage(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-slate-300 dark:border-slate-700 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="auto">{t('ocrPdf.autoDetect')}</option>
                     <option value="en">{t('ocr.lang.en', { defaultValue: 'English' })}</option>
                     <option value="bn">
                       {t('ocr.lang.bn', { defaultValue: 'Bengali (বাংলা)' })}
+                    </option>
+                    <option value="hi">
+                      {t('ocr.lang.hi', { defaultValue: 'Hindi (हिन्दी)' })}
                     </option>
                     <option value="es">
                       {t('ocr.lang.es', { defaultValue: 'Spanish (Español)' })}
@@ -510,6 +635,9 @@ export const OcrPdfPage: React.FC = () => {
                     </option>
                     <option value="de">
                       {t('ocr.lang.de', { defaultValue: 'German (Deutsch)' })}
+                    </option>
+                    <option value="zh">
+                      {t('ocr.lang.zh', { defaultValue: 'Chinese (中文)' })}
                     </option>
                     <option value="ar">
                       {t('ocr.lang.ar', { defaultValue: 'Arabic (العربية)' })}
@@ -528,10 +656,12 @@ export const OcrPdfPage: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
-                    {t('ocrPdf.consentDesc', {
-                      defaultValue:
-                        'Selected pages (up to 5) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.',
-                    })}
+                    {isPro
+                      ? `Selected pages (up to ${maxBatchPages}) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.`
+                      : t('ocrPdf.consentDesc', {
+                          defaultValue:
+                            'Selected pages (up to 5) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.',
+                        })}
                   </p>
                   <label className="flex items-start gap-2 pt-1 cursor-pointer select-none">
                     <input
@@ -549,44 +679,65 @@ export const OcrPdfPage: React.FC = () => {
                   </label>
                 </div>
 
-                <button
-                  onClick={handleStartOcr}
-                  disabled={loading || selectedPages.size === 0 || !hasConsented}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-bold rounded-xl shadow transition-colors cursor-pointer"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>
-                        {t('ocrPdf.processingButton', {
-                          defaultValue: 'Transcribing via AI Vision...',
-                        })}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                      <span>
-                        {t('ocrPdf.processButton', { defaultValue: 'Extract Text with AI Vision' })}
-                      </span>
-                    </>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleStartOcr()}
+                    disabled={loading || selectedPages.size === 0 || !hasConsented}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-bold rounded-xl shadow transition-colors cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>
+                          {t('ocrPdf.processingButton', {
+                            defaultValue: 'Transcribing via AI Vision...',
+                          })}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 text-amber-400 dark:text-white" />
+                        <span>
+                          {t('ocrPdf.processButton', {
+                            defaultValue: 'Extract Text with AI Vision',
+                          })}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                  {loading && (
+                    <button
+                      type="button"
+                      id="cancel_ocr_btn"
+                      onClick={handleCancelOcr}
+                      className="flex items-center justify-center gap-1.5 py-3 px-3.5 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      <span>{t('toolCommon.cancel', { defaultValue: 'Cancel' })}</span>
+                    </button>
                   )}
-                </button>
+                </div>
               </div>
 
               {error &&
                 (isQuotaError ? (
-                  <div className="flex items-start gap-3 text-xs text-amber-800 bg-amber-50/50 border border-amber-200 p-4 rounded-xl shadow-sm flex-col w-full">
+                  <div
+                    role="alert"
+                    className="flex items-start gap-3 text-xs text-amber-800 dark:text-amber-200 bg-amber-50/50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 p-4 rounded-xl shadow-sm flex-col w-full"
+                  >
                     <div className="flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                      <p className="font-extrabold text-amber-900">{t('ocrPdf.busyMessage')}</p>
+                      <p className="font-extrabold text-amber-900 dark:text-amber-200">
+                        {t('ocrPdf.busyMessage')}
+                      </p>
                     </div>
-                    <div className="pl-6 space-y-1 text-slate-600 font-medium leading-relaxed">
+                    <div className="pl-6 space-y-1 text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
                       <p>
                         {t('ocrPdf.orUseOffline')}{' '}
                         <Link
                           to={ROUTES.HOME}
-                          className="underline text-emerald-700 hover:text-emerald-800 font-bold"
+                          className="underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 font-bold"
                         >
                           {t('tools.mergePdf')} &amp; {t('tools.splitPdf')}
                         </Link>
@@ -600,9 +751,24 @@ export const OcrPdfPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-2 text-rose-800 text-xs font-medium">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{error}</span>
+                  <div
+                    role="alert"
+                    className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-800 rounded-xl flex flex-col gap-2 text-rose-800 dark:text-rose-200 text-xs font-medium"
+                  >
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{error.replace(/^SECURED_LOCKED:\s*/i, '')}</span>
+                    </div>
+                    {isLockedError && (
+                      <div className="pl-6">
+                        <Link
+                          to={ROUTES.UNLOCK}
+                          className="inline-flex items-center gap-1 font-bold text-rose-700 dark:text-rose-300 underline hover:text-rose-900"
+                        >
+                          {t('tools.unlockPdf', { defaultValue: 'Unlock PDF' })} →
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 ))}
             </div>
@@ -610,10 +776,10 @@ export const OcrPdfPage: React.FC = () => {
 
           {/* Right panel: Extracted editable text output */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 min-h-[400px] flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 min-h-[400px] flex flex-col justify-between">
               <div className="space-y-4 flex-1 flex flex-col">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-emerald-600" />
                     <span>{t('ocrPdf.resultTitle', { defaultValue: 'OCR Extracted Result' })}</span>
                   </h2>
@@ -621,8 +787,9 @@ export const OcrPdfPage: React.FC = () => {
                   {ocrResult && (
                     <div className="flex gap-2">
                       <button
-                        onClick={handleCopy}
-                        className="p-1.5 text-xs font-bold text-slate-600 hover:text-emerald-600 bg-slate-50 border border-slate-200 hover:border-emerald-300 rounded-lg flex items-center gap-1 transition-all"
+                        type="button"
+                        onClick={() => void handleCopy()}
+                        className="p-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-emerald-600 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 rounded-lg flex items-center gap-1 transition-all"
                         title="Copy to clipboard"
                       >
                         {copied ? (
@@ -639,7 +806,7 @@ export const OcrPdfPage: React.FC = () => {
                 {loading ? (
                   <div className="flex-1 flex flex-col items-center justify-center p-12 text-center min-h-[250px]">
                     <RefreshCw className="w-8 h-8 text-emerald-600 animate-spin mb-3" />
-                    <p className="text-xs font-bold text-slate-700">
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                       {t('ocrPdf.engineTranscribing', {
                         defaultValue: 'AI OCR Engine Transcribing Pixels...',
                       })}
@@ -657,13 +824,13 @@ export const OcrPdfPage: React.FC = () => {
                       value={ocrResult}
                       onChange={(e) => setOcrResult(e.target.value)}
                       aria-label="Transcribed OCR text output"
-                      className="w-full flex-1 min-h-[280px] p-4 bg-slate-50/50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-slate-400 leading-relaxed resize-y"
+                      className="w-full flex-1 min-h-[280px] p-4 bg-slate-50/50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:border-slate-400 leading-relaxed resize-y"
                     />
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-slate-400 min-h-[250px]">
-                    <Sparkles className="w-8 h-8 text-slate-300 mb-3" />
-                    <p className="text-xs font-bold text-slate-600">
+                    <Sparkles className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-3" />
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
                       {t('ocrPdf.noContent', { defaultValue: 'No Extracted Content Yet' })}
                     </p>
                     <p className="text-[10px] text-slate-400 mt-1 max-w-xs">
@@ -677,15 +844,17 @@ export const OcrPdfPage: React.FC = () => {
               </div>
 
               {ocrResult && !loading && (
-                <div className="pt-4 border-t border-slate-100 flex flex-wrap justify-end gap-2.5">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap justify-end gap-2.5">
                   <button
+                    type="button"
                     onClick={handleDownloadTxt}
-                    className="flex items-center gap-1.5 py-2 px-3.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 py-2 px-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>{t('ocrPdf.downloadTxt', { defaultValue: 'Download TXT' })}</span>
                   </button>
                   <button
+                    type="button"
                     onClick={handleDownloadMd}
                     className="flex items-center gap-1.5 py-2 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer"
                   >

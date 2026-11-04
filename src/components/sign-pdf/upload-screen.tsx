@@ -1,16 +1,19 @@
 import { Lock, Plus, ShieldCheck, Zap } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
+import { ROUTES } from '../../config/routes';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 
 type Props = {
   onFile: (file: File) => void;
   error?: string | null;
+  limitMB?: number;
 };
 
-export function UploadScreen({ onFile, error }: Props) {
+export function UploadScreen({ onFile, error, limitMB = 100 }: Props) {
   const { t } = useTranslation('common');
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -77,15 +80,24 @@ export function UploadScreen({ onFile, error }: Props) {
           {t('signPdf.selectPdf', { defaultValue: 'Select PDF file' })}
         </Button>
         <p className="text-sm text-slate-500">
-          {t('signPdf.orDropPdf', { defaultValue: 'or drop a PDF here' })}
+          {t('signPdf.orDropPdf', { defaultValue: 'or drop a PDF here' })} ·{' '}
+          <span>Max {limitMB} MB</span>
         </p>
         {error ? (
-          <p
+          <div
             role="alert"
-            className="rounded-md bg-rose-50 dark:bg-rose-900/20 px-3 py-2 text-sm text-rose-600 dark:text-rose-400"
+            className="rounded-md bg-rose-50 dark:bg-rose-900/20 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 flex flex-wrap items-center justify-center gap-2"
           >
-            {error}
-          </p>
+            <span>{error}</span>
+            {/password|encrypt|unlock|secured_locked/i.test(error) && (
+              <Link
+                to={ROUTES.UNLOCK}
+                className="font-bold underline hover:text-rose-700 dark:hover:text-rose-300"
+              >
+                {t('common.unlockPdfLink', { defaultValue: 'Unlock PDF →' })}
+              </Link>
+            )}
+          </div>
         ) : null}
       </div>
 
@@ -186,8 +198,8 @@ export function UploadScreen({ onFile, error }: Props) {
             <li>
               <strong>{t('signPdf.step1Bold', { defaultValue: 'Upload PDF Document:' })}</strong>{' '}
               {t('signPdf.step1Text', {
-                defaultValue:
-                  'Drop your contract or form into the secure browser viewer. Files up to 100MB are supported.',
+                limit: limitMB,
+                defaultValue: `Drop your contract or form into the secure browser viewer. Files up to ${limitMB}MB are supported.`,
               })}
             </li>
             <li>

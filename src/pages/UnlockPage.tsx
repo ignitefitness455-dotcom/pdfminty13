@@ -1,19 +1,25 @@
 import { Lock, AlertCircle, KeyRound, Download, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FileUploader } from '../components/FileUploader';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const UnlockPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('unlock-pdf', isPro, isLoggedIn);
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [password, setPassword] = useState<string>('');
@@ -25,8 +31,12 @@ export const UnlockPage: React.FC = () => {
   const [downloadName, setDownloadName] = useState<string>('');
   const [outputSize, setOutputSize] = useState<number>(0);
 
+  const isSubmittingRef = useRef(false);
+  const operationTokenRef = useRef(0);
+
   React.useEffect(() => {
     return () => {
+      operationTokenRef.current += 1;
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
       }
@@ -39,8 +49,26 @@ export const UnlockPage: React.FC = () => {
     return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   };
 
+  const resetFileState = () => {
+    operationTokenRef.current += 1;
+    isSubmittingRef.current = false;
+    setLoading(false);
+    setSelectedFile(null);
+    setPassword('');
+    setError(null);
+    setIsSuccess(false);
+    setOutputSize(0);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+  };
+
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
+      operationTokenRef.current += 1;
+      isSubmittingRef.current = false;
+      setLoading(false);
       setSelectedFile(files[0]);
       setError(null);
       setIsSuccess(false);
@@ -53,7 +81,7 @@ export const UnlockPage: React.FC = () => {
   };
 
   const handleUnlock = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
@@ -66,7 +94,17 @@ export const UnlockPage: React.FC = () => {
       );
       return;
     }
+    if (password.length > 128) {
+      setError(
+        t('unlockPdf.maxKeyError', {
+          defaultValue: 'Password cannot exceed 128 characters.',
+        })
+      );
+      return;
+    }
 
+    isSubmittingRef.current = true;
+    const currentToken = ++operationTokenRef.current;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -77,11 +115,15 @@ export const UnlockPage: React.FC = () => {
 
     try {
       const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
+      if (currentToken !== operationTokenRef.current) return;
+
       const unlockedBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'unlockPDF',
         { fileBytes, password },
         [fileBytes.buffer]
       );
+      if (currentToken !== operationTokenRef.current) return;
+
       const blob = new Blob([unlockedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_unlocked_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
@@ -89,8 +131,18 @@ export const UnlockPage: React.FC = () => {
       setDownloadUrl(url);
       setDownloadName(name);
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: 'Unlock PDF',
+        toolId: 'unlock-pdf',
+        fileName: name,
+        fileSizeFormatted: formatBytes(blob.size),
+        status: 'completed',
+        tag: 'Security',
+        savings: formatBytes(blob.size),
+      });
       setIsSuccess(true);
     } catch (err: unknown) {
+      if (currentToken !== operationTokenRef.current) return;
       logger.error('Unlock error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -100,7 +152,10 @@ export const UnlockPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      if (currentToken === operationTokenRef.current) {
+        setLoading(false);
+      }
+      isSubmittingRef.current = false;
     }
   };
 
@@ -108,7 +163,7 @@ export const UnlockPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl mx-auto" id="unlock_page_container">
       <SEO slug="unlock-pdf" />
 
-      <ToolHeader slug="unlock-pdf" />
+      <ToolHeader slug="unlock-pdf" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -122,7 +177,7 @@ export const UnlockPage: React.FC = () => {
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept=".pdf,application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['unlock-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div
@@ -140,17 +195,7 @@ export const UnlockPage: React.FC = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setPassword('');
-                    setError(null);
-                    setIsSuccess(false);
-                    setOutputSize(0);
-                    if (downloadUrl) {
-                      URL.revokeObjectURL(downloadUrl);
-                      setDownloadUrl(null);
-                    }
-                  }}
+                  onClick={resetFileState}
                   className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
@@ -203,17 +248,7 @@ export const UnlockPage: React.FC = () => {
                   </a>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setPassword('');
-                      setError(null);
-                      setIsSuccess(false);
-                      setOutputSize(0);
-                      if (downloadUrl) {
-                        URL.revokeObjectURL(downloadUrl);
-                        setDownloadUrl(null);
-                      }
-                    }}
+                    onClick={resetFileState}
                     id="reset_unlock_btn"
                     className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
                   >
@@ -246,6 +281,7 @@ export const UnlockPage: React.FC = () => {
                   id="sec_phrase"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
+                  maxLength={128}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && selectedFile && !loading) {
@@ -283,7 +319,7 @@ export const UnlockPage: React.FC = () => {
           <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
               <div
-                className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg"
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/60 p-3 rounded-lg"
                 role="alert"
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />

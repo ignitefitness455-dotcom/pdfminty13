@@ -226,11 +226,7 @@ export function computeLineDiff(linesA: string[], linesB: string[]): DiffLine[] 
       let i = midM;
       let j = midN;
       while (i > 0 || j > 0) {
-        if (
-          i > 0 &&
-          j > 0 &&
-          linesA[prefix + i - 1].trim() === linesB[prefix + j - 1].trim()
-        ) {
+        if (i > 0 && j > 0 && linesA[prefix + i - 1].trim() === linesB[prefix + j - 1].trim()) {
           midReversed.push({
             type: 'unchanged',
             text: linesA[prefix + i - 1],
@@ -384,10 +380,7 @@ export const ComparePdfPage: React.FC = () => {
       ]);
 
       if (myToken !== operationTokenRef.current) {
-        await Promise.all([
-          loadedA.destroy().catch(() => {}),
-          loadedB.destroy().catch(() => {}),
-        ]);
+        await Promise.all([loadedA.destroy().catch(() => {}), loadedB.destroy().catch(() => {})]);
         return;
       }
 

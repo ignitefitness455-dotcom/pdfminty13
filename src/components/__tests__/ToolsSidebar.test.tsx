@@ -76,7 +76,12 @@ describe('ToolsSidebar Left Navigation Menu', () => {
 
     // Verify DOM rendering inside ToolsSidebar respects popularity order
     const unsortedSidebarItems: ToolSidebarItem[] = [
-      { slug: 'edit-pdf-metadata', name: 'Edit Metadata', path: '/edit-pdf-metadata/', icon: FileText },
+      {
+        slug: 'edit-pdf-metadata',
+        name: 'Edit Metadata',
+        path: '/edit-pdf-metadata/',
+        icon: FileText,
+      },
       { slug: 'sanitize-pdf', name: 'Sanitize PDF', path: '/sanitize-pdf/', icon: FileText },
       { slug: 'compress-pdf', name: 'Compress PDF', path: '/compress-pdf/', icon: FileText },
       { slug: 'merge-pdf', name: 'Merge PDF', path: '/merge-pdf/', icon: FileText },
@@ -106,4 +111,3 @@ describe('ToolsSidebar Left Navigation Menu', () => {
     ]);
   });
 });
-

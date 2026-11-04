@@ -687,7 +687,10 @@ export const App: React.FC = () => {
             <Route path="/tos" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/tos/" element={<Navigate to={ROUTES.TERMS_OF_SERVICE} replace />} />
             <Route path="/edit-metadata" element={<Navigate to={ROUTES.EDIT_METADATA} replace />} />
-            <Route path="/edit-metadata/" element={<Navigate to={ROUTES.EDIT_METADATA} replace />} />
+            <Route
+              path="/edit-metadata/"
+              element={<Navigate to={ROUTES.EDIT_METADATA} replace />}
+            />
             <Route path="/intelligence" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
             <Route path="/intelligence/" element={<Navigate to={ROUTES.AI_ANALYZE} replace />} />
             <Route path="/protect" element={<Navigate to={ROUTES.PROTECT} replace />} />
@@ -697,7 +700,10 @@ export const App: React.FC = () => {
             <Route path="/delete-pages" element={<Navigate to={ROUTES.DELETE_PAGES} replace />} />
             <Route path="/delete-pages/" element={<Navigate to={ROUTES.DELETE_PAGES} replace />} />
             <Route path="/extract-pages" element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />} />
-            <Route path="/extract-pages/" element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />} />
+            <Route
+              path="/extract-pages/"
+              element={<Navigate to={ROUTES.EXTRACT_PAGES} replace />}
+            />
             <Route path="/reorder" element={<Navigate to={ROUTES.REORDER} replace />} />
             <Route path="/reorder/" element={<Navigate to={ROUTES.REORDER} replace />} />
             <Route path="/watermark" element={<Navigate to={ROUTES.WATERMARK} replace />} />

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { computeCard3DTransform, type Scroll3DMode } from './scroll3dConfig';
 import { ToolCard } from './ToolCard';
 
 export const CORE_ESSENTIAL_SLUGS = new Set([
@@ -24,6 +25,8 @@ interface ToolGridProps {
   filteredTools: ToolInfo[];
   onClearSearch: () => void;
   showTwoSections?: boolean;
+  scroll3DMode?: Scroll3DMode;
+  is3DEnabled?: boolean;
 }
 
 const SECTION_COPY: Record<
@@ -114,8 +117,7 @@ const SECTION_COPY: Record<
   zh: {
     part1Label: '最常用工具',
     part1Title: '日常核心 PDF 工具',
-    part1Desc:
-      '最常用的 8 款核心工具，涵盖 PDF 合并、压缩、拆分、电子签名、图片互转与密码保护。',
+    part1Desc: '最常用的 8 款核心工具，涵盖 PDF 合并、压缩、拆分、电子签名、图片互转与密码保护。',
     part1Meta: '8 款核心工具 · 浏览器本地处理',
     part2Label: '页面管理、安全与 AI',
     part2Title: '更多 PDF 编辑与专业工具',
@@ -125,14 +127,129 @@ const SECTION_COPY: Record<
   },
 };
 
+function detectGridColumns(viewportWidth: number): number {
+  if (viewportWidth >= 1024) return 4;
+  if (viewportWidth >= 768) return 3;
+  if (viewportWidth >= 640) return 2;
+  return 1;
+}
+
 export const ToolGrid: React.FC<ToolGridProps> = ({
   filteredTools,
   onClearSearch,
   showTwoSections = false,
+  scroll3DMode = 'auto',
+  is3DEnabled = true,
 }) => {
   const { t, i18n } = useTranslation('common');
   const langKey = (i18n.language || 'en').split('-')[0].toLowerCase();
   const copy = SECTION_COPY[langKey] || SECTION_COPY.en;
+  const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const wrapper = gridWrapperRef.current;
+    if (!wrapper) return undefined;
+
+    if (!is3DEnabled) {
+      const cardElements = wrapper.querySelectorAll<HTMLElement>('[data-card-3d="true"]');
+      cardElements.forEach((cardEl) => {
+        cardEl.style.removeProperty('--card-rx');
+        cardEl.style.removeProperty('--card-ry');
+        cardEl.style.removeProperty('--card-rz');
+        cardEl.style.removeProperty('--card-tx');
+        cardEl.style.removeProperty('--card-ty');
+        cardEl.style.removeProperty('--card-tz');
+        cardEl.style.removeProperty('--card-scale');
+        cardEl.style.removeProperty('--shimmer-angle');
+        cardEl.style.removeProperty('--shimmer-opacity');
+        cardEl.style.removeProperty('--spotlight-opacity');
+        cardEl.style.removeProperty('--hover-rx');
+        cardEl.style.removeProperty('--hover-ry');
+        cardEl.style.removeProperty('--hover-tz');
+      });
+      return undefined;
+    }
+
+    if (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return undefined;
+    }
+
+    let rafId = 0;
+    let lastScrollY = window.scrollY || 0;
+    let lastTime = performance.now();
+    let smoothedVelocity = 0;
+
+    const applyCardTransforms = () => {
+      rafId = 0;
+      const currentWrapper = gridWrapperRef.current;
+      if (!currentWrapper) return;
+
+      const now = performance.now();
+      const dt = Math.max(8, now - lastTime);
+      const currentScrollY = window.scrollY || 0;
+      const rawVel = (currentScrollY - lastScrollY) / dt;
+      smoothedVelocity = smoothedVelocity * 0.72 + rawVel * 0.28;
+      lastScrollY = currentScrollY;
+      lastTime = now;
+
+      const vh = Math.max(400, window.innerHeight || 800);
+      const vw = Math.max(320, window.innerWidth || 1280);
+      const totalCols = detectGridColumns(vw);
+      const viewportCenter = vh * 0.52;
+      const normSpan = vh * 0.58;
+
+      const cardElements = currentWrapper.querySelectorAll<HTMLElement>('[data-card-3d="true"]');
+      cardElements.forEach((cardEl, idx) => {
+        const rect = cardEl.getBoundingClientRect();
+        const cardCenterY =
+          rect.height > 0 ? rect.top + rect.height * 0.5 : viewportCenter + (idx % 6) * 90;
+        const normDist = (cardCenterY - viewportCenter) / normSpan;
+        const colIndex = idx % totalCols;
+        const rowIndex = Math.floor(idx / totalCols);
+
+        const tf = computeCard3DTransform(scroll3DMode, {
+          normDist,
+          colIndex,
+          totalCols,
+          rowIndex,
+          cardIndex: idx,
+          scrollY: currentScrollY,
+          scrollVelocity: smoothedVelocity,
+        });
+
+        cardEl.style.setProperty('--card-rx', `${tf.rx}deg`);
+        cardEl.style.setProperty('--card-ry', `${tf.ry}deg`);
+        cardEl.style.setProperty('--card-rz', `${tf.rz}deg`);
+        cardEl.style.setProperty('--card-tx', `${tf.tx}px`);
+        cardEl.style.setProperty('--card-ty', `${tf.ty}px`);
+        cardEl.style.setProperty('--card-tz', `${tf.tz}px`);
+        cardEl.style.setProperty('--card-scale', `${tf.scale}`);
+        cardEl.style.setProperty('--shimmer-angle', `${tf.shimmerAngle}deg`);
+        cardEl.style.setProperty('--shimmer-opacity', `${tf.shimmerOpacity}`);
+        cardEl.style.setProperty('--spotlight-opacity', `${tf.spotlightOpacity}`);
+      });
+    };
+
+    const scheduleTransformUpdate = () => {
+      if (!rafId) {
+        rafId = window.requestAnimationFrame(applyCardTransforms);
+      }
+    };
+
+    applyCardTransforms();
+    window.addEventListener('scroll', scheduleTransformUpdate, { passive: true });
+    window.addEventListener('resize', scheduleTransformUpdate, { passive: true });
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', scheduleTransformUpdate);
+      window.removeEventListener('resize', scheduleTransformUpdate);
+    };
+  }, [scroll3DMode, is3DEnabled, filteredTools.length, showTwoSections]);
 
   if (filteredTools.length === 0) {
     return (
@@ -165,11 +282,16 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
 
   if (showTwoSections && essentialTools.length > 0 && specialistTools.length > 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+      <div
+        ref={gridWrapperRef}
+        data-active-3d-mode={scroll3DMode}
+        data-3d-disabled={is3DEnabled ? 'false' : 'true'}
+        className="pdf-tool-grid-3d-stage max-w-7xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16"
+      >
         {/* Part 1: Essential & Daily PDF Tools */}
         <section
           aria-labelledby="essential-tools-heading"
-          className="rounded-3xl p-5 sm:p-8 bg-slate-100/60 dark:bg-slate-900/45 border border-slate-200/80 dark:border-slate-800/80"
+          className="rounded-3xl p-5 sm:p-8 bg-[#f4faf7]/80 dark:bg-slate-900/45 border border-emerald-500/20 dark:border-slate-800/80"
         >
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 pb-4 border-b border-slate-200/70 dark:border-slate-800/70">
             <div>
@@ -191,9 +313,15 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {essentialTools.map((tool) => (
-              <ToolCard key={tool.slug} tool={tool} variant="featured" />
+          <div className="pdf-tool-card-3d-scene grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {essentialTools.map((tool, index) => (
+              <ToolCard
+                key={tool.slug}
+                tool={tool}
+                variant="featured"
+                cardIndex={index}
+                is3DEnabled={is3DEnabled}
+              />
             ))}
           </div>
         </section>
@@ -201,7 +329,7 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
         {/* Part 2: Advanced Page Control, Security & AI Suite */}
         <section
           aria-labelledby="specialist-tools-heading"
-          className="rounded-3xl p-5 sm:p-8 bg-white/60 dark:bg-slate-900/25 border border-slate-200/70 dark:border-slate-800/70"
+          className="rounded-3xl p-5 sm:p-8 bg-white/75 dark:bg-slate-900/25 border border-slate-200/70 dark:border-slate-800/70"
         >
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 pb-4 border-b border-slate-200/70 dark:border-slate-800/70">
             <div>
@@ -223,9 +351,15 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {specialistTools.map((tool) => (
-              <ToolCard key={tool.slug} tool={tool} variant="studio" />
+          <div className="pdf-tool-card-3d-scene grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {specialistTools.map((tool, index) => (
+              <ToolCard
+                key={tool.slug}
+                tool={tool}
+                variant="studio"
+                cardIndex={essentialTools.length + index}
+                is3DEnabled={is3DEnabled}
+              />
             ))}
           </div>
         </section>
@@ -234,13 +368,20 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredTools.map((tool) => (
+    <div
+      ref={gridWrapperRef}
+      data-active-3d-mode={scroll3DMode}
+      data-3d-disabled={is3DEnabled ? 'false' : 'true'}
+      className="pdf-tool-grid-3d-stage max-w-7xl mx-auto px-4 sm:px-6"
+    >
+      <div className="pdf-tool-card-3d-scene grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        {filteredTools.map((tool, index) => (
           <ToolCard
             key={tool.slug}
             tool={tool}
             variant={CORE_ESSENTIAL_SLUGS.has(tool.slug) ? 'featured' : 'studio'}
+            cardIndex={index}
+            is3DEnabled={is3DEnabled}
           />
         ))}
       </div>

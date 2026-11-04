@@ -116,22 +116,25 @@ export function PlacedFieldView({
       else if (Math.abs(deg - 270) < 5) deg = 270;
       onChange({ rotation: Math.round(deg) });
     } else {
-      const dx = (e.clientX - g.startX) / pageWidth;
-      const dy = (e.clientY - g.startY) / pageHeight;
+      const dxPx = e.clientX - g.startX;
+      const dyPx = e.clientY - g.startY;
+      const dx = dxPx / pageWidth;
+      const dy = dyPx / pageHeight;
       const aspect = g.orig.w / g.orig.h;
       const keepAspect = field.kind === 'signature' || field.kind === 'initials';
-      let w = clamp(g.orig.w + dx, MIN_SIZE_PX / pageWidth, 1 - g.orig.x);
-      let h = clamp(g.orig.h + dy, MIN_SIZE_PX / pageHeight, 1 - g.orig.y);
-      if (keepAspect) {
-        // follow the dominant axis of the drag
-        const byW = w / aspect;
-        const byH = h * aspect;
-        if (Math.abs(dx) >= Math.abs(dy) * (pageWidth / pageHeight)) {
-          h = clamp(byW * (pageWidth / pageHeight), MIN_SIZE_PX / pageHeight, 1 - g.orig.y);
-          w = (h * pageHeight * aspect) / pageWidth;
+      const minW = MIN_SIZE_PX / pageWidth;
+      const maxW = 1 - g.orig.x;
+      const minH = MIN_SIZE_PX / pageHeight;
+      const maxH = 1 - g.orig.y;
+      let w = clamp(g.orig.w + dx, minW, maxW);
+      let h = clamp(g.orig.h + dy, minH, maxH);
+      if (keepAspect && aspect > 0) {
+        if (Math.abs(dxPx) >= Math.abs(dyPx)) {
+          h = clamp(w / aspect, minH, maxH);
+          w = clamp(h * aspect, minW, maxW);
         } else {
-          w = clamp((byH * pageHeight) / pageWidth, MIN_SIZE_PX / pageWidth, 1 - g.orig.x);
-          h = (w * pageWidth) / aspect / pageHeight;
+          w = clamp(h * aspect, minW, maxW);
+          h = clamp(w / aspect, minH, maxH);
         }
       }
       onChange({ w, h });
@@ -262,14 +265,12 @@ export function PlacedFieldView({
           <div className="flex size-full flex-col items-center justify-center rounded border-2 border-emerald-700 bg-emerald-50/70 p-1 text-center font-mono text-emerald-800 shadow-sm select-none">
             <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-900">
               <ShieldCheck className="size-3 text-emerald-600" />
-              <span>DIGITALLY SIGNED</span>
+              <span>ELECTRONICALLY SIGNED</span>
             </div>
             <div className="text-[7px] font-semibold text-emerald-700 truncate w-full">
-              {signatures.fullName || 'VERIFIED SIGNER'}
+              {signatures.fullName || 'VISUAL E-SIGNATURE'}
             </div>
-            <div className="text-[6px] text-emerald-600 font-mono">
-              {dateText}
-            </div>
+            <div className="text-[6px] text-emerald-600 font-mono">{dateText}</div>
           </div>
         ) : isImage ? (
           asset ? (

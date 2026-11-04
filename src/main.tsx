@@ -69,9 +69,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <I18nextProvider i18n={i18n}>
       <HelmetProvider>
-        <BrowserRouter
-          future={{ v7_startTransition: false, v7_relativeSplatPath: true }}
-        >
+        <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: true }}>
           <ThemeProvider>
             <ToastProvider>
               <AuthProvider>

@@ -72,7 +72,9 @@ export async function loadLocalizedArticleBodies(
   if (!loader) return null;
   try {
     const mod = await loader();
-    const data = (mod as { default?: Record<string, string> }).default || (mod as unknown as Record<string, string>);
+    const data =
+      (mod as { default?: Record<string, string> }).default ||
+      (mod as unknown as Record<string, string>);
     articleBodyCache[code] = data;
     return data;
   } catch {

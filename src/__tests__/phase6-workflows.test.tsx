@@ -89,9 +89,7 @@ describe('Phase 6 — End-to-End Workflows, Cancellation, Duplicate Submissions,
       vi.useFakeTimers();
       const createUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-pdf-url');
       const revokeUrlSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-      const clickSpy = vi
-        .spyOn(HTMLAnchorElement.prototype, 'click')
-        .mockImplementation(() => {});
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
       const pdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]);
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -146,14 +144,12 @@ describe('Phase 6 — End-to-End Workflows, Cancellation, Duplicate Submissions,
   describe('4. CompressPdfPage Integration: Duplicate Submission Guard, Cancellation, Failure Recovery & Already-Compact Handling', () => {
     it('prevents duplicate submissions on rapid double-click and supports mid-flight cancellation without rendering stale output', async () => {
       let resolveWorker: ((val: Uint8Array) => void) | null = null;
-      const runOpSpy = vi
-        .spyOn(WorkerManager.getInstance(), 'runOperation')
-        .mockImplementation(
-          () =>
-            new Promise<Uint8Array>((resolve) => {
-              resolveWorker = resolve;
-            })
-        );
+      const runOpSpy = vi.spyOn(WorkerManager.getInstance(), 'runOperation').mockImplementation(
+        () =>
+          new Promise<Uint8Array>((resolve) => {
+            resolveWorker = resolve;
+          })
+      );
 
       const sampleBytes = await createSamplePdfBytes(2);
       const file = new File([sampleBytes as unknown as BlobPart], 'quarterly-report.pdf', {

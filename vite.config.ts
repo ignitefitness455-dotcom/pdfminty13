@@ -215,6 +215,16 @@ function devApiPlugin() {
               '';
 
             if (mode === 'ocr') {
+              if (!Array.isArray(imagesBase64) || imagesBase64.length === 0) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(
+                  JSON.stringify({
+                    error: 'At least one page image is required for OCR mode.',
+                  })
+                );
+                return;
+              }
               const langHint =
                 typeof language === 'string' && language.trim() && language !== 'auto'
                   ? ` Primary document language hint: ${language.trim().slice(0, 16)}.`
@@ -229,16 +239,17 @@ function devApiPlugin() {
                   text: `Transcribe this document image accurately into well-formatted Markdown:${langHint}`,
                 },
               ];
-              if (Array.isArray(imagesBase64)) {
-                for (const imgStr of imagesBase64) {
-                  if (typeof imgStr === 'string') {
-                    parts.push({
-                      inlineData: {
-                        mimeType: 'image/jpeg',
-                        data: imgStr.replace(/^data:image\/\w+;base64,/, ''),
-                      },
-                    });
-                  }
+              for (const imgStr of imagesBase64) {
+                if (typeof imgStr === 'string' && imgStr.trim().length > 0) {
+                  const mimeMatch = imgStr.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/i);
+                  const rawMime = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/jpeg';
+                  const mimeType = rawMime === 'image/jpg' ? 'image/jpeg' : rawMime;
+                  parts.push({
+                    inlineData: {
+                      mimeType,
+                      data: imgStr.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/i, ''),
+                    },
+                  });
                 }
               }
               promptContent = { parts };
@@ -373,6 +384,7 @@ export default defineConfig(({ command, mode }) => {
               dep.includes('vendor-fontkit') ||
               dep.includes('vendor-jszip') ||
               dep.includes('vendor-firebase') ||
+              dep.includes('vendor-three') ||
               dep.includes('app-seo-data') ||
               dep.includes('locales-de') ||
               dep.includes('locales-fr') ||
@@ -392,6 +404,9 @@ export default defineConfig(({ command, mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
+              if (id.includes('/three/')) {
+                return 'vendor-three';
+              }
               // Granular PDF processing engines
               if (id.includes('@pdf-lib/fontkit')) {
                 return 'vendor-fontkit';

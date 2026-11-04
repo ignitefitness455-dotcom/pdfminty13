@@ -96,4 +96,3 @@ describe('FileUploader', () => {
     expect(screen.getByText(/Format: PDF/i)).toBeInTheDocument();
   });
 });
-

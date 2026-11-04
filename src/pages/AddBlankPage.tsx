@@ -1,19 +1,27 @@
-import { FilePlus, AlertCircle, Download } from 'lucide-react';
+import { FilePlus, AlertCircle, Download, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const AddBlankPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('add-blank-page', isPro, isLoggedIn);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [positionType, setPositionType] = useState<'start' | 'end' | 'custom'>('end');
   const [customIndex, setCustomIndex] = useState<number>(2);
@@ -23,7 +31,15 @@ export const AddBlankPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const [outputSize, setOutputSize] = useState<number>(0);
   const operationTokenRef = React.useRef(0);
+  const isSubmittingRef = React.useRef(false);
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return '0 B';
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(2)} MB`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  };
 
   React.useEffect(() => {
     return () => {
@@ -46,38 +62,41 @@ export const AddBlankPage: React.FC = () => {
     setSelectedFile(files[0]);
     setError(null);
     setIsSuccess(false);
+    setOutputSize(0);
+    setTotalPages(0);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
       setDownloadUrl(null);
     }
     try {
       const bytes = new Uint8Array(await files[0].arrayBuffer());
-      const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
-        bytes,
-      });
+      const count = await WorkerManager.getInstance().runOperation<number>(
+        'getPageCount',
+        { bytes },
+        [bytes.buffer]
+      );
       if (operationTokenRef.current !== currentToken) return;
       setTotalPages(count);
       if (customIndex > count + 1) setCustomIndex(count + 1);
-    } catch {
+    } catch (err: unknown) {
       if (operationTokenRef.current === currentToken) {
+        const message = err instanceof Error ? err.message : '';
+        setSelectedFile(null);
         setError(
-          t('addBlankPage.readError', { defaultValue: 'Failed to read PDF. It may be corrupted.' })
+          message ||
+            t('addBlankPage.readError', {
+              defaultValue: 'Failed to read PDF. It may be corrupted.',
+            })
         );
       }
     }
   };
 
   const handleInsert = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
-    }
-    setError(null);
-    setIsSuccess(false);
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl(null);
     }
 
     // Validate customIndex against totalPages before calling worker.
@@ -94,7 +113,15 @@ export const AddBlankPage: React.FC = () => {
       }
     }
 
+    const activeToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
+    setError(null);
+    setIsSuccess(false);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
 
     try {
       const targetPos = positionType === 'custom' ? customIndex : positionType;
@@ -104,14 +131,30 @@ export const AddBlankPage: React.FC = () => {
         { bytes: fileBytes, position: targetPos },
         [fileBytes.buffer]
       );
+
+      if (activeToken !== operationTokenRef.current) return;
+
       const blob = new Blob([updatedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_padded_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
+      setOutputSize(blob.size);
       setDownloadUrl(url);
       setDownloadName(name);
-      await downloadBlob(blob, name);
       setIsSuccess(true);
+
+      addActivityItem({
+        toolName: 'Add Blank Page',
+        toolId: 'add-blank-page',
+        fileName: selectedFile.name,
+        fileSizeFormatted: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Edit',
+        savings: `+1 page (${targetPos})`,
+      });
+
+      await downloadBlob(blob, name);
     } catch (err: unknown) {
+      if (activeToken !== operationTokenRef.current) return;
       logger.error('Add blank page error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -121,39 +164,58 @@ export const AddBlankPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      isSubmittingRef.current = false;
+      if (activeToken === operationTokenRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="add_blank_container">
       <SEO slug="add-blank-page" />
-      <ToolHeader slug="add-blank-page" limitMB={TOOL_SIZE_LIMITS['add-blank-page'].maxSingleMB} />
+      <ToolHeader slug="add-blank-page" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-primary font-bold">
-              <FilePlus className="w-5 h-5 text-sky-600" />
-              <span>{t('addBlankPage.workspace', { defaultValue: 'Document Workspace' })}</span>
+              <FilePlus className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+              <span className="dark:text-slate-100">
+                {t('addBlankPage.workspace', { defaultValue: 'Document Workspace' })}
+              </span>
             </div>
 
             {!selectedFile ? (
-              <FileUploader
-                onFilesSelected={handleFilesSelected}
-                maxSizeMB={TOOL_SIZE_LIMITS['add-blank-page'].maxSingleMB}
-              />
+              <div className="space-y-4">
+                <FileUploader
+                  onFilesSelected={handleFilesSelected}
+                  accept=".pdf,application/pdf"
+                  maxSizeMB={currentLimits.maxSingleMB}
+                />
+                <EmptyState
+                  icon={FilePlus}
+                  description={t('addBlankPage.emptyState', {
+                    defaultValue:
+                      'Select a PDF document to insert a blank page at the beginning, end, or a custom page position.',
+                  })}
+                />
+              </div>
             ) : (
               <div
                 className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3"
                 id="loaded_blank_file"
               >
                 <div className="truncate pr-2">
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selectedFile.name}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-slate-400 tabular-nums">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    {totalPages > 0 ? ` • ${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}` : ''} •{' '}
-                    {t('addBlankPage.pdfDocument', { defaultValue: 'PDF Document' })}
+                    {totalPages > 0
+                      ? ` • ${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`
+                      : ''}{' '}
+                    • {t('addBlankPage.pdfDocument', { defaultValue: 'PDF Document' })}
                   </p>
                 </div>
                 <button
@@ -166,6 +228,7 @@ export const AddBlankPage: React.FC = () => {
                     setPositionType('end'); // Reset position type too
                     setError(null);
                     setIsSuccess(false);
+                    setOutputSize(0);
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);
                       setDownloadUrl(null);
@@ -186,14 +249,21 @@ export const AddBlankPage: React.FC = () => {
               role="status"
               aria-live="polite"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-mint"></span>
-                <span>
-                  {t('addBlankPage.successTitle', {
-                    defaultValue:
-                      'Page Inserted Successfully! Your modified PDF has been generated.',
-                  })}
-                </span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>
+                    {t('addBlankPage.successTitle', {
+                      defaultValue:
+                        'Page Inserted Successfully! Your modified PDF has been generated.',
+                    })}
+                  </span>
+                </div>
+                {outputSize > 0 && (
+                  <span className="text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 px-2.5 py-0.5 rounded-md tabular-nums">
+                    {formatBytes(outputSize)}
+                  </span>
+                )}
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-[11px] font-normal leading-normal">
                 {t('addBlankPage.successDesc', {
@@ -207,9 +277,9 @@ export const AddBlankPage: React.FC = () => {
                     href={downloadUrl}
                     download={downloadName}
                     id="manual_download_link"
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer no-underline"
                   >
-                    <Download className="w-4 h-4 animate-bounce" />
+                    <Download className="w-4 h-4 shrink-0" />
                     <span>
                       {t('addBlankPage.downloadModified', {
                         defaultValue: 'Download Modified PDF',
@@ -226,12 +296,13 @@ export const AddBlankPage: React.FC = () => {
                       setPositionType('end');
                       setError(null);
                       setIsSuccess(false);
+                      setOutputSize(0);
                       if (downloadUrl) {
                         URL.revokeObjectURL(downloadUrl);
                         setDownloadUrl(null);
                       }
                     }}
-                    className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
                   >
                     {t('toolCommon.processAnother', { defaultValue: 'Process Another PDF' })}
                   </button>
@@ -242,9 +313,9 @@ export const AddBlankPage: React.FC = () => {
         </div>
 
         {/* Configurations column */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('addBlankPage.insertLocation', { defaultValue: 'Insert Location' })}
             </h3>
 
@@ -278,25 +349,28 @@ export const AddBlankPage: React.FC = () => {
                   onClick={() => setPositionType(pos.type)}
                   aria-pressed={positionType === pos.type}
                   aria-label={t(pos.labelKey, { defaultValue: pos.label })}
-                  className={`w-full p-3 rounded-xl border text-left transition-all ${
+                  className={`w-full p-3 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-50 ${
                     positionType === pos.type
-                      ? 'border-sky-500 bg-sky-50/50 ring-2 ring-sky-500/15'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ? 'border-sky-500 bg-sky-50/50 dark:bg-sky-950/40 ring-2 ring-sky-500/15'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/60'
                   }`}
                   disabled={!selectedFile}
                 >
-                  <span className="font-bold text-sm text-slate-900 block">
+                  <span className="font-bold text-sm text-slate-900 dark:text-slate-100 block">
                     {t(pos.labelKey, { defaultValue: pos.label })}
                   </span>
-                  <span className="text-[11px] text-slate-500 block leading-normal mt-0.5">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block leading-normal mt-0.5">
                     {t(pos.descKey, { defaultValue: pos.desc })}
                   </span>
                 </button>
               ))}
 
               {positionType === 'custom' && (
-                <div className="space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-200 animate-fadeIn text-xs">
-                  <label htmlFor="custom_pg_index" className="font-bold text-slate-600 block">
+                <div className="space-y-1 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700 animate-fadeIn text-xs">
+                  <label
+                    htmlFor="custom_pg_index"
+                    className="font-bold text-slate-600 dark:text-slate-300 block"
+                  >
                     {t('addBlankPage.insertAtLabel', { defaultValue: 'Insert at page index:' })}
                   </label>
                   <input
@@ -315,7 +389,7 @@ export const AddBlankPage: React.FC = () => {
                         setCustomIndex(Math.min(Math.max(1, parsed), upperBound));
                       }
                     }}
-                    className="w-full border border-slate-300 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 font-bold"
+                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 font-bold"
                   />
                   <p className="text-xs text-slate-400">
                     {t('addBlankPage.pageLimitHelp', {
@@ -329,21 +403,25 @@ export const AddBlankPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
-              <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg">
+              <div
+                role="alert"
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-200 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800 p-3 rounded-lg"
+              >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             <button
+              type="button"
               onClick={handleInsert}
               disabled={!selectedFile || loading}
               className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-sky-600/10 ${
                 selectedFile && !loading
                   ? 'bg-sky-600 hover:bg-sky-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (

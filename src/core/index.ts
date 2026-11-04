@@ -89,22 +89,16 @@ export const getFriendlyErrorMessage = (prefix: string, rawError: unknown): stri
     return `${prefix}: The file is encrypted or locked. Please use the "Unlock PDF" tool first to decrypt it.`;
   }
   if (
-    [
-      'pdf header magic',
-      'missing the standard',
-      'header signature',
-      'no pdf header found',
-    ].some((s) => errorStr.includes(s))
+    ['pdf header magic', 'missing the standard', 'header signature', 'no pdf header found'].some(
+      (s) => errorStr.includes(s)
+    )
   ) {
     return `${prefix}: Incompatible file format. The file is missing a standard '%PDF' header signature.`;
   }
   if (
-    [
-      'failed to parse pdf document',
-      'invalid pdf',
-      'formaterror',
-      'file is empty',
-    ].some((s) => errorStr.includes(s))
+    ['failed to parse pdf document', 'invalid pdf', 'formaterror', 'file is empty'].some((s) =>
+      errorStr.includes(s)
+    )
   ) {
     return `${prefix}: The file appears to be corrupted, empty, or not a valid PDF document.`;
   }

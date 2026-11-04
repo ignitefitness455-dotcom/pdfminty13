@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { onRequest } from '../api/gemini-proxy';
-import {
-  _clearFirebaseAuthCacheForTesting,
-  uint8ArrayToBase64Url,
-} from '../utils/firebase-auth';
+import { _clearFirebaseAuthCacheForTesting, uint8ArrayToBase64Url } from '../utils/firebase-auth';
 
 function makeContext(
   request: Request,
@@ -69,6 +66,45 @@ describe('gemini-proxy security & input boundary tests', () => {
 
     const res = await onRequest(makeContext(req));
     expect(res.status).toBe(413);
+  });
+
+  it('preserves PNG/WebP MIME type in upstream Gemini inlineData payload during OCR mode (OCR-02)', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Extracted PNG text' }] } }],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const req = new Request('https://pdfminty.com/api/gemini-proxy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://pdfminty.com',
+        'CF-Connecting-IP': '203.0.113.15',
+      },
+      body: JSON.stringify({
+        mode: 'ocr',
+        language: 'bn',
+        imagesBase64: [
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+        ],
+      }),
+    });
+
+    const res = await onRequest(makeContext(req));
+    expect(res.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, calledInit] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    const upstreamBody = JSON.parse(String(calledInit.body));
+    const inlinePart = upstreamBody.contents[0].parts[1];
+    expect(inlinePart.inlineData.mimeType).toBe('image/png');
+    expect(inlinePart.inlineData.data).toBe(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+    );
   });
 
   it('passes Gemini API key via x-goog-api-key header and never in the request URL', async () => {
@@ -295,7 +331,9 @@ describe('gemini-proxy Firebase RS256 auth & Pro entitlement enforcement (TASK-P
       }
       if (url.includes('/documents/users/free_user_456')) {
         return new Response(
-          JSON.stringify({ fields: { isPro: { booleanValue: false }, plan: { stringValue: 'free' } } }),
+          JSON.stringify({
+            fields: { isPro: { booleanValue: false }, plan: { stringValue: 'free' } },
+          }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -337,7 +375,9 @@ describe('gemini-proxy Firebase RS256 auth & Pro entitlement enforcement (TASK-P
       }
       if (url.includes('/documents/users/pro_user_789')) {
         return new Response(
-          JSON.stringify({ fields: { isPro: { booleanValue: true }, plan: { stringValue: 'pro' } } }),
+          JSON.stringify({
+            fields: { isPro: { booleanValue: true }, plan: { stringValue: 'pro' } },
+          }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
       }

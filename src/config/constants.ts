@@ -243,6 +243,8 @@ export const UPLOAD_LIMITS = {
   MAX_TOTAL_SIZE: 150 * 1024 * 1024,
   MAX_FILES: 50,
   MAX_SINGLE_FILE: 100 * 1024 * 1024,
+  PRO_MAX_SINGLE_FILE: 500 * 1024 * 1024,
+  PRO_MAX_TOTAL_SIZE: 1000 * 1024 * 1024,
 };
 
 export const TOOL_SIZE_LIMITS: Record<string, { maxSingleMB: number; maxTotalMB?: number }> = {
@@ -348,7 +350,7 @@ export const getToolLimit = (
 
 export const AI_LIMITS = {
   MAX_TEXT_LENGTH: 30000,
-  DEFAULT_MODEL: 'gemini-2.0-flash',
+  DEFAULT_MODEL: 'gemini-2.5-flash',
 };
 
 /**

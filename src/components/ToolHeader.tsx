@@ -72,7 +72,9 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {title}
           </h1>
-          <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">·</span>
+          <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">
+            ·
+          </span>
           <span
             className={`inline-flex items-center gap-1.5 text-xs font-semibold tabular-nums ${
               isPro
@@ -84,10 +86,15 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
             <span>
               {isPro
                 ? `PRO Limit: ${sizeLimit}MB`
-                : t('toolCommon.limit', { limit: sizeLimit, defaultValue: `Limit: ${sizeLimit}MB` })}
+                : t('toolCommon.limit', {
+                    limit: sizeLimit,
+                    defaultValue: `Limit: ${sizeLimit}MB`,
+                  })}
             </span>
           </span>
-          <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">·</span>
+          <span className="text-slate-300 dark:text-slate-700 select-none" aria-hidden="true">
+            ·
+          </span>
           <span
             className={`inline-flex items-center gap-1 text-xs font-semibold ${
               isCloudAiTool
@@ -103,7 +110,9 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
           </span>
         </div>
         {desc && (
-          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">{desc}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">
+            {desc}
+          </p>
         )}
       </div>
     </div>

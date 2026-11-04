@@ -5,14 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const FlattenPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro } = useAuth();
+  const limitMB = getToolLimit('flatten-pdf', isPro, Boolean(user)).maxSingleMB;
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +24,16 @@ export const FlattenPdfPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+
+  const operationTokenRef = React.useRef(0);
+  const isSubmittingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+    };
+  }, []);
 
   // Clean up Object URL on unmount to prevent memory leaks
   React.useEffect(() => {
@@ -32,7 +46,18 @@ export const FlattenPdfPage: React.FC = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
-      setSelectedFile(files[0]);
+      const candidate = files[0];
+      if (candidate.size === 0) {
+        setError(
+          t('flattenPdf.emptyFileError', {
+            defaultValue: 'The selected PDF file is empty (0 bytes).',
+          })
+        );
+        return;
+      }
+      operationTokenRef.current++;
+      isSubmittingRef.current = false;
+      setSelectedFile(candidate);
       setError(null);
       setIsSuccess(false);
       if (downloadUrl) {
@@ -43,11 +68,13 @@ export const FlattenPdfPage: React.FC = () => {
   };
 
   const handleFlatten = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+    isSubmittingRef.current = true;
+    const myToken = ++operationTokenRef.current;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -63,16 +90,30 @@ export const FlattenPdfPage: React.FC = () => {
         { bytes: fileBytes },
         [fileBytes.buffer]
       );
+      if (myToken !== operationTokenRef.current) return;
+
       const blob = new Blob([processedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = sanitizeDownloadFilename(`pdfminty_flattened_${selectedFile.name}`);
+      const name = sanitizeDownloadFilename(
+        `pdfminty_flattened_${selectedFile.name}`,
+        'pdfminty_flattened.pdf'
+      );
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
 
       // Attempt automatic download
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: 'Flatten PDF',
+        toolId: 'flatten-pdf',
+        fileName: name,
+        fileSizeFormatted: `${(blob.size / (1024 * 1024)).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Edit',
+      });
       setIsSuccess(true);
     } catch (err: unknown) {
+      if (myToken !== operationTokenRef.current) return;
       logger.error('Flatten error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -82,11 +123,12 @@ export const FlattenPdfPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      isSubmittingRef.current = false;
+      if (myToken === operationTokenRef.current) {
+        setLoading(false);
+      }
     }
   };
-
-  const limitMB = TOOL_SIZE_LIMITS['flatten-pdf']?.maxSingleMB || 100;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadein" id="flatten_page_container">
@@ -95,7 +137,7 @@ export const FlattenPdfPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-primary font-bold">
               <FileText className="w-5 h-5 text-security-green" />
               <span>{t('flattenPdf.workspace', { defaultValue: 'Document Workspace' })}</span>
@@ -113,7 +155,9 @@ export const FlattenPdfPage: React.FC = () => {
                 id="loaded_flatten_file"
               >
                 <div className="truncate pr-2">
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selectedFile.name}</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {selectedFile.name}
+                  </p>
                   <p className="text-xs text-slate-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
                     {t('flattenPdf.pdfDocument', { defaultValue: 'PDF Document' })}
@@ -122,7 +166,11 @@ export const FlattenPdfPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
+                    operationTokenRef.current++;
+                    isSubmittingRef.current = false;
+                    setLoading(false);
                     setSelectedFile(null);
+                    setError(null);
                     setIsSuccess(false);
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);
@@ -137,8 +185,8 @@ export const FlattenPdfPage: React.FC = () => {
             )}
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-xs text-red-700 font-semibold leading-relaxed">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+              <div className="p-3 bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800/60 rounded-xl flex items-start gap-2.5 text-xs text-red-700 dark:text-rose-300 font-semibold leading-relaxed">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
                 <span>{error}</span>
               </div>
             )}
@@ -183,6 +231,8 @@ export const FlattenPdfPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
+                        operationTokenRef.current++;
+                        isSubmittingRef.current = false;
                         setSelectedFile(null);
                         setIsSuccess(false);
                         setError(null);
@@ -202,12 +252,12 @@ export const FlattenPdfPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('flattenPdf.optionsTitle', { defaultValue: 'Flatten Options' })}
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               {t('flattenPdf.optionsDesc', {
                 defaultValue:
                   'Flattening form fields locks the current values, radio options, checkboxes, and signatures, turning them into a permanent vector layer. This protects against unauthorized edits.',
@@ -215,14 +265,15 @@ export const FlattenPdfPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
+              type="button"
               onClick={handleFlatten}
               disabled={!selectedFile || loading}
               className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-emerald-600/10 ${
                 selectedFile && !loading
                   ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (

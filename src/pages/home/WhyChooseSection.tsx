@@ -28,7 +28,10 @@ export const WhyChooseSection: React.FC = () => {
         >
           <div>
             <div className="w-11 h-11 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mb-5 shrink-0">
-              <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+              <Shield
+                className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
               {t('home.whyChoose.privacyTitle', { defaultValue: 'Privacy First' })}

@@ -24,8 +24,12 @@ describe('Consent Mode v2 integrity & Firestore security rules verification (TAS
     expect(html).not.toContain('CP_v2_PDFMINTY_CONSENT');
     expect(html).not.toContain('00000000-0000-0000-0000-000000000000');
     expect(html).toContain("gtag('consent', 'default'");
-    expect(html).toContain("'analytics_storage': stored && stored.analytics_storage === 'granted' ? 'granted' : 'denied'");
-    expect(html).toContain("'ad_storage': stored && stored.ad_storage === 'granted' ? 'granted' : 'denied'");
+    expect(html).toContain(
+      "'analytics_storage': stored && stored.analytics_storage === 'granted' ? 'granted' : 'denied'"
+    );
+    expect(html).toContain(
+      "'ad_storage': stored && stored.ad_storage === 'granted' ? 'granted' : 'denied'"
+    );
   });
 
   it('ConsentManager defaults analytics_storage and ad_* toggles to unchecked (strictly opt-in)', () => {
@@ -67,9 +71,12 @@ describe('Consent Mode v2 integrity & Firestore security rules verification (TAS
     const rules = fs.readFileSync(path.resolve(process.cwd(), 'firestore.rules'), 'utf8');
     expect(rules).toContain('request.resource.data.keys().hasOnly([');
     expect(rules).toContain('request.resource.data.diff(resource.data).affectedKeys().hasOnly([');
-    expect(rules).toContain("request.resource.data.aiAnalysesUsed >= resource.data.get('aiAnalysesUsed', 0)");
+    expect(rules).toContain(
+      "request.resource.data.aiAnalysesUsed >= resource.data.get('aiAnalysesUsed', 0)"
+    );
     // Ensure client create/update whitelists never permit `isPro` or `plan`
-    const createBlock = rules.split('allow create: if isOwner(userId)')[1]?.split('allow update:')[0] || '';
+    const createBlock =
+      rules.split('allow create: if isOwner(userId)')[1]?.split('allow update:')[0] || '';
     expect(createBlock).not.toContain("'isPro'");
     expect(createBlock).not.toContain("'plan'");
   });

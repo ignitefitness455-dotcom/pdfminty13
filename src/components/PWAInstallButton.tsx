@@ -84,7 +84,9 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
                 {t('pwa.installMobileTitle', { defaultValue: 'Install PDFMinty App' })}
               </span>
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">
-                {t('pwa.installMobileSubtitle', { defaultValue: 'Work 100% offline without internet' })}
+                {t('pwa.installMobileSubtitle', {
+                  defaultValue: 'Work 100% offline without internet',
+                })}
               </span>
             </div>
           </div>
@@ -162,8 +164,8 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
                     <span className="font-bold block">Tap the Share Button</span>
                     <span className="text-slate-500 dark:text-slate-400">
                       In Apple Safari browser, tap the{' '}
-                      <Share className="w-3.5 h-3.5 inline mx-0.5 text-blue-500" /> Share icon at the
-                      bottom or top toolbar.
+                      <Share className="w-3.5 h-3.5 inline mx-0.5 text-blue-500" /> Share icon at
+                      the bottom or top toolbar.
                     </span>
                   </div>
                 </div>

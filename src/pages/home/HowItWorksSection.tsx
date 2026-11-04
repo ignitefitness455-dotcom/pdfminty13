@@ -32,9 +32,7 @@ export const HowItWorksSection: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-                <span className="text-[11px] text-slate-500 font-mono ml-2">
-                  document.pdf
-                </span>
+                <span className="text-[11px] text-slate-500 font-mono ml-2">document.pdf</span>
               </div>
               <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
                 {t('home.howItWorks.offlineBadge', { defaultValue: '100% Offline' })}

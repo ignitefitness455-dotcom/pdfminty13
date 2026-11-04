@@ -161,10 +161,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const activeToolSlug = useMemo(() => {
     let activeSlug = location.pathname.replace(/^\//, '').replace(/\/$/, '');
     for (const loc of SUPPORTED_LOCALES) {
-      if (
-        loc !== DEFAULT_LOCALE &&
-        (activeSlug === loc || activeSlug.startsWith(`${loc}/`))
-      ) {
+      if (loc !== DEFAULT_LOCALE && (activeSlug === loc || activeSlug.startsWith(`${loc}/`))) {
         activeSlug = activeSlug.substring(loc.length + 1);
         break;
       }
@@ -198,18 +195,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         className="min-h-screen flex flex-col bg-transparent text-on-background font-sans transition-colors duration-200 selection:bg-primary-fixed/30 overflow-x-hidden w-full relative"
         id="app_shell"
       >
-        {/* Zero-filter GPU-friendly ambient mesh background */}
+        {/* Zero-filter GPU-friendly ambient mesh background (#f4faf7 / #ecfdf5 light-mint & white theme) */}
         <div
-          className="fixed inset-0 -z-20 pointer-events-none bg-gradient-to-br from-slate-100 via-white to-slate-200 dark:from-slate-900 dark:via-black dark:to-slate-950"
+          className="fixed inset-0 -z-20 pointer-events-none bg-gradient-to-br from-[#f4faf7] via-white to-[#ecfdf5] dark:from-slate-900 dark:via-black dark:to-slate-950"
           aria-hidden="true"
         >
           <div className="hidden sm:block absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(20,184,166,0.12)_0%,transparent_45%),radial-gradient(circle_at_85%_40%,rgba(16,185,129,0.12)_0%,transparent_45%),radial-gradient(circle_at_45%_90%,rgba(59,130,246,0.10)_0%,transparent_50%)]" />
         </div>
         <LanguageSuggestionBanner />
-        <Header
-          mobileMenuOpen={mobileMenuOpen}
-          setMobileMenuOpen={setMobileMenuOpen}
-        />
+        <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
         {mobileMenuOpen && (
           <SilentErrorBoundary>
@@ -226,13 +220,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         )}
 
         {/* Primary Page Canvas Container with Left Tools Menu Bar */}
-        <div className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col lg:flex-row lg:items-start gap-6">
+        <div className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col lg:flex-row lg:items-start gap-2.5 lg:gap-6">
           <ToolsSidebar items={menuItems} activeToolSlug={activeToolSlug} />
 
-          <main
-            className="flex-1 min-w-0 w-full"
-            id="main-content"
-          >
+          <main className="flex-1 min-w-0 w-full" id="main-content">
             <div className="container-pdfminty py-1 sm:py-2 lg:py-3 relative z-10">
               <Breadcrumbs />
               <InternalSEO />
@@ -259,7 +250,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {showFeedbackModal && (
           <SilentErrorBoundary>
             <React.Suspense fallback={null}>
-              <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
+              <FeedbackModal
+                isOpen={showFeedbackModal}
+                onClose={() => setShowFeedbackModal(false)}
+              />
             </React.Suspense>
           </SilentErrorBoundary>
         )}

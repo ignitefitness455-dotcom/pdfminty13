@@ -16,7 +16,12 @@ import {
   decodePDFRawStream,
 } from '@cantoo/pdf-lib';
 
-import { PDF_PAGE_SIZES, WATERMARK_DEFAULTS, PAGE_NUMBER_DEFAULTS } from '../config/constants';
+import {
+  PDF_PAGE_SIZES,
+  WATERMARK_DEFAULTS,
+  PAGE_NUMBER_DEFAULTS,
+  UPLOAD_LIMITS,
+} from '../config/constants';
 import { logger } from '../utils/logger';
 
 import { PDFSanitizer } from './PDFSanitizer';
@@ -56,9 +61,7 @@ export function formatUserFriendlyErrorMessage(err: unknown, defaultMessage: str
       lower.includes('too large') ||
       lower.includes('max_single_file')
     ) {
-      return rawMessage.includes('MB')
-        ? rawMessage
-        : 'File size exceeds maximum allowed limit (max 100MB).';
+      return rawMessage.includes('MB') ? rawMessage : 'File size exceeds maximum allowed limit.';
     }
 
     // 4. Invalid / Corrupted PDF Header or structure
@@ -117,18 +120,22 @@ function handlePdfLibError(err: unknown, defaultMessage: string): never {
  */
 async function loadPlainPDF(bytes: Uint8Array, skipEncryptionCheck = false) {
   try {
-    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, { skipEncryptionCheck });
+    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+      skipEncryptionCheck,
+      maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+    });
 
-    if (!skipEncryptionCheck) {
-      const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
-      if (encrypted) {
-        throw new Error(
-          'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
-        );
-      }
+    const pdfDoc = await PDFDocument.load(
+      safeBytes,
+      skipEncryptionCheck ? { ignoreEncryption: true } : undefined
+    );
+
+    if (!skipEncryptionCheck && pdfDoc.isEncrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+      );
     }
 
-    const pdfDoc = await PDFDocument.load(safeBytes);
     return pdfDoc;
   } catch (err: unknown) {
     handlePdfLibError(err, 'Failed to read PDF document. It may be corrupted.');
@@ -223,11 +230,17 @@ async function getFontBytes(): Promise<Uint8Array> {
 
 export async function mergePDFs(filesBytes: Uint8Array[]): Promise<Uint8Array> {
   try {
+    if (!Array.isArray(filesBytes) || filesBytes.length === 0) {
+      throw new Error('At least one PDF document is required to merge.');
+    }
     const mergedPdf = await PDFDocument.create();
-    for (const b of filesBytes) {
+    for (let i = 0; i < filesBytes.length; i++) {
+      const b = filesBytes[i];
       const pdf = await loadPlainPDF(b);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
+      // Release reference to source buffer immediately after copying pages to reduce peak Worker heap usage
+      filesBytes[i] = new Uint8Array(0);
     }
     return await mergedPdf.save({ useObjectStreams: false }); // keep compatibility broad
   } catch (err) {
@@ -239,6 +252,10 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
   const pdfDoc = await loadPlainPDF(bytes);
   const totalPages = pdfDoc.getPageCount();
 
+  if (totalPages === 0) {
+    throw new Error('Cannot split an empty PDF document (0 pages).');
+  }
+
   const rangeSpecs = ranges
     .split(',')
     .map((r) => r.trim())
@@ -246,6 +263,13 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
 
   if (rangeSpecs.length === 0) {
     throw new Error('Invalid range specification: no page ranges provided.');
+  }
+
+  const MAX_SPLIT_PARTS = 200;
+  if (rangeSpecs.length > MAX_SPLIT_PARTS) {
+    throw new Error(
+      `Too many split segments (${rangeSpecs.length}). Please specify at most ${MAX_SPLIT_PARTS} ranges at once.`
+    );
   }
 
   const results: Uint8Array[] = [];
@@ -297,16 +321,31 @@ export async function splitPDF(bytes: Uint8Array, ranges: string): Promise<Uint8
 }
 
 export async function extractPages(bytes: Uint8Array, pageNumbers: number[]): Promise<Uint8Array> {
+  if (!Array.isArray(pageNumbers) || pageNumbers.length === 0) {
+    throw new Error('No valid pages found to extract.');
+  }
+  const MAX_EXTRACT_PAGES = 2000;
+  if (pageNumbers.length > MAX_EXTRACT_PAGES) {
+    throw new Error(
+      `Too many pages specified for extraction (maximum ${MAX_EXTRACT_PAGES} pages).`
+    );
+  }
+
   const pdfDoc = await loadPlainPDF(bytes);
-  const extractedPdf = await PDFDocument.create();
+  const totalPages = pdfDoc.getPageCount();
+  if (totalPages === 0) {
+    throw new Error('Cannot extract pages from an empty PDF document (0 pages).');
+  }
 
   const indices = pageNumbers
-    .map((p) => p - 1)
-    .filter((idx) => idx >= 0 && idx < pdfDoc.getPageCount());
+    .filter((p) => Number.isFinite(p))
+    .map((p) => Math.trunc(p) - 1)
+    .filter((idx) => idx >= 0 && idx < totalPages);
   if (indices.length === 0) {
     throw new Error('No valid pages found to extract.');
   }
 
+  const extractedPdf = await PDFDocument.create();
   try {
     const copiedPages = await extractedPdf.copyPages(pdfDoc, indices);
     copiedPages.forEach((p) => extractedPdf.addPage(p));
@@ -321,15 +360,23 @@ export async function rotatePDF(
   degreesValue: number,
   pageIndices?: number[]
 ): Promise<Uint8Array> {
+  if (!Number.isFinite(degreesValue) || Math.abs(degreesValue) % 90 !== 0) {
+    throw new Error('Invalid rotation angle. PDF rotation must be a multiple of 90 degrees.');
+  }
   const pdfDoc = await loadPlainPDF(bytes);
+  const pages = pdfDoc.getPages();
+  if (pages.length === 0) {
+    throw new Error('Cannot rotate an empty PDF document (0 pages).');
+  }
   try {
-    const pages = pdfDoc.getPages();
-    const indicesToRotate = pageIndices ? pageIndices.map((p) => p - 1) : pages.map((_, i) => i);
+    const indicesToRotate = pageIndices
+      ? Array.from(new Set(pageIndices.map((p) => p - 1)))
+      : pages.map((_, i) => i);
 
     for (const idx of indicesToRotate) {
       if (idx >= 0 && idx < pages.length) {
         const page = pages[idx];
-        const currentRotation = page.getRotation().angle;
+        const currentRotation = page.getRotation().angle || 0;
         const normalizedRotation = (((currentRotation + degreesValue) % 360) + 360) % 360;
         page.setRotation(degrees(normalizedRotation));
       }
@@ -345,16 +392,20 @@ export async function deletePagesPDF(
   pageIndices: number[]
 ): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
-  const indicesToRemove = [...pageIndices]
-    .map((p) => p - 1)
-    .filter((idx) => idx >= 0 && idx < pdfDoc.getPageCount())
-    .sort((a, b) => b - a); // Sort descending to remove safely
+  const totalPages = pdfDoc.getPageCount();
+  const indicesToRemove = Array.from(
+    new Set(
+      pageIndices
+        .map((p) => p - 1)
+        .filter((idx) => Number.isInteger(idx) && idx >= 0 && idx < totalPages)
+    )
+  ).sort((a, b) => b - a); // Sort descending to remove safely
 
   if (indicesToRemove.length === 0) {
     throw new Error('No valid pages designated for deletion.');
   }
 
-  if (indicesToRemove.length === pdfDoc.getPageCount()) {
+  if (indicesToRemove.length === totalPages) {
     throw new Error('Cannot delete all pages from the PDF document.');
   }
 
@@ -376,23 +427,34 @@ export async function reorderPDF(
   newOrder: ReorderPageTarget[]
 ): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
-  const reorderedPdf = await PDFDocument.create();
+  const pageCount = pdfDoc.getPageCount();
+  if (pageCount === 0) {
+    throw new Error('Cannot reorder an empty PDF document.');
+  }
 
   const normalizedOrder = newOrder.map((item) =>
     typeof item === 'number' ? { page: item, rotation: 0 } : item
   );
-  const indices = normalizedOrder.map((p) => p.page - 1);
+  const indices = normalizedOrder.map((p) =>
+    Number.isFinite(p.page) ? Math.trunc(p.page) - 1 : -1
+  );
   if (indices.length === 0) {
     throw new Error('No pages specified for reordering.');
   }
-  if (indices.some((idx) => idx < 0 || idx >= pdfDoc.getPageCount())) {
+  if (indices.length > 2000) {
+    throw new Error('Too many pages specified in reorder sequence (maximum 2000 pages).');
+  }
+  if (indices.some((idx) => idx < 0 || idx >= pageCount)) {
     throw new Error('Invalid page reordering index out of bounds.');
   }
+
+  const reorderedPdf = await PDFDocument.create();
 
   try {
     const copiedPages = await reorderedPdf.copyPages(pdfDoc, indices);
     copiedPages.forEach((p, idx) => {
-      const extraRotation = normalizedOrder[idx]?.rotation || 0;
+      const rawExtra = Number(normalizedOrder[idx]?.rotation ?? 0);
+      const extraRotation = Number.isFinite(rawExtra) ? Math.round(rawExtra / 90) * 90 : 0;
       if (extraRotation % 360 !== 0) {
         const cur = p.getRotation().angle;
         const normalizedRotation = (((cur + extraRotation) % 360) + 360) % 360;
@@ -641,6 +703,22 @@ export async function watermarkPDF(
 ): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
   try {
+    const pages = pdfDoc.getPages();
+    if (pages.length === 0) {
+      throw new Error('Cannot apply watermark to an empty PDF document.');
+    }
+
+    const lines = String(text ?? '')
+      .replace(/\r\n?/g, '\n')
+      .split('\n')
+      .map((l) => l.trim().slice(0, 120))
+      .filter((l) => l.length > 0)
+      .slice(0, 10);
+
+    if (lines.length === 0) {
+      throw new Error('Watermark text cannot be empty.');
+    }
+
     // Embed Noto Sans for Latin/Cyrillic/Greek support; complex scripts (Bengali, Devanagari,
     // Arabic, CJK, emoji) automatically use the high-DPI Canvas PNG stamp fallback below.
     let font;
@@ -661,37 +739,40 @@ export async function watermarkPDF(
       font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica);
     }
 
-    const size = options?.size || WATERMARK_DEFAULTS.size;
+    const rawSize = Number(options?.size ?? WATERMARK_DEFAULTS.size);
+    const size =
+      Number.isFinite(rawSize) && rawSize > 0
+        ? Math.max(8, Math.min(200, rawSize))
+        : WATERMARK_DEFAULTS.size;
+
     const rawOpacity =
-      options?.opacity !== undefined ? options?.opacity : WATERMARK_DEFAULTS.opacity;
-    const opacity = Math.max(0, Math.min(1, rawOpacity));
-    const rot = options?.rotationDegrees ?? WATERMARK_DEFAULTS.rotationDegrees;
+      options?.opacity !== undefined ? Number(options.opacity) : WATERMARK_DEFAULTS.opacity;
+    const opacity = Number.isFinite(rawOpacity)
+      ? Math.max(0.05, Math.min(1, rawOpacity))
+      : WATERMARK_DEFAULTS.opacity;
+
+    const rawRot = Number(options?.rotationDegrees ?? WATERMARK_DEFAULTS.rotationDegrees);
+    const rot = Number.isFinite(rawRot) ? rawRot : WATERMARK_DEFAULTS.rotationDegrees;
 
     let rVal = 0.5,
       gVal = 0.5,
       bVal = 0.5;
     if (options?.colorHex) {
-      const hex = options.colorHex.replace('#', '');
-      if (hex.length === 6) {
+      const rawHex = options.colorHex.trim().replace(/^#/, '');
+      const hex =
+        rawHex.length === 3
+          ? `${rawHex[0]}${rawHex[0]}${rawHex[1]}${rawHex[1]}${rawHex[2]}${rawHex[2]}`
+          : rawHex;
+      if (/^[0-9a-fA-F]{6}$/.test(hex)) {
         rVal = parseInt(hex.substring(0, 2), 16) / 255;
         gVal = parseInt(hex.substring(2, 4), 16) / 255;
         bVal = parseInt(hex.substring(4, 6), 16) / 255;
       }
     }
 
-    const pages = pdfDoc.getPages();
     const angleRad = (rot * Math.PI) / 180;
     const cosTheta = Math.cos(angleRad);
     const sinTheta = Math.sin(angleRad);
-
-    const lines = text
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
-
-    if (lines.length === 0) {
-      throw new Error('Watermark text cannot be empty.');
-    }
 
     // Verify whether the embedded font contains every glyph AND the script does not require
     // complex-script shaping (Bengali/Indic vowel reordering, Arabic/Hebrew RTL joining, CJK, emoji),
@@ -732,6 +813,8 @@ export async function watermarkPDF(
         const cropBox = page.getCropBox();
         const ox = cropBox.x || 0;
         const oy = cropBox.y || 0;
+        const boxW = cropBox.width || width;
+        const boxH = cropBox.height || height;
 
         lines.forEach((lineText, index) => {
           const textWidth = font.widthOfTextAtSize(lineText, size);
@@ -744,8 +827,8 @@ export async function watermarkPDF(
           const rotatedCenterX = localCenterX * cosTheta - localCenterY * sinTheta;
           const rotatedCenterY = localCenterX * sinTheta + localCenterY * cosTheta;
 
-          const x = ox + width / 2 - rotatedCenterX;
-          const y = oy + height / 2 - rotatedCenterY;
+          const x = ox + boxW / 2 - rotatedCenterX;
+          const y = oy + boxH / 2 - rotatedCenterY;
 
           page.drawText(lineText, {
             x,
@@ -767,8 +850,10 @@ export async function watermarkPDF(
         const cropBox = page.getCropBox();
         const ox = cropBox.x || 0;
         const oy = cropBox.y || 0;
+        const boxW = cropBox.width || width;
+        const boxH = cropBox.height || height;
 
-        const maxSpan = Math.max(48, Math.hypot(width, height) * 0.82);
+        const maxSpan = Math.max(48, Math.hypot(boxW, boxH) * 0.82);
         const fitRatio = stamp.widthPt > maxSpan ? maxSpan / stamp.widthPt : 1;
         const drawW = stamp.widthPt * fitRatio;
         const drawH = stamp.heightPt * fitRatio;
@@ -778,8 +863,8 @@ export async function watermarkPDF(
         const rotatedCenterX = localCenterX * cosTheta - localCenterY * sinTheta;
         const rotatedCenterY = localCenterX * sinTheta + localCenterY * cosTheta;
 
-        const x = ox + width / 2 - rotatedCenterX;
-        const y = oy + height / 2 - rotatedCenterY;
+        const x = ox + boxW / 2 - rotatedCenterX;
+        const y = oy + boxH / 2 - rotatedCenterY;
 
         page.drawImage(pngImage, {
           x,
@@ -803,8 +888,24 @@ export async function addPageNumbersPDF(
 ): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
   try {
-    // Embed Noto Sans for Unicode support (page-number format strings may
-    // contain non-Latin characters like "第 {n} 页" or "עמוד {n}").
+    const total = pdfDoc.getPageCount();
+    if (total === 0) {
+      throw new Error('Cannot add page numbers to an empty PDF document.');
+    }
+
+    const skipFirstPage =
+      options?.skipFirstPage !== undefined
+        ? Boolean(options.skipFirstPage)
+        : PAGE_NUMBER_DEFAULTS.skipFirstPage;
+
+    if (skipFirstPage && total === 1) {
+      throw new Error(
+        'Cannot skip the first page on a single-page PDF document because no pages would be numbered.'
+      );
+    }
+
+    // Embed Noto Sans for Latin/Cyrillic/Greek support; complex/non-Latin scripts (Bengali,
+    // Devanagari, Arabic, CJK) automatically fall back to high-DPI PNG stamps per page.
     let font;
     try {
       const fontData = await getFontBytes();
@@ -822,20 +923,43 @@ export async function addPageNumbersPDF(
     if (!font) {
       font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica);
     }
-    const total = pdfDoc.getPageCount();
-    const pages = pdfDoc.getPages();
 
-    const format = options?.format || PAGE_NUMBER_DEFAULTS.format;
-    const skipFirstPage =
-      options?.skipFirstPage !== undefined
-        ? options.skipFirstPage
-        : PAGE_NUMBER_DEFAULTS.skipFirstPage;
+    const pages = pdfDoc.getPages();
+    const rawFormat = String(options?.format ?? PAGE_NUMBER_DEFAULTS.format).trim();
+    const format = (rawFormat || PAGE_NUMBER_DEFAULTS.format).slice(0, 80);
+
+    const rawStartFrom =
+      options?.startFrom !== undefined ? Number(options.startFrom) : PAGE_NUMBER_DEFAULTS.startFrom;
     let currentCount =
-      options?.startFrom !== undefined ? options.startFrom : PAGE_NUMBER_DEFAULTS.startFrom;
+      Number.isFinite(rawStartFrom) && rawStartFrom >= 0
+        ? Math.min(1000000, Math.floor(rawStartFrom))
+        : PAGE_NUMBER_DEFAULTS.startFrom;
     const position = options?.position || PAGE_NUMBER_DEFAULTS.position;
 
     const size = 10;
     const margin = 35;
+
+    const COMPLEX_OR_NON_LATIN_SCRIPT_RE =
+      /[\u0590-\u08FF\u0900-\u109F\u1100-\u11FF\u1780-\u17FF\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]/;
+    const fontCharSet =
+      typeof font.getCharacterSet === 'function' ? new Set<number>(font.getCharacterSet()) : null;
+
+    const canFontEncode = (str: string): boolean => {
+      if (COMPLEX_OR_NON_LATIN_SCRIPT_RE.test(str)) return false;
+      if (fontCharSet) {
+        for (const ch of Array.from(str)) {
+          const cp = ch.codePointAt(0) ?? 0;
+          if (cp > 0x20 && !fontCharSet.has(cp)) return false;
+        }
+      }
+      try {
+        font.encodeText(str);
+        font.widthOfTextAtSize(str, size);
+        return true;
+      } catch {
+        return false;
+      }
+    };
 
     for (let idx = 0; idx < total; idx++) {
       if (skipFirstPage && idx === 0) continue;
@@ -863,13 +987,25 @@ export async function addPageNumbersPDF(
         .replace(/\{n\}/g, currentCount.toString())
         .replace(/\{total\}/g, total.toString());
 
-      const textWidth = font.widthOfTextAtSize(text, size);
+      const isDirectText = canFontEncode(text);
+      let stampImage: Awaited<ReturnType<typeof pdfDoc.embedPng>> | null = null;
+      let textWidth = size * 3;
+      let textHeight = size;
+
+      if (isDirectText) {
+        textWidth = font.widthOfTextAtSize(text, size);
+      } else {
+        const stamp = await renderUnicodeWatermarkPng([text], size, 0, 0, 0, 1);
+        stampImage = await pdfDoc.embedPng(stamp.pngBytes);
+        textWidth = stamp.widthPt;
+        textHeight = stamp.heightPt;
+      }
 
       let x = ox + (cw - textWidth - margin); // default bottom-right
       let y = oy + margin; // default bottom
       let rotateAngle = 0;
 
-      const pageRotation = page.getRotation().angle;
+      const pageRotation = ((page.getRotation().angle % 360) + 360) % 360;
 
       if (pageRotation === 0) {
         rotateAngle = 0;
@@ -882,7 +1018,7 @@ export async function addPageNumbersPDF(
         }
 
         if (position.startsWith('top')) {
-          y = oy + ch - margin - size;
+          y = oy + ch - margin - textHeight;
         } else {
           y = oy + margin;
         }
@@ -897,7 +1033,7 @@ export async function addPageNumbersPDF(
         }
 
         if (position.startsWith('top')) {
-          x = ox + margin + size;
+          x = ox + margin + textHeight;
         } else {
           x = ox + cw - margin;
         }
@@ -911,10 +1047,11 @@ export async function addPageNumbersPDF(
           x = ox + margin + textWidth;
         }
 
+        // In 180-degree rotated pages, unrotated y=oy is the visual TOP and y=oy+ch is the visual BOTTOM
         if (position.startsWith('top')) {
-          y = oy + ch - margin;
+          y = oy + margin + textHeight;
         } else {
-          y = oy + margin + size;
+          y = oy + ch - margin;
         }
       } else if (pageRotation === 270) {
         rotateAngle = 270;
@@ -929,18 +1066,28 @@ export async function addPageNumbersPDF(
         if (position.startsWith('top')) {
           x = ox + cw - margin;
         } else {
-          x = ox + margin + size;
+          x = ox + margin + textHeight;
         }
       }
 
-      page.drawText(text, {
-        x,
-        y,
-        size,
-        font,
-        color: rgb(0, 0, 0), // Use crisp black color for maximum contrast and legibility
-        rotate: degrees(rotateAngle),
-      });
+      if (isDirectText) {
+        page.drawText(text, {
+          x,
+          y,
+          size,
+          font,
+          color: rgb(0, 0, 0), // Use crisp black color for maximum contrast and legibility
+          rotate: degrees(rotateAngle),
+        });
+      } else if (stampImage) {
+        page.drawImage(stampImage, {
+          x,
+          y,
+          width: textWidth,
+          height: textHeight,
+          rotate: degrees(rotateAngle),
+        });
+      }
       currentCount++;
     }
 
@@ -957,31 +1104,42 @@ export async function addBlankPagePDF(
 ): Promise<Uint8Array> {
   const pdfDoc = await loadPlainPDF(bytes);
   try {
-    let size: [number, number];
-    // Copy the size of existing pages to maintain layout harmony unless empty document fallback
-    if (pdfDoc.getPageCount() > 0) {
-      const referencePage = pdfDoc.getPages()[0];
-      const { width, height } = referencePage.getSize();
-      size = [width, height];
-    } else {
-      const defaultSize = PDF_PAGE_SIZES[pageSizeKey] || PDF_PAGE_SIZES.A4;
-      size = [defaultSize[0], defaultSize[1]];
-    }
+    const pageCount = pdfDoc.getPageCount();
+    const pages = pdfDoc.getPages();
+    const defaultSize = PDF_PAGE_SIZES[pageSizeKey] || PDF_PAGE_SIZES.A4;
+
+    const getRefSizeAndRotation = (refIdx: number): { size: [number, number]; angle: number } => {
+      if (pageCount > 0) {
+        const clampedIdx = Math.max(0, Math.min(pageCount - 1, refIdx));
+        const refPage = pages[clampedIdx];
+        const { width, height } = refPage.getSize();
+        const angle = ((refPage.getRotation().angle % 360) + 360) % 360;
+        return { size: [width, height], angle };
+      }
+      return { size: [defaultSize[0], defaultSize[1]], angle: 0 };
+    };
+
+    let createdPage;
+    let refAngle = 0;
 
     if (position === 'start') {
-      pdfDoc.insertPage(0, [size[0], size[1]]);
+      const ref = getRefSizeAndRotation(0);
+      refAngle = ref.angle;
+      createdPage = pdfDoc.insertPage(0, ref.size);
     } else if (position === 'end') {
-      pdfDoc.addPage([size[0], size[1]]);
+      const ref = getRefSizeAndRotation(pageCount - 1);
+      refAngle = ref.angle;
+      createdPage = pdfDoc.addPage(ref.size);
     } else {
       const safePos = Number.isFinite(position) ? Math.trunc(position) : 1;
-      const targetIdx = Math.max(0, Math.min(safePos - 1, pdfDoc.getPageCount()));
-      let insertSize = size;
-      if (targetIdx < pdfDoc.getPageCount()) {
-        const pageAtIdx = pdfDoc.getPages()[targetIdx];
-        const sz = pageAtIdx.getSize();
-        insertSize = [sz.width, sz.height];
-      }
-      pdfDoc.insertPage(targetIdx, [insertSize[0], insertSize[1]]);
+      const targetIdx = Math.max(0, Math.min(safePos - 1, pageCount));
+      const ref = getRefSizeAndRotation(targetIdx < pageCount ? targetIdx : pageCount - 1);
+      refAngle = ref.angle;
+      createdPage = pdfDoc.insertPage(targetIdx, ref.size);
+    }
+
+    if (createdPage && refAngle !== 0) {
+      createdPage.setRotation(degrees(refAngle));
     }
 
     return await pdfDoc.save();
@@ -1048,32 +1206,84 @@ function getJpegExifOrientation(bytes: Uint8Array): number {
   return 1;
 }
 
+const MAX_IMAGES_TO_PDF = 200;
+
+function detectImageMime(buf: Uint8Array, declaredType?: string, fileName?: string): string {
+  // 1. Inspect magic bytes first so mislabeled extensions/MIME types (e.g. a PNG named .jpg) never fail
+  if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xd8) {
+    return 'image/jpeg';
+  }
+  if (buf.length >= 4 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
+    return 'image/png';
+  }
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 && // R
+    buf[1] === 0x49 && // I
+    buf[2] === 0x46 && // F
+    buf[3] === 0x46 && // F
+    buf[8] === 0x57 && // W
+    buf[9] === 0x45 && // E
+    buf[10] === 0x42 && // B
+    buf[11] === 0x50 // P
+  ) {
+    return 'image/webp';
+  }
+  if (
+    buf.length >= 4 &&
+    buf[0] === 0x47 && // G
+    buf[1] === 0x49 && // I
+    buf[2] === 0x46 && // F
+    buf[3] === 0x38 // 8
+  ) {
+    return 'image/gif';
+  }
+  if (buf.length >= 2 && buf[0] === 0x42 && buf[1] === 0x4d) {
+    return 'image/bmp';
+  }
+
+  // 2. Fall back to declared MIME type
+  const normalized = (declaredType || '').trim().toLowerCase();
+  if (normalized && normalized !== 'application/octet-stream') {
+    if (normalized === 'image/jpg') return 'image/jpeg';
+    return normalized;
+  }
+
+  // 3. Fall back to file extension when browser reports empty or octet-stream MIME
+  const lowerName = (fileName || '').trim().toLowerCase();
+  if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) return 'image/jpeg';
+  if (lowerName.endsWith('.png')) return 'image/png';
+  if (lowerName.endsWith('.webp')) return 'image/webp';
+  if (lowerName.endsWith('.avif')) return 'image/avif';
+  if (lowerName.endsWith('.gif')) return 'image/gif';
+  if (lowerName.endsWith('.bmp')) return 'image/bmp';
+  if (lowerName.endsWith('.heic')) return 'image/heic';
+  if (lowerName.endsWith('.heif')) return 'image/heif';
+
+  return normalized;
+}
+
 export async function imagesToPDF(
   imageBlobs: { buf: Uint8Array; type: string; name?: string }[],
   options?: { pageSize?: keyof typeof PDF_PAGE_SIZES }
 ): Promise<Uint8Array> {
-  if (!imageBlobs || imageBlobs.length === 0) {
+  if (!Array.isArray(imageBlobs) || imageBlobs.length === 0) {
     throw new Error('At least one image is required to build a PDF.');
+  }
+  if (imageBlobs.length > MAX_IMAGES_TO_PDF) {
+    throw new Error(`Too many images selected (maximum ${MAX_IMAGES_TO_PDF} images per PDF).`);
   }
 
   const pdfDoc = await PDFDocument.create();
   const selectedPageSize = options?.pageSize ? PDF_PAGE_SIZES[options.pageSize] : null;
 
-  for (const file of imageBlobs) {
-    let normalizedType = (file.type || '').toLowerCase();
-    if (!normalizedType || normalizedType === 'application/octet-stream') {
-      if (file.buf.length >= 2 && file.buf[0] === 0xff && file.buf[1] === 0xd8) {
-        normalizedType = 'image/jpeg';
-      } else if (
-        file.buf.length >= 4 &&
-        file.buf[0] === 0x89 &&
-        file.buf[1] === 0x50 &&
-        file.buf[2] === 0x4e &&
-        file.buf[3] === 0x47
-      ) {
-        normalizedType = 'image/png';
-      }
+  for (let i = 0; i < imageBlobs.length; i++) {
+    const file = imageBlobs[i];
+    if (!file.buf || file.buf.byteLength === 0) {
+      throw new Error(`Image "${file.name || `#${i + 1}`}" is empty (0 bytes).`);
     }
+
+    const normalizedType = detectImageMime(file.buf, file.type, file.name);
 
     let embeddedImg;
     try {
@@ -1119,14 +1329,14 @@ export async function imagesToPDF(
         // Convert to PNG via createImageBitmap + OffscreenCanvas.
         // createImageBitmap accepts Blob and decodes any format the browser supports.
         const blob = new Blob([file.buf as unknown as BlobPart], {
-          type: file.type || 'image/png',
+          type: normalizedType || 'image/png',
         });
         let bitmap: ImageBitmap;
         try {
           bitmap = await createImageBitmap(blob);
         } catch {
           throw new Error(
-            `Could not decode image "${file.name || 'unnamed'}" (format: ${file.type}). Your browser may not support this format. Try converting to PNG or JPEG first.`
+            `Could not decode image "${file.name || 'unnamed'}" (format: ${file.type || normalizedType}). Your browser may not support this format. Try converting to PNG or JPEG first.`
           );
         }
 
@@ -1148,7 +1358,7 @@ export async function imagesToPDF(
         embeddedImg = await pdfDoc.embedPng(pngBytes);
       } else {
         throw new Error(
-          `Unsupported image format: "${file.type}" for file "${file.name || 'unnamed'}". Supported: JPG, PNG, WebP, AVIF, GIF, BMP, HEIC.`
+          `Unsupported image format: "${file.type || 'unknown'}" for file "${file.name || 'unnamed'}". Supported: JPG, PNG, WebP, AVIF, GIF, BMP, HEIC.`
         );
       }
     } catch (err) {
@@ -1159,6 +1369,9 @@ export async function imagesToPDF(
         `Failed to embed image "${file.name || 'unnamed'}": ${err instanceof Error ? err.message : 'unknown error'}`
       );
     }
+
+    // Release raw input image buffer slot after embedding to reduce worker memory footprint
+    imageBlobs[i].buf = new Uint8Array(0);
 
     const imgWidth = embeddedImg.width;
     const imgHeight = embeddedImg.height;
@@ -1948,16 +2161,17 @@ export async function compressPDF(
   bytes: Uint8Array,
   optionsOrLevel: CompressOptions = 'recommended'
 ): Promise<Uint8Array> {
-  const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
+  const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+    maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+  });
   let pdfDoc: PDFDocument;
   try {
-    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
-    if (encrypted) {
+    pdfDoc = await PDFDocument.load(safeBytes);
+    if (pdfDoc.isEncrypted) {
       throw new Error(
         'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
       );
     }
-    pdfDoc = await PDFDocument.load(safeBytes);
   } catch (err) {
     handlePdfLibError(err, 'Failed to read PDF document. It may be corrupted.');
   }
@@ -2326,13 +2540,15 @@ export async function compressPDF(
             if (contents && contents.length > 256) {
               try {
                 const compressed = pdfDoc.context.flateStream(contents);
-                for (const [k, v] of dict.entries()) {
-                  if (k !== PDFName.of('Length') && k !== PDFName.of('Filter')) {
-                    compressed.dict.set(k, v);
+                if (compressed.getContentsSize() < contents.length) {
+                  for (const [k, v] of dict.entries()) {
+                    if (k !== PDFName.of('Length') && k !== PDFName.of('Filter')) {
+                      compressed.dict.set(k, v);
+                    }
                   }
+                  pdfDoc.context.assign(ref, compressed);
+                  replacedStreamsCount++;
                 }
-                pdfDoc.context.assign(ref, compressed);
-                replacedStreamsCount++;
               } catch {
                 // Best-effort
               }
@@ -2458,25 +2674,31 @@ export async function protectPDF(payload: {
   fileBytes: Uint8Array;
   userPassword: string;
 }): Promise<Uint8Array> {
-  if (!payload.userPassword) {
+  if (!payload.userPassword || payload.userPassword.trim().length === 0) {
     throw new Error('A non-empty password is required.');
   }
-  if (payload.userPassword.length < 4) {
+  if (payload.userPassword.trim().length < 4) {
     throw new Error('Password must be at least 4 characters long for meaningful security.');
+  }
+  if (payload.userPassword.length > 128) {
+    throw new Error('Password cannot exceed 128 characters (PDF standard limit).');
   }
 
   const { bytes: safeBytes } = PDFSanitizer.sanitize(payload.fileBytes, {
     skipEncryptionCheck: false,
+    maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
   });
 
   try {
-    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
-    if (encrypted) {
+    const pdfDoc = await PDFDocument.load(safeBytes);
+    if (pdfDoc.isEncrypted) {
       throw new Error(
         'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
       );
     }
-    const pdfDoc = await PDFDocument.load(safeBytes);
+    if (pdfDoc.getPageCount() === 0) {
+      throw new Error('Cannot encrypt an empty PDF document (0 pages).');
+    }
     pdfDoc.encrypt({
       userPassword: payload.userPassword,
       ownerPassword: payload.userPassword, // Same password — see docstring.
@@ -2513,12 +2735,16 @@ export async function unlockPDF(payload: {
   fileBytes: Uint8Array;
   password: string;
 }): Promise<Uint8Array> {
-  if (!payload.password) {
+  if (!payload.password || payload.password.trim().length === 0) {
     throw new Error('A password is required to unlock the document.');
+  }
+  if (payload.password.length > 128) {
+    throw new Error('Password cannot exceed 128 characters.');
   }
 
   const { bytes: safeBytes } = PDFSanitizer.sanitize(payload.fileBytes, {
     skipEncryptionCheck: true,
+    maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
   });
 
   let pdfDoc;
@@ -2544,8 +2770,15 @@ export async function unlockPDF(payload: {
     );
   }
 
-  // Save with encryption explicitly removed.
-  const outputBytes = await pdfDoc.save({ useObjectStreams: false });
+  if (pdfDoc.getPageCount() === 0) {
+    throw new Error('The PDF document has 0 pages and cannot be unlocked.');
+  }
+
+  // Save with encryption explicitly removed, then sanitize the decrypted plaintext bytes.
+  const rawOutputBytes = await pdfDoc.save({ useObjectStreams: false });
+  const { bytes: outputBytes } = PDFSanitizer.sanitize(rawOutputBytes, {
+    maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+  });
 
   // Verify the output is actually unencrypted by scanning for the /Encrypt
   // dictionary marker. The marker can appear in either the trailer (most
@@ -2583,7 +2816,8 @@ export async function pdfToImage(
   scale: number = 1.5,
   maxPages?: number,
   format: 'image/png' | 'image/jpeg' = 'image/png',
-  startPage: number = 1
+  startPage: number = 1,
+  pageNumbers?: number[]
 ): Promise<{ page: number; imageBytes: Uint8Array }[]> {
   let pdf: {
     getPage: (n: number) => Promise<unknown>;
@@ -2591,70 +2825,108 @@ export async function pdfToImage(
     destroy: () => Promise<void>;
   } | null = null;
   try {
-    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
+    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+      maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+    });
+    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
+    if (encrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
+      );
+    }
+
+    const safeScale = Number.isFinite(scale) ? Math.min(3.0, Math.max(0.5, scale)) : 1.5;
     const pdf_js = await getPdfJs();
 
     const loadingTask = pdf_js.getDocument({
-      data: safeBytes,
+      data: safeBytes.slice(),
       CanvasFactory: CustomCanvasFactory,
       canvasFactory: new CustomCanvasFactory(),
     } as unknown as Parameters<typeof pdf_js.getDocument>[0]);
     pdf = await loadingTask.promise;
 
-    // When startPage is specified, render `maxPages` pages starting from startPage.
-    // Otherwise, render from page 1 (original behavior).
-    const effectiveStart = Math.max(1, Math.min(startPage, pdf.numPages));
-    const maxToRender =
-      maxPages !== undefined
-        ? Math.min(maxPages, pdf.numPages - effectiveStart + 1)
-        : pdf.numPages - effectiveStart + 1;
+    if (pdf.numPages === 0) {
+      throw new Error('The PDF document has 0 pages and cannot be converted to images.');
+    }
+
+    let targetPages: number[];
+    if (Array.isArray(pageNumbers) && pageNumbers.length > 0) {
+      const totalPages = pdf.numPages;
+      targetPages = Array.from(
+        new Set(
+          pageNumbers
+            .map((n) => Math.trunc(Number(n)))
+            .filter((n) => Number.isFinite(n) && n >= 1 && n <= totalPages)
+        )
+      ).sort((a, b) => a - b);
+    } else {
+      // When startPage is specified, render `maxPages` pages starting from startPage.
+      // Otherwise, render from page 1 (original behavior).
+      const effectiveStart = Math.max(1, Math.min(Math.trunc(startPage) || 1, pdf.numPages));
+      const maxToRender =
+        maxPages !== undefined
+          ? Math.max(0, Math.min(Math.trunc(maxPages), pdf.numPages - effectiveStart + 1))
+          : pdf.numPages - effectiveStart + 1;
+      targetPages = [];
+      for (let offset = 0; offset < maxToRender; offset++) {
+        targetPages.push(effectiveStart + offset);
+      }
+    }
+
     const rendered: { page: number; imageBytes: Uint8Array }[] = [];
 
-    for (let offset = 0; offset < maxToRender; offset++) {
-      const i = effectiveStart + offset;
+    for (const i of targetPages) {
       const page = (await pdf.getPage(i)) as {
         getViewport: (opts: { scale: number }) => { width: number; height: number };
         render: (opts: {
           canvasContext: CanvasRenderingContext2D;
           viewport: { width: number; height: number };
           canvasFactory?: unknown;
+          background?: string;
         }) => { promise: Promise<void> };
         cleanup: () => void;
       };
-      const viewport = page.getViewport({ scale });
+      const viewport = page.getViewport({ scale: safeScale });
 
       const canvasFactory = new CustomCanvasFactory();
       const { canvas, context } = canvasFactory.create(viewport.width, viewport.height);
 
-      if (context) {
-        await page.render({
-          canvasContext: context as CanvasRenderingContext2D,
-          viewport,
-          canvasFactory,
-        }).promise;
-        if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
-          const blob = await canvas.convertToBlob({
-            type: format,
-            quality: format === 'image/jpeg' ? 0.9 : undefined,
-          });
-          rendered.push({
-            page: i,
-            imageBytes: new Uint8Array(await blob.arrayBuffer()),
-          });
-        } else if (canvas instanceof HTMLCanvasElement) {
-          const blob = await new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob(
-              (b) => (b ? resolve(b) : reject(new Error('blob null'))),
-              format,
-              format === 'image/jpeg' ? 0.9 : undefined
-            )
-          );
-          rendered.push({
-            page: i,
-            imageBytes: new Uint8Array(await blob.arrayBuffer()),
-          });
+      try {
+        if (context) {
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, viewport.width, viewport.height);
+
+          await page.render({
+            canvasContext: context as CanvasRenderingContext2D,
+            viewport,
+            canvasFactory,
+            background: 'rgb(255, 255, 255)',
+          }).promise;
+          if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
+            const blob = await canvas.convertToBlob({
+              type: format,
+              quality: format === 'image/jpeg' ? 0.9 : undefined,
+            });
+            rendered.push({
+              page: i,
+              imageBytes: new Uint8Array(await blob.arrayBuffer()),
+            });
+          } else if (canvas instanceof HTMLCanvasElement) {
+            const blob = await new Promise<Blob>((resolve, reject) =>
+              canvas.toBlob(
+                (b) => (b ? resolve(b) : reject(new Error('blob null'))),
+                format,
+                format === 'image/jpeg' ? 0.9 : undefined
+              )
+            );
+            rendered.push({
+              page: i,
+              imageBytes: new Uint8Array(await blob.arrayBuffer()),
+            });
+          }
         }
-        // Free per-page pdfjs resources after each render.
+      } finally {
+        // Free per-page pdfjs and canvas resources after each render (even on failure).
         page.cleanup();
         canvasFactory.destroy({ canvas, context });
       }
@@ -2693,13 +2965,16 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
     destroy: () => Promise<void>;
   } | null = null;
   try {
-    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
+    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+      maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+    });
     const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
     if (encrypted) {
       throw new Error(
         'SECURED_LOCKED: This PDF appears to be password protected — please use Unlock PDF first.'
       );
     }
+    const safeScale = Number.isFinite(scale) ? Math.min(3.0, Math.max(0.5, scale)) : 1.5;
     const pdf_js = await getPdfJs();
 
     const loadingTask = pdf_js.getDocument({
@@ -2708,6 +2983,16 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
       canvasFactory: new CustomCanvasFactory(),
     } as unknown as Parameters<typeof pdf_js.getDocument>[0]);
     pdf = await loadingTask.promise;
+
+    if (pdf.numPages === 0) {
+      throw new Error('The PDF document has 0 pages and cannot be converted to grayscale.');
+    }
+    const MAX_GRAYSCALE_PAGES = 200;
+    if (pdf.numPages > MAX_GRAYSCALE_PAGES) {
+      throw new Error(
+        `Grayscale rasterization supports up to ${MAX_GRAYSCALE_PAGES} pages per operation (document has ${pdf.numPages} pages). Please split the PDF first.`
+      );
+    }
 
     const outPdfDoc = await PDFDocument.create();
 
@@ -2723,64 +3008,63 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
         cleanup: () => void;
       };
       const origViewport = page.getViewport({ scale: 1.0 });
-      const viewport = page.getViewport({ scale });
+      const viewport = page.getViewport({ scale: safeScale });
 
       const canvasFactory = new CustomCanvasFactory();
       const { canvas, context } = canvasFactory.create(viewport.width, viewport.height);
 
-      if (context) {
-        context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, viewport.width, viewport.height);
+      try {
+        if (context) {
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, viewport.width, viewport.height);
 
-        await page.render({
-          canvasContext: context as CanvasRenderingContext2D,
-          viewport,
-          canvasFactory,
-          background: 'rgb(255, 255, 255)',
-        }).promise;
+          await page.render({
+            canvasContext: context as CanvasRenderingContext2D,
+            viewport,
+            canvasFactory,
+            background: 'rgb(255, 255, 255)',
+          }).promise;
 
-        const imgData = context.getImageData(0, 0, viewport.width, viewport.height);
-        const data = imgData.data;
-        for (let j = 0; j < data.length; j += 4) {
-          const r = data[j];
-          const g = data[j + 1];
-          const b = data[j + 2];
-          const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-          data[j] = gray;
-          data[j + 1] = gray;
-          data[j + 2] = gray;
-        }
-        context.putImageData(imgData, 0, 0);
+          const imgData = context.getImageData(0, 0, viewport.width, viewport.height);
+          const data = imgData.data;
+          for (let j = 0; j < data.length; j += 4) {
+            const gray = (77 * data[j] + 150 * data[j + 1] + 29 * data[j + 2] + 128) >> 8;
+            data[j] = gray;
+            data[j + 1] = gray;
+            data[j + 2] = gray;
+          }
+          context.putImageData(imgData, 0, 0);
 
-        let imageBuf: Uint8Array;
-        if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
-          const blob = await canvas.convertToBlob({
-            type: 'image/jpeg',
-            quality: 0.85,
+          let imageBuf: Uint8Array;
+          if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
+            const blob = await canvas.convertToBlob({
+              type: 'image/jpeg',
+              quality: 0.85,
+            });
+            imageBuf = new Uint8Array(await blob.arrayBuffer());
+          } else if (canvas instanceof HTMLCanvasElement) {
+            const blob = await new Promise<Blob>((resolve, reject) =>
+              canvas.toBlob(
+                (b) => (b ? resolve(b) : reject(new Error('blob null'))),
+                'image/jpeg',
+                0.85
+              )
+            );
+            imageBuf = new Uint8Array(await blob.arrayBuffer());
+          } else {
+            throw new Error('Canvas type not recognized.');
+          }
+
+          const embeddedImg = await outPdfDoc.embedJpg(imageBuf);
+          const outPage = outPdfDoc.addPage([origViewport.width, origViewport.height]);
+          outPage.drawImage(embeddedImg, {
+            x: 0,
+            y: 0,
+            width: origViewport.width,
+            height: origViewport.height,
           });
-          imageBuf = new Uint8Array(await blob.arrayBuffer());
-        } else if (canvas instanceof HTMLCanvasElement) {
-          const blob = await new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob(
-              (b) => (b ? resolve(b) : reject(new Error('blob null'))),
-              'image/jpeg',
-              0.85
-            )
-          );
-          imageBuf = new Uint8Array(await blob.arrayBuffer());
-        } else {
-          throw new Error('Canvas type not recognized.');
         }
-
-        const embeddedImg = await outPdfDoc.embedJpg(imageBuf);
-        const outPage = outPdfDoc.addPage([origViewport.width, origViewport.height]);
-        outPage.drawImage(embeddedImg, {
-          x: 0,
-          y: 0,
-          width: origViewport.width,
-          height: origViewport.height,
-        });
-
+      } finally {
         page.cleanup();
         canvasFactory.destroy({ canvas, context });
       }
@@ -2806,14 +3090,22 @@ export async function grayscalePDF(bytes: Uint8Array, scale: number = 1.5): Prom
 export async function flattenPDF(bytes: Uint8Array): Promise<Uint8Array> {
   try {
     const pdfDoc = await loadPlainPDF(bytes);
-    const acroForm = pdfDoc.catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict);
-    if (acroForm && acroForm.has(PDFName.of('XFA'))) {
-      throw new Error(
-        'UNSUPPORTED_XFA: This PDF uses dynamic Adobe XFA (XML Forms Architecture) forms, which cannot be flattened without losing dynamic form data. Please save or print as a standard PDF first.'
-      );
+    if (pdfDoc.getPageCount() === 0) {
+      throw new Error('The PDF document has 0 pages and cannot be flattened.');
     }
-    const form = pdfDoc.getForm();
-    form.flatten();
+    const acroForm = pdfDoc.catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict);
+    if (acroForm) {
+      if (acroForm.has(PDFName.of('XFA'))) {
+        throw new Error(
+          'UNSUPPORTED_XFA: This PDF uses dynamic Adobe XFA (XML Forms Architecture) forms, which cannot be flattened without losing dynamic form data. Please save or print as a standard PDF first.'
+        );
+      }
+      const form = pdfDoc.getForm();
+      if (form.getFields().length > 0) {
+        form.flatten();
+      }
+      acroForm.delete(PDFName.of('NeedAppearances'));
+    }
     const compiledBytes = await pdfDoc.save();
     return compiledBytes;
   } catch (err: unknown) {
@@ -2828,6 +3120,13 @@ export async function repairPDF(
 ): Promise<{ bytes: Uint8Array; repairs: string[] }> {
   const repairs: string[] = [];
   try {
+    if (!bytes || bytes.byteLength === 0) {
+      throw new Error('PDF file is empty (0 bytes).');
+    }
+    if (bytes.byteLength > UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE) {
+      throw new Error('File exceeds the maximum allowed size of 500MB.');
+    }
+
     let workingBytes = new Uint8Array(bytes);
 
     // 1. Header Repair: Strip leading junk before %PDF-
@@ -2878,7 +3177,15 @@ export async function repairPDF(
 
     if (trailerIdx !== -1) {
       const expectedEndIdx = trailerIdx + trailerPattern.length;
-      if (expectedEndIdx < workingBytes.length) {
+      let hasNonWhitespaceAfterEof = false;
+      for (let k = expectedEndIdx; k < workingBytes.length; k++) {
+        const b = workingBytes[k];
+        if (b !== 0x0a && b !== 0x0d && b !== 0x20 && b !== 0x09) {
+          hasNonWhitespaceAfterEof = true;
+          break;
+        }
+      }
+      if (hasNonWhitespaceAfterEof) {
         workingBytes = workingBytes.subarray(0, expectedEndIdx);
         repairs.push('Trimmed trailing junk and corrupted bytes after EOF marker.');
       }
@@ -2899,7 +3206,10 @@ export async function repairPDF(
       );
     }
 
-    const pdfDoc = await PDFDocument.load(workingBytes);
+    const pdfDoc = await PDFDocument.load(workingBytes, { throwOnInvalidObject: false });
+    if (pdfDoc.getPageCount() === 0) {
+      throw new Error('The PDF document has 0 pages and cannot be repaired.');
+    }
     repairs.push('Reconstructed damaged cross-reference tables and internal catalog tree.');
 
     const compiledBytes = await pdfDoc.save();
@@ -2943,9 +3253,11 @@ async function extractImagesFromPage(
     const opList = await p.getOperatorList();
     const fnArray = opList.fnArray;
     const argsArray = opList.argsArray;
+    const seenObjIds = new Set<string>();
+    const MAX_IMAGES_PER_PAGE = 50;
     let imgIdx = 0;
 
-    for (let i = 0; i < fnArray.length; i++) {
+    for (let i = 0; i < fnArray.length && imgIdx < MAX_IMAGES_PER_PAGE; i++) {
       const fn = fnArray[i];
       if (
         argsArray[i] &&
@@ -2954,6 +3266,8 @@ async function extractImagesFromPage(
         ((argsArray[i][0] as string).startsWith('img_') || fn === 85 || fn === 86 || fn === 82)
       ) {
         const objId = argsArray[i][0] as string;
+        if (seenObjIds.has(objId)) continue;
+        seenObjIds.add(objId);
         try {
           const img: unknown = await new Promise((resolve) => {
             const objsRecord = p.objs as
@@ -2979,34 +3293,39 @@ async function extractImagesFromPage(
           ) {
             const width = (img as { width: number }).width;
             const height = (img as { height: number }).height;
-            if (width > 0 && height > 0) {
+            if (width > 1 && height > 1) {
               const canvas = new OffscreenCanvas(width, height);
-              const ctx = canvas.getContext('2d');
-              const data = (img as { data?: Uint8ClampedArray | Uint8Array }).data;
-              if (ctx && data) {
-                let rgba: Uint8ClampedArray;
-                if (data.length === width * height * 4) {
-                  rgba = new Uint8ClampedArray(data);
-                } else if (data.length === width * height * 3) {
-                  rgba = new Uint8ClampedArray(width * height * 4);
-                  for (let j = 0, k = 0; j < data.length; j += 3, k += 4) {
-                    rgba[k] = data[j];
-                    rgba[k + 1] = data[j + 1];
-                    rgba[k + 2] = data[j + 2];
-                    rgba[k + 3] = 255;
+              try {
+                const ctx = canvas.getContext('2d');
+                const data = (img as { data?: Uint8ClampedArray | Uint8Array }).data;
+                if (ctx && data) {
+                  let rgba: Uint8ClampedArray;
+                  if (data.length === width * height * 4) {
+                    rgba = new Uint8ClampedArray(data);
+                  } else if (data.length === width * height * 3) {
+                    rgba = new Uint8ClampedArray(width * height * 4);
+                    for (let j = 0, k = 0; j < data.length; j += 3, k += 4) {
+                      rgba[k] = data[j];
+                      rgba[k + 1] = data[j + 1];
+                      rgba[k + 2] = data[j + 2];
+                      rgba[k + 3] = 255;
+                    }
+                  } else {
+                    continue;
                   }
-                } else {
-                  continue;
+                  const imgData = new ImageData(rgba as unknown as ImageDataArray, width, height);
+                  ctx.putImageData(imgData, 0, 0);
+                  const blob = await canvas.convertToBlob({ type: 'image/png' });
+                  const buf = new Uint8Array(await blob.arrayBuffer());
+                  imgIdx++;
+                  results.push({
+                    filename: `image_p${pageNum}_${imgIdx}.png`,
+                    dataBytes: buf,
+                  });
                 }
-                const imgData = new ImageData(rgba as unknown as ImageDataArray, width, height);
-                ctx.putImageData(imgData, 0, 0);
-                const blob = await canvas.convertToBlob({ type: 'image/png' });
-                const buf = new Uint8Array(await blob.arrayBuffer());
-                imgIdx++;
-                results.push({
-                  filename: `image_p${pageNum}_${imgIdx}.png`,
-                  dataBytes: buf,
-                });
+              } finally {
+                canvas.width = 0;
+                canvas.height = 0;
               }
             }
           }
@@ -3046,7 +3365,9 @@ export async function pdfToMarkdown(
   options?: { extractImages?: boolean },
   onProgress?: (progress: { current: number; total: number }) => void
 ): Promise<PdfToMarkdownResult> {
-  const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
+  const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+    maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+  });
   const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
   if (encrypted) {
     throw new Error(
@@ -3065,98 +3386,107 @@ export async function pdfToMarkdown(
 
   try {
     const numPages = pdf.numPages;
+    if (numPages === 0) {
+      throw new Error('The PDF document has 0 pages and cannot be converted to Markdown.');
+    }
 
     for (let pNum = 1; pNum <= numPages; pNum++) {
       const page = await pdf.getPage(pNum);
-      const viewport = (
-        page as unknown as {
-          getViewport: (opts: { scale: number }) => { width: number; height: number };
-        }
-      ).getViewport({ scale: 1.0 });
+      try {
+        const viewport = (
+          page as unknown as {
+            getViewport: (opts: { scale: number }) => { width: number; height: number };
+          }
+        ).getViewport({ scale: 1.0 });
 
-      const textContent = await (
-        page as unknown as {
-          getTextContent: () => Promise<{
-            items: unknown[];
-            styles?: Record<
-              string,
-              { fontFamily?: string; name?: string; fontWeight?: unknown; fontStyle?: string }
-            >;
-          }>;
-        }
-      ).getTextContent();
+        const textContent = await (
+          page as unknown as {
+            getTextContent: () => Promise<{
+              items: unknown[];
+              styles?: Record<
+                string,
+                { fontFamily?: string; name?: string; fontWeight?: unknown; fontStyle?: string }
+              >;
+            }>;
+          }
+        ).getTextContent();
 
-      const styles = textContent.styles || {};
-      const items: PageTextItem[] = [];
+        const styles = textContent.styles || {};
+        const items: PageTextItem[] = [];
 
-      for (const raw of textContent.items) {
-        if (!raw || typeof raw !== 'object' || !('str' in raw)) continue;
-        const r = raw as {
-          str: string;
-          transform: number[];
-          width?: number;
-          height?: number;
-          fontName?: string;
-        };
-        const str = r.str;
-        if (!str || !str.trim()) continue;
+        for (const raw of textContent.items) {
+          if (!raw || typeof raw !== 'object' || !('str' in raw)) continue;
+          const r = raw as {
+            str: string;
+            transform: number[];
+            width?: number;
+            height?: number;
+            fontName?: string;
+          };
+          const str = r.str;
+          if (!str || !str.trim()) continue;
 
-        const transform = r.transform || [1, 0, 0, 1, 0, 0];
-        const x = transform[4] || 0;
-        const y = transform[5] || 0;
-        const fontSize =
-          Math.hypot(transform[2] || 0, transform[3] || 0) || Math.abs(transform[3] || 10) || 10;
-        const width = r.width || str.length * fontSize * 0.55;
-        const height = r.height || fontSize;
-        const fontName = r.fontName || '';
+          const transform = r.transform || [1, 0, 0, 1, 0, 0];
+          const x = transform[4] || 0;
+          const y = transform[5] || 0;
+          const fontSize =
+            Math.hypot(transform[2] || 0, transform[3] || 0) || Math.abs(transform[3] || 10) || 10;
+          const width = r.width || str.length * fontSize * 0.55;
+          const height = r.height || fontSize;
+          const fontName = r.fontName || '';
 
-        let bold = false;
-        let italic = false;
-        const lowerFont = fontName.toLowerCase();
-        if (
-          lowerFont.includes('bold') ||
-          lowerFont.includes('heavy') ||
-          lowerFont.includes('black')
-        )
-          bold = true;
-        if (lowerFont.includes('italic') || lowerFont.includes('oblique')) italic = true;
-
-        const styleObj = styles[fontName];
-        if (styleObj) {
-          const fam = (styleObj.fontFamily || '').toLowerCase();
-          const nm = (styleObj.name || '').toLowerCase();
+          let bold = false;
+          let italic = false;
+          const lowerFont = fontName.toLowerCase();
           if (
-            fam.includes('bold') ||
-            nm.includes('bold') ||
-            styleObj.fontWeight === 'bold' ||
-            (typeof styleObj.fontWeight === 'number' && styleObj.fontWeight >= 600)
-          ) {
+            lowerFont.includes('bold') ||
+            lowerFont.includes('heavy') ||
+            lowerFont.includes('black')
+          )
             bold = true;
+          if (lowerFont.includes('italic') || lowerFont.includes('oblique')) italic = true;
+
+          const styleObj = styles[fontName];
+          if (styleObj) {
+            const fam = (styleObj.fontFamily || '').toLowerCase();
+            const nm = (styleObj.name || '').toLowerCase();
+            if (
+              fam.includes('bold') ||
+              nm.includes('bold') ||
+              styleObj.fontWeight === 'bold' ||
+              (typeof styleObj.fontWeight === 'number' && styleObj.fontWeight >= 600)
+            ) {
+              bold = true;
+            }
+            if (
+              fam.includes('italic') ||
+              nm.includes('italic') ||
+              styleObj.fontStyle === 'italic'
+            ) {
+              italic = true;
+            }
           }
-          if (fam.includes('italic') || nm.includes('italic') || styleObj.fontStyle === 'italic') {
-            italic = true;
-          }
+
+          items.push({ str, x, y, width, height, fontSize, fontName, bold, italic });
         }
 
-        items.push({ str, x, y, width, height, fontSize, fontName, bold, italic });
-      }
+        let pageImgs: ExtractedMarkdownImage[] = [];
+        if (options?.extractImages) {
+          pageImgs = await extractImagesFromPage(page, pNum);
+          extractedImages.push(...pageImgs);
+        }
 
-      let pageImgs: ExtractedMarkdownImage[] = [];
-      if (options?.extractImages) {
-        pageImgs = await extractImagesFromPage(page, pNum);
-        extractedImages.push(...pageImgs);
-      }
-
-      pagesData.push({
-        pageNum: pNum,
-        width: viewport.width,
-        height: viewport.height,
-        items,
-        images: pageImgs,
-      });
-
-      if (typeof (page as unknown as { cleanup?: () => void }).cleanup === 'function') {
-        (page as unknown as { cleanup: () => void }).cleanup();
+        pagesData.push({
+          pageNum: pNum,
+          width: viewport.width,
+          height: viewport.height,
+          items,
+          images: pageImgs,
+        });
+      } finally {
+        if (typeof (page as unknown as { cleanup?: () => void }).cleanup === 'function') {
+          (page as unknown as { cleanup: () => void }).cleanup();
+        }
       }
 
       onProgress?.({ current: pNum, total: numPages });
@@ -3374,13 +3704,14 @@ export async function pdfToMarkdown(
         }
 
         if (isTable) {
-          const headerRow = lines[lIdx].items.map((it) => it.str.trim()).join(' | ');
+          const escapeCell = (s: string) => s.trim().replace(/\|/g, '\\|');
+          const headerRow = lines[lIdx].items.map((it) => escapeCell(it.str)).join(' | ');
           pageOutput.push(`| ${headerRow} |`);
           const sepRow = lines[lIdx].items.map(() => '---').join(' | ');
           pageOutput.push(`| ${sepRow} |`);
 
           for (let rIdx = lIdx + 1; rIdx < tableEndIdx; rIdx++) {
-            const dataRow = lines[rIdx].items.map((it) => it.str.trim()).join(' | ');
+            const dataRow = lines[rIdx].items.map((it) => escapeCell(it.str)).join(' | ');
             pageOutput.push(`| ${dataRow} |`);
           }
           pageOutput.push('');
@@ -3468,7 +3799,11 @@ export async function pdfToMarkdown(
     };
   } finally {
     if (pdf && typeof pdf.destroy === 'function') {
-      await pdf.destroy();
+      try {
+        await pdf.destroy();
+      } catch (destroyErr: unknown) {
+        logger.error('pdf.destroy() failed during cleanup:', destroyErr);
+      }
     }
   }
 }

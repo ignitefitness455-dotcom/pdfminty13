@@ -2,19 +2,28 @@ import { RotateCw, AlertCircle, Download, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
+const MAX_PREVIEW_RENDER_BYTES = 50 * 1024 * 1024; // 50 MB threshold for PDF.js thumbnail rasterization
+
 export const RotatePage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('rotate-pdf', isPro, isLoggedIn);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [degrees, setDegrees] = useState<number>(90);
   const [loading, setLoading] = useState(false);
@@ -28,6 +37,7 @@ export const RotatePage: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [renderingPreview, setRenderingPreview] = useState<boolean>(false);
   const operationTokenRef = React.useRef<number>(0);
+  const isSubmittingRef = React.useRef<boolean>(false);
 
   const formatBytes = (bytes: number): string => {
     if (bytes <= 0) return '0 B';
@@ -51,7 +61,7 @@ export const RotatePage: React.FC = () => {
     };
   }, [previewUrl]);
 
-  // Extract first page preview image
+  // Extract first page preview image (skip heavy PDF.js rasterization on files > 50MB to preserve Worker memory)
   React.useEffect(() => {
     const generatePreview = async () => {
       if (!selectedFile) {
@@ -60,6 +70,13 @@ export const RotatePage: React.FC = () => {
       }
 
       const myToken = ++operationTokenRef.current;
+
+      if (selectedFile.size > MAX_PREVIEW_RENDER_BYTES) {
+        setPreviewUrl(null);
+        setRenderingPreview(false);
+        return;
+      }
+
       setRenderingPreview(true);
 
       try {
@@ -93,7 +110,7 @@ export const RotatePage: React.FC = () => {
       }
     };
 
-    generatePreview();
+    void generatePreview();
   }, [selectedFile]);
 
   const handleFilesSelected = (files: File[]) => {
@@ -110,11 +127,14 @@ export const RotatePage: React.FC = () => {
   };
 
   const handleRotate = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+
+    const activeToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -130,12 +150,16 @@ export const RotatePage: React.FC = () => {
         { bytes: fileBytes, degreesValue: degrees },
         [fileBytes.buffer]
       );
+
+      if (activeToken !== operationTokenRef.current) return;
+
       const blob = new Blob([rotatedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_rotated_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setOutputSize(blob.size);
       setDownloadUrl(url);
       setDownloadName(name);
+      setIsSuccess(true);
 
       addActivityItem({
         toolName: 'Rotate PDF',
@@ -148,8 +172,8 @@ export const RotatePage: React.FC = () => {
       });
 
       await downloadBlob(blob, name);
-      setIsSuccess(true);
     } catch (err: unknown) {
+      if (activeToken !== operationTokenRef.current) return;
       logger.error('Rotate error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -159,9 +183,13 @@ export const RotatePage: React.FC = () => {
           })
       );
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   };
+
+  const rotationTailwindClass =
+    degrees === 90 ? 'rotate-90' : degrees === 180 ? 'rotate-180' : 'rotate-[270deg]';
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto" id="rotate_page_container">
@@ -178,7 +206,7 @@ export const RotatePage: React.FC = () => {
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept=".pdf,application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['rotate-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div className="space-y-4">
@@ -198,7 +226,9 @@ export const RotatePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
+                      operationTokenRef.current++;
                       setSelectedFile(null);
+                      setError(null);
                       setIsSuccess(false);
                       setOutputSize(0);
                       if (downloadUrl) {
@@ -223,7 +253,7 @@ export const RotatePage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Frame container for holding the 3D rotating box */}
+                  {/* Frame container for holding the rotating box */}
                   <div className="relative w-full aspect-[1/1.4] max-w-sm mx-auto bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 flex items-center justify-center p-8">
                     {renderingPreview ? (
                       <div className="flex flex-col items-center gap-2.5 text-slate-400">
@@ -234,8 +264,7 @@ export const RotatePage: React.FC = () => {
                       </div>
                     ) : (
                       <div
-                        className="w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-md rounded-lg overflow-hidden bg-white"
-                        style={{ transform: `rotate(${degrees}deg)` }}
+                        className={`w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-md rounded-lg overflow-hidden bg-white ${rotationTailwindClass}`}
                       >
                         {previewUrl ? (
                           <img
@@ -247,7 +276,7 @@ export const RotatePage: React.FC = () => {
                             className="w-full h-full object-contain pointer-events-none"
                           />
                         ) : (
-                          // Exquisite mock page overlay if PDF.js is unavailable
+                          // Lightweight vector template overlay when file > 50MB or PDF.js unavailable
                           <div className="w-full h-full bg-white flex flex-col justify-between p-6">
                             <div className="space-y-3 opacity-[0.08]">
                               <div className="h-4 w-1/2 bg-slate-900 rounded"></div>
@@ -325,7 +354,9 @@ export const RotatePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
+                      operationTokenRef.current++;
                       setSelectedFile(null);
+                      setError(null);
                       setIsSuccess(false);
                       setOutputSize(0);
                       if (downloadUrl) {
@@ -344,12 +375,14 @@ export const RotatePage: React.FC = () => {
               )}
             </div>
           )}
+
+          {!selectedFile && <EmptyState />}
         </div>
 
         {/* Configurations column */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('rotatePdf.rotationAngle', { defaultValue: 'Rotation Angle' })}
             </h3>
 
@@ -364,10 +397,10 @@ export const RotatePage: React.FC = () => {
                     deg,
                     defaultValue: `Rotate ${deg} degrees`,
                   })}
-                  className={`py-3.5 rounded-xl border font-bold text-sm transition-all ${
+                  className={`py-3.5 rounded-xl border font-bold text-sm transition-all cursor-pointer ${
                     degrees === deg
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-500/15'
-                      : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/15'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800'
                   }`}
                   disabled={!selectedFile}
                 >
@@ -382,21 +415,27 @@ export const RotatePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
-              <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 p-3 rounded-lg"
+                id="rotate_error_box"
+                role="alert"
+                aria-live="assertive"
+              >
+                <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
 
             <button
+              type="button"
               onClick={handleRotate}
               disabled={!selectedFile || loading}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-blue-600/10 ${
+              className={`w-full min-h-[44px] py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-blue-600/10 ${
                 selectedFile && !loading
                   ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (

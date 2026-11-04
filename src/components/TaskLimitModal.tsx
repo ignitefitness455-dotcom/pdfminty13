@@ -1,11 +1,5 @@
-import {
-  X,
-  Sparkles,
-  Zap,
-  HardDrive,
-  ArrowRight,
-} from 'lucide-react';
-import React from 'react';
+import { X, Sparkles, Zap, HardDrive, ArrowRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,6 +26,8 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const { upgradeToPro } = useAuth();
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const upgradingRef = useRef(false);
 
   const { modalRef, onKeyDown } = useModal(isOpen, onClose);
 
@@ -45,11 +41,17 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
   };
 
   const handleUpgradePro = async () => {
+    if (upgradingRef.current || isUpgrading) return;
+    upgradingRef.current = true;
+    setIsUpgrading(true);
     onClose();
     try {
       await upgradeToPro();
     } catch {
       navigate(ROUTES.PRICING);
+    } finally {
+      upgradingRef.current = false;
+      setIsUpgrading(false);
     }
   };
 
@@ -121,8 +123,12 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
               {reason === 'file_size'
                 ? t('usageLimits.modal.sizeTitle', { defaultValue: 'File Size Limit Exceeded' })
                 : isGuest
-                  ? t('usageLimits.modal.taskTitleGuest', { defaultValue: 'Daily 5 Guest Tasks Completed!' })
-                  : t('usageLimits.modal.taskTitleFree', { defaultValue: 'Daily 10 Free Tasks Completed!' })}
+                  ? t('usageLimits.modal.taskTitleGuest', {
+                      defaultValue: 'Daily 5 Guest Tasks Completed!',
+                    })
+                  : t('usageLimits.modal.taskTitleFree', {
+                      defaultValue: 'Daily 10 Free Tasks Completed!',
+                    })}
             </h3>
           </div>
         </div>
@@ -169,9 +175,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
             <div className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400">
               {t('usageLimits.modal.colGuest', { defaultValue: 'Guest' })}
             </div>
-            <div className="text-base font-black text-slate-900 dark:text-white mt-1">
-              100 MB
-            </div>
+            <div className="text-base font-black text-slate-900 dark:text-white mt-1">100 MB</div>
             <div className="text-[11px] text-slate-500 font-medium">
               {t('usageLimits.modal.colGuestTasks', { defaultValue: '5 tasks / day' })}
             </div>
@@ -188,9 +192,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
             <div className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400">
               {t('usageLimits.modal.colFree', { defaultValue: 'Free Login' })}
             </div>
-            <div className="text-base font-black text-slate-900 dark:text-white mt-1">
-              150 MB
-            </div>
+            <div className="text-base font-black text-slate-900 dark:text-white mt-1">150 MB</div>
             <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
               {t('usageLimits.modal.colFreeTasks', { defaultValue: '10 tasks / day' })}
             </div>
@@ -202,9 +204,7 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
               <span>{t('usageLimits.modal.colPro', { defaultValue: 'Pro' })}</span>
               <Sparkles className="w-2.5 h-2.5 fill-current" />
             </div>
-            <div className="text-base font-black text-slate-900 dark:text-white mt-1">
-              500 MB
-            </div>
+            <div className="text-base font-black text-slate-900 dark:text-white mt-1">500 MB</div>
             <div className="text-[11px] text-amber-600 dark:text-amber-400 font-black">
               {t('usageLimits.modal.colProTasks', { defaultValue: 'Unlimited' })}
             </div>
@@ -232,7 +232,8 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
               <button
                 type="button"
                 onClick={handleUpgradePro}
-                className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isUpgrading}
+                className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 id="limit_modal_pro_btn"
               >
                 <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
@@ -248,7 +249,8 @@ export const TaskLimitModal: React.FC<TaskLimitModalProps> = ({
               <button
                 type="button"
                 onClick={handleUpgradePro}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                disabled={isUpgrading}
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
                 id="limit_modal_upgrade_btn"
               >
                 <Zap className="w-4 h-4 fill-white" />

@@ -49,7 +49,10 @@ const KINDS: { kind: FieldKind; icon: React.ReactNode }[] = [
   { kind: 'name', icon: <UserRound className="size-4" aria-hidden="true" /> },
   { kind: 'date', icon: <CalendarDays className="size-4" aria-hidden="true" /> },
   { kind: 'text', icon: <Type className="size-4" aria-hidden="true" /> },
-  { kind: 'checkmark', icon: <Check className="size-4 text-emerald-600 stroke-[3]" aria-hidden="true" /> },
+  {
+    kind: 'checkmark',
+    icon: <Check className="size-4 text-emerald-600 stroke-[3]" aria-hidden="true" />,
+  },
   { kind: 'cross', icon: <X className="size-4 text-rose-600 stroke-[3]" aria-hidden="true" /> },
   { kind: 'stamp', icon: <ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" /> },
 ];
@@ -93,7 +96,9 @@ export function SignSidebar({
             <Button variant="ghost" size="xs" onClick={onEditSignature}>
               <Plus className="size-3.5 mr-1" />
               {hasSignature
-                ? t('signPdf.sidebar.newOrChange', { defaultValue: isPro ? 'Add / Edit Stamp' : 'Change' })
+                ? t('signPdf.sidebar.newOrChange', {
+                    defaultValue: isPro ? 'Add / Edit Stamp' : 'Change',
+                  })
                 : t('signPdf.sidebar.create', { defaultValue: 'Create' })}
             </Button>
           </div>
@@ -213,7 +218,9 @@ export function SignSidebar({
             {KINDS.map(({ kind, icon }) => {
               const active = pendingKind === kind;
               const needsSig =
-                (kind === 'signature' || kind === 'initials' || kind === 'name') && !hasSignature;
+                (kind === 'signature' && !signatures.signature) ||
+                (kind === 'initials' && !signatures.initials) ||
+                (kind === 'name' && !signatures.fullName.trim());
               return (
                 <li key={kind}>
                   <button
@@ -226,6 +233,7 @@ export function SignSidebar({
                     }}
                     onClick={() => {
                       if (needsSig) {
+                        onPickKind(kind);
                         onEditSignature();
                         return;
                       }

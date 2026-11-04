@@ -12,7 +12,7 @@ import {
   Globe,
   ChevronDown,
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -21,7 +21,12 @@ import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { getLocalizedPath, SUPPORTED_LOCALES, DEFAULT_LOCALE, type SupportedLocale } from '../i18n/config';
+import {
+  getLocalizedPath,
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+} from '../i18n/config';
 import {
   detectCountrySync,
   detectCountryAsync,
@@ -45,6 +50,7 @@ export const PricingPage: React.FC = () => {
 
   const [checkoutModalPlan, setCheckoutModalPlan] = useState<string | null>(null);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  const checkoutLockRef = useRef(false);
 
   // Auto-detected country & local currency
   const [geo, setGeo] = useState<GeoLocationInfo>(() => detectCountrySync());
@@ -76,6 +82,21 @@ export const PricingPage: React.FC = () => {
       return;
     }
 
+    if (isPro) {
+      showToast(
+        isBn
+          ? 'আপনার অ্যাকাউন্টে ইতিমধ্যেই প্রো মেম্বারশিপ সক্রিয় রয়েছে!'
+          : 'Your account already has an active Pro membership!',
+        'info'
+      );
+      return;
+    }
+
+    if (checkoutLockRef.current || isProcessingCheckout) {
+      return;
+    }
+
+    checkoutLockRef.current = true;
     setIsProcessingCheckout(true);
     try {
       await upgradeToPro();
@@ -87,15 +108,21 @@ export const PricingPage: React.FC = () => {
         'info'
       );
     } finally {
+      checkoutLockRef.current = false;
       setIsProcessingCheckout(false);
     }
   };
 
   const handleConfirmCheckout = async () => {
+    if (checkoutLockRef.current || isProcessingCheckout || isPro) {
+      return;
+    }
+    checkoutLockRef.current = true;
     setIsProcessingCheckout(true);
     try {
       await upgradeToPro();
     } finally {
+      checkoutLockRef.current = false;
       setIsProcessingCheckout(false);
       setCheckoutModalPlan(null);
     }
@@ -140,7 +167,9 @@ export const PricingPage: React.FC = () => {
           <span>{isBn ? 'সুলভ ও সহজ প্ল্যান' : 'Affordable & Honest Pricing'}</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight font-sans">
-          {isBn ? 'আপনার প্রয়োজনীয় সেরা প্ল্যানটি বেছে নিন' : 'Pick the plan that fits your workflow'}
+          {isBn
+            ? 'আপনার প্রয়োজনীয় সেরা প্ল্যানটি বেছে নিন'
+            : 'Pick the plan that fits your workflow'}
         </h1>
         <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
           {isBn
@@ -151,9 +180,7 @@ export const PricingPage: React.FC = () => {
         {/* Currency Indicator & Switcher */}
         <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 p-1.5 px-3.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
           <Globe className="w-3.5 h-3.5 text-emerald-500" />
-          <span>
-            {isBn ? 'নির্বাচিত মুদ্রা:' : 'Active currency:'}
-          </span>
+          <span>{isBn ? 'নির্বাচিত মুদ্রা:' : 'Active currency:'}</span>
           <span className="font-bold inline-flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
             <span className="text-sm">{geo.flag}</span>
             <span>{geo.countryName}</span>
@@ -249,25 +276,37 @@ export const PricingPage: React.FC = () => {
             <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'সবগুলো 23টি ব্রাউজার PDF কোর টুল' : 'All 23 in-browser core PDF tools'}</span>
+                <span>
+                  {isBn ? 'সবগুলো 23টি ব্রাউজার PDF কোর টুল' : 'All 23 in-browser core PDF tools'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   <strong>{isBn ? 'লগইন ছাড়া (Guest):' : 'Guest (No Login):'}</strong>{' '}
-                  {isBn ? '100 MB ফাইল সাইজ • দৈনিক 5টি ফ্রি টাস্ক' : '100 MB file limit • 5 tasks/day'}
+                  {isBn
+                    ? '100 MB ফাইল সাইজ • দৈনিক 5টি ফ্রি টাস্ক'
+                    : '100 MB file limit • 5 tasks/day'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'ফ্রি অ্যাকাউন্ট (Logged In):' : 'Free Account (Logged In):'}</strong>{' '}
-                  {isBn ? '150 MB ফাইল সাইজ • দৈনিক 10টি ফ্রি টাস্ক' : '150 MB file limit • 10 tasks/day'}
+                  <strong>
+                    {isBn ? 'ফ্রি অ্যাকাউন্ট (Logged In):' : 'Free Account (Logged In):'}
+                  </strong>{' '}
+                  {isBn
+                    ? '150 MB ফাইল সাইজ • দৈনিক 10টি ফ্রি টাস্ক'
+                    : '150 MB file limit • 10 tasks/day'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? '100% ক্লায়েন্ট-সাইড WebAssembly প্রাইভেসি' : '100% client-side WebAssembly privacy'}</span>
+                <span>
+                  {isBn
+                    ? '100% ক্লায়েন্ট-সাইড WebAssembly প্রাইভেসি'
+                    : '100% client-side WebAssembly privacy'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -335,48 +374,74 @@ export const PricingPage: React.FC = () => {
             <div className="space-y-3.5 text-xs text-slate-800 dark:text-slate-200 mt-4">
               <div className="flex items-center gap-2.5 font-semibold">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'ফ্রি প্ল্যানের সবকিছু, সাথে আরও:' : 'Everything in Free, plus:'}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? '500MB ব্যাচ ও ফাইল লিমিট:' : '500MB Batch & File Limit:'}</strong>{' '}
-                  {isBn ? 'ভারী স্ক্যান ও আইনি PDF নির্বিঘ্নে প্রসেস করুন' : 'Seamlessly process heavy scanned and legal PDFs'}
+                  {isBn ? 'ফ্রি প্ল্যানের সবকিছু, সাথে আরও:' : 'Everything in Free, plus:'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'প্রায়োরিটি AI অ্যানালাইসিস (50 কুয়েরি/দিন):' : 'Priority AI Analysis (50/day • 50 pages/PDF):'}</strong>{' '}
-                  {isBn ? 'Gemini 2.5 Flash দিয়ে সারসংক্ষেপ ও তথ্য এক্সট্রাক্ট' : 'Summarize, query & extract insights using Gemini 2.5 Flash'}
+                  <strong>
+                    {isBn ? '500MB ব্যাচ ও ফাইল লিমিট:' : '500MB Batch & File Limit:'}
+                  </strong>{' '}
+                  {isBn
+                    ? 'ভারী স্ক্যান ও আইনি PDF নির্বিঘ্নে প্রসেস করুন'
+                    : 'Seamlessly process heavy scanned and legal PDFs'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'সম্পূর্ণ ব্যাচ OCR (15 পেজ/ব্যাচ):' : 'Full Batch OCR (Up to 15 pages/run):'}</strong>{' '}
-                  {isBn ? 'স্ক্যান করা ডকুমেন্ট এডিটেবল Markdown ও Text-এ রূপান্তর' : 'Convert scanned documents & images into editable Markdown & Text'}
+                  <strong>
+                    {isBn
+                      ? 'প্রায়োরিটি AI অ্যানালাইসিস (50 কুয়েরি/দিন):'
+                      : 'Priority AI Analysis (50/day • 50 pages/PDF):'}
+                  </strong>{' '}
+                  {isBn
+                    ? 'Gemini 2.5 Flash দিয়ে সারসংক্ষেপ ও তথ্য এক্সট্রাক্ট'
+                    : 'Summarize, query & extract insights using Gemini 2.5 Flash'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'সংরক্ষিত স্বাক্ষর (Saved Signatures):' : 'Saved Signatures:'}</strong>{' '}
-                  {isBn ? 'একাধিক সিগনেচার স্ট্যাম্প সংরক্ষণ ও তাৎক্ষণিক প্রয়োগ' : 'Store and apply multiple signature stamps instantly'}
+                  <strong>
+                    {isBn
+                      ? 'সম্পূর্ণ ব্যাচ OCR (15 পেজ/ব্যাচ):'
+                      : 'Full Batch OCR (Up to 15 pages/run):'}
+                  </strong>{' '}
+                  {isBn
+                    ? 'স্ক্যান করা ডকুমেন্ট এডিটেবল Markdown ও Text-এ রূপান্তর'
+                    : 'Convert scanned documents & images into editable Markdown & Text'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>
+                  <strong>
+                    {isBn ? 'সংরক্ষিত স্বাক্ষর (Saved Signatures):' : 'Saved Signatures:'}
+                  </strong>{' '}
+                  {isBn
+                    ? 'একাধিক সিগনেচার স্ট্যাম্প সংরক্ষণ ও তাৎক্ষণিক প্রয়োগ'
+                    : 'Store and apply multiple signature stamps instantly'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   <strong>{isBn ? '100% বিজ্ঞাপন মুক্ত:' : '100% Ad-Free:'}</strong>{' '}
-                  {isBn ? 'পরিচ্ছন্ন ও মনোযোগহীন কাজের ইন্টারফেস' : 'Clean, distraction-free interface'}
+                  {isBn
+                    ? 'পরিচ্ছন্ন ও মনোযোগহীন কাজের ইন্টারফেস'
+                    : 'Clean, distraction-free interface'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   <strong>{isBn ? 'প্রায়োরিটি সাপোর্ট:' : 'Priority Support:'}</strong>{' '}
-                  {isBn ? 'দ্রুত ইমেইল রেসপন্স ও সরাসরি ফিচার রিকোয়েস্ট' : 'Fast email responses and direct feature requests'}
+                  {isBn
+                    ? 'দ্রুত ইমেইল রেসপন্স ও সরাসরি ফিচার রিকোয়েস্ট'
+                    : 'Fast email responses and direct feature requests'}
                 </span>
               </div>
             </div>
@@ -453,40 +518,74 @@ export const PricingPage: React.FC = () => {
             <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 mt-4">
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'সব PDFMinty Pro সুবিধা আজীবনের জন্য' : 'All PDFMinty Pro features included forever'}</span>
+                <span>
+                  {isBn
+                    ? 'সব PDFMinty Pro সুবিধা আজীবনের জন্য'
+                    : 'All PDFMinty Pro features included forever'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'কোনো মাসিক বা বার্ষিক রিনিউয়াল নেই' : 'No recurring monthly or annual renewals'}</span>
+                <span>
+                  {isBn
+                    ? 'কোনো মাসিক বা বার্ষিক রিনিউয়াল নেই'
+                    : 'No recurring monthly or annual renewals'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'ভবিষ্যতের সমস্ত নতুন PDF টুলের নিশ্চয়তা' : 'Guaranteed access to all future PDF tools'}</span>
+                <span>
+                  {isBn
+                    ? 'ভবিষ্যতের সমস্ত নতুন PDF টুলের নিশ্চয়তা'
+                    : 'Guaranteed access to all future PDF tools'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'ব্যক্তিগত ও ব্যবসায়িক ব্যবহারের জন্য কমার্শিয়াল লাইসেন্স' : 'Commercial license for personal & business use'}</span>
+                <span>
+                  {isBn
+                    ? 'ব্যক্তিগত ও ব্যবসায়িক ব্যবহারের জন্য কমার্শিয়াল লাইসেন্স'
+                    : 'Commercial license for personal & business use'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'ভিআইপি ডিরেক্ট ইঞ্জিনিয়ারিং সাপোর্ট' : 'VIP direct engineering priority support'}</span>
+                <span>
+                  {isBn
+                    ? 'ভিআইপি ডিরেক্ট ইঞ্জিনিয়ারিং সাপোর্ট'
+                    : 'VIP direct engineering priority support'}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={() => handleSelectPlan('Lifetime')}
-              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>
-                {isBn
-                  ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
-                  : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
-              </span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {isPro ? (
+              <div
+                className="w-full py-3 px-4 rounded-xl font-black text-sm bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2"
+                id="pricing-lifetime-pro-active-badge"
+              >
+                <Sparkles className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <span>Pro Active</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSelectPlan('Lifetime')}
+                disabled={isProcessingCheckout}
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                id="pricing-upgrade-lifetime-btn"
+              >
+                <span>
+                  {isProcessingCheckout
+                    ? 'Redirecting to Checkout...'
+                    : isBn
+                      ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
+                      : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -495,7 +594,9 @@ export const PricingPage: React.FC = () => {
       <div className="mt-16 py-8 px-6 rounded-3xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 max-w-4xl mx-auto flex flex-wrap items-center justify-around gap-6 text-xs text-slate-600 dark:text-slate-400 font-semibold">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-emerald-500" />
-          <span>{isBn ? 'জিরো সার্ভার আপলোড • 100% প্রাইভেসি' : 'Zero Server Uploads • 100% Privacy'}</span>
+          <span>
+            {isBn ? 'জিরো সার্ভার আপলোড • 100% প্রাইভেসি' : 'Zero Server Uploads • 100% Privacy'}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <HeartHandshake className="w-5 h-5 text-emerald-500" />
@@ -503,7 +604,9 @@ export const PricingPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <Clock className="w-5 h-5 text-emerald-500" />
-          <span>{isBn ? 'তাৎক্ষণিক সক্রিয়করণ • 1-ক্লিকে বাতিল' : 'Instant Activation • 1-Click Cancel'}</span>
+          <span>
+            {isBn ? 'তাৎক্ষণিক সক্রিয়করণ • 1-ক্লিকে বাতিল' : 'Instant Activation • 1-Click Cancel'}
+          </span>
         </div>
       </div>
 
@@ -582,7 +685,9 @@ export const PricingPage: React.FC = () => {
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
-                  {isBn ? 'AI ডকুমেন্ট অ্যানালাইসিস (Gemini 2.5 Flash)' : 'AI Document Analysis (Gemini 2.5 Flash)'}
+                  {isBn
+                    ? 'AI ডকুমেন্ট অ্যানালাইসিস (Gemini 2.5 Flash)'
+                    : 'AI Document Analysis (Gemini 2.5 Flash)'}
                 </td>
                 <td className="p-4 text-slate-500 dark:text-slate-400">
                   {isBn ? 'স্ট্যান্ডার্ড (15 পেজ/PDF)' : 'Standard (Up to 15 pages/PDF)'}
@@ -596,7 +701,9 @@ export const PricingPage: React.FC = () => {
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
-                  {isBn ? 'ব্যাচ অপটিক্যাল ক্যারেক্টার রিকগনিশন (OCR)' : 'Batch Optical Character Recognition (OCR)'}
+                  {isBn
+                    ? 'ব্যাচ অপটিক্যাল ক্যারেক্টার রিকগনিশন (OCR)'
+                    : 'Batch Optical Character Recognition (OCR)'}
                 </td>
                 <td className="p-4 text-slate-500 dark:text-slate-400">
                   {isBn ? 'সর্বোচ্চ 5 পেজ/রান' : 'Up to 5 pages/run'}
@@ -610,16 +717,22 @@ export const PricingPage: React.FC = () => {
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
-                  {isBn ? 'সংরক্ষিত সিগনেচার স্ট্যাম্প (Saved Signatures)' : 'Saved Signature Stamps'}
+                  {isBn
+                    ? 'সংরক্ষিত সিগনেচার স্ট্যাম্প (Saved Signatures)'
+                    : 'Saved Signature Stamps'}
                 </td>
                 <td className="p-4 text-slate-500 dark:text-slate-400">
                   {isBn ? '1টি সিগনেচার প্রিসেট' : '1 Signature Preset'}
                 </td>
                 <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
-                  {isBn ? 'একাধিক স্ট্যাম্প সংরক্ষণ (5টি পর্যন্ত)' : 'Multiple Saved Stamps (Up to 5)'}
+                  {isBn
+                    ? 'একাধিক স্ট্যাম্প সংরক্ষণ (5টি পর্যন্ত)'
+                    : 'Multiple Saved Stamps (Up to 5)'}
                 </td>
                 <td className="p-4 text-emerald-600 dark:text-emerald-400 font-bold">
-                  {isBn ? 'একাধিক স্ট্যাম্প সংরক্ষণ (5টি পর্যন্ত)' : 'Multiple Saved Stamps (Up to 5)'}
+                  {isBn
+                    ? 'একাধিক স্ট্যাম্প সংরক্ষণ (5টি পর্যন্ত)'
+                    : 'Multiple Saved Stamps (Up to 5)'}
                 </td>
               </tr>
               <tr>
@@ -673,7 +786,9 @@ export const PricingPage: React.FC = () => {
         <div className="space-y-4">
           <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
-              {isBn ? 'ফ্রি প্ল্যান কি সত্যিই চিরতরে ফ্রি?' : 'Is the Free Plan truly free forever?'}
+              {isBn
+                ? 'ফ্রি প্ল্যান কি সত্যিই চিরতরে ফ্রি?'
+                : 'Is the Free Plan truly free forever?'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn

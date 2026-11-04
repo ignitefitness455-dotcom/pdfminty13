@@ -67,12 +67,20 @@ describe('Dynamic Chunk Load Resilience & Error Isolation', () => {
   it('prevents concurrent failing lazy chunks from racing and throwing into ErrorBoundary while reload is in flight', async () => {
     vi.useFakeTimers();
 
-    const failingFactoryA = vi.fn().mockRejectedValue(
-      new TypeError('Failed to fetch dynamically imported module: https://pdfminty.com/assets/ChunkA.js')
-    );
-    const failingFactoryB = vi.fn().mockRejectedValue(
-      new TypeError('Failed to fetch dynamically imported module: https://pdfminty.com/assets/RelatedBlogs-Dzp_1_AD.js')
-    );
+    const failingFactoryA = vi
+      .fn()
+      .mockRejectedValue(
+        new TypeError(
+          'Failed to fetch dynamically imported module: https://pdfminty.com/assets/ChunkA.js'
+        )
+      );
+    const failingFactoryB = vi
+      .fn()
+      .mockRejectedValue(
+        new TypeError(
+          'Failed to fetch dynamically imported module: https://pdfminty.com/assets/RelatedBlogs-Dzp_1_AD.js'
+        )
+      );
 
     const LazyA = lazyWithRetry(failingFactoryA);
     const LazyB = lazyWithRetry(failingFactoryB);

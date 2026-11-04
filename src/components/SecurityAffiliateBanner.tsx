@@ -40,16 +40,21 @@ export const SecurityAffiliateBanner: React.FC<SecurityAffiliateBannerProps> = (
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-900 dark:text-white text-sm">
-                {contextTitle || t('home.recommended.nordVpnTitle', { defaultValue: 'Browse Securely with NordVPN' })}
+                {contextTitle ||
+                  t('home.recommended.nordVpnTitle', {
+                    defaultValue: 'Browse Securely with NordVPN',
+                  })}
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
                 {t('affiliate.label', { defaultValue: 'Sponsored' })}
               </span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 text-xs mt-0.5 leading-relaxed">
-              {contextDesc || t('home.recommended.nordVpnDesc', {
-                defaultValue: 'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
-              })}
+              {contextDesc ||
+                t('home.recommended.nordVpnDesc', {
+                  defaultValue:
+                    'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
+                })}
             </p>
           </div>
         </div>
@@ -80,16 +85,21 @@ export const SecurityAffiliateBanner: React.FC<SecurityAffiliateBannerProps> = (
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-900 dark:text-white text-sm">
-                {contextTitle || t('home.recommended.nordPassTitle', { defaultValue: 'Secure Your Passwords with NordPass' })}
+                {contextTitle ||
+                  t('home.recommended.nordPassTitle', {
+                    defaultValue: 'Secure Your Passwords with NordPass',
+                  })}
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
                 {t('affiliate.label', { defaultValue: 'Sponsored' })}
               </span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 text-xs mt-0.5 leading-relaxed">
-              {contextDesc || t('home.recommended.nordPassDesc', {
-                defaultValue: 'Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.',
-              })}
+              {contextDesc ||
+                t('home.recommended.nordPassDesc', {
+                  defaultValue:
+                    'Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.',
+                })}
             </p>
           </div>
         </div>
@@ -120,16 +130,21 @@ export const SecurityAffiliateBanner: React.FC<SecurityAffiliateBannerProps> = (
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-900 dark:text-white text-sm">
-                {contextTitle || t('home.recommended.nordVpnTitle', { defaultValue: 'Browse Securely with NordVPN' })}
+                {contextTitle ||
+                  t('home.recommended.nordVpnTitle', {
+                    defaultValue: 'Browse Securely with NordVPN',
+                  })}
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
                 {t('affiliate.label', { defaultValue: 'Sponsored' })}
               </span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 text-xs mt-0.5 leading-relaxed">
-              {contextDesc || t('home.recommended.nordVpnDesc', {
-                defaultValue: 'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
-              })}
+              {contextDesc ||
+                t('home.recommended.nordVpnDesc', {
+                  defaultValue:
+                    'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
+                })}
             </p>
           </div>
         </div>
@@ -259,7 +274,8 @@ export const SecurityAffiliateBanner: React.FC<SecurityAffiliateBannerProps> = (
           </h4>
           <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
             {t('home.recommended.nordVpnDesc', {
-              defaultValue: 'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
+              defaultValue:
+                'Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.',
             })}
           </p>
         </div>
@@ -284,7 +300,8 @@ export const SecurityAffiliateBanner: React.FC<SecurityAffiliateBannerProps> = (
           </h4>
           <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
             {t('home.recommended.nordPassDesc', {
-              defaultValue: 'Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.',
+              defaultValue:
+                'Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.',
             })}
           </p>
         </div>

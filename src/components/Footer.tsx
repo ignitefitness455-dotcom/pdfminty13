@@ -189,7 +189,10 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               <li>
-                <Link to={ROUTES.PRICING} className="hover:text-emerald-500 transition-colors font-bold text-emerald-600 dark:text-emerald-400">
+                <Link
+                  to={ROUTES.PRICING}
+                  className="hover:text-emerald-500 transition-colors font-bold text-emerald-600 dark:text-emerald-400"
+                >
                   {t('footer.links.pricing', { defaultValue: 'Pro Pricing & Plans' })}
                 </Link>
               </li>
@@ -243,10 +246,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                       openCookiePreferences?: () => void;
                       googlefc?: { showRevocationMessage?: () => void };
                     };
-                    if (
-                      win.googlefc &&
-                      typeof win.googlefc.showRevocationMessage === 'function'
-                    ) {
+                    if (win.googlefc && typeof win.googlefc.showRevocationMessage === 'function') {
                       win.googlefc.showRevocationMessage();
                     } else if (typeof win.openCookiePreferences === 'function') {
                       win.openCookiePreferences();

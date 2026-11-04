@@ -1,5 +1,5 @@
 import { Image, Download, Trash2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '../components/EmptyState';
@@ -10,8 +10,17 @@ import { getToolLimit } from '../config/constants';
 import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
-import { downloadBlob } from '../utils/download';
+import { addActivityItem } from '../utils/activityStore';
+import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
+
+const MAX_DECK_IMAGES = 200;
+
+const formatBytes = (bytes: number): string => {
+  if (bytes <= 0) return '0 B';
+  if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(2)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+};
 
 export const ImgToPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
@@ -20,7 +29,7 @@ export const ImgToPdfPage: React.FC = () => {
   const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
   const currentLimits = getToolLimit('image-to-pdf', isPro, Boolean(user));
   const [images, setImages] = useState<{ file: File; id: string; url: string }[]>([]);
-  const [pageSize, setPageSize] = useState<'fit' | 'A4' | 'Letter'>('fit');
+  const [pageSize, setPageSize] = useState<'fit' | 'A4' | 'Letter' | 'Legal'>('fit');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,7 +37,9 @@ export const ImgToPdfPage: React.FC = () => {
   const [downloadName, setDownloadName] = useState<string>('');
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
-  const urlsRef = React.useRef<string[]>([]);
+  const urlsRef = useRef<string[]>([]);
+  const isSubmittingRef = useRef(false);
+  const operationTokenRef = useRef(0);
 
   React.useEffect(() => {
     urlsRef.current = images.map((img) => img.url);
@@ -44,6 +55,7 @@ export const ImgToPdfPage: React.FC = () => {
 
   React.useEffect(() => {
     return () => {
+      operationTokenRef.current += 1;
       // Clean up all generated URLs when leaving page
       urlsRef.current.forEach((url) => {
         URL.revokeObjectURL(url);
@@ -52,14 +64,38 @@ export const ImgToPdfPage: React.FC = () => {
   }, []);
 
   const handleFilesSelected = (newFiles: File[]) => {
+    operationTokenRef.current += 1;
+    isSubmittingRef.current = false;
+    setLoading(false);
     setError(null);
     setIsSuccess(false);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
       setDownloadUrl(null);
     }
+
+    const validFiles = newFiles.filter((f) => f.size > 0);
+    if (validFiles.length === 0) {
+      setError(
+        t('imageToPdf.emptyFileError', {
+          defaultValue: 'Selected image file is empty (0 bytes). Please choose a valid image.',
+        })
+      );
+      return;
+    }
+
+    if (images.length + validFiles.length > MAX_DECK_IMAGES) {
+      setError(
+        t('imageToPdf.maxImagesError', {
+          max: MAX_DECK_IMAGES,
+          defaultValue: `You can combine up to ${MAX_DECK_IMAGES} images into a single PDF.`,
+        })
+      );
+      return;
+    }
+
     const existingTotalBytes = images.reduce((acc, img) => acc + img.file.size, 0);
-    const newTotalBytes = newFiles.reduce((acc, f) => acc + f.size, 0);
+    const newTotalBytes = validFiles.reduce((acc, f) => acc + f.size, 0);
     const combinedBytes = existingTotalBytes + newTotalBytes;
     const maxTotalMB = currentLimits.maxTotalMB || 150;
     const maxTotalBytes = maxTotalMB * 1024 * 1024;
@@ -81,7 +117,7 @@ export const ImgToPdfPage: React.FC = () => {
       return;
     }
 
-    const nextImages = newFiles.map((file) => ({
+    const nextImages = validFiles.map((file) => ({
       file,
       id: `${file.name}_${Date.now()}_${Math.random()}`,
       url: URL.createObjectURL(file),
@@ -90,6 +126,9 @@ export const ImgToPdfPage: React.FC = () => {
   };
 
   const handleRemove = (index: number) => {
+    operationTokenRef.current += 1;
+    isSubmittingRef.current = false;
+    setLoading(false);
     setIsSuccess(false);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
@@ -130,7 +169,11 @@ export const ImgToPdfPage: React.FC = () => {
   };
 
   const handleClearDeck = () => {
+    operationTokenRef.current += 1;
+    isSubmittingRef.current = false;
+    setLoading(false);
     setIsSuccess(false);
+    setError(null);
     if (downloadUrl) {
       URL.revokeObjectURL(downloadUrl);
       setDownloadUrl(null);
@@ -140,6 +183,7 @@ export const ImgToPdfPage: React.FC = () => {
   };
 
   const handleConvert = async () => {
+    if (loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
@@ -151,6 +195,8 @@ export const ImgToPdfPage: React.FC = () => {
       return;
     }
 
+    isSubmittingRef.current = true;
+    const currentToken = ++operationTokenRef.current;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -167,6 +213,8 @@ export const ImgToPdfPage: React.FC = () => {
           name: img.file.name,
         }))
       );
+      if (currentToken !== operationTokenRef.current) return;
+
       const pdfBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'imagesToPDF',
         {
@@ -175,14 +223,26 @@ export const ImgToPdfPage: React.FC = () => {
         },
         imageBlobs.map((b) => b.buf.buffer)
       );
+      if (currentToken !== operationTokenRef.current) return;
+
       const blob = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = `pdfminty_images_${Date.now()}.pdf`;
+      const name = sanitizeDownloadFilename(`pdfminty_images_${Date.now()}.pdf`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: 'Image to PDF',
+        toolId: 'image-to-pdf',
+        fileName: name,
+        fileSizeFormatted: formatBytes(blob.size),
+        status: 'completed',
+        tag: 'Convert',
+        savings: `${images.length} image(s)`,
+      });
       setIsSuccess(true);
     } catch (err: unknown) {
+      if (currentToken !== operationTokenRef.current) return;
       logger.error('Image logic error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -193,7 +253,10 @@ export const ImgToPdfPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      if (currentToken === operationTokenRef.current) {
+        setLoading(false);
+      }
+      isSubmittingRef.current = false;
     }
   };
 
@@ -204,7 +267,7 @@ export const ImgToPdfPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-primary font-bold">
               <Image className="w-5 h-5 text-fuchsia-600" />
               <span>
@@ -249,16 +312,7 @@ export const ImgToPdfPage: React.FC = () => {
                   </a>
                   <button
                     type="button"
-                    onClick={() => {
-                      images.forEach((img) => URL.revokeObjectURL(img.url));
-                      setImages([]);
-                      setIsSuccess(false);
-                      setError(null);
-                      if (downloadUrl) {
-                        URL.revokeObjectURL(downloadUrl);
-                        setDownloadUrl(null);
-                      }
-                    }}
+                    onClick={handleClearDeck}
                     className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
                   >
                     {t('toolCommon.processAnother', { defaultValue: 'Convert More Images' })}
@@ -280,19 +334,20 @@ export const ImgToPdfPage: React.FC = () => {
             />
           ) : (
             <div
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
               id="images_deck_list"
             >
-              <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <div className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   {t('imageToPdf.deckTitle', {
                     count: images.length,
                     defaultValue: `Arrange Photo Deck (${images.length} added)`,
                   })}
                 </span>
                 <button
+                  type="button"
                   onClick={handleClearDeck}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700"
+                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 cursor-pointer"
                 >
                   {t('imageToPdf.clearDeck', { defaultValue: 'Clear Deck' })}
                 </button>
@@ -316,13 +371,13 @@ export const ImgToPdfPage: React.FC = () => {
                         setDraggedIdx(null);
                       }}
                       onDragEnd={() => setDraggedIdx(null)}
-                      className={`relative group bg-slate-50 rounded-xl overflow-hidden border p-2 flex flex-col justify-between cursor-grab active:cursor-grabbing transition-opacity ${
+                      className={`relative group bg-slate-50 dark:bg-slate-800/60 rounded-xl overflow-hidden border p-2 flex flex-col justify-between cursor-grab active:cursor-grabbing transition-opacity ${
                         draggedIdx === idx
                           ? 'opacity-50 border-emerald-500'
-                          : 'border-slate-200'
+                          : 'border-slate-200 dark:border-slate-700'
                       }`}
                     >
-                      <div className="aspect-square relative w-full rounded-lg overflow-hidden bg-slate-200">
+                      <div className="aspect-square relative w-full rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-950">
                         <img
                           src={img.url}
                           alt={img.file.name}
@@ -376,14 +431,12 @@ export const ImgToPdfPage: React.FC = () => {
                       </div>
                       <div className="p-1 mt-2">
                         <p
-                          className="text-xs font-bold text-slate-800 truncate"
+                          className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate"
                           title={img.file.name}
                         >
                           {img.file.name}
                         </p>
-                        <p className="text-[10px] text-slate-400">
-                          {(img.file.size / 1024).toFixed(0)} KB
-                        </p>
+                        <p className="text-[10px] text-slate-400">{formatBytes(img.file.size)}</p>
                       </div>
                     </div>
                   );
@@ -394,24 +447,24 @@ export const ImgToPdfPage: React.FC = () => {
         </div>
 
         {/* Configurations column */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('imageToPdf.layoutTitle', { defaultValue: 'Layout Guidelines' })}
             </h3>
 
             <div className="space-y-2">
               <label
                 htmlFor="page-size-select"
-                className="block text-[11px] uppercase tracking-wide font-bold text-slate-500"
+                className="block text-[11px] uppercase tracking-wide font-bold text-slate-500 dark:text-slate-400"
               >
                 {t('imageToPdf.pageSizeLabel', { defaultValue: 'Page Size' })}
               </label>
               <select
                 id="page-size-select"
                 value={pageSize}
-                onChange={(e) => setPageSize(e.target.value as 'fit' | 'A4' | 'Letter')}
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-fuchsia-500 transition-colors"
+                onChange={(e) => setPageSize(e.target.value as 'fit' | 'A4' | 'Letter' | 'Legal')}
+                className="w-full text-sm p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-fuchsia-500 transition-colors"
                 aria-label={t('imageToPdf.pageSizeAria', {
                   defaultValue: 'Page size for PDF pages',
                 })}
@@ -426,25 +479,32 @@ export const ImgToPdfPage: React.FC = () => {
                 <option value="Letter">
                   {t('imageToPdf.pageSizeLetter', { defaultValue: 'US Letter' })}
                 </option>
+                <option value="Legal">
+                  {t('imageToPdf.pageSizeLegal', { defaultValue: 'US Legal' })}
+                </option>
               </select>
             </div>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
-              <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg">
+              <div
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/60 p-3 rounded-lg"
+                role="alert"
+              >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             <button
+              type="button"
               onClick={handleConvert}
               disabled={images.length === 0 || loading}
               className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-fuchsia-600/10 ${
                 images.length > 0 && !loading
                   ? 'bg-fuchsia-600 hover:bg-fuchsia-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (

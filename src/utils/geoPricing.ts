@@ -296,7 +296,9 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
   const monthly = isHighDenom ? Math.round(monthlyRaw) : Math.round(monthlyRaw * 100) / 100;
 
   const annualTotalRaw = monthly * 12;
-  const annualTotal = isHighDenom ? Math.round(annualTotalRaw / 10) * 10 : Math.round(annualTotalRaw * 100) / 100;
+  const annualTotal = isHighDenom
+    ? Math.round(annualTotalRaw / 10) * 10
+    : Math.round(annualTotalRaw * 100) / 100;
 
   const lifetimeRaw = 50 * rateToUsd;
   const lifetime = isHighDenom ? Math.round(lifetimeRaw / 10) * 10 : Math.round(lifetimeRaw);
@@ -321,7 +323,9 @@ export function calculateLocalizedPricing(geo: GeoLocationInfo): LocalizedPricin
     },
     lifetime: {
       amount: lifetime,
-      formatted: isHighDenom ? `${currencySymbol}${lifetime.toLocaleString()}` : `${currencySymbol}${lifetime}`,
+      formatted: isHighDenom
+        ? `${currencySymbol}${lifetime.toLocaleString()}`
+        : `${currencySymbol}${lifetime}`,
     },
   };
 }

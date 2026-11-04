@@ -1,5 +1,5 @@
 import type { User } from 'firebase/auth';
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 
 import { isFirebaseConfigured } from '../lib/firebaseConfig';
 import { setSyncedProStatus, setSyncedAuthUid } from '../utils/usageLimit';
@@ -82,6 +82,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPro, setIsPro] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(() => hasLikelyActiveAuthSession());
   const isConfigured = isFirebaseConfigured();
+  const upgradeInFlightRef = useRef<Promise<void> | null>(null);
+  const checkoutRedirectTimestampRef = useRef<number>(0);
+
+  const dispatchCheckoutRedirect = useCallback((checkoutUrl: string) => {
+    const now = Date.now();
+    if (now - checkoutRedirectTimestampRef.current < 3000) {
+      return;
+    }
+    checkoutRedirectTimestampRef.current = now;
+    window.location.assign(checkoutUrl);
+  }, []);
 
   // Sync Firebase Auth state and real-time Firestore `users/{uid}` listener
   useEffect(() => {
@@ -148,21 +159,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const userSvc = await loadUserService();
             if (!isMounted) return;
             void userSvc.syncUserProfileToFirestore(currentUser);
-            unsubscribeFirestore = userSvc.subscribeToUserProfile(fbUser.uid, (firestoreProfile) => {
-              if (!isMounted) return;
-              const proActive = firestoreProfile.isPro === true;
-              setIsPro(proActive);
-              setSyncedProStatus(proActive);
-              setUser((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      isPro: proActive,
-                      plan: proActive ? 'pro' : 'free',
-                    }
-                  : null
-              );
-            });
+            unsubscribeFirestore = userSvc.subscribeToUserProfile(
+              fbUser.uid,
+              (firestoreProfile) => {
+                if (!isMounted) return;
+                const proActive = firestoreProfile.isPro === true;
+                setIsPro(proActive);
+                setSyncedProStatus(proActive);
+                setUser((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        isPro: proActive,
+                        plan: proActive ? 'pro' : 'free',
+                      }
+                    : null
+                );
+              }
+            );
           } else {
             try {
               localStorage.removeItem(HAS_AUTH_SESSION_KEY);
@@ -333,57 +347,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isConfigured]);
 
   const upgradeToPro = useCallback(async () => {
-    if (firebaseUser?.uid) {
-      const checkoutUrl = buildLemonSqueezyCheckoutUrl(
-        firebaseUser.uid,
-        firebaseUser.email || user?.email
-      );
-      window.location.assign(checkoutUrl);
+    if (isPro) {
       return;
     }
 
-    if (user?.uid && !user.uid.startsWith('demo_')) {
-      const checkoutUrl = buildLemonSqueezyCheckoutUrl(user.uid, user.email);
-      window.location.assign(checkoutUrl);
-      return;
+    if (upgradeInFlightRef.current) {
+      return upgradeInFlightRef.current;
     }
 
-    if (isConfigured) {
-      setLoading(true);
-      try {
-        const fb = await loadFirebaseSdk();
-        const auth = fb.auth;
-        if (auth?.currentUser?.uid) {
-          const checkoutUrl = buildLemonSqueezyCheckoutUrl(
-            auth.currentUser.uid,
-            auth.currentUser.email || user?.email
-          );
-          window.location.assign(checkoutUrl);
-          return;
-        }
-        if (auth) {
-          const result = await fb.signInWithPopup(auth, fb.googleProvider);
-          setFirebaseUser(result.user);
-          setSyncedAuthUid(result.user.uid);
-          setUser({
-            uid: result.user.uid,
-            email: result.user.email,
-            displayName: result.user.displayName || 'Google User',
-            photoURL: result.user.photoURL,
-            plan: 'free',
-            isPro: false,
-            emailVerified: result.user.emailVerified,
-          });
-          const checkoutUrl = buildLemonSqueezyCheckoutUrl(result.user.uid, result.user.email);
-          window.location.assign(checkoutUrl);
-          return;
-        }
-      } finally {
-        setLoading(false);
+    const runUpgrade = async () => {
+      if (firebaseUser?.uid) {
+        const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+          firebaseUser.uid,
+          firebaseUser.email || user?.email
+        );
+        dispatchCheckoutRedirect(checkoutUrl);
+        return;
       }
-    }
-    throw new Error('AUTH_NOT_CONFIGURED');
-  }, [firebaseUser, user, isConfigured]);
+
+      if (user?.uid && !user.uid.startsWith('demo_')) {
+        const checkoutUrl = buildLemonSqueezyCheckoutUrl(user.uid, user.email);
+        dispatchCheckoutRedirect(checkoutUrl);
+        return;
+      }
+
+      if (isConfigured) {
+        setLoading(true);
+        try {
+          const fb = await loadFirebaseSdk();
+          const auth = fb.auth;
+          if (auth?.currentUser?.uid) {
+            const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+              auth.currentUser.uid,
+              auth.currentUser.email || user?.email
+            );
+            dispatchCheckoutRedirect(checkoutUrl);
+            return;
+          }
+          if (auth) {
+            const result = await fb.signInWithPopup(auth, fb.googleProvider);
+            setFirebaseUser(result.user);
+            setSyncedAuthUid(result.user.uid);
+
+            let existingIsPro = false;
+            try {
+              const userService = await loadUserService();
+              const profile = await userService.fetchUserProfileFromFirestore(result.user.uid);
+              existingIsPro = Boolean(profile?.isPro === true || profile?.plan === 'pro');
+            } catch {
+              // Ignore profile read errors and proceed to checkout
+            }
+
+            setIsPro(existingIsPro);
+            setSyncedProStatus(existingIsPro);
+            setUser({
+              uid: result.user.uid,
+              email: result.user.email,
+              displayName: result.user.displayName || 'Google User',
+              photoURL: result.user.photoURL,
+              plan: existingIsPro ? 'pro' : 'free',
+              isPro: existingIsPro,
+              emailVerified: result.user.emailVerified,
+            });
+
+            if (existingIsPro) {
+              return;
+            }
+
+            const checkoutUrl = buildLemonSqueezyCheckoutUrl(result.user.uid, result.user.email);
+            dispatchCheckoutRedirect(checkoutUrl);
+            return;
+          }
+        } finally {
+          setLoading(false);
+        }
+      }
+      throw new Error('AUTH_NOT_CONFIGURED');
+    };
+
+    const promise = runUpgrade().finally(() => {
+      upgradeInFlightRef.current = null;
+    });
+    upgradeInFlightRef.current = promise;
+    return promise;
+  }, [firebaseUser, user, isPro, isConfigured, dispatchCheckoutRedirect]);
 
   const signInAsDemo = useCallback((customEmail?: string) => {
     const demoEmail = customEmail || 'demo.user@pdfminty.com';

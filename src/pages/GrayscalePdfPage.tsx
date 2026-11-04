@@ -5,14 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const GrayscalePdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro } = useAuth();
+  const limitMB = getToolLimit('grayscale-pdf', isPro, Boolean(user)).maxSingleMB;
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scale, setScale] = useState<number>(1.5);
@@ -21,6 +25,16 @@ export const GrayscalePdfPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+
+  const operationTokenRef = React.useRef(0);
+  const isSubmittingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+    };
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -32,7 +46,18 @@ export const GrayscalePdfPage: React.FC = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
-      setSelectedFile(files[0]);
+      const candidate = files[0];
+      if (candidate.size === 0) {
+        setError(
+          t('grayscalePdf.emptyFileError', {
+            defaultValue: 'The selected PDF file is empty (0 bytes).',
+          })
+        );
+        return;
+      }
+      operationTokenRef.current++;
+      isSubmittingRef.current = false;
+      setSelectedFile(candidate);
       setError(null);
       setIsSuccess(false);
       if (downloadUrl) {
@@ -43,11 +68,13 @@ export const GrayscalePdfPage: React.FC = () => {
   };
 
   const handleGrayscale = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+    isSubmittingRef.current = true;
+    const myToken = ++operationTokenRef.current;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -63,14 +90,28 @@ export const GrayscalePdfPage: React.FC = () => {
         { bytes: fileBytes, scale },
         [fileBytes.buffer]
       );
+      if (myToken !== operationTokenRef.current) return;
+
       const blob = new Blob([processedBytes as unknown as BlobPart], { type: 'application/pdf' });
-      const name = sanitizeDownloadFilename(`pdfminty_grayscale_${selectedFile.name}`);
+      const name = sanitizeDownloadFilename(
+        `pdfminty_grayscale_${selectedFile.name}`,
+        'pdfminty_grayscale.pdf'
+      );
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: 'Grayscale PDF',
+        toolId: 'grayscale-pdf',
+        fileName: name,
+        fileSizeFormatted: `${(blob.size / (1024 * 1024)).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Convert',
+      });
       setIsSuccess(true);
     } catch (err: unknown) {
+      if (myToken !== operationTokenRef.current) return;
       logger.error('Grayscale error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -80,11 +121,12 @@ export const GrayscalePdfPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      isSubmittingRef.current = false;
+      if (myToken === operationTokenRef.current) {
+        setLoading(false);
+      }
     }
   };
-
-  const limitMB = TOOL_SIZE_LIMITS['grayscale-pdf']?.maxSingleMB || 30;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadein" id="grayscale_page_container">
@@ -93,7 +135,7 @@ export const GrayscalePdfPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-primary font-bold">
               <Printer className="w-5 h-5 text-security-green" />
               <span>{t('grayscalePdf.workspace', { defaultValue: 'Document Workspace' })}</span>
@@ -116,7 +158,9 @@ export const GrayscalePdfPage: React.FC = () => {
                 id="loaded_grayscale_file"
               >
                 <div className="truncate pr-2">
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selectedFile.name}</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {selectedFile.name}
+                  </p>
                   <p className="text-xs text-slate-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
                     {t('grayscalePdf.pdfDocument', { defaultValue: 'PDF Document' })}
@@ -125,7 +169,11 @@ export const GrayscalePdfPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
+                    operationTokenRef.current++;
+                    isSubmittingRef.current = false;
+                    setLoading(false);
                     setSelectedFile(null);
+                    setError(null);
                     setIsSuccess(false);
                     if (downloadUrl) {
                       URL.revokeObjectURL(downloadUrl);
@@ -140,8 +188,8 @@ export const GrayscalePdfPage: React.FC = () => {
             )}
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-xs text-red-700 font-semibold leading-relaxed">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+              <div className="p-3 bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800/60 rounded-xl flex items-start gap-2.5 text-xs text-red-700 dark:text-rose-300 font-semibold leading-relaxed">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
                 <span>{error}</span>
               </div>
             )}
@@ -179,6 +227,8 @@ export const GrayscalePdfPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
+                        operationTokenRef.current++;
+                        isSubmittingRef.current = false;
                         setSelectedFile(null);
                         setIsSuccess(false);
                         setError(null);
@@ -198,13 +248,13 @@ export const GrayscalePdfPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('grayscalePdf.settingsTitle', { defaultValue: 'Grayscale Settings' })}
             </h3>
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700 block">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                 {t('grayscalePdf.resolutionLabel', {
                   defaultValue: 'Render Resolution (DPI Quality)',
                 })}
@@ -242,8 +292,8 @@ export const GrayscalePdfPage: React.FC = () => {
                     onClick={() => setScale(opt.value)}
                     className={`p-2.5 border rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all ${
                       scale === opt.value
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-950 font-bold shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-950 dark:text-emerald-200 font-bold shadow-sm'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
                     <span className="text-xs font-extrabold">
@@ -258,14 +308,15 @@ export const GrayscalePdfPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
+              type="button"
               onClick={handleGrayscale}
               disabled={!selectedFile || loading}
               className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-emerald-600/10 ${
                 selectedFile && !loading
                   ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (
@@ -290,17 +341,17 @@ export const GrayscalePdfPage: React.FC = () => {
 
       {/* Deep Content & Comprehensive Guide Section */}
       <section
-        className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8 text-slate-700 leading-relaxed"
+        className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-8 text-slate-700 dark:text-slate-300 leading-relaxed"
         id="grayscale_guide_section"
       >
         <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             {t('grayscalePdf.guideTitle', {
               defaultValue:
                 'Comprehensive Guide to Converting Color PDFs to Grayscale (Black & White)',
             })}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
             {t('grayscalePdf.guideLead', {
               defaultValue:
                 'Converting color PDF documents to pure monochrome (grayscale) prepares pages for bulk black-and-white office printing, prevents accidental color toner billing, and satisfies monochrome court, patent, or academic filing rules. Note: because pages are rasterized into grayscale images, pure vector-text PDFs may grow larger and lose selectable text—use our Compress PDF tool instead when vector-preserving file size reduction is your primary goal.',
@@ -309,14 +360,14 @@ export const GrayscalePdfPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               {t('grayscalePdf.advTitle', {
                 defaultValue: 'Key Advantages & Rasterization Trade-offs',
               })}
             </h3>
-            <ul className="text-xs space-y-1.5 text-slate-600 list-disc pl-4">
+            <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 list-disc pl-4">
               <li>
                 <strong>
                   {t('grayscalePdf.adv1Bold', { defaultValue: 'True Monochrome Raster Output:' })}
@@ -347,14 +398,14 @@ export const GrayscalePdfPage: React.FC = () => {
             </ul>
           </div>
 
-          <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               {t('grayscalePdf.algoTitle', {
                 defaultValue: 'Luminance-Preserving Conversion Algorithms',
               })}
             </h3>
-            <p className="text-xs text-slate-600 leading-normal">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-normal">
               {t('grayscalePdf.algoText1', {
                 defaultValue: 'PdfMinty uses standard ITU-R BT.601 luminance weighting',
               })}{' '}
@@ -368,12 +419,12 @@ export const GrayscalePdfPage: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-900">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
             {t('grayscalePdf.stepsTitle', {
               defaultValue: 'How to Convert PDFs to Monochrome in 3 Easy Steps',
             })}
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-sm text-slate-600">
+          <ol className="list-decimal pl-5 space-y-2 text-sm text-slate-600 dark:text-slate-300">
             <li>
               <strong>{t('grayscalePdf.step1Bold', { defaultValue: 'Select File:' })}</strong>{' '}
               {t('grayscalePdf.step1Text', {
@@ -400,11 +451,11 @@ export const GrayscalePdfPage: React.FC = () => {
           </ol>
         </div>
 
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2 text-xs text-emerald-900 dark:text-emerald-200">
           <p className="font-bold">
             {t('grayscalePdf.privacyTitle', { defaultValue: '🔒 100% Client-Side Privacy' })}
           </p>
-          <p className="leading-normal text-slate-600">
+          <p className="leading-normal text-slate-600 dark:text-slate-300">
             {t('grayscalePdf.privacyText', {
               defaultValue:
                 'All page rasterization, ITU-R BT.601 luminance math, and PDF reconstruction run locally inside an isolated browser Web Worker using PDF.js, OffscreenCanvas, and @cantoo/pdf-lib. Your confidential pages are never uploaded to any cloud server.',

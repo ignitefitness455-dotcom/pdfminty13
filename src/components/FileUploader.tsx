@@ -29,12 +29,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 }) => {
   const { t } = useTranslation('common');
   const { user } = useAuth();
-  const {
-    tier,
-    tasksRemaining,
-    isLimitReached,
-    openLimitModal,
-  } = useUsageLimit();
+  const { tier, tasksRemaining, isLimitReached, openLimitModal } = useUsageLimit();
 
   const isPro = tier === 'pro';
   // Guest: 100MB (or custom tool limit), Logged-in Free: 150MB, Pro: 500MB
@@ -225,16 +220,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         }
       }
     },
-    [
-      accept,
-      effectiveMaxMB,
-      isLimitReached,
-      multiple,
-      onFilesSelected,
-      openLimitModal,
-      t,
-      tier,
-    ]
+    [accept, effectiveMaxMB, isLimitReached, multiple, onFilesSelected, openLimitModal, t, tier]
   );
 
   const handleDrag = useCallback((e: React.DragEvent) => {

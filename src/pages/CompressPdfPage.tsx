@@ -24,18 +24,25 @@ import { FileUploader } from '../components/FileUploader';
 import { PdfPreview } from '../components/PdfPreview';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
+const MAX_IN_PAGE_PREVIEW_BYTES = 50 * 1024 * 1024; // 50 MB guard for main-thread PdfPreview
+
 export type CompressionMode = 'recommended' | 'extreme' | 'low';
 
 export const CompressPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('compress-pdf', isPro, isLoggedIn);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionMode, setCompressionMode] = useState<CompressionMode>('recommended');
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -74,7 +81,14 @@ export const CompressPdfPage: React.FC = () => {
     };
   }, []);
 
-  const limitMB = TOOL_SIZE_LIMITS['compress-pdf']?.maxSingleMB || 100;
+  const limitMB = currentLimits.maxSingleMB;
+
+  const previewFile = React.useMemo(() => {
+    if (!compressedBlob || compressedBlob.size > MAX_IN_PAGE_PREVIEW_BYTES) return null;
+    return new File([compressedBlob], downloadName || 'compressed.pdf', {
+      type: 'application/pdf',
+    });
+  }, [compressedBlob, downloadName]);
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
@@ -308,6 +322,8 @@ export const CompressPdfPage: React.FC = () => {
                   onClick={() => {
                     operationTokenRef.current += 1;
                     setSelectedFile(null);
+                    setCompressedBlob(null);
+                    setShowPreview(false);
                     setIsSuccess(false);
                     setError(null);
                     if (downloadUrl) {
@@ -452,6 +468,7 @@ export const CompressPdfPage: React.FC = () => {
                         onClick={() => {
                           operationTokenRef.current += 1;
                           setSelectedFile(null);
+                          setCompressedBlob(null);
                           setIsSuccess(false);
                           setError(null);
                           setShowPreview(false);
@@ -479,12 +496,14 @@ export const CompressPdfPage: React.FC = () => {
                             Live Output Preview
                           </span>
                         </div>
-                        <PdfPreview
-                          file={
-                            new File([compressedBlob], downloadName, { type: 'application/pdf' })
-                          }
-                          scale={0.5}
-                        />
+                        {previewFile ? (
+                          <PdfPreview file={previewFile} scale={0.5} />
+                        ) : (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 py-3 text-center m-0">
+                            In-page preview is disabled for files over 50 MB to preserve browser
+                            memory. Please use <strong>Open in New Tab</strong> to inspect your PDF.
+                          </p>
+                        )}
                       </div>
                     )}
 

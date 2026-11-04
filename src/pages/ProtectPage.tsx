@@ -6,15 +6,22 @@ import { FileUploader } from '../components/FileUploader';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const ProtectPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('protect-pdf', isPro, isLoggedIn);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -25,6 +32,9 @@ export const ProtectPage: React.FC = () => {
   const [downloadName, setDownloadName] = useState<string>('');
   const [outputSize, setOutputSize] = useState<number>(0);
 
+  const operationTokenRef = React.useRef<number>(0);
+  const isSubmittingRef = React.useRef<boolean>(false);
+
   React.useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -33,14 +43,39 @@ export const ProtectPage: React.FC = () => {
     };
   }, [downloadUrl]);
 
+  React.useEffect(() => {
+    const token = operationTokenRef;
+    return () => {
+      token.current++;
+    };
+  }, []);
+
   const formatBytes = (bytes: number): string => {
     if (bytes <= 0) return '0 B';
     if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(2)} MB`;
     return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   };
 
+  const resetFileState = () => {
+    operationTokenRef.current++;
+    isSubmittingRef.current = false;
+    setLoading(false);
+    setSelectedFile(null);
+    setPassword('');
+    setError(null);
+    setIsSuccess(false);
+    setOutputSize(0);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+  };
+
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
+      operationTokenRef.current++;
+      isSubmittingRef.current = false;
+      setLoading(false);
       setSelectedFile(files[0]);
       setError(null);
       setIsSuccess(false);
@@ -53,12 +88,13 @@ export const ProtectPage: React.FC = () => {
   };
 
   const handleProtect = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
-    if (!password.trim()) {
+    const trimmedPassword = password.trim();
+    if (!trimmedPassword) {
       setError(
         t('protectPdf.emptyPasswordError', {
           defaultValue: 'Please provide a secure lock password.',
@@ -66,7 +102,25 @@ export const ProtectPage: React.FC = () => {
       );
       return;
     }
+    if (trimmedPassword.length < 4) {
+      setError(
+        t('protectPdf.shortPasswordError', {
+          defaultValue: 'Password must be at least 4 characters long for meaningful security.',
+        })
+      );
+      return;
+    }
+    if (password.length > 128) {
+      setError(
+        t('protectPdf.longPasswordError', {
+          defaultValue: 'Password cannot exceed 128 characters.',
+        })
+      );
+      return;
+    }
 
+    const activeToken = ++operationTokenRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -77,20 +131,36 @@ export const ProtectPage: React.FC = () => {
 
     try {
       const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
+      if (activeToken !== operationTokenRef.current) return;
+
       const encryptedBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'protectPDF',
         { fileBytes, userPassword: password },
         [fileBytes.buffer]
       );
+      if (activeToken !== operationTokenRef.current) return;
+
       const blob = new Blob([encryptedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_locked_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setOutputSize(blob.size);
       setDownloadUrl(url);
       setDownloadName(name);
-      await downloadBlob(blob, name);
       setIsSuccess(true);
+
+      addActivityItem({
+        toolName: 'Protect PDF',
+        toolId: 'protect-pdf',
+        fileName: selectedFile.name,
+        fileSizeFormatted: formatBytes(blob.size),
+        status: 'completed',
+        tag: 'Security',
+        savings: 'Password Encrypted',
+      });
+
+      await downloadBlob(blob, name);
     } catch (err: unknown) {
+      if (activeToken !== operationTokenRef.current) return;
       logger.error('Protect error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -100,7 +170,10 @@ export const ProtectPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      isSubmittingRef.current = false;
+      if (activeToken === operationTokenRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -108,7 +181,7 @@ export const ProtectPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl mx-auto" id="protect_page_container">
       <SEO slug="protect-pdf" />
 
-      <ToolHeader slug="protect-pdf" />
+      <ToolHeader slug="protect-pdf" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -122,7 +195,7 @@ export const ProtectPage: React.FC = () => {
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept=".pdf,application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['protect-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div
@@ -140,17 +213,7 @@ export const ProtectPage: React.FC = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setPassword('');
-                    setError(null);
-                    setIsSuccess(false);
-                    setOutputSize(0);
-                    if (downloadUrl) {
-                      URL.revokeObjectURL(downloadUrl);
-                      setDownloadUrl(null);
-                    }
-                  }}
+                  onClick={resetFileState}
                   className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
@@ -204,17 +267,7 @@ export const ProtectPage: React.FC = () => {
                   </a>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setPassword('');
-                      setError(null);
-                      setIsSuccess(false);
-                      setOutputSize(0);
-                      if (downloadUrl) {
-                        URL.revokeObjectURL(downloadUrl);
-                        setDownloadUrl(null);
-                      }
-                    }}
+                    onClick={resetFileState}
                     id="reset_protect_btn"
                     className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
                   >
@@ -246,10 +299,15 @@ export const ProtectPage: React.FC = () => {
                 <input
                   id="sec_password"
                   type={showPassword ? 'text' : 'password'}
+                  maxLength={128}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && selectedFile && !loading) {
+                      e.preventDefault();
                       void handleProtect();
                     }
                   }}
@@ -284,10 +342,10 @@ export const ProtectPage: React.FC = () => {
           <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
               <div
-                className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg"
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/50 p-3 rounded-lg"
                 role="alert"
               >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}

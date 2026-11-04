@@ -265,8 +265,7 @@ export const ConsentManager: React.FC = () => {
                   </h2>
                   <p className="text-[11px] text-on-surface-variant">
                     {t('consentBanner.cmpNotice', {
-                      defaultValue:
-                        'Google Consent Mode v2 • Granular Cookie & Privacy Controls',
+                      defaultValue: 'Google Consent Mode v2 • Granular Cookie & Privacy Controls',
                     })}
                   </p>
                 </div>

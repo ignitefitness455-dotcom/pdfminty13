@@ -12,7 +12,9 @@ export const HeroSection: React.FC = () => {
       {/* Unboxed eyebrow adhering to zero-pill discipline */}
       <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold tracking-wider uppercase text-emerald-600 dark:text-emerald-400 mb-4 sm:mb-5 select-none">
         <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
-        <span>{t('home.hero.badgeClient', { defaultValue: 'Client-Side In-Browser Processing' })}</span>
+        <span>
+          {t('home.hero.badgeClient', { defaultValue: 'Client-Side In-Browser Processing' })}
+        </span>
         <span className="text-slate-300 dark:text-slate-700 font-bold" aria-hidden="true">
           ·
         </span>

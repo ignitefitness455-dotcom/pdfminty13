@@ -29,7 +29,8 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Derive current locale from pathname or fallback to active i18n language
-  const currentPathname = location?.pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
+  const currentPathname =
+    location?.pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
   const currentPathWithoutQuery = currentPathname.split('?')[0];
   const firstPathSegment = currentPathWithoutQuery.split('/').filter(Boolean)[0];
   const isPrefixed =
@@ -105,7 +106,8 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     await i18n.changeLanguage(targetLocale);
 
     // Navigate via React Router if the URL path changes (e.g. localized homepage or i18n-enabled tool route)
-    const search = location?.search ?? (typeof window !== 'undefined' ? window.location.search : '');
+    const search =
+      location?.search ?? (typeof window !== 'undefined' ? window.location.search : '');
     const hash = location?.hash ?? (typeof window !== 'undefined' ? window.location.hash : '');
     const currentFull = `${currentPathname}${search}${hash}`;
     const targetPath = getSwitchLocalePath(currentFull, targetLocale);

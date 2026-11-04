@@ -62,8 +62,7 @@ describe('Phase 2 Performance, Main-Thread Decoupling & Accessibility Regression
       const staticValueImports = source
         .split('\n')
         .filter(
-          (line) =>
-            /^import\s+(?!type\b)/.test(line.trim()) && line.includes("'@cantoo/pdf-lib'")
+          (line) => /^import\s+(?!type\b)/.test(line.trim()) && line.includes("'@cantoo/pdf-lib'")
         );
       expect(staticValueImports, `Unexpected static @cantoo/pdf-lib import in ${relPath}`).toEqual(
         []
@@ -80,10 +79,7 @@ describe('Phase 2 Performance, Main-Thread Decoupling & Accessibility Regression
     expect(grayscaleSrc).not.toContain('compressing documents by up to 60-80%');
     expect(grayscaleSrc).toContain('Compress PDF tool');
 
-    const imgToPdfSrc = fs.readFileSync(
-      path.join(repoRoot, 'src/pages/ImgToPdfPage.tsx'),
-      'utf8'
-    );
+    const imgToPdfSrc = fs.readFileSync(path.join(repoRoot, 'src/pages/ImgToPdfPage.tsx'), 'utf8');
     expect(imgToPdfSrc).toContain('min-w-[36px] min-h-[36px]');
     expect(imgToPdfSrc).toContain('draggable');
     expect(imgToPdfSrc).toContain('handleReorder');

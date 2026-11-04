@@ -2,6 +2,8 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { logger } from '../../utils/logger';
+
 import { renderPageToCanvas } from './pdfjs';
 import { PlacedFieldView } from './placed-field';
 import type { FieldKind, PageInfo, PlacedField, SignatureSet } from './types';
@@ -72,7 +74,7 @@ export function PdfPage({
       .then(() => {
         if (!signal.cancelled) setRendered(true);
       })
-      .catch((err) => console.error('[v0] page render failed', err));
+      .catch((err) => logger.error('Sign PDF page render failed:', err));
     return () => {
       signal.cancelled = true;
       signal.cancel?.();

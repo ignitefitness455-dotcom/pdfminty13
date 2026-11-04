@@ -6,30 +6,94 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
+const MAX_THUMBNAIL_RENDER_BYTES = 50 * 1024 * 1024; // 50 MB threshold for PDF.js thumbnail rasterization
+const MAX_INTERACTIVE_GRID_PAGES = 500;
+
+function parseExtractPageSequence(
+  input: string,
+  totalPages: number
+): { validPages: number[]; invalidTokens: string[] } {
+  const tokens = input
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  const invalidTokens: string[] = [];
+  const validPages: number[] = [];
+
+  for (const token of tokens) {
+    if (/^\d+\s*[-–—]\s*\d+$/.test(token)) {
+      const [startStr, endStr] = token.split(/\s*[-–—]\s*/);
+      const start = Number(startStr);
+      const end = Number(endStr);
+      if (
+        !Number.isInteger(start) ||
+        !Number.isInteger(end) ||
+        start < 1 ||
+        end < 1 ||
+        (totalPages > 0 && (start > totalPages || end > totalPages))
+      ) {
+        invalidTokens.push(token);
+        continue;
+      }
+      if (start <= end) {
+        for (let p = start; p <= end; p++) {
+          validPages.push(p);
+        }
+      } else {
+        for (let p = start; p >= end; p--) {
+          validPages.push(p);
+        }
+      }
+    } else if (/^-?\d+$/.test(token)) {
+      const p = Number(token);
+      if (!Number.isInteger(p) || p < 1 || (totalPages > 0 && p > totalPages)) {
+        invalidTokens.push(token);
+        continue;
+      }
+      validPages.push(p);
+    } else {
+      invalidTokens.push(token);
+    }
+  }
+
+  return { validPages, invalidTokens };
+}
+
 export const ExtractPagesPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('extract-pages-pdf', isPro, isLoggedIn);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [renderingThumbnails, setRenderingThumbnails] = useState(false);
   const [thumbnails, setThumbnails] = useState<{ page: number; dataUrl: string }[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [rangeInput, setRangeInput] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
 
   const operationTokenRef = React.useRef(0);
+  const isSubmittingRef = React.useRef<boolean>(false);
   const urlsRef = React.useRef<string[]>([]);
 
   React.useEffect(() => {
-    urlsRef.current = thumbnails.map((t) => t.dataUrl);
+    urlsRef.current = thumbnails.map((item) => item.dataUrl).filter(Boolean);
   }, [thumbnails]);
 
   React.useEffect(() => {
@@ -46,21 +110,43 @@ export const ExtractPagesPdfPage: React.FC = () => {
       token.current++;
       // Clean up all generated URLs when leaving page
       urlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
+        if (url) URL.revokeObjectURL(url);
       });
     };
   }, []);
+
+  const resetFileState = () => {
+    operationTokenRef.current++;
+    thumbnails.forEach((item) => {
+      if (item.dataUrl) URL.revokeObjectURL(item.dataUrl);
+    });
+    setSelectedFile(null);
+    setThumbnails([]);
+    setTotalPages(0);
+    setSelectedPages([]);
+    setRangeInput('');
+    setError(null);
+    setIsSuccess(false);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+  };
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length > 0) {
       const myToken = ++operationTokenRef.current;
       // Revoke any existing URLs before resetting/rendering new
-      thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
+      thumbnails.forEach((item) => {
+        if (item.dataUrl) URL.revokeObjectURL(item.dataUrl);
+      });
       const file = files[0];
       setSelectedFile(file);
       setError(null);
       setThumbnails([]);
+      setTotalPages(0);
       setSelectedPages([]);
+      setRangeInput('');
       setIsSuccess(false);
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
@@ -70,8 +156,30 @@ export const ExtractPagesPdfPage: React.FC = () => {
       setRenderingThumbnails(true);
       try {
         const rawBuffer = await file.arrayBuffer();
-        const fileBytes = new Uint8Array(rawBuffer);
         if (myToken !== operationTokenRef.current) return;
+
+        const countBytes = new Uint8Array(rawBuffer.slice(0));
+        const docPageCount = await WorkerManager.getInstance().runOperation<number>(
+          'getPageCount',
+          { bytes: countBytes },
+          [countBytes.buffer]
+        );
+        if (myToken !== operationTokenRef.current) return;
+        setTotalPages(docPageCount);
+
+        const gridCap = Math.min(docPageCount, MAX_INTERACTIVE_GRID_PAGES);
+
+        // Skip heavy PDF.js canvas rasterization for files > 50MB to preserve Worker memory
+        if (file.size > MAX_THUMBNAIL_RENDER_BYTES) {
+          const placeholderGrid = Array.from({ length: gridCap }, (_, idx) => ({
+            page: idx + 1,
+            dataUrl: '',
+          }));
+          setThumbnails(placeholderGrid);
+          return;
+        }
+
+        const fileBytes = new Uint8Array(rawBuffer);
         const rendered = await WorkerManager.getInstance().runOperation<
           { page: number; imageBytes: Uint8Array }[]
         >(
@@ -93,22 +201,9 @@ export const ExtractPagesPdfPage: React.FC = () => {
             dataUrl: URL.createObjectURL(blob),
           };
         });
-        if (rendered.length === 50) {
-          try {
-            const countBytes = new Uint8Array(await file.arrayBuffer());
-            const totalCount = await WorkerManager.getInstance().runOperation<number>(
-              'getPageCount',
-              { bytes: countBytes },
-              [countBytes.buffer]
-            );
-            for (let p = mapped.length + 1; p <= totalCount; p++) {
-              mapped.push({ page: p, dataUrl: '' });
-            }
-          } catch {
-            // Keep rendered 50 thumbnails if count lookup fails
-          }
+        for (let p = mapped.length + 1; p <= gridCap; p++) {
+          mapped.push({ page: p, dataUrl: '' });
         }
-        if (myToken !== operationTokenRef.current) return;
         setThumbnails(mapped);
       } catch (err: unknown) {
         if (myToken !== operationTokenRef.current) return;
@@ -116,12 +211,18 @@ export const ExtractPagesPdfPage: React.FC = () => {
         try {
           const fallbackBytes = new Uint8Array(await file.arrayBuffer());
           if (myToken !== operationTokenRef.current) return;
-          const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
-            bytes: fallbackBytes,
-          });
+          const count = await WorkerManager.getInstance().runOperation<number>(
+            'getPageCount',
+            { bytes: fallbackBytes },
+            [fallbackBytes.buffer]
+          );
           if (myToken !== operationTokenRef.current) return;
           if (count > 0) {
-            setThumbnails(Array.from({ length: count }, (_, i) => ({ page: i + 1, dataUrl: '' })));
+            setTotalPages(count);
+            const gridCap = Math.min(count, MAX_INTERACTIVE_GRID_PAGES);
+            setThumbnails(
+              Array.from({ length: gridCap }, (_, i) => ({ page: i + 1, dataUrl: '' }))
+            );
           }
         } catch {
           // Ignore secondary error
@@ -141,30 +242,82 @@ export const ExtractPagesPdfPage: React.FC = () => {
   };
 
   const togglePageSelection = (pageNumber: number) => {
+    setError(null);
+    let next: number[];
     if (selectedPages.includes(pageNumber)) {
-      setSelectedPages(selectedPages.filter((p) => p !== pageNumber));
+      next = selectedPages.filter((p) => p !== pageNumber);
     } else {
-      setSelectedPages([...selectedPages, pageNumber].sort((a, b) => a - b));
+      // Preserve cherry-picked selection order as promised in the UI
+      next = [...selectedPages, pageNumber];
     }
+    setSelectedPages(next);
+    setRangeInput(next.join(', '));
   };
 
   const selectAll = () => {
     if (thumbnails.length > 0) {
-      setSelectedPages(thumbnails.map((t) => t.page));
+      const all = thumbnails.map((item) => item.page);
+      setSelectedPages(all);
+      setRangeInput(all.join(', '));
+      setError(null);
     }
   };
 
   const clearSelection = () => {
     setSelectedPages([]);
+    setRangeInput('');
+    setError(null);
+  };
+
+  const applyRangeInput = () => {
+    if (!rangeInput.trim()) {
+      clearSelection();
+      return;
+    }
+    const maxPages = totalPages || thumbnails.length;
+    const { validPages, invalidTokens } = parseExtractPageSequence(rangeInput, maxPages);
+    if (invalidTokens.length > 0) {
+      setError(
+        t('extractPages.invalidPageRange', {
+          tokens: invalidTokens.join(', '),
+          total: maxPages,
+          defaultValue: `Invalid page number or range: ${invalidTokens.join(', ')}. Document has ${maxPages} page(s).`,
+        })
+      );
+      return;
+    }
+    setSelectedPages(validPages);
+    setError(null);
   };
 
   const handleExtract = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
-    if (selectedPages.length === 0) {
+
+    let targetPages = selectedPages;
+    const maxPages = totalPages || thumbnails.length;
+    if (rangeInput.trim()) {
+      const parsed = parseExtractPageSequence(rangeInput, maxPages);
+      if (parsed.invalidTokens.length > 0) {
+        setError(
+          t('extractPages.invalidPageRange', {
+            tokens: parsed.invalidTokens.join(', '),
+            total: maxPages,
+            defaultValue: `Invalid page number or range: ${parsed.invalidTokens.join(', ')}. Document has ${maxPages} page(s).`,
+          })
+        );
+        return;
+      }
+      if (parsed.validPages.length > 0) {
+        targetPages = parsed.validPages;
+        setSelectedPages(targetPages);
+      }
+    }
+
+    if (targetPages.length === 0) {
       setError(
         t('extractPages.selectOnePage', {
           defaultValue: 'Please select at least one page to extract.',
@@ -173,25 +326,45 @@ export const ExtractPagesPdfPage: React.FC = () => {
       return;
     }
 
+    const activeToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
+    setIsSuccess(false);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
 
     try {
       const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
+      if (activeToken !== operationTokenRef.current) return;
+
       const extractedBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'extractPages',
-        { bytes: fileBytes, pageNumbers: selectedPages },
+        { bytes: fileBytes, pageNumbers: targetPages },
         [fileBytes.buffer]
       );
+      if (activeToken !== operationTokenRef.current) return;
 
       const blob = new Blob([extractedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`extracted_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
-      await downloadBlob(blob, name);
       setIsSuccess(true);
+      addActivityItem({
+        toolName: 'Extract Pages',
+        toolId: 'extract-pages',
+        fileName: selectedFile.name,
+        fileSizeFormatted: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Edit',
+        savings: `${targetPages.length} ${targetPages.length === 1 ? 'page' : 'pages'} extracted`,
+      });
+      await downloadBlob(blob, name);
     } catch (err: unknown) {
+      if (activeToken !== operationTokenRef.current) return;
       logger.error('Extract error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -201,17 +374,17 @@ export const ExtractPagesPdfPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      isSubmittingRef.current = false;
+      if (activeToken === operationTokenRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadein" id="extract_pages_page_container">
       <SEO slug="extract-pages-pdf" />
-      <ToolHeader
-        slug="extract-pages-pdf"
-        limitMB={TOOL_SIZE_LIMITS['extract-pages-pdf'].maxSingleMB}
-      />
+      <ToolHeader slug="extract-pages-pdf" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
@@ -222,7 +395,7 @@ export const ExtractPagesPdfPage: React.FC = () => {
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept=".pdf,application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['extract-pages-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div
@@ -234,23 +407,13 @@ export const ExtractPagesPdfPage: React.FC = () => {
                     {selectedFile.name}
                   </p>
                   <p className="text-xs text-slate-400 tabular-nums">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • PDF Document
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
+                    {totalPages > 0 ? `${totalPages} Pages` : 'PDF Document'}
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    operationTokenRef.current++; // Invalidate in-flight rendering
-                    thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
-                    setSelectedFile(null);
-                    setThumbnails([]);
-                    setSelectedPages([]);
-                    setIsSuccess(false);
-                    if (downloadUrl) {
-                      URL.revokeObjectURL(downloadUrl);
-                      setDownloadUrl(null);
-                    }
-                  }}
+                  onClick={resetFileState}
                   className="min-h-[40px] shrink-0 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
@@ -292,18 +455,7 @@ export const ExtractPagesPdfPage: React.FC = () => {
                   </a>
                   <button
                     type="button"
-                    onClick={() => {
-                      operationTokenRef.current++;
-                      thumbnails.forEach((t) => URL.revokeObjectURL(t.dataUrl));
-                      setSelectedFile(null);
-                      setThumbnails([]);
-                      setSelectedPages([]);
-                      setIsSuccess(false);
-                      if (downloadUrl) {
-                        URL.revokeObjectURL(downloadUrl);
-                        setDownloadUrl(null);
-                      }
-                    }}
+                    onClick={resetFileState}
                     id="reset_extract_pages_btn"
                     className="inline-flex items-center gap-2 min-h-[44px] bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-xs"
                   >
@@ -339,20 +491,58 @@ export const ExtractPagesPdfPage: React.FC = () => {
                 {thumbnails.length > 0 && (
                   <div className="flex items-center space-x-2">
                     <button
+                      type="button"
                       onClick={selectAll}
-                      className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline bg-slate-50 dark:bg-slate-950/40 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800"
+                      className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline bg-slate-50 dark:bg-slate-950/40 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer"
                     >
                       {t('extractPages.selectAll', { defaultValue: 'Select All' })}
                     </button>
                     <button
+                      type="button"
                       onClick={clearSelection}
-                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline bg-slate-50 dark:bg-slate-950/40 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800"
+                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline bg-slate-50 dark:bg-slate-950/40 py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer"
                     >
                       {t('extractPages.clearAll', { defaultValue: 'Clear All' })}
                     </button>
                   </div>
                 )}
               </div>
+
+              {!renderingThumbnails && (totalPages > 0 || thumbnails.length > 0) && (
+                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1.5">
+                  <label
+                    htmlFor="extract-pages-range-input"
+                    className="block text-[11px] font-bold text-slate-600 dark:text-slate-300"
+                  >
+                    {t('extractPages.rangeInputLabel', {
+                      defaultValue: 'Pages or Ranges (e.g., 1, 3, 5-8):',
+                    })}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="extract-pages-range-input"
+                      type="text"
+                      value={rangeInput}
+                      onChange={(e) => setRangeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          applyRangeInput();
+                        }
+                      }}
+                      placeholder="e.g. 1, 3, 5-8"
+                      className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyRangeInput}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg shadow-sm transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {t('extractPages.applySelection', { defaultValue: 'Apply' })}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {renderingThumbnails ? (
                 <div
@@ -375,10 +565,12 @@ export const ExtractPagesPdfPage: React.FC = () => {
                     const isSelected = selectedPages.includes(item.page);
                     return (
                       <button
+                        type="button"
                         key={item.page}
                         id={`page-thumbnail-btn-${item.page}`}
                         onClick={() => togglePageSelection(item.page)}
-                        className={`group relative aspect-[3/4] bg-slate-50 dark:bg-slate-950/40 border-2 rounded-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 transition-all p-1 flex flex-col justify-between ${
+                        aria-pressed={isSelected}
+                        className={`group relative aspect-[3/4] bg-slate-50 dark:bg-slate-950/40 border-2 rounded-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 transition-all p-1 flex flex-col justify-between cursor-pointer ${
                           isSelected
                             ? 'border-emerald-500 ring-4 ring-emerald-500/10'
                             : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
@@ -455,10 +647,10 @@ export const ExtractPagesPdfPage: React.FC = () => {
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                   Target Pages Sequence ({selectedPages.length})
                 </p>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
                   {selectedPages.map((page, index) => (
                     <span
-                      key={index}
+                      key={`${page}-${index}`}
                       className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold font-mono text-[10px] rounded"
                     >
                       {page}
@@ -471,16 +663,22 @@ export const ExtractPagesPdfPage: React.FC = () => {
 
           <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
-              <div className="flex items-start space-x-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-100 p-3 rounded-lg">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div
+                role="alert"
+                className="flex items-start space-x-1.5 text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/50 p-3 rounded-lg"
+              >
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             <button
+              type="button"
               onClick={handleExtract}
-              disabled={!selectedFile || selectedPages.length === 0 || loading}
-              className={`w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-slate-950/20 dark:disabled:text-slate-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center space-x-1.5 transition-colors ${
+              disabled={
+                !selectedFile || (selectedPages.length === 0 && !rangeInput.trim()) || loading
+              }
+              className={`w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-slate-950/20 dark:disabled:text-slate-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center space-x-1.5 transition-colors cursor-pointer ${
                 loading ? 'cursor-not-allowed opacity-80' : ''
               }`}
               id="confirm-extract-btn"

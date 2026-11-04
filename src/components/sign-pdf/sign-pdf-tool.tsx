@@ -3,10 +3,13 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { getToolLimit } from '../../config/constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUsageLimit } from '../../contexts/UsageLimitContext';
 import { PDFSanitizer } from '../../core/PDFSanitizer';
+import { addActivityItem } from '../../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../../utils/download';
+import { logger } from '../../utils/logger';
 import { Button } from '../ui/button';
 
 import { exportSignedPdf } from './export';
@@ -24,15 +27,24 @@ const EMPTY_SIGNATURES: SignatureSet = {
   initials: null,
 };
 
+const MAX_AUTO_DETECT_PAGES = 100;
+
+const formatBytes = (bytes: number): string => {
+  if (bytes <= 0) return '0 B';
+  if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(2)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+};
+
 export function SignPdfTool() {
   const { t } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
   const maxSavedSignatures = isPro ? 5 : 1;
   const storageKey = `pdfminty_saved_signatures_${user?.uid || 'guest'}`;
-  // Guest: 100MB, Logged-in Free: 150MB, Pro: 500MB
-  const limitMB = isPro ? 500 : user ? 150 : 100;
+  const currentLimits = getToolLimit('sign-pdf', isPro, isLoggedIn);
+  const limitMB = currentLimits.maxSingleMB;
   const [file, setFile] = useState<File | null>(null);
   const [bytes, setBytes] = useState<ArrayBuffer | null>(null);
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
@@ -74,6 +86,31 @@ export function SignPdfTool() {
   const viewerRef = useRef<HTMLDivElement>(null);
   const [viewerWidth, setViewerWidth] = useState(720);
 
+  const docRef = useRef<PDFDocumentProxy | null>(null);
+  const openTokenRef = useRef(0);
+  const isExportingRef = useRef(false);
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync saved signature presets when auth user hydrates or switches
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) {
+        setSavedPresets([]);
+        return;
+      }
+      const parsed = JSON.parse(raw) as SavedSignaturePreset[];
+      if (Array.isArray(parsed)) {
+        setSavedPresets(parsed);
+        if (parsed.length > 0 && parsed[0].set) {
+          setSignatures((prev) => (prev.signature ? prev : parsed[0].set));
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [storageKey]);
+
   useEffect(() => {
     const el = viewerRef.current;
     if (!el) return;
@@ -84,10 +121,12 @@ export function SignPdfTool() {
     return () => observer.disconnect();
   }, [doc]);
 
-  const docRef = useRef<PDFDocumentProxy | null>(null);
-
   useEffect(() => {
     return () => {
+      openTokenRef.current += 1;
+      if (noticeTimerRef.current) {
+        clearTimeout(noticeTimerRef.current);
+      }
       if (docRef.current) {
         docRef.current.destroy().catch(() => {
           /* ignore */
@@ -98,6 +137,12 @@ export function SignPdfTool() {
   }, []);
 
   const reset = useCallback(() => {
+    openTokenRef.current += 1;
+    isExportingRef.current = false;
+    if (noticeTimerRef.current) {
+      clearTimeout(noticeTimerRef.current);
+      noticeTimerRef.current = null;
+    }
     docRef.current?.destroy().catch(() => {
       /* ignore */
     });
@@ -110,6 +155,7 @@ export function SignPdfTool() {
     setSelectedId(null);
     setPendingKind(null);
     setError(null);
+    setExporting(false);
     setZoom(1);
   }, []);
 
@@ -141,6 +187,7 @@ export function SignPdfTool() {
         return;
       }
       setError(null);
+      const token = ++openTokenRef.current;
       try {
         if (docRef.current) {
           await docRef.current.destroy().catch(() => {
@@ -149,10 +196,15 @@ export function SignPdfTool() {
           docRef.current = null;
         }
         const nextBytes = await nextFile.arrayBuffer();
+        if (token !== openTokenRef.current) return;
+
         const rawUint8 = new Uint8Array(nextBytes);
-        // Validate %PDF- magic header and non-empty structural boundary
-        const { bytes: sanitizedUint8 } = PDFSanitizer.sanitize(rawUint8);
+        // Validate %PDF- magic header and non-empty structural boundary using the user's tier maxBytes
+        const { bytes: sanitizedUint8 } = PDFSanitizer.sanitize(rawUint8, {
+          maxBytes: limitMB * 1024 * 1024,
+        });
         if (await PDFSanitizer.isEncrypted(sanitizedUint8)) {
+          if (token !== openTokenRef.current) return;
           setError(
             t('signPdf.errors.encryptedPdf', {
               defaultValue:
@@ -166,7 +218,24 @@ export function SignPdfTool() {
           sanitizedUint8.byteOffset + sanitizedUint8.byteLength
         ) as ArrayBuffer;
         const nextDoc = await loadPdfDocument(sanitizedBuffer);
+        if (token !== openTokenRef.current) {
+          await nextDoc.destroy().catch(() => {});
+          return;
+        }
         const nextPages = await readPageInfos(nextDoc);
+        if (token !== openTokenRef.current) {
+          await nextDoc.destroy().catch(() => {});
+          return;
+        }
+        if (nextPages.length === 0) {
+          await nextDoc.destroy().catch(() => {});
+          setError(
+            t('signPdf.errors.emptyPdf', {
+              defaultValue: 'This PDF has 0 pages. Please choose a valid PDF document.',
+            })
+          );
+          return;
+        }
         docRef.current = nextDoc;
         setFile(nextFile);
         setBytes(sanitizedBuffer);
@@ -175,7 +244,8 @@ export function SignPdfTool() {
         setFields([]);
         setSelectedId(null);
       } catch (err) {
-        console.error('[v0] PDF load failed', err);
+        if (token !== openTokenRef.current) return;
+        logger.error('Sign PDF load failed:', err);
         const msg = err instanceof Error ? err.message.toLowerCase() : '';
         if (msg.includes('password') || msg.includes('encrypt') || msg.includes('secured_locked')) {
           setError(
@@ -199,150 +269,209 @@ export function SignPdfTool() {
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionNotice, setDetectionNotice] = useState<string | null>(null);
 
-  const addField = useCallback((pageIndex: number, kind: FieldKind, nx: number, ny: number) => {
-    const defaults: Record<FieldKind, { w: number; h: number }> = {
-      signature: { w: 0.24, h: 0.075 },
-      initials: { w: 0.12, h: 0.065 },
-      name: { w: 0.25, h: 0.045 },
-      date: { w: 0.2, h: 0.045 },
-      text: { w: 0.28, h: 0.05 },
-      checkmark: { w: 0.06, h: 0.045 },
-      cross: { w: 0.06, h: 0.045 },
-      stamp: { w: 0.32, h: 0.12 },
-    };
-    const size = defaults[kind];
-    const field: PlacedField = {
-      id: crypto.randomUUID(),
-      kind,
-      pageIndex,
-      x: Math.min(Math.max(nx - size.w / 2, 0), 1 - size.w),
-      y: Math.min(Math.max(ny - size.h / 2, 0), 1 - size.h),
-      ...size,
-      text: kind === 'text' ? '' : undefined,
-    };
-    setFields((current) => [...current, field]);
-    setSelectedId(field.id);
-    setPendingKind(null);
-  }, []);
+  const addField = useCallback(
+    (pageIndex: number, kind: FieldKind, nx: number, ny: number) => {
+      const defaults: Record<FieldKind, { w: number; h: number }> = {
+        signature: { w: 0.24, h: 0.075 },
+        initials: { w: 0.12, h: 0.065 },
+        name: { w: 0.25, h: 0.045 },
+        date: { w: 0.2, h: 0.045 },
+        text: { w: 0.28, h: 0.05 },
+        checkmark: { w: 0.06, h: 0.045 },
+        cross: { w: 0.06, h: 0.045 },
+        stamp: { w: 0.32, h: 0.12 },
+      };
+      let { w, h } = defaults[kind];
+      const pageInfo = pages[pageIndex];
+      const asset =
+        kind === 'signature'
+          ? signatures.signature
+          : kind === 'initials'
+            ? signatures.initials
+            : null;
+      if (
+        asset &&
+        asset.width > 0 &&
+        asset.height > 0 &&
+        pageInfo &&
+        pageInfo.width > 0 &&
+        pageInfo.height > 0
+      ) {
+        const assetAspect = asset.width / asset.height;
+        const rawH = (w * pageInfo.width) / (assetAspect * pageInfo.height);
+        h = Math.min(Math.max(rawH, 0.03), 0.15);
+        w = Math.min(Math.max((h * pageInfo.height * assetAspect) / pageInfo.width, 0.06), 0.45);
+      }
+      const field: PlacedField = {
+        id: crypto.randomUUID(),
+        kind,
+        pageIndex,
+        x: Math.min(Math.max(nx - w / 2, 0), 1 - w),
+        y: Math.min(Math.max(ny - h / 2, 0), 1 - h),
+        w,
+        h,
+        text: kind === 'text' ? '' : undefined,
+      };
+      setFields((current) => [...current, field]);
+      setSelectedId(field.id);
+      setPendingKind(null);
+    },
+    [pages, signatures.initials, signatures.signature]
+  );
 
   const autoDetectFields = useCallback(async () => {
-    if (!doc || !pages.length) return;
+    if (!doc || !pages.length || isDetecting) return;
+    const token = openTokenRef.current;
     setIsDetecting(true);
     setDetectionNotice(null);
+    if (noticeTimerRef.current) {
+      clearTimeout(noticeTimerRef.current);
+      noticeTimerRef.current = null;
+    }
 
     try {
       const detected: PlacedField[] = [];
+      const pagesToScan = Math.min(pages.length, MAX_AUTO_DETECT_PAGES);
 
-      for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+      for (let pIdx = 0; pIdx < pagesToScan; pIdx++) {
+        if (token !== openTokenRef.current) return;
         const info = pages[pIdx];
         const page = await doc.getPage(pIdx + 1);
-
-        // 1. Check interactive form annotations
         try {
-          const annotations = await page.getAnnotations();
-          for (const annot of annotations) {
-            if (annot.subtype === 'Widget' && annot.rect) {
-              const [rx1, ry1, rx2, ry2] = annot.rect;
-              const w = Math.abs(rx2 - rx1) / info.width;
-              const h = Math.abs(ry2 - ry1) / info.height;
-              const x = Math.min(rx1, rx2) / info.width;
-              const y = (info.height - Math.max(ry1, ry2)) / info.height;
+          const viewport = page.getViewport({ scale: 1 });
 
-              let kind: FieldKind = 'text';
-              if (annot.fieldType === 'Sig') kind = 'signature';
-              else if (annot.fieldType === 'Btn') kind = 'checkmark';
+          // 1. Check interactive form annotations using viewport coordinate conversion
+          try {
+            const annotations = await page.getAnnotations();
+            for (const annot of annotations) {
+              if (annot.subtype === 'Widget' && annot.rect) {
+                const [vx1, vy1, vx2, vy2] = viewport.convertToViewportRectangle(annot.rect);
+                const w = Math.abs(vx2 - vx1) / info.width;
+                const h = Math.abs(vy2 - vy1) / info.height;
+                const x = Math.min(vx1, vx2) / info.width;
+                const y = Math.min(vy1, vy2) / info.height;
 
-              detected.push({
-                id: crypto.randomUUID(),
-                kind,
-                pageIndex: pIdx,
-                x: Math.max(0, Math.min(x, 1 - w)),
-                y: Math.max(0, Math.min(y, 1 - h)),
-                w: Math.max(0.04, Math.min(w, 0.4)),
-                h: Math.max(0.03, Math.min(h, 0.15)),
-              });
+                let kind: FieldKind = 'text';
+                if (annot.fieldType === 'Sig') kind = 'signature';
+                else if (annot.fieldType === 'Btn') kind = 'checkmark';
+
+                const clampedW = Math.max(0.04, Math.min(w, 0.4));
+                const clampedH = Math.max(0.03, Math.min(h, 0.15));
+                detected.push({
+                  id: crypto.randomUUID(),
+                  kind,
+                  pageIndex: pIdx,
+                  x: Math.max(0, Math.min(x, 1 - clampedW)),
+                  y: Math.max(0, Math.min(y, 1 - clampedH)),
+                  w: clampedW,
+                  h: clampedH,
+                });
+              }
             }
+          } catch {
+            // ignore annotation check errors
           }
-        } catch {
-          // ignore annotation check errors
-        }
 
-        // 2. Scan text content for signature & form prompt labels
-        try {
-          const textContent = await page.getTextContent();
-          for (const item of textContent.items) {
-            if (!('str' in item)) continue;
-            const text = item.str.toLowerCase();
-            const transform = item.transform;
-            const tx = transform[4];
-            const ty = transform[5];
-            const itemW = item.width || 40;
-            const itemH = item.height || 12;
+          // 2. Scan text content for signature & form prompt labels
+          try {
+            const textContent = await page.getTextContent();
+            for (const item of textContent.items) {
+              if (!('str' in item)) continue;
+              const text = item.str.toLowerCase();
+              const transform = item.transform;
+              const [vx, vy] = viewport.convertToViewportPoint(transform[4], transform[5]);
+              const itemW = item.width || 40;
+              const itemH = item.height || 12;
 
-            const nx = tx / info.width;
-            const ny = (info.height - ty - itemH) / info.height;
+              const nx = vx / info.width;
+              const ny = (vy - itemH) / info.height;
 
-            if (text.includes('signature') || text.includes('sign here')) {
-              detected.push({
-                id: crypto.randomUUID(),
-                kind: 'signature',
-                pageIndex: pIdx,
-                x: Math.min(nx + itemW / info.width + 0.02, 0.72),
-                y: Math.max(0, ny - 0.01),
-                w: 0.24,
-                h: 0.075,
-              });
-            } else if (text.includes('date:')) {
-              detected.push({
-                id: crypto.randomUUID(),
-                kind: 'date',
-                pageIndex: pIdx,
-                x: Math.min(nx + itemW / info.width + 0.02, 0.76),
-                y: Math.max(0, ny),
-                w: 0.2,
-                h: 0.045,
-              });
+              if (text.includes('signature') || text.includes('sign here')) {
+                detected.push({
+                  id: crypto.randomUUID(),
+                  kind: 'signature',
+                  pageIndex: pIdx,
+                  x: Math.max(0, Math.min(nx + itemW / info.width + 0.02, 0.72)),
+                  y: Math.max(0, Math.min(ny - 0.01, 1 - 0.075)),
+                  w: 0.24,
+                  h: 0.075,
+                });
+              } else if (text.includes('date:')) {
+                detected.push({
+                  id: crypto.randomUUID(),
+                  kind: 'date',
+                  pageIndex: pIdx,
+                  x: Math.max(0, Math.min(nx + itemW / info.width + 0.02, 0.76)),
+                  y: Math.max(0, Math.min(ny, 1 - 0.045)),
+                  w: 0.2,
+                  h: 0.045,
+                });
+              }
             }
+          } catch {
+            // ignore text check errors
           }
-        } catch {
-          // ignore text check errors
+        } finally {
+          page.cleanup();
         }
       }
 
-      if (detected.length > 0) {
-        setFields((prev) => [...prev, ...detected]);
-        setDetectionNotice(`Auto-detected ${detected.length} form field & signature zone(s)!`);
+      if (token !== openTokenRef.current) return;
+
+      const candidates: PlacedField[] =
+        detected.length > 0
+          ? detected
+          : [
+              {
+                id: crypto.randomUUID(),
+                kind: 'signature',
+                pageIndex: pages.length - 1,
+                x: 0.55,
+                y: 0.82,
+                w: 0.24,
+                h: 0.075,
+              },
+              {
+                id: crypto.randomUUID(),
+                kind: 'date',
+                pageIndex: pages.length - 1,
+                x: 0.15,
+                y: 0.84,
+                w: 0.2,
+                h: 0.045,
+              },
+            ];
+
+      let addedCount = 0;
+      setFields((prev) => {
+        const unique = candidates.filter(
+          (cand) =>
+            !prev.some(
+              (existing) =>
+                existing.pageIndex === cand.pageIndex &&
+                existing.kind === cand.kind &&
+                Math.abs(existing.x - cand.x) < 0.02 &&
+                Math.abs(existing.y - cand.y) < 0.02
+            )
+        );
+        addedCount = unique.length;
+        return unique.length > 0 ? [...prev, ...unique] : prev;
+      });
+
+      if (addedCount === 0) {
+        setDetectionNotice('All detected form and signature zones are already placed.');
+      } else if (detected.length > 0) {
+        setDetectionNotice(`Auto-detected ${addedCount} form field & signature zone(s)!`);
       } else {
-        // Fallback: place a default signature and date at the bottom of the last page
-        const lastIdx = pages.length - 1;
-        const fallbackFields: PlacedField[] = [
-          {
-            id: crypto.randomUUID(),
-            kind: 'signature',
-            pageIndex: lastIdx,
-            x: 0.55,
-            y: 0.82,
-            w: 0.24,
-            h: 0.075,
-          },
-          {
-            id: crypto.randomUUID(),
-            kind: 'date',
-            pageIndex: lastIdx,
-            x: 0.15,
-            y: 0.84,
-            w: 0.2,
-            h: 0.045,
-          },
-        ];
-        setFields((prev) => [...prev, ...fallbackFields]);
         setDetectionNotice('Placed standard signature & date fields on the document.');
       }
     } finally {
-      setIsDetecting(false);
-      setTimeout(() => setDetectionNotice(null), 5000);
+      if (token === openTokenRef.current) {
+        setIsDetecting(false);
+        noticeTimerRef.current = setTimeout(() => setDetectionNotice(null), 5000);
+      }
     }
-  }, [doc, pages]);
+  }, [doc, isDetecting, pages]);
 
   const updateField = (id: string, patch: Partial<PlacedField>) =>
     setFields((current) =>
@@ -354,12 +483,46 @@ export function SignPdfTool() {
   };
 
   const exportPdf = async () => {
-    if (!bytes || !fields.length) return;
+    if (!bytes || !fields.length || exporting || isExportingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+
+    const needsSignature = fields.some((f) => f.kind === 'signature') && !signatures.signature;
+    const needsInitials = fields.some((f) => f.kind === 'initials') && !signatures.initials;
+    const needsFullName = fields.some((f) => f.kind === 'name') && !signatures.fullName.trim();
+    if (needsSignature || needsInitials || needsFullName) {
+      setSignatureOpen(true);
+      setError(
+        t('signPdf.errors.missingSignatureSetup', {
+          defaultValue:
+            'Please set up your signature, initials, or name details before signing and downloading.',
+        })
+      );
+      return;
+    }
+
+    const hasRenderableField = fields.some((f) => {
+      if (f.kind === 'signature') return Boolean(signatures.signature);
+      if (f.kind === 'initials') return Boolean(signatures.initials);
+      if (f.kind === 'name') return Boolean(signatures.fullName.trim());
+      if (f.kind === 'date') return Boolean(dateText.trim());
+      if (f.kind === 'text') return Boolean(f.text?.trim());
+      return true; // checkmark, cross, stamp
+    });
+    if (!hasRenderableField) {
+      setError(
+        t('signPdf.errors.emptyFields', {
+          defaultValue: 'Please enter text or configure your placed fields before downloading.',
+        })
+      );
+      return;
+    }
+
+    isExportingRef.current = true;
     setExporting(true);
+    setError(null);
     try {
       const output = await exportSignedPdf({ bytes, pages, fields, signatures, dateText });
       const filename = sanitizeDownloadFilename(
@@ -367,8 +530,17 @@ export function SignPdfTool() {
       );
       const blob = new Blob([output as unknown as BlobPart], { type: 'application/pdf' });
       await downloadBlob(blob, filename);
+      addActivityItem({
+        toolName: 'Sign PDF',
+        toolId: 'sign-pdf',
+        fileName: filename,
+        fileSizeFormatted: formatBytes(blob.size),
+        status: 'completed',
+        tag: 'Sign',
+        savings: `${fields.length} field(s)`,
+      });
     } catch (err) {
-      console.error('[v0] PDF export failed', err);
+      logger.error('Sign PDF export failed:', err);
       setError(
         t('signPdf.errors.exportFailed', {
           defaultValue: 'The signed PDF could not be created. Please try again.',
@@ -376,6 +548,7 @@ export function SignPdfTool() {
       );
     } finally {
       setExporting(false);
+      isExportingRef.current = false;
     }
   };
 
@@ -384,7 +557,7 @@ export function SignPdfTool() {
     [viewerWidth, zoom]
   );
 
-  if (!doc || !bytes) return <UploadScreen onFile={openFile} error={error} />;
+  if (!doc || !bytes) return <UploadScreen onFile={openFile} error={error} limitMB={limitMB} />;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">

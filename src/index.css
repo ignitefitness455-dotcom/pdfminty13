@@ -118,7 +118,7 @@ body {
     sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --custom-bg: #f8fafc;
+  --custom-bg: #f4faf7;
   --custom-on-bg: #0f172a;
   --custom-primary-fixed: #047857; /* emerald-700 for 5.17:1 contrast on white */
   --custom-primary-fixed-dim: #065f46;
@@ -747,4 +747,158 @@ textarea {
 
 .animate-float-gentle {
   animation: float-gentle 2.8s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   3D Homepage Emerald Laser Scroll Progress Bar & 3D Tool Card Depth System
+   ========================================================================== */
+
+.emerald-laser-progress-bar {
+  transform: scaleX(var(--laser-progress, 0.02));
+  background: linear-gradient(90deg, #059669 0%, #10b981 55%, #2dd4bf 92%, #a7f3d0 100%);
+  box-shadow:
+    0 0 14px rgba(16, 185, 129, 0.9),
+    0 2px 8px rgba(20, 184, 166, 0.55);
+  transition: transform 0.08s linear;
+  will-change: transform;
+}
+
+.pdf-tool-card-3d-scene {
+  perspective: 1100px;
+  transform-style: preserve-3d;
+}
+
+.pdf-tool-card-3d {
+  transform-style: preserve-3d;
+  transform: perspective(1100px)
+    translate3d(
+      var(--card-tx, 0px),
+      var(--card-ty, 0px),
+      calc(var(--card-tz, 0px) + var(--hover-tz, 0px))
+    )
+    rotateX(calc(var(--card-rx, 0deg) + var(--hover-rx, 0deg)))
+    rotateY(calc(var(--card-ry, 0deg) + var(--hover-ry, 0deg))) rotateZ(var(--card-rz, 0deg))
+    scale3d(var(--card-scale, 1), var(--card-scale, 1), 1);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.pdf-card-3d-body,
+.pdf-card-3d-header {
+  transform-style: preserve-3d;
+}
+
+/* Floating 3D Depth Layers inside each PDF Tool Card */
+.pdf-layer-icon {
+  transform: translateZ(34px);
+  transform-style: preserve-3d;
+}
+
+.pdf-layer-badge {
+  transform: translateZ(28px);
+  transform-style: preserve-3d;
+}
+
+.pdf-layer-title {
+  transform: translateZ(22px);
+  transform-style: preserve-3d;
+}
+
+.pdf-layer-desc {
+  transform: translateZ(14px);
+  transform-style: preserve-3d;
+}
+
+.pdf-layer-cta {
+  transform: translateZ(26px);
+  transform-style: preserve-3d;
+}
+
+/* Floating 3D Depth Shadow underneath card at translateZ(-32px) */
+.pdf-card-depth-shadow {
+  position: absolute;
+  inset: 8px 10px -10px 10px;
+  border-radius: 1rem;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 120, 87, 0.18) 0%,
+    rgba(15, 23, 42, 0.08) 60%,
+    transparent 100%
+  );
+  transform: translateZ(-32px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+html.dark .pdf-card-depth-shadow {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(16, 185, 129, 0.24) 0%,
+    rgba(0, 0, 0, 0.55) 65%,
+    transparent 100%
+  );
+}
+
+/* Scroll-Angle Holographic Shimmer Overlay */
+.pdf-card-holographic-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    var(--shimmer-angle, 135deg),
+    transparent 18%,
+    rgba(16, 185, 129, 0.09) 44%,
+    rgba(45, 212, 191, 0.16) 50%,
+    rgba(236, 253, 245, 0.12) 56%,
+    transparent 82%
+  );
+  opacity: var(--shimmer-opacity, 0.24);
+  transition: opacity 0.2s ease;
+}
+
+/* Viewport-Center Emerald Spotlight Border Glow */
+.pdf-card-spotlight-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  border: 1.5px solid rgba(16, 185, 129, 0.62);
+  box-shadow:
+    0 0 22px -4px rgba(16, 185, 129, 0.26),
+    inset 0 0 12px rgba(16, 185, 129, 0.07);
+  opacity: var(--spotlight-opacity, 0);
+  transition: opacity 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-tool-card-3d,
+  .pdf-layer-icon,
+  .pdf-layer-badge,
+  .pdf-layer-title,
+  .pdf-layer-desc,
+  .pdf-layer-cta,
+  .pdf-card-depth-shadow {
+    transform: none !important;
+  }
+}
+
+[data-3d-disabled='true'] .pdf-tool-card-3d,
+[data-3d-disabled='true'] .pdf-layer-icon,
+[data-3d-disabled='true'] .pdf-layer-badge,
+[data-3d-disabled='true'] .pdf-layer-title,
+[data-3d-disabled='true'] .pdf-layer-desc,
+[data-3d-disabled='true'] .pdf-layer-cta,
+[data-3d-disabled='true'] .pdf-card-depth-shadow {
+  transform: none !important;
+}
+
+[data-3d-disabled='true'] .pdf-card-holographic-shimmer,
+[data-3d-disabled='true'] .pdf-card-spotlight-glow,
+[data-3d-disabled='true'] .pdf-card-depth-shadow {
+  opacity: 0 !important;
 }

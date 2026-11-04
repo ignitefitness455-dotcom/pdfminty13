@@ -57,7 +57,8 @@ import {
 } from '../utils/activityStore';
 
 function exportJsonDownload(data: unknown, filename: string) {
-  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
+  const dataStr =
+    'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
   const downloadAnchor = document.createElement('a');
   downloadAnchor.setAttribute('href', dataStr);
   downloadAnchor.setAttribute('download', filename);
@@ -73,7 +74,16 @@ export const DashboardPage: React.FC = () => {
   const { i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
 
-  const { user, isPro, upgradeToPro, logout, updateDisplayName, resetPassword, sendVerificationEmail, reloadUser } = useAuth();
+  const {
+    user,
+    isPro,
+    upgradeToPro,
+    logout,
+    updateDisplayName,
+    resetPassword,
+    sendVerificationEmail,
+    reloadUser,
+  } = useAuth();
   const [resendingVerification, setResendingVerification] = useState(false);
 
   const handleResendFromDashboard = async () => {
@@ -107,12 +117,7 @@ export const DashboardPage: React.FC = () => {
   const [toolCategory, setToolCategory] = useState<ToolCategory>('All');
 
   // Real-time daily usage limits & tier
-  const {
-    dailyTasksLimit,
-    tasksUsed,
-    tasksRemaining,
-    maxFileSizeMB,
-  } = useUsageLimit();
+  const { dailyTasksLimit, tasksUsed, tasksRemaining, maxFileSizeMB } = useUsageLimit();
 
   // Profile Edit State
   const [isEditingName, setIsEditingName] = useState(false);
@@ -192,7 +197,9 @@ export const DashboardPage: React.FC = () => {
     const storageProcessedMB = Math.round(totalPages * 0.42 * 10) / 10;
     const dailyLimitNum = typeof dailyTasksLimit === 'number' ? dailyTasksLimit : 10;
     const remainingNum = typeof tasksRemaining === 'number' ? tasksRemaining : 10;
-    const dailyPercent = isPro ? 100 : Math.max(0, Math.min(100, Math.round((remainingNum / dailyLimitNum) * 100)));
+    const dailyPercent = isPro
+      ? 100
+      : Math.max(0, Math.min(100, Math.round((remainingNum / dailyLimitNum) * 100)));
 
     return {
       totalOps,
@@ -212,7 +219,9 @@ export const DashboardPage: React.FC = () => {
         id: 'merge',
         name: isBn ? 'পিডিএফ একত্রীকরণ' : 'Merge PDF',
         route: ROUTES.MERGE,
-        desc: isBn ? 'একাধিক ফাইল একসাথে যুক্ত করে একটি নথিতে রূপান্তর' : 'Combine multiple PDFs in custom page sequence',
+        desc: isBn
+          ? 'একাধিক ফাইল একসাথে যুক্ত করে একটি নথিতে রূপান্তর'
+          : 'Combine multiple PDFs in custom page sequence',
         icon: Layers,
         badge: 'Popular',
         category: 'Organize' as ToolCategory,
@@ -221,7 +230,9 @@ export const DashboardPage: React.FC = () => {
         id: 'compress',
         name: isBn ? 'পিডিএফ কম্প্রেস' : 'Compress PDF',
         route: ROUTES.COMPRESS,
-        desc: isBn ? 'সর্বোচ্চ 90% সাইজ কমান ভিজ্যুয়াল মান অক্ষুণ্ণ রেখে' : 'Reduce file size up to 90% without visible quality loss',
+        desc: isBn
+          ? 'সর্বোচ্চ 90% সাইজ কমান ভিজ্যুয়াল মান অক্ষুণ্ণ রেখে'
+          : 'Reduce file size up to 90% without visible quality loss',
         icon: Zap,
         badge: 'High-Speed',
         category: 'Optimize' as ToolCategory,
@@ -230,7 +241,9 @@ export const DashboardPage: React.FC = () => {
         id: 'split',
         name: isBn ? 'পিডিএফ বিভক্তকরণ' : 'Split PDF',
         route: ROUTES.SPLIT,
-        desc: isBn ? 'নির্দিষ্ট পেজ রেঞ্জ বা একক পেজ আলাদা করুন' : 'Extract specific page ranges into individual documents',
+        desc: isBn
+          ? 'নির্দিষ্ট পেজ রেঞ্জ বা একক পেজ আলাদা করুন'
+          : 'Extract specific page ranges into individual documents',
         icon: FolderOpen,
         badge: 'Lossless',
         category: 'Organize' as ToolCategory,
@@ -239,7 +252,9 @@ export const DashboardPage: React.FC = () => {
         id: 'sign',
         name: isBn ? 'ই-সিগনেচার ও সাইন' : 'Sign PDF',
         route: ROUTES.SIGN_PDF,
-        desc: isBn ? 'ডিজিটাল স্বাক্ষর, স্ট্যাম্প ও তারিখ যুক্ত করুন' : 'Legally binding e-signatures and audit timestamps',
+        desc: isBn
+          ? 'ডিজিটাল স্বাক্ষর, স্ট্যাম্প ও তারিখ যুক্ত করুন'
+          : 'Legally binding e-signatures and audit timestamps',
         icon: Edit3,
         badge: 'Security',
         category: 'Security' as ToolCategory,
@@ -248,7 +263,9 @@ export const DashboardPage: React.FC = () => {
         id: 'ocr',
         name: isBn ? 'ওসিআর টেক্সট এক্সট্রাক্ট' : 'OCR & Text Extract',
         route: ROUTES.OCR_PDF,
-        desc: isBn ? 'স্ক্যান করা ইমেজ থেকে নির্ভুল টেক্সট রূপান্তর' : 'Convert scanned documents to editable & searchable text',
+        desc: isBn
+          ? 'স্ক্যান করা ইমেজ থেকে নির্ভুল টেক্সট রূপান্তর'
+          : 'Convert scanned documents to editable & searchable text',
         icon: Cpu,
         badge: 'AI Engine',
         category: 'AI' as ToolCategory,
@@ -257,7 +274,9 @@ export const DashboardPage: React.FC = () => {
         id: 'protect',
         name: isBn ? 'পাসওয়ার্ড দিয়ে এনক্রিপ্ট' : 'Protect PDF',
         route: ROUTES.PROTECT,
-        desc: isBn ? 'AES-256 বিট মিলিটারি গ্রেড এনক্রিপশন পাসওয়ার্ড' : 'Add AES-256 bank-level password encryption',
+        desc: isBn
+          ? 'AES-256 বিট মিলিটারি গ্রেড এনক্রিপশন পাসওয়ার্ড'
+          : 'Add AES-256 bank-level password encryption',
         icon: Lock,
         badge: 'AES-256',
         category: 'Security' as ToolCategory,
@@ -266,7 +285,9 @@ export const DashboardPage: React.FC = () => {
         id: 'unlock',
         name: isBn ? 'পাসওয়ার্ড আনলক' : 'Unlock PDF',
         route: ROUTES.UNLOCK,
-        desc: isBn ? 'সুরক্ষিত পিডিএফ থেকে রেস্ট্রিকশন অপসারণ' : 'Remove security restrictions and viewable passwords',
+        desc: isBn
+          ? 'সুরক্ষিত পিডিএফ থেকে রেস্ট্রিকশন অপসারণ'
+          : 'Remove security restrictions and viewable passwords',
         icon: Unlock,
         badge: 'Instant',
         category: 'Security' as ToolCategory,
@@ -275,7 +296,9 @@ export const DashboardPage: React.FC = () => {
         id: 'ai-analyze',
         name: isBn ? 'এআই ডকুমেন্ট অ্যানালাইজার' : 'Gemini AI Analyze',
         route: ROUTES.AI_ANALYZE,
-        desc: isBn ? 'গুগল জেমিনি এআই দিয়ে সারাংশ ও প্রশ্ন-উত্তর' : 'Google Gemini AI document summarization & deep QA',
+        desc: isBn
+          ? 'গুগল জেমিনি এআই দিয়ে সারাংশ ও প্রশ্ন-উত্তর'
+          : 'Google Gemini AI document summarization & deep QA',
         icon: Sparkles,
         badge: 'Pro Tier',
         category: 'AI' as ToolCategory,
@@ -284,7 +307,9 @@ export const DashboardPage: React.FC = () => {
         id: 'pdf-to-img',
         name: isBn ? 'পিডিএফ টু ইমেজ' : 'PDF to Image',
         route: ROUTES.PDF_TO_IMG,
-        desc: isBn ? 'হাই-রেজোলিউশন JPG ও PNG ইমেজ এক্সপোর্ট' : 'Convert pages to high-fidelity JPG and transparent PNG',
+        desc: isBn
+          ? 'হাই-রেজোলিউশন JPG ও PNG ইমেজ এক্সপোর্ট'
+          : 'Convert pages to high-fidelity JPG and transparent PNG',
         icon: FileText,
         badge: 'Convert',
         category: 'Convert' as ToolCategory,
@@ -293,7 +318,9 @@ export const DashboardPage: React.FC = () => {
         id: 'img-to-pdf',
         name: isBn ? 'ইমেজ টু পিডিএফ' : 'Image to PDF',
         route: ROUTES.IMG_TO_PDF,
-        desc: isBn ? 'JPG, PNG ও WebP ছবি থেকে সরাসরি পিডিএফ তৈরি' : 'Turn JPG, PNG, and WebP photos into standard PDF',
+        desc: isBn
+          ? 'JPG, PNG ও WebP ছবি থেকে সরাসরি পিডিএফ তৈরি'
+          : 'Turn JPG, PNG, and WebP photos into standard PDF',
         icon: FileSpreadsheet,
         badge: 'Convert',
         category: 'Convert' as ToolCategory,
@@ -302,7 +329,9 @@ export const DashboardPage: React.FC = () => {
         id: 'pdf-to-markdown',
         name: isBn ? 'পিডিএফ টু মার্কডাউন' : 'PDF to Markdown',
         route: ROUTES.PDF_TO_MARKDOWN,
-        desc: isBn ? 'টেবিল ও ফরম্যাটিংসহ ক্লিন মার্কডাউন এক্সট্রাক্ট' : 'Extract clean Markdown formatted structure and tables',
+        desc: isBn
+          ? 'টেবিল ও ফরম্যাটিংসহ ক্লিন মার্কডাউন এক্সট্রাক্ট'
+          : 'Extract clean Markdown formatted structure and tables',
         icon: FileCode,
         badge: 'Developer',
         category: 'Convert' as ToolCategory,
@@ -311,7 +340,9 @@ export const DashboardPage: React.FC = () => {
         id: 'rotate',
         name: isBn ? 'পেজ রোটেট' : 'Rotate PDF',
         route: ROUTES.ROTATE,
-        desc: isBn ? 'উল্টো বা হেলে থাকা পেজ 90°/180° ঠিক করুন' : 'Rotate portrait or landscape pages in seconds',
+        desc: isBn
+          ? 'উল্টো বা হেলে থাকা পেজ 90°/180° ঠিক করুন'
+          : 'Rotate portrait or landscape pages in seconds',
         icon: RotateCw,
         badge: 'Quick',
         category: 'Organize' as ToolCategory,
@@ -320,7 +351,9 @@ export const DashboardPage: React.FC = () => {
         id: 'reorder',
         name: isBn ? 'পেজ রিঅর্ডার' : 'Reorder Pages',
         route: ROUTES.REORDER,
-        desc: isBn ? 'ড্র্যাগ অ্যান্ড ড্রপ করে পেজের ক্রম পরিবর্তন' : 'Drag-and-drop visual page sequencing and sorting',
+        desc: isBn
+          ? 'ড্র্যাগ অ্যান্ড ড্রপ করে পেজের ক্রম পরিবর্তন'
+          : 'Drag-and-drop visual page sequencing and sorting',
         icon: SlidersHorizontal,
         badge: 'Visual',
         category: 'Organize' as ToolCategory,
@@ -329,7 +362,9 @@ export const DashboardPage: React.FC = () => {
         id: 'delete-pages',
         name: isBn ? 'পেজ মুছুন' : 'Delete Pages',
         route: ROUTES.DELETE_PAGES,
-        desc: isBn ? 'অপ্রয়োজনীয় পেজ সহজেই নথি থেকে রিমুভ করুন' : 'Remove unnecessary or blank pages from your PDF',
+        desc: isBn
+          ? 'অপ্রয়োজনীয় পেজ সহজেই নথি থেকে রিমুভ করুন'
+          : 'Remove unnecessary or blank pages from your PDF',
         icon: Trash2,
         badge: 'Organize',
         category: 'Organize' as ToolCategory,
@@ -338,7 +373,9 @@ export const DashboardPage: React.FC = () => {
         id: 'watermark',
         name: isBn ? 'ওয়াটারমার্ক যুক্ত করুন' : 'Add Watermark',
         route: ROUTES.WATERMARK,
-        desc: isBn ? 'কাস্টম টেক্সট ও ব্র্যান্ড লোগো ওয়াটারমার্ক স্ট্যাম্প' : 'Stamp custom confidential notices or brand marks',
+        desc: isBn
+          ? 'কাস্টম টেক্সট ও ব্র্যান্ড লোগো ওয়াটারমার্ক স্ট্যাম্প'
+          : 'Stamp custom confidential notices or brand marks',
         icon: Eye,
         badge: 'Branding',
         category: 'Security' as ToolCategory,
@@ -347,7 +384,9 @@ export const DashboardPage: React.FC = () => {
         id: 'sanitize',
         name: isBn ? 'স্যানিটাইজ ও মেটাডেটা মুছুন' : 'Sanitize PDF',
         route: ROUTES.SANITIZE_PDF,
-        desc: isBn ? 'লুকানো ট্র্যাকার ও ব্যক্তিগত তথ্য সম্পূর্ণ মুছুন' : 'Strip hidden author metadata and revision trails',
+        desc: isBn
+          ? 'লুকানো ট্র্যাকার ও ব্যক্তিগত তথ্য সম্পূর্ণ মুছুন'
+          : 'Strip hidden author metadata and revision trails',
         icon: ShieldCheck,
         badge: 'Privacy',
         category: 'Security' as ToolCategory,
@@ -367,7 +406,10 @@ export const DashboardPage: React.FC = () => {
     try {
       await updateDisplayName(newName.trim());
       setIsEditingName(false);
-      showToast(isBn ? 'নাম সফলভাবে আপডেট করা হয়েছে!' : 'Profile name updated successfully!', 'success');
+      showToast(
+        isBn ? 'নাম সফলভাবে আপডেট করা হয়েছে!' : 'Profile name updated successfully!',
+        'success'
+      );
     } catch {
       showToast(isBn ? 'নাম আপডেট করা সম্ভব হয়নি।' : 'Failed to update profile name.', 'error');
     } finally {
@@ -402,7 +444,10 @@ export const DashboardPage: React.FC = () => {
     clearAllActivities();
     setActivities([]);
     setShowClearHistoryModal(false);
-    showToast(isBn ? 'হিস্ট্রি সফলভাবে মুছে ফেলা হয়েছে।' : 'Activity history log cleared successfully.', 'success');
+    showToast(
+      isBn ? 'হিস্ট্রি সফলভাবে মুছে ফেলা হয়েছে।' : 'Activity history log cleared successfully.',
+      'success'
+    );
   };
 
   const handleDeleteSingleActivity = (id: string, name: string) => {
@@ -416,13 +461,18 @@ export const DashboardPage: React.FC = () => {
 
   const handleExportHistory = () => {
     if (activities.length === 0) {
-      showToast(isBn ? 'এক্সপোর্ট করার মতো কোনো হিস্ট্রি নেই।' : 'No activity records available to export.', 'info');
+      showToast(
+        isBn ? 'এক্সপোর্ট করার মতো কোনো হিস্ট্রি নেই।' : 'No activity records available to export.',
+        'info'
+      );
       return;
     }
     exportJsonDownload(activities, 'pdfminty_activity_log.json');
-    showToast(isBn ? 'অডিট হিস্ট্রি JSON ডাউনলোড হয়েছে!' : 'Audit history log downloaded as JSON!', 'success');
+    showToast(
+      isBn ? 'অডিট হিস্ট্রি JSON ডাউনলোড হয়েছে!' : 'Audit history log downloaded as JSON!',
+      'success'
+    );
   };
-
 
   const handleClearCache = () => {
     setCacheCleared(true);
@@ -490,13 +540,20 @@ export const DashboardPage: React.FC = () => {
     }
     showToast(
       newVal
-        ? (isBn ? 'স্বয়ংক্রিয় রিনিউয়াল চালু করা হয়েছে।' : 'Auto-renew has been turned ON.')
-        : (isBn ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে।' : 'Auto-renew has been turned OFF.'),
+        ? isBn
+          ? 'স্বয়ংক্রিয় রিনিউয়াল চালু করা হয়েছে।'
+          : 'Auto-renew has been turned ON.'
+        : isBn
+          ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে।'
+          : 'Auto-renew has been turned OFF.',
       'info'
     );
   };
 
-  const handlePreferenceChange = (key: 'perf' | 'autoflush' | 'quality', value: string | boolean) => {
+  const handlePreferenceChange = (
+    key: 'perf' | 'autoflush' | 'quality',
+    value: string | boolean
+  ) => {
     if (key === 'perf') {
       setPerfMode(value as string);
       localStorage.setItem('pdfminty_pref_perf', value as string);
@@ -529,7 +586,11 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
               <div className="relative shrink-0">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-white font-black text-lg sm:text-xl flex items-center justify-center shadow-md shadow-emerald-500/20 ring-2 ring-white dark:ring-slate-800">
-                  {user?.displayName ? user.displayName[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
+                  {user?.displayName
+                    ? user.displayName[0].toUpperCase()
+                    : user?.email
+                      ? user.email[0].toUpperCase()
+                      : 'U'}
                 </div>
                 {stats.isPro && (
                   <span
@@ -569,7 +630,8 @@ export const DashboardPage: React.FC = () => {
                   ) : (
                     <div className="flex items-center gap-1.5 min-w-0">
                       <h1 className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
-                        {user?.displayName || (isBn ? 'পিডিএফমিন্টি ব্যবহারকারী' : 'PDFMinty Member')}
+                        {user?.displayName ||
+                          (isBn ? 'পিডিএফমিন্টি ব্যবহারকারী' : 'PDFMinty Member')}
                       </h1>
                       <button
                         onClick={() => setIsEditingName(true)}
@@ -595,7 +657,9 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                  <span className="truncate max-w-[200px] sm:max-w-none">{user?.email || 'authenticated-user@pdfminty.local'}</span>
+                  <span className="truncate max-w-[200px] sm:max-w-none">
+                    {user?.email || 'authenticated-user@pdfminty.local'}
+                  </span>
                   <span className="hidden sm:inline">&bull;</span>
                   <span
                     className={`inline-flex items-center gap-1 font-semibold text-[11px] ${
@@ -691,7 +755,9 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="space-y-0.5">
                 <p className="font-bold text-amber-950 dark:text-amber-200">
-                  {isBn ? 'আপনার ইমেইল ঠিকানাটি এখনও ভেরিফাই করা হয়নি' : 'Your email address is not yet verified'}
+                  {isBn
+                    ? 'আপনার ইমেইল ঠিকানাটি এখনও ভেরিফাই করা হয়নি'
+                    : 'Your email address is not yet verified'}
                 </p>
                 <p className="text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
                   {isBn
@@ -708,8 +774,12 @@ export const DashboardPage: React.FC = () => {
                 className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {resendingVerification
-                  ? (isBn ? 'পাঠানো হচ্ছে...' : 'Sending...')
-                  : (isBn ? 'ভেরিফিকেশন লিংক পাঠান' : 'Resend Link')}
+                  ? isBn
+                    ? 'পাঠানো হচ্ছে...'
+                    : 'Sending...'
+                  : isBn
+                    ? 'ভেরিফিকেশন লিংক পাঠান'
+                    : 'Resend Link'}
               </button>
               <button
                 type="button"
@@ -740,21 +810,29 @@ export const DashboardPage: React.FC = () => {
               <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
                 {isBn ? 'দৈনিক টাস্ক কোটা' : 'Daily Tasks'}
               </span>
-              <div className={`p-1.5 rounded-lg shrink-0 ${
-                stats.isPro
-                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                  : stats.remainingNum === 0
-                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              }`}>
-                {stats.isPro ? <Crown className="w-3.5 h-3.5 fill-current" /> : <Clock className="w-3.5 h-3.5" />}
+              <div
+                className={`p-1.5 rounded-lg shrink-0 ${
+                  stats.isPro
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    : stats.remainingNum === 0
+                      ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                      : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                }`}
+              >
+                {stats.isPro ? (
+                  <Crown className="w-3.5 h-3.5 fill-current" />
+                ) : (
+                  <Clock className="w-3.5 h-3.5" />
+                )}
               </div>
             </div>
             <div>
               <div className="flex items-baseline gap-1.5 tabular-nums">
                 <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
                   {stats.isPro
-                    ? (isBn ? 'আনলিমিটেড' : 'Unlimited')
+                    ? isBn
+                      ? 'আনলিমিটেড'
+                      : 'Unlimited'
                     : `${stats.remainingNum}/${stats.dailyLimitNum}`}
                 </span>
               </div>
@@ -764,10 +842,10 @@ export const DashboardPage: React.FC = () => {
                     stats.isPro
                       ? 'bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-400 w-full'
                       : stats.remainingNum === 0
-                      ? 'bg-rose-500'
-                      : stats.dailyPercent <= 30
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
+                        ? 'bg-rose-500'
+                        : stats.dailyPercent <= 30
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
                   }`}
                   style={{ width: `${stats.isPro ? 100 : stats.dailyPercent}%` }}
                 />
@@ -776,7 +854,9 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
               <span className="truncate">
                 {stats.isPro
-                  ? (isBn ? 'কোনো দৈনিক সীমা নেই' : 'No daily limits')
+                  ? isBn
+                    ? 'কোনো দৈনিক সীমা নেই'
+                    : 'No daily limits'
                   : `${tasksUsed} ${isBn ? 'ব্যবহৃত' : 'used today'}`}
               </span>
             </div>
@@ -798,14 +878,22 @@ export const DashboardPage: React.FC = () => {
               </span>
               <p className="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 truncate">
                 {stats.isPro
-                  ? (isBn ? '৫০টি ফাইল ব্যাচ ও এআই' : '50-file batch + AI OCR')
-                  : (isBn ? 'স্ট্যান্ডার্ড ফাইল সীমা' : 'Standard upload limit')}
+                  ? isBn
+                    ? '৫০টি ফাইল ব্যাচ ও এআই'
+                    : '50-file batch + AI OCR'
+                  : isBn
+                    ? 'স্ট্যান্ডার্ড ফাইল সীমা'
+                    : 'Standard upload limit'}
               </p>
             </div>
             <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
               {stats.isPro
-                ? (isBn ? `রিনিউয়াল: ${renewalDate}` : `Renews: ${renewalDate}`)
-                : (isBn ? 'প্রো-তে ৫০০ এমবি সীমা' : '500 MB limit with Pro')}
+                ? isBn
+                  ? `রিনিউয়াল: ${renewalDate}`
+                  : `Renews: ${renewalDate}`
+                : isBn
+                  ? 'প্রো-তে ৫০০ এমবি সীমা'
+                  : '500 MB limit with Pro'}
             </p>
           </div>
 
@@ -847,7 +935,8 @@ export const DashboardPage: React.FC = () => {
                 {stats.storageProcessedMB} MB
               </span>
               <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium truncate">
-                {stats.totalOps} {isBn ? 'টি ফাইল' : 'files'} &bull; {stats.totalPages} {isBn ? 'পেজ' : 'pages'}
+                {stats.totalOps} {isBn ? 'টি ফাইল' : 'files'} &bull; {stats.totalPages}{' '}
+                {isBn ? 'পেজ' : 'pages'}
               </p>
             </div>
             <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
@@ -885,11 +974,13 @@ export const DashboardPage: React.FC = () => {
             >
               <FolderOpen className="w-3.5 h-3.5" />
               <span>{isBn ? 'সব টুলস' : 'All Tools'}</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                activeTab === 'tools'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              }`}>
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                  activeTab === 'tools'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                }`}
+              >
                 {allTools.length}
               </span>
             </button>
@@ -905,11 +996,13 @@ export const DashboardPage: React.FC = () => {
             >
               <History className="w-3.5 h-3.5" />
               <span>{isBn ? 'হিস্ট্রি' : 'History'}</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                activeTab === 'history'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-              }`}>
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                  activeTab === 'history'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
+                }`}
+              >
                 {activities.length}
               </span>
             </button>
@@ -925,13 +1018,15 @@ export const DashboardPage: React.FC = () => {
             >
               <CreditCard className="w-3.5 h-3.5" />
               <span>{isBn ? 'বিলিং' : 'Billing'}</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                activeTab === 'billing'
-                  ? 'bg-white/20 text-white'
-                  : stats.isPro
-                  ? 'bg-amber-400/20 text-amber-600 dark:text-amber-400'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-              }`}>
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                  activeTab === 'billing'
+                    ? 'bg-white/20 text-white'
+                    : stats.isPro
+                      ? 'bg-amber-400/20 text-amber-600 dark:text-amber-400'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                }`}
+              >
                 {stats.isPro ? 'PRO' : 'FREE'}
               </span>
             </button>
@@ -974,7 +1069,9 @@ export const DashboardPage: React.FC = () => {
                   onClick={() => setActiveTab('tools')}
                   className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer shrink-0"
                 >
-                  <span>{isBn ? `সব টুলস (${allTools.length})` : `All ${allTools.length} tools`}</span>
+                  <span>
+                    {isBn ? `সব টুলস (${allTools.length})` : `All ${allTools.length} tools`}
+                  </span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1021,7 +1118,9 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <History className="w-5 h-5 text-emerald-500" />
                     <h3 className="font-black text-base text-slate-900 dark:text-white">
-                      {isBn ? 'সাম্প্রতিক প্রসেস করা ফাইল হিস্ট্রি' : 'Recent Processed Files History'}
+                      {isBn
+                        ? 'সাম্প্রতিক প্রসেস করা ফাইল হিস্ট্রি'
+                        : 'Recent Processed Files History'}
                     </h3>
                     <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       {activities.length} {isBn ? 'টি ফাইল' : 'files'}
@@ -1055,7 +1154,9 @@ export const DashboardPage: React.FC = () => {
                     <FolderOpen className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
                     <div className="space-y-1">
                       <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                        {isBn ? 'এখনো কোনো ফাইল প্রসেস করা হয়নি' : 'No processed files recorded yet'}
+                        {isBn
+                          ? 'এখনো কোনো ফাইল প্রসেস করা হয়নি'
+                          : 'No processed files recorded yet'}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
                         {isBn
@@ -1121,7 +1222,9 @@ export const DashboardPage: React.FC = () => {
                                 <span>&bull;</span>
                                 <span>{item.fileSizeFormatted}</span>
                                 <span>&bull;</span>
-                                <span className="text-slate-400 dark:text-slate-500">{item.relativeTime}</span>
+                                <span className="text-slate-400 dark:text-slate-500">
+                                  {item.relativeTime}
+                                </span>
                               </p>
                             </div>
                           </div>
@@ -1160,7 +1263,15 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-black uppercase tracking-wider">
                       <Crown className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                      <span>{stats.isPro ? (isBn ? 'প্রো মেম্বার অ্যাক্টিভ' : 'Pro Member Active') : (isBn ? 'ফ্রি অ্যাকাউন্ট' : 'Free Explorer')}</span>
+                      <span>
+                        {stats.isPro
+                          ? isBn
+                            ? 'প্রো মেম্বার অ্যাক্টিভ'
+                            : 'Pro Member Active'
+                          : isBn
+                            ? 'ফ্রি অ্যাকাউন্ট'
+                            : 'Free Explorer'}
+                      </span>
                     </div>
                     <span className="text-[11px] font-bold bg-white/15 px-2.5 py-0.5 rounded-full">
                       {stats.isPro ? '$2.49/mo' : 'Free'}
@@ -1191,24 +1302,38 @@ export const DashboardPage: React.FC = () => {
                 {/* Quota / Status Overview in Box */}
                 <div className="p-3.5 rounded-2xl bg-black/15 backdrop-blur-sm border border-white/10 space-y-2 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-emerald-100">{isBn ? 'দৈনিক বাকি টাস্ক:' : 'Daily Tasks Left:'}</span>
+                    <span className="text-emerald-100">
+                      {isBn ? 'দৈনিক বাকি টাস্ক:' : 'Daily Tasks Left:'}
+                    </span>
                     <span className="font-black text-amber-300">
-                      {stats.isPro ? '∞ Unlimited' : `${stats.remainingNum} / ${stats.dailyLimitNum}`}
+                      {stats.isPro
+                        ? '∞ Unlimited'
+                        : `${stats.remainingNum} / ${stats.dailyLimitNum}`}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-emerald-100">{isBn ? 'সর্বোচ্চ ফাইলের সাইজ:' : 'Max File Size:'}</span>
+                    <span className="text-emerald-100">
+                      {isBn ? 'সর্বোচ্চ ফাইলের সাইজ:' : 'Max File Size:'}
+                    </span>
                     <span className="font-black">{maxFileSizeMB} MB</span>
                   </div>
                   {stats.isPro && (
                     <div className="flex justify-between items-center pt-1 border-t border-white/10">
-                      <span className="text-emerald-100">{isBn ? 'স্বয়ংক্রিয় নবায়ন:' : 'Auto-Renew:'}</span>
+                      <span className="text-emerald-100">
+                        {isBn ? 'স্বয়ংক্রিয় নবায়ন:' : 'Auto-Renew:'}
+                      </span>
                       <button
                         type="button"
                         onClick={handleToggleAutoRenew}
                         className="text-[11px] font-bold underline hover:text-amber-300 cursor-pointer"
                       >
-                        {autoRenew ? (isBn ? 'চালু (Active)' : 'Enabled') : (isBn ? 'বন্ধ (Off)' : 'Disabled')}
+                        {autoRenew
+                          ? isBn
+                            ? 'চালু (Active)'
+                            : 'Enabled'
+                          : isBn
+                            ? 'বন্ধ (Off)'
+                            : 'Disabled'}
                       </button>
                     </div>
                   )}
@@ -1253,7 +1378,9 @@ export const DashboardPage: React.FC = () => {
                         className="w-full py-2.5 px-4 rounded-xl bg-white text-slate-950 font-black text-xs sm:text-sm hover:bg-emerald-50 transition-all shadow-lg text-center flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 text-emerald-600" />
-                        <span>{isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro — $2.49/mo'}</span>
+                        <span>
+                          {isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro — $2.49/mo'}
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -1307,7 +1434,6 @@ export const DashboardPage: React.FC = () => {
                     <span>{isBn ? 'এক্সপোর্ট JSON' : 'Export Log'}</span>
                   </button>
 
-
                   <button
                     onClick={() => setShowClearHistoryModal(true)}
                     disabled={activities.length === 0}
@@ -1327,7 +1453,9 @@ export const DashboardPage: React.FC = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={isBn ? 'ফাইলের নাম বা টুল দিয়ে খুঁজুন...' : 'Search by file name or tool...'}
+                    placeholder={
+                      isBn ? 'ফাইলের নাম বা টুল দিয়ে খুঁজুন...' : 'Search by file name or tool...'
+                    }
                     className="w-full py-2.5 pl-9 pr-4 text-xs font-medium bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none ring-2 ring-emerald-500/20 text-slate-900 dark:text-white"
                   />
                 </div>
@@ -1361,7 +1489,7 @@ export const DashboardPage: React.FC = () => {
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                     {isBn
                       ? 'আপনি এখনো কোনো ফাইল প্রসেস করেননি। যেকোনো টুল দিয়ে ফাইল প্রসেস করলে এখানে সংরক্ষিত হবে।'
-                      : 'You haven\'t processed any files yet. Operations performed in our tools will be logged here.'}
+                      : "You haven't processed any files yet. Operations performed in our tools will be logged here."}
                   </p>
                   <button
                     type="button"
@@ -1433,10 +1561,7 @@ export const DashboardPage: React.FC = () => {
                           <td className="py-3.5 px-3 text-right">
                             <div className="inline-flex items-center gap-3">
                               <Link
-                                to={
-                                  allTools.find((t) => t.id === act.toolId)?.route ||
-                                  ROUTES.HOME
-                                }
+                                to={allTools.find((t) => t.id === act.toolId)?.route || ROUTES.HOME}
                                 className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
                               >
                                 <span>{isBn ? 'টুল খুলুন' : 'Re-open'}</span>
@@ -1471,7 +1596,9 @@ export const DashboardPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white">
-                    {isBn ? `সকল ${allTools.length}+ প্রফেশনাল পিডিএফ টুলস` : `All ${allTools.length}+ PDF Workspace Tools`}
+                    {isBn
+                      ? `সকল ${allTools.length}+ প্রফেশনাল পিডিএফ টুলস`
+                      : `All ${allTools.length}+ PDF Workspace Tools`}
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                     {isBn
@@ -1482,7 +1609,9 @@ export const DashboardPage: React.FC = () => {
 
                 {/* Category Filter Pills */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-                  {(['All', 'Organize', 'Optimize', 'Security', 'Convert', 'AI'] as ToolCategory[]).map((cat) => (
+                  {(
+                    ['All', 'Organize', 'Optimize', 'Security', 'Convert', 'AI'] as ToolCategory[]
+                  ).map((cat) => (
                     <button
                       key={cat}
                       type="button"
@@ -1551,12 +1680,22 @@ export const DashboardPage: React.FC = () => {
                         : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    {stats.isPro ? <Crown className="w-7 h-7 fill-white" /> : <Zap className="w-7 h-7" />}
+                    {stats.isPro ? (
+                      <Crown className="w-7 h-7 fill-white" />
+                    ) : (
+                      <Zap className="w-7 h-7" />
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                        {stats.isPro ? (isBn ? 'প্রো সাবস্ক্রিপশন প্ল্যান' : 'Pro Subscription Plan') : (isBn ? 'ফ্রি এক্সপ্লোরার প্ল্যান' : 'Free Explorer Plan')}
+                        {stats.isPro
+                          ? isBn
+                            ? 'প্রো সাবস্ক্রিপশন প্ল্যান'
+                            : 'Pro Subscription Plan'
+                          : isBn
+                            ? 'ফ্রি এক্সপ্লোরার প্ল্যান'
+                            : 'Free Explorer Plan'}
                       </h3>
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
@@ -1593,7 +1732,9 @@ export const DashboardPage: React.FC = () => {
                         className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-60"
                       >
                         <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
-                        <span>{isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro ($2.49/month)'}</span>
+                        <span>
+                          {isBn ? 'প্রো আপগ্রেড ($2.49/মাস)' : 'Upgrade to Pro ($2.49/month)'}
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -1605,7 +1746,9 @@ export const DashboardPage: React.FC = () => {
                         className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs sm:text-sm shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-60"
                       >
                         <Sparkles className="w-4 h-4 text-amber-400 dark:text-emerald-600" />
-                        <span>{isBn ? 'লাইফটাইম ডিল ($50 এককালীন)' : 'Lifetime Deal ($50 One-Time)'}</span>
+                        <span>
+                          {isBn ? 'লাইফটাইম ডিল ($50 এককালীন)' : 'Lifetime Deal ($50 One-Time)'}
+                        </span>
                       </button>
                     </>
                   ) : (
@@ -1621,7 +1764,15 @@ export const DashboardPage: React.FC = () => {
                         title={isBn ? 'স্বয়ংক্রিয় রিনিউয়াল পরিবর্তন' : 'Toggle auto-renew'}
                       >
                         <RefreshCcw className="w-3.5 h-3.5" />
-                        <span>{autoRenew ? (isBn ? 'অটো-রিনিউ: চালু' : 'Auto-Renew: ON') : (isBn ? 'অটো-রিনিউ: বন্ধ' : 'Auto-Renew: OFF')}</span>
+                        <span>
+                          {autoRenew
+                            ? isBn
+                              ? 'অটো-রিনিউ: চালু'
+                              : 'Auto-Renew: ON'
+                            : isBn
+                              ? 'অটো-রিনিউ: বন্ধ'
+                              : 'Auto-Renew: OFF'}
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -1661,18 +1812,22 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     {stats.isPro
-                      ? (isBn ? 'প্রো অ্যাকাউন্টে কোনো দৈনিক টাস্ক বা স্পিড সীমা নেই।' : 'Pro membership includes zero daily throttles or task caps.')
-                      : (isBn
+                      ? isBn
+                        ? 'প্রো অ্যাকাউন্টে কোনো দৈনিক টাস্ক বা স্পিড সীমা নেই।'
+                        : 'Pro membership includes zero daily throttles or task caps.'
+                      : isBn
                         ? `ফ্রি অ্যাকাউন্টে দৈনিক ১০টি টাস্কের কোটা রয়েছে। আজকে ${tasksUsed}টি টাস্ক ব্যবহৃত হয়েছে (বাকি ${stats.remainingNum}টি)। রাত ১২:০০ টায় রিসেট হবে।`
-                        : `Free accounts receive 10 daily tasks. You have used ${tasksUsed} tasks today (${stats.remainingNum} remaining). Resets at 00:00 midnight.`)}
+                        : `Free accounts receive 10 daily tasks. You have used ${tasksUsed} tasks today (${stats.remainingNum} remaining). Resets at 00:00 midnight.`}
                   </p>
                 </div>
 
                 <div className="w-full md:w-64 space-y-1.5 shrink-0">
                   <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    <span>{isBn ? 'আজকের কোটা:' : 'Today\'s Quota:'}</span>
+                    <span>{isBn ? 'আজকের কোটা:' : "Today's Quota:"}</span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      {stats.isPro ? '100% Unlimited' : `${stats.remainingNum} / ${stats.dailyLimitNum} Tasks`}
+                      {stats.isPro
+                        ? '100% Unlimited'
+                        : `${stats.remainingNum} / ${stats.dailyLimitNum} Tasks`}
                     </span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
@@ -1681,10 +1836,10 @@ export const DashboardPage: React.FC = () => {
                         stats.isPro
                           ? 'bg-gradient-to-r from-emerald-500 to-teal-400 w-full'
                           : stats.remainingNum === 0
-                          ? 'bg-rose-500'
-                          : stats.dailyPercent <= 30
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
+                            ? 'bg-rose-500'
+                            : stats.dailyPercent <= 30
+                              ? 'bg-amber-500'
+                              : 'bg-emerald-500'
                       }`}
                       style={{ width: `${stats.isPro ? 100 : stats.dailyPercent}%` }}
                     />
@@ -1742,15 +1897,21 @@ export const DashboardPage: React.FC = () => {
                     <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span><strong>500MB per file & batch limit</strong> (50 files concurrent)</span>
+                        <span>
+                          <strong>500MB per file & batch limit</strong> (50 files concurrent)
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span><strong>Gemini AI</strong> document analysis & summaries</span>
+                        <span>
+                          <strong>Gemini AI</strong> document analysis & summaries
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span><strong>High-accuracy OCR</strong> scanned document engine</span>
+                        <span>
+                          <strong>High-accuracy OCR</strong> scanned document engine
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1794,15 +1955,21 @@ export const DashboardPage: React.FC = () => {
                     <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span><strong>All PDFMinty Pro features</strong> unlocked forever</span>
+                        <span>
+                          <strong>All PDFMinty Pro features</strong> unlocked forever
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span><strong>Zero recurring renewals</strong> (No monthly/annual fees)</span>
+                        <span>
+                          <strong>Zero recurring renewals</strong> (No monthly/annual fees)
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span><strong>All future PDF tools</strong> & updates included</span>
+                        <span>
+                          <strong>All future PDF tools</strong> & updates included
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-amber-600 shrink-0" />
@@ -1837,7 +2004,9 @@ export const DashboardPage: React.FC = () => {
                           PDFMinty Pro Subscription — $2.49 / Month
                         </span>
                         <span className="text-slate-500 text-[11px]">
-                          {isBn ? 'স্ট্যাটাস: সক্রিয় &bull; আনলিমিটেড অ্যাক্সেস' : 'Status: Active &bull; Unlimited Access'}
+                          {isBn
+                            ? 'স্ট্যাটাস: সক্রিয় &bull; আনলিমিটেড অ্যাক্সেস'
+                            : 'Status: Active &bull; Unlimited Access'}
                         </span>
                       </div>
                     </div>
@@ -1871,7 +2040,9 @@ export const DashboardPage: React.FC = () => {
             {/* Account Profile Card */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                {isBn ? 'প্রোফাইল সেটিংস ও অ্যাকাউন্ট নিরাপত্তা' : 'Profile & Workspace Preferences'}
+                {isBn
+                  ? 'প্রোফাইল সেটিংস ও অ্যাকাউন্ট নিরাপত্তা'
+                  : 'Profile & Workspace Preferences'}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1945,7 +2116,11 @@ export const DashboardPage: React.FC = () => {
               <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 space-y-4">
                 <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Sliders className="w-4 h-4 text-emerald-500" />
-                  <span>{isBn ? 'ওয়ার্কস্পেস পারফরম্যান্স ও কনফিগারেশন' : 'Hardware Acceleration & Engine Settings'}</span>
+                  <span>
+                    {isBn
+                      ? 'ওয়ার্কস্পেস পারফরম্যান্স ও কনফিগারেশন'
+                      : 'Hardware Acceleration & Engine Settings'}
+                  </span>
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -1992,8 +2167,18 @@ export const DashboardPage: React.FC = () => {
                           : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                       }`}
                     >
-                      <span>{autoFlush ? (isBn ? 'সক্রিয় (Active)' : 'Enabled') : (isBn ? 'নিষ্ক্রিয় (Disabled)' : 'Disabled')}</span>
-                      <CheckCircle2 className={`w-4 h-4 ${autoFlush ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`} />
+                      <span>
+                        {autoFlush
+                          ? isBn
+                            ? 'সক্রিয় (Active)'
+                            : 'Enabled'
+                          : isBn
+                            ? 'নিষ্ক্রিয় (Disabled)'
+                            : 'Disabled'}
+                      </span>
+                      <CheckCircle2
+                        className={`w-4 h-4 ${autoFlush ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`}
+                      />
                     </button>
                   </div>
                 </div>
@@ -2005,7 +2190,11 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                      <span>{isBn ? 'ব্রাউজার ক্যাশ ও গোপনীয়তা নিয়ন্ত্রণ' : 'Local Browser Cache & Sandbox Flush'}</span>
+                      <span>
+                        {isBn
+                          ? 'ব্রাউজার ক্যাশ ও গোপনীয়তা নিয়ন্ত্রণ'
+                          : 'Local Browser Cache & Sandbox Flush'}
+                      </span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {isBn
@@ -2019,7 +2208,13 @@ export const DashboardPage: React.FC = () => {
                     onClick={handleClearCache}
                     className="py-2 px-3 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0"
                   >
-                    {cacheCleared ? (isBn ? 'পরিষ্কার সম্পন্ন!' : 'Flushed!') : (isBn ? 'মেমোরি ক্যাশ সাফ করুন' : 'Flush Local Cache')}
+                    {cacheCleared
+                      ? isBn
+                        ? 'পরিষ্কার সম্পন্ন!'
+                        : 'Flushed!'
+                      : isBn
+                        ? 'মেমোরি ক্যাশ সাফ করুন'
+                        : 'Flush Local Cache'}
                   </button>
                 </div>
               </div>
@@ -2138,11 +2333,17 @@ export const DashboardPage: React.FC = () => {
               <div className="text-3xl font-black text-slate-900 dark:text-white">
                 {selectedUpgradePlan === 'lifetime' ? (
                   <>
-                    $50 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ one-time</span>
+                    $50{' '}
+                    <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                      / one-time
+                    </span>
                   </>
                 ) : (
                   <>
-                    $2.49 <span className="text-sm font-bold text-slate-500 dark:text-slate-400">/ month</span>
+                    $2.49{' '}
+                    <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                      / month
+                    </span>
                   </>
                 )}
               </div>
@@ -2309,15 +2510,27 @@ export const DashboardPage: React.FC = () => {
             <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 space-y-2.5 text-xs text-amber-900 dark:text-amber-200">
               <div className="flex items-start gap-2">
                 <span className="font-bold text-amber-600">•</span>
-                <span>{isBn ? 'দৈনিক আনলিমিটেড কোটা কমে ১০টি টাস্ক/দিনে ফিরে যাবে।' : 'Unlimited task processing reverts to 10 tasks/day limit.'}</span>
+                <span>
+                  {isBn
+                    ? 'দৈনিক আনলিমিটেড কোটা কমে ১০টি টাস্ক/দিনে ফিরে যাবে।'
+                    : 'Unlimited task processing reverts to 10 tasks/day limit.'}
+                </span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-amber-600">•</span>
-                <span>{isBn ? 'সর্বোচ্চ ফাইলের সাইজ ৫০০ এমবি থেকে ১৫০ এমবিতে নেমে যাবে।' : 'Maximum single file size drops from 500MB to 150MB.'}</span>
+                <span>
+                  {isBn
+                    ? 'সর্বোচ্চ ফাইলের সাইজ ৫০০ এমবি থেকে ১৫০ এমবিতে নেমে যাবে।'
+                    : 'Maximum single file size drops from 500MB to 150MB.'}
+                </span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-amber-600">•</span>
-                <span>{isBn ? 'গুগল জেমিনি এআই ডকুমেন্ট সামারি ও হাই-স্পিড ওসিআর স্থগিত হবে।' : 'Gemini AI document QA & High-Precision OCR engine will be disabled.'}</span>
+                <span>
+                  {isBn
+                    ? 'গুগল জেমিনি এআই ডকুমেন্ট সামারি ও হাই-স্পিড ওসিআর স্থগিত হবে।'
+                    : 'Gemini AI document QA & High-Precision OCR engine will be disabled.'}
+                </span>
               </div>
             </div>
 

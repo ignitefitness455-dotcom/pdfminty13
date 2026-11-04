@@ -491,10 +491,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         `Transcribe this document image accurately into well-formatted Markdown:${langHint}`,
       ];
       for (const imgStr of validatedImages) {
+        const mimeMatch = imgStr.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/i);
+        const rawMime = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/jpeg';
+        const mimeType = rawMime === 'image/jpg' ? 'image/jpeg' : rawMime;
         parts.push({
           inlineData: {
-            mimeType: 'image/jpeg',
-            data: imgStr.replace(/^data:image\/\w+;base64,/, ''),
+            mimeType,
+            data: imgStr.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/i, ''),
           },
         });
       }

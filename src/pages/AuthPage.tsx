@@ -96,7 +96,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
 
   // Live password strength calculation
   const getPasswordStrength = (pass: string): { score: number; label: string; color: string } => {
-    if (!pass) return { score: 0, label: isBn ? 'খালি' : 'Empty', color: 'bg-slate-200 dark:bg-slate-700' };
+    if (!pass)
+      return { score: 0, label: isBn ? 'খালি' : 'Empty', color: 'bg-slate-200 dark:bg-slate-700' };
     let score = 0;
     if (pass.length >= 6) score += 1;
     if (pass.length >= 8) score += 1;
@@ -120,7 +121,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
 
     if (!cleanEmail || !password) {
       setErrorMessage(
-        isBn ? 'আপনার ইমেইল এবং পাসওয়ার্ড উভয়ই লিখুন।' : 'Please enter both your email and password.'
+        isBn
+          ? 'আপনার ইমেইল এবং পাসওয়ার্ড উভয়ই লিখুন।'
+          : 'Please enter both your email and password.'
       );
       return;
     }
@@ -302,7 +305,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
       );
     } catch (err: unknown) {
       const errObj = err as { message?: string };
-      showToast(errObj.message || (isBn ? 'রিসেট লিংক পাঠানো যায়নি' : 'Failed to send reset link'), 'error');
+      showToast(
+        errObj.message || (isBn ? 'রিসেট লিংক পাঠানো যায়নি' : 'Failed to send reset link'),
+        'error'
+      );
     }
   };
 
@@ -485,7 +491,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
             </div>
 
             {/* Direct Verification Code / Action Link Input */}
-            <form onSubmit={handleVerifyWithCode} className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <form
+              onSubmit={handleVerifyWithCode}
+              className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800"
+            >
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-1.5">
                   <KeyRound className="w-3.5 h-3.5 text-emerald-500" />
@@ -527,8 +536,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                         ? 'যাচাই হচ্ছে...'
                         : 'Verifying...'
                       : isBn
-                      ? 'কোড ভেরিফাই করুন'
-                      : 'Verify Code'}
+                        ? 'কোড ভেরিফাই করুন'
+                        : 'Verify Code'}
                   </span>
                 </button>
               </div>
@@ -571,8 +580,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                       ? 'স্ট্যাটাস চেক করা হচ্ছে...'
                       : 'Checking verification...'
                     : isBn
-                    ? 'ভেরিফাই সম্পন্ন হয়েছে / ড্যাশবোর্ডে প্রবেশ করুন'
-                    : 'I Have Verified / Continue to Dashboard'}
+                      ? 'ভেরিফাই সম্পন্ন হয়েছে / ড্যাশবোর্ডে প্রবেশ করুন'
+                      : 'I Have Verified / Continue to Dashboard'}
                 </span>
               </button>
 
@@ -589,12 +598,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                       ? 'নতুন লিংক পাঠানো হচ্ছে...'
                       : 'Sending...'
                     : resendCooldown > 0
-                    ? isBn
-                      ? `পুনরায় লিংক পাঠান (${resendCooldown}s পর)`
-                      : `Resend link in ${resendCooldown}s`
-                    : isBn
-                    ? 'পুনরায় ভেরিফিকেশন লিংক পাঠান (Resend Link)'
-                    : 'Resend Verification Link'}
+                      ? isBn
+                        ? `পুনরায় লিংক পাঠান (${resendCooldown}s পর)`
+                        : `Resend link in ${resendCooldown}s`
+                      : isBn
+                        ? 'পুনরায় ভেরিফিকেশন লিংক পাঠান (Resend Link)'
+                        : 'Resend Verification Link'}
                 </span>
               </button>
 
@@ -607,7 +616,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                   }}
                   className="text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:underline cursor-pointer"
                 >
-                  {isBn ? 'ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন পেজে যান' : 'Already have an account? Go to Sign In'}
+                  {isBn
+                    ? 'ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন পেজে যান'
+                    : 'Already have an account? Go to Sign In'}
                 </button>
               </div>
             </div>
@@ -760,7 +771,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
                   }}
                   className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline pl-6 block text-left cursor-pointer"
                 >
-                  {isBn ? '→ নতুন অ্যাকাউন্ট খুলতে সাইন-আপ ফর্মে যান' : '→ Click here to switch to Sign Up form'}
+                  {isBn
+                    ? '→ নতুন অ্যাকাউন্ট খুলতে সাইন-আপ ফর্মে যান'
+                    : '→ Click here to switch to Sign Up form'}
                 </button>
               )}
             </div>

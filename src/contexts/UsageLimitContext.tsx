@@ -24,7 +24,10 @@ export interface UsageLimitContextType {
   isLimitReached: boolean;
   recordTask: (toolId?: string) => boolean;
   canPerformTask: () => boolean;
-  openLimitModal: (options: { reason: 'task_limit' | 'file_size'; attemptedFileSizeMB?: number }) => void;
+  openLimitModal: (options: {
+    reason: 'task_limit' | 'file_size';
+    attemptedFileSizeMB?: number;
+  }) => void;
   closeLimitModal: () => void;
 }
 

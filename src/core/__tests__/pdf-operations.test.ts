@@ -17,6 +17,9 @@ import {
   deletePagesPDF,
   compressPDF,
   imagesToPDF,
+  pdfToImage,
+  pdfToMarkdown,
+  grayscalePDF,
   flattenPDF,
   repairPDF,
 } from '../pdf-operations';
@@ -32,12 +35,15 @@ async function createCustomPdf(pageCount: number): Promise<Uint8Array> {
 }
 
 describe('pdf-operations - Quality Infrastructure Test Suite', () => {
-  it('mergePDFs combines page counts and sizes correctly', async () => {
+  it('mergePDFs combines page counts and sizes correctly and releases input buffer slots', async () => {
     const pdf1Bytes = await createCustomPdf(2); // page sizes 100 and 200
     const pdf2Bytes = await createCustomPdf(3); // page sizes 100, 200, and 300
+    const inputList = [pdf1Bytes, pdf2Bytes];
 
-    const mergedBytes = await mergePDFs([pdf1Bytes, pdf2Bytes]);
+    const mergedBytes = await mergePDFs(inputList);
     expect(mergedBytes).toBeInstanceOf(Uint8Array);
+    expect(inputList[0].byteLength).toBe(0);
+    expect(inputList[1].byteLength).toBe(0);
 
     const doc = await PlainPDFDocument.load(mergedBytes);
     expect(doc.getPageCount()).toBe(5);
@@ -48,6 +54,30 @@ describe('pdf-operations - Quality Infrastructure Test Suite', () => {
     expect(doc.getPage(2).getSize().width).toBe(100);
     expect(doc.getPage(3).getSize().width).toBe(200);
     expect(doc.getPage(4).getSize().width).toBe(300);
+  });
+
+  it('mergePDFs supports Free (150MB) and Pro (up to 500MB) single-file sizes and rejects >500MB', async () => {
+    const pdf1Bytes = await createCustomPdf(1);
+    const pdf2Bytes = await createCustomPdf(1);
+
+    // Simulate a 150MB Free-tier file and a 450MB Pro-tier file at the byteLength check boundary
+    Object.defineProperty(pdf1Bytes, 'byteLength', { value: 150 * 1024 * 1024 });
+    Object.defineProperty(pdf2Bytes, 'byteLength', { value: 450 * 1024 * 1024 });
+
+    const mergedBytes = await mergePDFs([pdf1Bytes, pdf2Bytes]);
+    const doc = await PlainPDFDocument.load(mergedBytes);
+    expect(doc.getPageCount()).toBe(2);
+
+    // Simulate a 501MB file exceeding the 500MB Pro ceiling
+    const oversizedPdf = await createCustomPdf(1);
+    Object.defineProperty(oversizedPdf, 'byteLength', { value: 501 * 1024 * 1024 });
+    await expect(mergePDFs([oversizedPdf])).rejects.toThrow(
+      /exceeds the maximum allowed size of 500MB/i
+    );
+  });
+
+  it('mergePDFs rejects empty input array with a clear error', async () => {
+    await expect(mergePDFs([])).rejects.toThrow(/At least one PDF document is required/i);
   });
 
   it('splitPDF on "1-2,4" produces correct output files and page counts', async () => {
@@ -130,6 +160,57 @@ describe('pdf-operations - Quality Infrastructure Test Suite', () => {
     ).rejects.toThrowError(/Failed to decrypt document/);
   });
 
+  it('protectPDF supports Pro (450MB) files and rejects whitespace-padded <4 char or >128 char passwords', async () => {
+    const pdfBytes = await createCustomPdf(1);
+    const proView = new Uint8Array(pdfBytes.buffer, pdfBytes.byteOffset, pdfBytes.byteLength);
+    Object.defineProperty(proView, 'byteLength', { value: 450 * 1024 * 1024 });
+
+    const encrypted = await protectPDF({ fileBytes: proView, userPassword: 'valid_password_123' });
+    expect(encrypted.byteLength).toBeGreaterThan(0);
+
+    await expect(protectPDF({ fileBytes: pdfBytes, userPassword: '    ' })).rejects.toThrow(
+      /non-empty password/i
+    );
+
+    await expect(protectPDF({ fileBytes: pdfBytes, userPassword: '  ab  ' })).rejects.toThrow(
+      /at least 4 characters/i
+    );
+
+    await expect(
+      protectPDF({ fileBytes: pdfBytes, userPassword: 'a'.repeat(129) })
+    ).rejects.toThrow(/exceed 128 characters/i);
+  });
+
+  it('unlockPDF supports Pro (450MB) files, rejects whitespace-only or >128 char passwords, and preserves ciphertext before decrypting', async () => {
+    const pdfBytes = await createCustomPdf(1);
+    const encryptedBytes = await protectPDF({
+      fileBytes: pdfBytes,
+      userPassword: 'valid_unlock_key',
+    });
+
+    const proView = new Uint8Array(
+      encryptedBytes.buffer,
+      encryptedBytes.byteOffset,
+      encryptedBytes.byteLength
+    );
+    Object.defineProperty(proView, 'byteLength', { value: 450 * 1024 * 1024 });
+
+    const unlocked = await unlockPDF({
+      fileBytes: proView,
+      password: 'valid_unlock_key',
+    });
+    const reloaded = await PlainPDFDocument.load(unlocked);
+    expect(reloaded.getPageCount()).toBe(1);
+
+    await expect(unlockPDF({ fileBytes: encryptedBytes, password: '    ' })).rejects.toThrow(
+      /password is required/i
+    );
+
+    await expect(
+      unlockPDF({ fileBytes: encryptedBytes, password: 'a'.repeat(129) })
+    ).rejects.toThrow(/exceed 128 characters/i);
+  });
+
   it('PDFSanitizer.sanitize rejects non-PDF file with a clear error', () => {
     const fakeBytes = new TextEncoder().encode(
       'Hello World this is plain text, not a PDF document!'
@@ -149,6 +230,19 @@ describe('pdf-operations - Edge Cases', () => {
       const result = await PlainPDFDocument.load(rotated);
       expect(result.getPageCount()).toBe(1);
       expect(result.getPage(0).getRotation().angle).toBe(90);
+    });
+
+    it('rotatePDF supports Pro (450MB) files, deduplicates pageIndices, and rejects non-90-multiple angles', async () => {
+      const bytes = await createCustomPdf(2);
+      Object.defineProperty(bytes, 'byteLength', { value: 450 * 1024 * 1024 });
+
+      // Passing duplicate page index [1, 1] should rotate page 1 once (+90 deg), not twice (+180 deg)
+      const rotated = await rotatePDF(bytes, 90, [1, 1]);
+      const result = await PlainPDFDocument.load(rotated);
+      expect(result.getPage(0).getRotation().angle).toBe(90);
+      expect(result.getPage(1).getRotation().angle).toBe(0);
+
+      await expect(rotatePDF(bytes, 45)).rejects.toThrow(/multiple of 90 degrees/i);
     });
   });
 
@@ -210,6 +304,21 @@ describe('pdf-operations - Edge Cases', () => {
       const doc = await PlainPDFDocument.load(result);
       expect(doc.getPageCount()).toBe(1);
     });
+
+    it('extractPages supports Pro (450MB) files, preserves cherry-pick order, truncates float indices, and enforces max 2000 pages guard', async () => {
+      const pdfBytes = await createCustomPdf(3); // widths 100, 200, 300
+      const proView = new Uint8Array(pdfBytes.buffer, pdfBytes.byteOffset, pdfBytes.byteLength);
+      Object.defineProperty(proView, 'byteLength', { value: 450 * 1024 * 1024 });
+
+      const result = await extractPages(proView, [3.9, 1.2]);
+      const doc = await PlainPDFDocument.load(result);
+      expect(doc.getPageCount()).toBe(2);
+      expect(doc.getPage(0).getSize().width).toBe(300);
+      expect(doc.getPage(1).getSize().width).toBe(100);
+
+      const hugeSelection = new Array(2001).fill(1);
+      await expect(extractPages(pdfBytes, hugeSelection)).rejects.toThrow(/maximum 2000 pages/i);
+    });
   });
 
   describe('splitPDF malformed ranges', () => {
@@ -235,6 +344,16 @@ describe('pdf-operations - Edge Cases', () => {
       const doc = await PlainPDFDocument.load(results[0]);
       expect(doc.getPageCount()).toBe(3);
     });
+
+    it('splitPDF supports Free (150MB) and Pro (450MB) files and rejects >200 split segments', async () => {
+      const pdfBytes = await createCustomPdf(2);
+      Object.defineProperty(pdfBytes, 'byteLength', { value: 450 * 1024 * 1024 });
+      const results = await splitPDF(pdfBytes, '1, 2');
+      expect(results).toHaveLength(2);
+
+      const excessiveRanges = Array.from({ length: 205 }, () => '1').join(', ');
+      await expect(splitPDF(pdfBytes, excessiveRanges)).rejects.toThrow(/Too many split segments/i);
+    });
   });
 
   describe('watermarkPDF', () => {
@@ -243,6 +362,29 @@ describe('pdf-operations - Edge Cases', () => {
       const result = await watermarkPDF(pdfBytes, 'CONFIDENTIAL');
       const doc = await PlainPDFDocument.load(result);
       expect(doc.getPageCount()).toBe(2);
+    });
+
+    it('supports Pro (450MB) files, safely handles 3-digit or malformed hex colors, and rejects whitespace-only text', async () => {
+      const pdfBytes = await createCustomPdf(2);
+      Object.defineProperty(pdfBytes, 'byteLength', { value: 450 * 1024 * 1024 });
+
+      const stamped = await watermarkPDF(pdfBytes, 'DRAFT COPY', {
+        colorHex: '#GGGGGG',
+        size: Number.NaN,
+        opacity: 5,
+        rotationDegrees: -45,
+      });
+      const doc = await PlainPDFDocument.load(stamped);
+      expect(doc.getPageCount()).toBe(2);
+
+      const shorthandHexStamped = await watermarkPDF(pdfBytes, 'APPROVED', {
+        colorHex: '#f00',
+        rotationDegrees: 0,
+      });
+      const doc2 = await PlainPDFDocument.load(shorthandHexStamped);
+      expect(doc2.getPageCount()).toBe(2);
+
+      await expect(watermarkPDF(pdfBytes, '   \n  ')).rejects.toThrow(/cannot be empty/i);
     });
   });
 
@@ -258,6 +400,29 @@ describe('pdf-operations - Edge Cases', () => {
       const pdfBytes = await createCustomPdf(3);
       const result = await addPageNumbersPDF(pdfBytes, { skipFirstPage: true });
       expect(result).toBeInstanceOf(Uint8Array);
+    });
+
+    it('supports Pro (450MB) files, Unicode/Bengali format strings, rotated pages, and rejects skipFirstPage on 1-page PDF', async () => {
+      const doc = await PlainPDFDocument.create();
+      const p1 = doc.addPage([200, 300]);
+      const p2 = doc.addPage([200, 300]);
+      p1.setRotation({ type: 'degrees', angle: 180 } as never);
+      p2.setRotation({ type: 'degrees', angle: 90 } as never);
+      const rotatedBytes = await doc.save();
+      Object.defineProperty(rotatedBytes, 'byteLength', { value: 450 * 1024 * 1024 });
+
+      const unicodeResult = await addPageNumbersPDF(rotatedBytes, {
+        format: 'পৃষ্ঠা {n} / {total}',
+        position: 'top-center',
+        startFrom: 5,
+      });
+      const outDoc = await PlainPDFDocument.load(unicodeResult);
+      expect(outDoc.getPageCount()).toBe(2);
+
+      const singlePageBytes = await createCustomPdf(1);
+      await expect(addPageNumbersPDF(singlePageBytes, { skipFirstPage: true })).rejects.toThrow(
+        /single-page PDF/i
+      );
     });
   });
 
@@ -282,6 +447,23 @@ describe('pdf-operations - Edge Cases', () => {
       const doc = await PlainPDFDocument.load(result);
       expect(doc.getPageCount()).toBe(3);
     });
+
+    it('supports Pro (450MB) files and inherits adjacent page dimensions and rotation when appending at end', async () => {
+      const doc = await PlainPDFDocument.create();
+      doc.addPage([100, 150]);
+      const p2 = doc.addPage([320, 480]);
+      p2.setRotation({ type: 'degrees', angle: 90 } as never);
+      const pdfBytes = await doc.save();
+      Object.defineProperty(pdfBytes, 'byteLength', { value: 450 * 1024 * 1024 });
+
+      const result = await addBlankPagePDF(pdfBytes, 'end');
+      const outDoc = await PlainPDFDocument.load(result);
+      expect(outDoc.getPageCount()).toBe(3);
+      const appended = outDoc.getPage(2);
+      expect(appended.getSize().width).toBe(320);
+      expect(appended.getSize().height).toBe(480);
+      expect(appended.getRotation().angle).toBe(90);
+    });
   });
 
   describe('deletePagesPDF', () => {
@@ -303,6 +485,18 @@ describe('pdf-operations - Edge Cases', () => {
     it('throws when deleting no valid pages', async () => {
       const pdfBytes = await createCustomPdf(3);
       await expect(deletePagesPDF(pdfBytes, [99, 100])).rejects.toThrow(/No valid pages/i);
+    });
+
+    it('deduplicates duplicate pageIndices so wrong pages are not removed and supports Pro (450MB) files', async () => {
+      const pdfBytes = await createCustomPdf(3); // widths 100, 200, 300
+      Object.defineProperty(pdfBytes, 'byteLength', { value: 450 * 1024 * 1024 });
+
+      // Passing [2, 2] must only remove page 2 (leaving pages 1 and 3 with widths 100 and 300)
+      const result = await deletePagesPDF(pdfBytes, [2, 2]);
+      const doc = await PlainPDFDocument.load(result);
+      expect(doc.getPageCount()).toBe(2);
+      expect(doc.getPage(0).getSize().width).toBe(100);
+      expect(doc.getPage(1).getSize().width).toBe(300);
     });
   });
 
@@ -576,18 +770,16 @@ describe('pdf-operations - Edge Cases', () => {
       // Verify page 1 retains its vector /Font resource dictionary and has 0 raster image /XObject entries
       const page1Resources = reloaded.getPage(0).node.Resources();
       const fontDict = page1Resources?.lookup(reloaded.context.obj('Font')) as
-        | { entries?: () => unknown[] }
-        | undefined;
+        { entries?: () => unknown[] } | undefined;
       const xObjectDict = page1Resources?.lookup(reloaded.context.obj('XObject')) as
-        | { entries?: () => unknown[] }
-        | undefined;
+        { entries?: () => unknown[] } | undefined;
       expect(fontDict?.entries?.().length).toBeGreaterThanOrEqual(1);
       expect(xObjectDict?.entries?.().length ?? 0).toBe(0);
     });
   });
 
   describe('metadata-operations (getMetadataPDF & editMetadataPDF)', () => {
-    it('extracts, updates, and clears metadata fields including Producer and Creator without overwriting', async () => {
+    it('extracts, updates, clears metadata fields including Producer and Creator, and strips stale catalog /Metadata XMP streams', async () => {
       const doc = await PlainPDFDocument.create();
       doc.addPage([200, 200]);
       doc.setTitle('Original Title');
@@ -596,6 +788,11 @@ describe('pdf-operations - Edge Cases', () => {
       doc.setKeywords(['alpha', 'beta']);
       doc.setCreator('Custom Creator');
       doc.setProducer('Custom Producer');
+      // Attach a synthetic XMP /Metadata stream to the Catalog
+      const xmpStream = doc.context.flateStream(
+        '<x:xmpmeta><dc:creator>Leaked XMP Author</dc:creator></x:xmpmeta>'
+      );
+      doc.catalog.set(PDFName.of('Metadata'), doc.context.register(xmpStream));
       const bytes = await doc.save();
 
       const extracted = await getMetadataPDF(bytes);
@@ -620,20 +817,42 @@ describe('pdf-operations - Edge Cases', () => {
       expect(afterMeta.keywords).toBe('');
       expect(afterMeta.creator).toBe('Updated Creator');
       expect(afterMeta.producer).toBe('Updated Producer');
+
+      const reloadedDoc = await PlainPDFDocument.load(updatedBytes);
+      expect(reloadedDoc.catalog.has(PDFName.of('Metadata'))).toBe(false);
     });
 
-    it('rejects password-protected PDFs in getMetadataPDF and editMetadataPDF', async () => {
+    it('rejects password-protected, empty, and >500MB PDFs in getMetadataPDF and editMetadataPDF', async () => {
       const pdfBytes = await createCustomPdf(1);
       const encrypted = await protectPDF({ fileBytes: pdfBytes, userPassword: 'secretPassword' });
 
       await expect(getMetadataPDF(encrypted)).rejects.toThrow(/encrypted/i);
       await expect(editMetadataPDF(encrypted, { title: 'Test' })).rejects.toThrow(/encrypted/i);
+
+      await expect(getMetadataPDF(new Uint8Array(0))).rejects.toThrow(/empty/i);
+      await expect(editMetadataPDF(new Uint8Array(0), { title: 'Test' })).rejects.toThrow(/empty/i);
+
+      const oversizedPdf = await createCustomPdf(1);
+      Object.defineProperty(oversizedPdf, 'byteLength', { value: 501 * 1024 * 1024 });
+      await expect(getMetadataPDF(oversizedPdf)).rejects.toThrow(
+        /exceeds the maximum allowed size of 500MB/i
+      );
+      await expect(editMetadataPDF(oversizedPdf, { title: 'Test' })).rejects.toThrow(
+        /exceeds the maximum allowed size of 500MB/i
+      );
     });
   });
 
   describe('repairPDF and flattenPDF', () => {
-    it('repairs leading and trailing junk bytes around a valid PDF', async () => {
+    it('repairs leading and trailing junk bytes around a valid PDF and does not falsely flag standard EOF newlines', async () => {
       const cleanBytes = await createCustomPdf(2);
+
+      // Clean PDF with standard trailing newline should not report trailing junk
+      const cleanResult = await repairPDF(cleanBytes);
+      expect(cleanResult.repairs).not.toContain(
+        'Trimmed trailing junk and corrupted bytes after EOF marker.'
+      );
+
       const junkPrefix = new TextEncoder().encode('JUNK_HEADER_BYTES_12345\n');
       const junkSuffix = new TextEncoder().encode('\nTRAILING_GARBAGE_98765');
       const damaged = new Uint8Array(junkPrefix.length + cleanBytes.length + junkSuffix.length);
@@ -642,18 +861,27 @@ describe('pdf-operations - Edge Cases', () => {
       damaged.set(junkSuffix, junkPrefix.length + cleanBytes.length);
 
       const { bytes: repairedBytes, repairs } = await repairPDF(damaged);
-      expect(repairs.length).toBeGreaterThanOrEqual(2);
+      expect(repairs).toContain('Removed leading corrupted or junk bytes before PDF header.');
+      expect(repairs).toContain('Trimmed trailing junk and corrupted bytes after EOF marker.');
       const doc = await PlainPDFDocument.load(repairedBytes);
       expect(doc.getPageCount()).toBe(2);
     });
 
-    it('rejects password-protected PDF in repairPDF instead of corrupting streams', async () => {
+    it('rejects password-protected, empty, and >500MB PDFs in repairPDF', async () => {
       const cleanBytes = await createCustomPdf(1);
       const encrypted = await protectPDF({ fileBytes: cleanBytes, userPassword: 'secretPassword' });
       await expect(repairPDF(encrypted)).rejects.toThrow(/password protected/i);
+
+      await expect(repairPDF(new Uint8Array(0))).rejects.toThrow(/empty \(0 bytes\)/i);
+
+      const oversizedPdf = await createCustomPdf(1);
+      Object.defineProperty(oversizedPdf, 'byteLength', { value: 501 * 1024 * 1024 });
+      await expect(repairPDF(oversizedPdf)).rejects.toThrow(
+        /exceeds the maximum allowed size of 500MB/i
+      );
     });
 
-    it('flattens AcroForm fields in flattenPDF and preserves page count', async () => {
+    it('flattens AcroForm fields in flattenPDF, preserves form-less PDFs without injecting AcroForm, and rejects XFA or encrypted PDFs', async () => {
       const doc = await PlainPDFDocument.create();
       const page = doc.addPage([400, 400]);
       const form = doc.getForm();
@@ -666,6 +894,24 @@ describe('pdf-operations - Edge Cases', () => {
       const reloaded = await PlainPDFDocument.load(flattenedBytes);
       expect(reloaded.getPageCount()).toBe(1);
       expect(reloaded.getForm().getFields()).toHaveLength(0);
+
+      // Form-less PDF does not have a synthetic /AcroForm injected
+      const plainBytes = await createCustomPdf(1);
+      const flattenedPlain = await flattenPDF(plainBytes);
+      const reloadedPlain = await PlainPDFDocument.load(flattenedPlain);
+      expect(reloadedPlain.catalog.has(PDFName.of('AcroForm'))).toBe(false);
+
+      // XFA PDF is rejected with UNSUPPORTED_XFA
+      const xfaDoc = await PlainPDFDocument.create();
+      xfaDoc.addPage([300, 300]);
+      const xfaFormDict = xfaDoc.context.obj({ Fields: [], XFA: [] });
+      xfaDoc.catalog.set(PDFName.of('AcroForm'), xfaFormDict);
+      const xfaBytes = await xfaDoc.save();
+      await expect(flattenPDF(xfaBytes)).rejects.toThrow(/UNSUPPORTED_XFA/i);
+
+      // Encrypted PDF is rejected
+      const encrypted = await protectPDF({ fileBytes: plainBytes, userPassword: 'secretPassword' });
+      await expect(flattenPDF(encrypted)).rejects.toThrow(/SECURED_LOCKED|password protected/i);
     });
   });
 
@@ -677,6 +923,35 @@ describe('pdf-operations - Edge Cases', () => {
         name: 'test.tiff',
       };
       await expect(imagesToPDF([fakeImage])).rejects.toThrow(/Unsupported image format/i);
+    });
+
+    it('detects JPEG magic bytes even when MIME type is empty or mislabeled, supports Legal pageSize, releases input buffers, and rejects 0-byte or >200 images', async () => {
+      const jpegBase64 =
+        '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+      const jpegBytes = Uint8Array.from(atob(jpegBase64), (c) => c.charCodeAt(0));
+
+      const inputList = [
+        { buf: new Uint8Array(jpegBytes), type: '', name: 'scan.unknown' },
+        { buf: new Uint8Array(jpegBytes), type: 'image/png', name: 'mislabeled.png' },
+      ];
+      const pdfBytes = await imagesToPDF(inputList, { pageSize: 'Legal' });
+      expect(inputList[0].buf.byteLength).toBe(0);
+      expect(inputList[1].buf.byteLength).toBe(0);
+
+      const doc = await PlainPDFDocument.load(pdfBytes);
+      expect(doc.getPageCount()).toBe(2);
+      expect(doc.getPage(0).getSize().width).toBe(612);
+      expect(doc.getPage(0).getSize().height).toBe(1008);
+
+      await expect(
+        imagesToPDF([{ buf: new Uint8Array(0), type: 'image/png', name: 'empty.png' }])
+      ).rejects.toThrow(/empty \(0 bytes\)/i);
+
+      const tooMany = Array.from({ length: 201 }, () => ({
+        buf: new Uint8Array(jpegBytes),
+        type: 'image/jpeg',
+      }));
+      await expect(imagesToPDF(tooMany)).rejects.toThrow(/maximum 200 images/i);
     });
   });
 
@@ -735,7 +1010,10 @@ describe('pdf-operations - Edge Cases', () => {
     });
 
     it('getFriendlyErrorMessage distinguishes encrypted PDFs from corrupt/empty PDFs', () => {
-      const encMsg = getFriendlyErrorMessage('Merge failed', new Error('SECURED_LOCKED: encrypted'));
+      const encMsg = getFriendlyErrorMessage(
+        'Merge failed',
+        new Error('SECURED_LOCKED: encrypted')
+      );
       expect(encMsg).toMatch(/encrypted or locked/i);
 
       const corruptMsg = getFriendlyErrorMessage(
@@ -1276,6 +1554,139 @@ describe('pdf-operations - Edge Cases', () => {
           origOffscreenCanvas;
       }
     });
+
+    it('reorderPDF enforces max 2000 output pages guard and snaps non-standard rotations to 90° multiples', async () => {
+      const pdfBytes = await createCustomPdf(2);
+
+      // 1. Snaps non-multiple of 90 rotation (e.g. 45 -> 90, -45 -> 315 -> 0) and truncates float page index
+      const reordered = await reorderPDF(pdfBytes, [
+        { page: 2.9, rotation: 89 },
+        { page: 1.1, rotation: 181 },
+      ]);
+      const doc = await PlainPDFDocument.load(reordered);
+      expect(doc.getPageCount()).toBe(2);
+      expect(doc.getPages()[0].getRotation().angle).toBe(90);
+      expect(doc.getPages()[1].getRotation().angle).toBe(180);
+
+      // 2. Supports Pro (450MB) file sizes without rejecting
+      const proView = new Uint8Array(pdfBytes.buffer, pdfBytes.byteOffset, pdfBytes.byteLength);
+      Object.defineProperty(proView, 'byteLength', { value: 450 * 1024 * 1024 });
+      const proReordered = await reorderPDF(proView, [2, 1]);
+      expect(proReordered.byteLength).toBeGreaterThan(0);
+
+      // 3. Rejects output sequence exceeding 2,000 pages to prevent memory exhaustion
+      const hugeOrder = new Array(2001).fill(1);
+      await expect(reorderPDF(pdfBytes, hugeOrder)).rejects.toThrow(/maximum 2000 pages/i);
+    });
+
+    it('exportSignedPdf embeds signed fields on standard and rotated pages and rejects empty/unconfigured field sets', async () => {
+      const { exportSignedPdf } = await import('../../components/sign-pdf/export');
+      const doc = await PlainPDFDocument.create();
+      doc.addPage([600, 800]);
+      const p2 = doc.addPage([600, 800]);
+      p2.setRotation({ type: 'degrees', angle: 90 } as never);
+      const pdfBytes = await doc.save({ useObjectStreams: false });
+      const buf = pdfBytes.buffer.slice(
+        pdfBytes.byteOffset,
+        pdfBytes.byteOffset + pdfBytes.byteLength
+      ) as ArrayBuffer;
+
+      const pages = [
+        { index: 0, width: 600, height: 800, rotation: 0 },
+        { index: 1, width: 800, height: 600, rotation: 90 },
+      ];
+      const emptySigs = {
+        fullName: 'Jane Signer',
+        initialsText: 'JS',
+        signature: null,
+        initials: null,
+      };
+
+      // 1. Rejects empty field list
+      await expect(
+        exportSignedPdf({
+          bytes: buf,
+          pages,
+          fields: [],
+          signatures: emptySigs,
+          dateText: 'Nov 3, 2026',
+        })
+      ).rejects.toThrow(/At least one signature/i);
+
+      // 2. Rejects when placed signature field has no signature asset configured
+      await expect(
+        exportSignedPdf({
+          bytes: buf,
+          pages,
+          fields: [{ id: 'f1', kind: 'signature', pageIndex: 0, x: 0.2, y: 0.2, w: 0.2, h: 0.08 }],
+          signatures: emptySigs,
+          dateText: 'Nov 3, 2026',
+        })
+      ).rejects.toThrow(/No visible signature/i);
+
+      // 3. Embeds name, date, and custom text across standard and 90°-rotated pages
+      const signedBytes = await exportSignedPdf({
+        bytes: buf,
+        pages,
+        fields: [
+          { id: 'f1', kind: 'name', pageIndex: 0, x: 0.1, y: 0.8, w: 0.25, h: 0.05 },
+          { id: 'f2', kind: 'date', pageIndex: 1, x: 0.5, y: 0.8, w: 0.2, h: 0.05 },
+        ],
+        signatures: emptySigs,
+        dateText: 'Nov 3, 2026',
+      });
+      const outDoc = await PlainPDFDocument.load(signedBytes);
+      expect(outDoc.getPageCount()).toBe(2);
+    });
+
+    it('pdfToImage rejects password-protected PDFs with SECURED_LOCKED and rejects >500MB files', async () => {
+      const cleanBytes = await createCustomPdf(1);
+      const encryptedBytes = await protectPDF({
+        fileBytes: cleanBytes,
+        userPassword: 'SecretPassword123',
+      });
+
+      await expect(pdfToImage(encryptedBytes, 'locked.pdf', 1.5, 1)).rejects.toThrow(
+        /SECURED_LOCKED/i
+      );
+
+      const oversizedPdf = await createCustomPdf(1);
+      Object.defineProperty(oversizedPdf, 'byteLength', { value: 501 * 1024 * 1024 });
+      await expect(pdfToImage(oversizedPdf, 'huge.pdf', 1.5, 1)).rejects.toThrow(
+        /exceeds the maximum allowed size of 500MB/i
+      );
+    });
+
+    it('pdfToMarkdown rejects password-protected PDFs with SECURED_LOCKED and rejects >500MB files', async () => {
+      const cleanBytes = await createCustomPdf(1);
+      const encryptedBytes = await protectPDF({
+        fileBytes: cleanBytes,
+        userPassword: 'SecretPassword123',
+      });
+
+      await expect(pdfToMarkdown(encryptedBytes)).rejects.toThrow(/SECURED_LOCKED/i);
+
+      const oversizedPdf = await createCustomPdf(1);
+      Object.defineProperty(oversizedPdf, 'byteLength', { value: 501 * 1024 * 1024 });
+      await expect(pdfToMarkdown(oversizedPdf)).rejects.toThrow(
+        /exceeds the maximum allowed size of 500MB/i
+      );
+    });
+
+    it('grayscalePDF rejects password-protected PDFs with SECURED_LOCKED and rejects >500MB files', async () => {
+      const cleanBytes = await createCustomPdf(1);
+      const encryptedBytes = await protectPDF({
+        fileBytes: cleanBytes,
+        userPassword: 'SecretPassword123',
+      });
+
+      await expect(grayscalePDF(encryptedBytes, 1.5)).rejects.toThrow(/SECURED_LOCKED/i);
+
+      const oversizedPdf = await createCustomPdf(1);
+      Object.defineProperty(oversizedPdf, 'byteLength', { value: 501 * 1024 * 1024 });
+      await expect(grayscalePDF(oversizedPdf, 1.5)).rejects.toThrow(
+        /exceeds the maximum allowed size of 500MB/i
+      );
+    });
   });
 });
-

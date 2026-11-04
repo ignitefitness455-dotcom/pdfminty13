@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 // Web Worker bridge for PDF client processing
+import { UPLOAD_LIMITS } from '../config/constants';
 import { editMetadataPDF, getMetadataPDF } from '../core/metadata-operations';
 import * as ops from '../core/pdf-operations';
 import { PDFSanitizer } from '../core/PDFSanitizer';
@@ -70,7 +71,8 @@ self.onmessage = async (e: MessageEvent) => {
           payload.scale,
           payload.maxPages,
           payload.format,
-          payload.startPage
+          payload.startPage,
+          payload.pageNumbers
         );
         transferables = (result as { imageBytes: Uint8Array }[]).map((r) => r.imageBytes.buffer);
         break;
@@ -101,7 +103,9 @@ self.onmessage = async (e: MessageEvent) => {
         break;
       }
       case 'sanitizePDF': {
-        const res = PDFSanitizer.sanitize(payload.bytes);
+        const res = await PDFSanitizer.sanitizeDocument(payload.bytes, {
+          maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+        });
         result = res;
         transferables = [res.bytes.buffer];
         break;

@@ -269,4 +269,207 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
     expect(patchBody.fields.isPro.booleanValue).toBe(false);
     expect(patchBody.fields.plan.stringValue).toBe('free');
   });
+
+  it('handles simultaneous payments from multiple users concurrently with single OAuth token minting and isolated Firestore updates', async () => {
+    let oauthCallCount = 0;
+    const patchedUsers: Array<{ url: string; uid: string; subId: string }> = [];
+
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === 'https://oauth2.googleapis.com/token') {
+        oauthCallCount += 1;
+        await new Promise((r) => setTimeout(r, 15));
+        return new Response(
+          JSON.stringify({ access_token: 'ya29.shared_sa_token', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (url.includes('firestore.googleapis.com') && init?.body) {
+        const parsed = JSON.parse(String(init.body)) as {
+          fields: { uid: { stringValue: string }; subscriptionId: { stringValue: string } };
+        };
+        patchedUsers.push({
+          url,
+          uid: parsed.fields.uid.stringValue,
+          subId: parsed.fields.subscriptionId.stringValue,
+        });
+        return new Response(JSON.stringify({ name: url }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response('Not found', { status: 404 });
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const kvStore = new Map<string, string>();
+    const kv = {
+      get: vi.fn(async (k: string) => kvStore.get(k) ?? null),
+      put: vi.fn(async (k: string, v: string) => {
+        kvStore.set(k, v);
+      }),
+    } as unknown as KVNamespace;
+
+    const users = [
+      { uid: 'userAlpha_101', subId: 'sub_alpha_1' },
+      { uid: 'userBravo_202', subId: 'sub_bravo_2' },
+      { uid: 'userCharlie_303', subId: 'sub_charlie_3' },
+    ];
+
+    const requests = await Promise.all(
+      users.map(async ({ uid, subId }) => {
+        const body = JSON.stringify({
+          meta: { event_name: 'subscription_created', custom_data: { uid } },
+          data: {
+            id: subId,
+            attributes: { status: 'active', updated_at: '2026-11-02T15:00:00Z' },
+          },
+        });
+        const sig = await signWebhookBody(webhookSecret, body);
+        return new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Signature': sig },
+          body,
+        });
+      })
+    );
+
+    const responses = await Promise.all(
+      requests.map((req) => onRequest(makeWebhookContext(req, { RATELIMIT_KV: kv })))
+    );
+
+    for (const res of responses) {
+      expect(res.status).toBe(200);
+    }
+
+    // All 3 concurrent webhooks share a single OAuth token minting call
+    expect(oauthCallCount).toBe(1);
+    expect(patchedUsers).toHaveLength(3);
+    expect(patchedUsers.map((u) => u.uid).sort()).toEqual([
+      'userAlpha_101',
+      'userBravo_202',
+      'userCharlie_303',
+    ]);
+  });
+
+  it('deduplicates concurrent identical webhook deliveries arriving simultaneously in-flight', async () => {
+    let firestorePatchCount = 0;
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === 'https://oauth2.googleapis.com/token') {
+        return new Response(
+          JSON.stringify({ access_token: 'ya29.test_sa_token', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      firestorePatchCount += 1;
+      await new Promise((r) => setTimeout(r, 20));
+      return new Response(JSON.stringify({ name: 'users/concurrentUid99' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const body = JSON.stringify({
+      meta: { event_name: 'subscription_created', custom_data: { uid: 'concurrentUid99' } },
+      data: {
+        id: 'sub_concurrent_99',
+        attributes: { status: 'active', updated_at: '2026-11-02T16:00:00Z' },
+      },
+    });
+    const sig = await signWebhookBody(webhookSecret, body);
+    const makeReq = () =>
+      new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Signature': sig },
+        body,
+      });
+
+    const [res1, res2] = await Promise.all([
+      onRequest(makeWebhookContext(makeReq())),
+      onRequest(makeWebhookContext(makeReq())),
+    ]);
+
+    expect(res1.status).toBe(200);
+    expect(res2.status).toBe(200);
+    const json1 = (await res1.json()) as { duplicate?: boolean };
+    const json2 = (await res2.json()) as { duplicate?: boolean };
+    expect(Boolean(json1.duplicate) || Boolean(json2.duplicate)).toBe(true);
+    expect(firestorePatchCount).toBe(1);
+  });
+
+  it('ignores stale out-of-order webhook events so older status cannot overwrite newer status', async () => {
+    let firestorePatchCount = 0;
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === 'https://oauth2.googleapis.com/token') {
+        return new Response(
+          JSON.stringify({ access_token: 'ya29.test_sa_token', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      firestorePatchCount += 1;
+      return new Response(JSON.stringify({ name: 'users/orderTestUid' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const kvStore = new Map<string, string>();
+    const kv = {
+      get: vi.fn(async (k: string) => kvStore.get(k) ?? null),
+      put: vi.fn(async (k: string, v: string) => {
+        kvStore.set(k, v);
+      }),
+    } as unknown as KVNamespace;
+
+    // 1. Newer event arrives first (e.g. cancelled at 18:05:00Z)
+    const newerBody = JSON.stringify({
+      meta: { event_name: 'subscription_cancelled', custom_data: { uid: 'orderTestUid' } },
+      data: {
+        id: 'sub_order_77',
+        attributes: { status: 'cancelled', updated_at: '2026-11-02T18:05:00Z' },
+      },
+    });
+    const newerSig = await signWebhookBody(webhookSecret, newerBody);
+    const newerRes = await onRequest(
+      makeWebhookContext(
+        new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Signature': newerSig },
+          body: newerBody,
+        }),
+        { RATELIMIT_KV: kv }
+      )
+    );
+    expect(newerRes.status).toBe(200);
+    expect(firestorePatchCount).toBe(1);
+
+    // 2. Older delayed event arrives second (e.g. created at 18:00:00Z)
+    const olderBody = JSON.stringify({
+      meta: { event_name: 'subscription_created', custom_data: { uid: 'orderTestUid' } },
+      data: {
+        id: 'sub_order_77',
+        attributes: { status: 'active', updated_at: '2026-11-02T18:00:00Z' },
+      },
+    });
+    const olderSig = await signWebhookBody(webhookSecret, olderBody);
+    const olderRes = await onRequest(
+      makeWebhookContext(
+        new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Signature': olderSig },
+          body: olderBody,
+        }),
+        { RATELIMIT_KV: kv }
+      )
+    );
+    expect(olderRes.status).toBe(200);
+    const olderJson = (await olderRes.json()) as { ignored?: boolean; reason?: string };
+    expect(olderJson.ignored).toBe(true);
+    expect(olderJson.reason).toBe('stale_out_of_order_event');
+    expect(firestorePatchCount).toBe(1);
+  });
 });

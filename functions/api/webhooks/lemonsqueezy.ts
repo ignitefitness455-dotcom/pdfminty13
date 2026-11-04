@@ -34,6 +34,7 @@ interface LemonSqueezyWebhookPayload {
 const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 const VALID_UID_PATTERN = /^[A-Za-z0-9_-]{4,128}$/;
 const DEDUPE_TTL_SECONDS = 7 * 24 * 3600;
+const inflightDedupeKeys = new Set<string>();
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -54,11 +55,7 @@ async function computeHmacSha256Hex(secret: string, rawBody: string): Promise<st
     false,
     ['sign']
   );
-  const sigBuffer = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(rawBody) as BufferSource
-  );
+  const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody) as BufferSource);
   const bytes = new Uint8Array(sigBuffer);
   let hex = '';
   for (let i = 0; i < bytes.length; i++) {
@@ -189,11 +186,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return jsonResponse({ error: 'Malformed JSON body.' }, 400);
   }
 
-  const eventName = (
-    request.headers.get('X-Event-Name') ||
-    payload.meta?.event_name ||
-    ''
-  )
+  const eventName = (request.headers.get('X-Event-Name') || payload.meta?.event_name || '')
     .trim()
     .toLowerCase();
 
@@ -225,6 +218,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   const subscriptionId = String(payload.data?.id || 'unknown');
   const dedupeKey = `ls_webhook:${eventName}:${subscriptionId}:${expectedSignature.slice(0, 32)}`;
+  const orderingKey = `ls_sub_updated_at:${uid}:${subscriptionId}`;
+  const rawEventUpdatedAt = payload.data?.attributes?.updated_at;
+  const parsedEventUpdatedAtMs =
+    typeof rawEventUpdatedAt === 'string' && rawEventUpdatedAt.trim().length > 0
+      ? Date.parse(rawEventUpdatedAt)
+      : NaN;
+
+  if (inflightDedupeKeys.has(dedupeKey)) {
+    return jsonResponse(
+      {
+        received: true,
+        duplicate: true,
+        inFlight: true,
+        uid,
+        isPro: entitlement.isPro,
+        status: entitlement.subscriptionStatus,
+      },
+      200
+    );
+  }
 
   if (env.RATELIMIT_KV) {
     try {
@@ -241,13 +254,37 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           200
         );
       }
+
+      if (Number.isFinite(parsedEventUpdatedAtMs)) {
+        const lastUpdatedAtRaw = await env.RATELIMIT_KV.get(orderingKey);
+        if (lastUpdatedAtRaw) {
+          const lastUpdatedAtMs = Number(lastUpdatedAtRaw);
+          if (Number.isFinite(lastUpdatedAtMs) && parsedEventUpdatedAtMs < lastUpdatedAtMs) {
+            return jsonResponse(
+              {
+                received: true,
+                ignored: true,
+                reason: 'stale_out_of_order_event',
+                uid,
+                event: eventName,
+              },
+              200
+            );
+          }
+        }
+      }
     } catch (kvReadErr) {
       console.warn('Webhook KV idempotency read warning:', kvReadErr);
     }
   }
 
+  inflightDedupeKeys.add(dedupeKey);
   try {
     const accessToken = await mintServiceAccountAccessToken(clientEmail, privateKey);
+    const effectiveUpdatedAtIso = Number.isFinite(parsedEventUpdatedAtMs)
+      ? new Date(parsedEventUpdatedAtMs).toISOString()
+      : new Date().toISOString();
+
     await patchFirestoreUserSubscription({
       projectId,
       accessToken,
@@ -255,12 +292,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       isPro: entitlement.isPro,
       subscriptionStatus: entitlement.subscriptionStatus,
       subscriptionId,
-      updatedAtIso: new Date().toISOString(),
+      updatedAtIso: effectiveUpdatedAtIso,
     });
 
     if (env.RATELIMIT_KV) {
       try {
         await env.RATELIMIT_KV.put(dedupeKey, '1', { expirationTtl: DEDUPE_TTL_SECONDS });
+        if (Number.isFinite(parsedEventUpdatedAtMs)) {
+          await env.RATELIMIT_KV.put(orderingKey, String(parsedEventUpdatedAtMs), {
+            expirationTtl: DEDUPE_TTL_SECONDS,
+          });
+        }
       } catch (kvWriteErr) {
         console.warn('Webhook KV idempotency write warning:', kvWriteErr);
       }
@@ -281,5 +323,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       err instanceof Error ? err.message : String(err)
     );
     return jsonResponse({ error: 'Failed to synchronize subscription state.' }, 502);
+  } finally {
+    inflightDedupeKeys.delete(dedupeKey);
   }
 };

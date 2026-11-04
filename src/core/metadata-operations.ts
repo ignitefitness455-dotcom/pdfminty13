@@ -1,4 +1,6 @@
-import { PDFDocument } from '@cantoo/pdf-lib';
+import { PDFDocument, PDFName } from '@cantoo/pdf-lib';
+
+import { UPLOAD_LIMITS } from '../config/constants';
 
 import { formatUserFriendlyErrorMessage } from './pdf-operations';
 import { PDFSanitizer } from './PDFSanitizer';
@@ -21,15 +23,26 @@ export async function getMetadataPDF(bytes: Uint8Array): Promise<{
   producer: string;
 }> {
   try {
-    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
-    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
-    if (encrypted) {
+    if (!bytes || bytes.byteLength === 0) {
+      throw new Error('PDF file is empty (0 bytes).');
+    }
+    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+      maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+    });
+    if (await PDFSanitizer.isEncrypted(safeBytes)) {
       throw new Error(
-        'This document is encrypted. Please unlock it first before editing metadata.'
+        'SECURED_LOCKED: This document is encrypted. Please unlock it first before editing metadata.'
       );
     }
-
     const pdfDoc = await PDFDocument.load(safeBytes, { updateMetadata: false });
+    if (pdfDoc.isEncrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This document is encrypted. Please unlock it first before editing metadata.'
+      );
+    }
+    if (pdfDoc.getPageCount() === 0) {
+      throw new Error('The PDF document has 0 pages.');
+    }
     return {
       title: pdfDoc.getTitle() || '',
       author: pdfDoc.getAuthor() || '',
@@ -42,7 +55,7 @@ export async function getMetadataPDF(bytes: Uint8Array): Promise<{
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.toLowerCase().includes('encrypted') || msg.toLowerCase().includes('password')) {
       throw new Error(
-        'This document is encrypted. Please unlock it first before editing metadata.'
+        'SECURED_LOCKED: This document is encrypted. Please unlock it first before editing metadata.'
       );
     }
     throw new Error(
@@ -56,15 +69,26 @@ export async function editMetadataPDF(
   metadata: MetadataPayload
 ): Promise<Uint8Array> {
   try {
-    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes);
-    const encrypted = await PDFSanitizer.isEncrypted(safeBytes);
-    if (encrypted) {
+    if (!bytes || bytes.byteLength === 0) {
+      throw new Error('PDF file is empty (0 bytes).');
+    }
+    const { bytes: safeBytes } = PDFSanitizer.sanitize(bytes, {
+      maxBytes: UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE,
+    });
+    if (await PDFSanitizer.isEncrypted(safeBytes)) {
       throw new Error(
-        'This document is encrypted. Please unlock it first before editing metadata.'
+        'SECURED_LOCKED: This document is encrypted. Please unlock it first before editing metadata.'
       );
     }
-
     const pdfDoc = await PDFDocument.load(safeBytes, { updateMetadata: false });
+    if (pdfDoc.isEncrypted) {
+      throw new Error(
+        'SECURED_LOCKED: This document is encrypted. Please unlock it first before editing metadata.'
+      );
+    }
+    if (pdfDoc.getPageCount() === 0) {
+      throw new Error('The PDF document has 0 pages.');
+    }
 
     if (metadata.title !== undefined) pdfDoc.setTitle(metadata.title);
     if (metadata.author !== undefined) pdfDoc.setAuthor(metadata.author);
@@ -81,6 +105,8 @@ export async function editMetadataPDF(
     if (metadata.creator !== undefined) pdfDoc.setCreator(metadata.creator);
     if (metadata.producer !== undefined) pdfDoc.setProducer(metadata.producer);
 
+    // Strip any stale XMP /Metadata stream from the Catalog so old author/title/tool properties do not remain leaked in XMP XML
+    pdfDoc.catalog.delete(PDFName.of('Metadata'));
     pdfDoc.setModificationDate(new Date());
 
     return await pdfDoc.save();
@@ -88,7 +114,7 @@ export async function editMetadataPDF(
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.toLowerCase().includes('encrypted') || msg.toLowerCase().includes('password')) {
       throw new Error(
-        'This document is encrypted. Please unlock it first before editing metadata.'
+        'SECURED_LOCKED: This document is encrypted. Please unlock it first before editing metadata.'
       );
     }
     throw new Error(

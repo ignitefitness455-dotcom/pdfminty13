@@ -161,7 +161,7 @@ export const getUsageStatus = (
   const config = TIER_LIMITS[tier];
 
   if (tier === 'pro') {
-    const used = uid ? (data.userCounts[uid] || 0) : 0;
+    const used = uid ? data.userCounts[uid] || 0 : 0;
     return {
       tier: 'pro',
       maxFileSizeMB: config.maxFileSizeMB, // 500 MB
@@ -173,7 +173,7 @@ export const getUsageStatus = (
   }
 
   if (tier === 'free') {
-    const used = uid ? (data.userCounts[uid] || 0) : 0;
+    const used = uid ? data.userCounts[uid] || 0 : 0;
     const remaining = Math.max(0, config.dailyTasks - used);
     return {
       tier: 'free',
@@ -251,7 +251,7 @@ export const recordDailyTask = (
   }
 
   if (tier === 'free') {
-    const currentUsed = uid ? (data.userCounts[uid] || 0) : 0;
+    const currentUsed = uid ? data.userCounts[uid] || 0 : 0;
     if (currentUsed >= config.dailyTasks) {
       return { success: false, remaining: 0, tier: 'free' };
     }

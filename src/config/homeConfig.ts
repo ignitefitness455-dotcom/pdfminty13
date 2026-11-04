@@ -81,7 +81,7 @@ export const prefetchToolChunk = (slug: string): void => {
       : cleaned;
 
   if (!key) return;
-  if (! prefetchedSet.has(key)) {
+  if (!prefetchedSet.has(key)) {
     prefetchedSet.add(key);
     const loader = prefetchMap[key];
     if (loader) {

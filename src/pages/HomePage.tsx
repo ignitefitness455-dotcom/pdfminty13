@@ -1,22 +1,34 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { EmailJoinForm } from '../components/EmailJoinForm';
+import { SilentErrorBoundary } from '../components/ErrorBoundary';
 import { useLayout } from '../components/Layout';
 import { SEO } from '../components/SEO';
 import { SeoResourcesSection } from '../components/SeoResourcesSection';
 import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import { useDebounce } from '../hooks/useDebounce';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 import { CtaSection } from './home/CtaSection';
 import { FaqSection } from './home/FaqSection';
 import { HeroSection } from './home/HeroSection';
 import { HowItWorksSection } from './home/HowItWorksSection';
 import { RecommendedToolsSection } from './home/RecommendedToolsSection';
+import {
+  resolveAuto3DAnimation,
+  type Active3DAnimation,
+  type Scroll3DMode,
+} from './home/scroll3dConfig';
+import { Scroll3DControlBar } from './home/Scroll3DControlBar';
 import { SearchBar } from './home/SearchBar';
 import { ToolGrid, CORE_ESSENTIAL_SLUGS } from './home/ToolGrid';
 import { TrustBadgeSection } from './home/TrustBadgeSection';
 import { WhyChooseSection } from './home/WhyChooseSection';
+
+const HomeThreeBackground = lazyWithRetry(() =>
+  import('./home/HomeThreeBackground').then((m) => ({ default: m.HomeThreeBackground }))
+);
 
 const CATEGORIES = [
   { id: 'all', nameKey: 'home.categories.all', defaultName: 'All Tools' },
@@ -82,9 +94,52 @@ export const HomePage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selected3DMode, setSelected3DMode] = useState<Scroll3DMode>('auto');
+  const [autoActiveAnim, setAutoActiveAnim] = useState<Active3DAnimation>('flip-cascade');
+  const [is3DEnabled, setIs3DEnabled] = useState<boolean>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem('pdfminty_3d_enabled') !== 'false';
+      }
+    } catch {
+      // Ignore storage access errors
+    }
+    return true;
+  });
+
+  const handleToggle3DEnabled = (enabled: boolean) => {
+    setIs3DEnabled(enabled);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('pdfminty_3d_enabled', enabled ? 'true' : 'false');
+      }
+    } catch {
+      // Ignore storage access errors
+    }
+  };
 
   const { debouncedValue, isDebouncing } = useDebounce(searchQuery, 200);
   const isBn = (i18n.language || '').startsWith('bn');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !is3DEnabled || selected3DMode !== 'auto') {
+      return undefined;
+    }
+
+    const handleScrollModeSync = () => {
+      const resolved = resolveAuto3DAnimation(window.scrollY || 0).current;
+      setAutoActiveAnim((prev) => (prev === resolved ? prev : resolved));
+    };
+
+    handleScrollModeSync();
+    window.addEventListener('scroll', handleScrollModeSync, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScrollModeSync);
+    };
+  }, [selected3DMode, is3DEnabled]);
+
+  const effective3DAnimation: Active3DAnimation =
+    selected3DMode === 'auto' ? autoActiveAnim : selected3DMode;
 
   const sortedTools = useMemo(() => {
     if (!Array.isArray(toolsList)) return [];
@@ -142,13 +197,31 @@ export const HomePage: React.FC = () => {
   const showTwoSections = selectedCategory === 'all' && !(debouncedValue || '').trim();
 
   return (
-    <div className="animate-fadein relative z-10 font-sans text-on-background bg-transparent pb-12 overflow-x-hidden">
+    <div className="animate-fadein relative z-10 font-sans text-on-background bg-transparent pb-12">
       <SEO />
+
+      {/* Three.js 3D Background & 3D Emerald Laser Scroll Progress Bar (when 3D is ON) */}
+      {is3DEnabled && (
+        <SilentErrorBoundary>
+          <React.Suspense fallback={null}>
+            <HomeThreeBackground activeAnimation={effective3DAnimation} />
+          </React.Suspense>
+        </SilentErrorBoundary>
+      )}
 
       {/* Decorative Glow Elements */}
       <div
         className="absolute top-[-150px] left-1/2 -translate-x-1/2 -z-10 w-[800px] h-[450px] pointer-events-none opacity-10 bg-[radial-gradient(ellipse_at_center,var(--custom-security-green)_0%,transparent_60%)]"
         aria-hidden="true"
+      />
+
+      {/* Compact 3D Animation Button directly below 🔧 PDF Tools */}
+      <Scroll3DControlBar
+        selectedMode={selected3DMode}
+        activeAnimation={effective3DAnimation}
+        onSelectMode={setSelected3DMode}
+        isEnabled={is3DEnabled}
+        onToggleEnabled={handleToggle3DEnabled}
       />
 
       <HeroSection />
@@ -164,7 +237,7 @@ export const HomePage: React.FC = () => {
 
         {/* Category Filter Tabs */}
         <div className="mb-10 max-w-5xl mx-auto px-4" id="tool-categories">
-          <div className="flex items-center sm:justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-100/85 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 overflow-x-auto scrollbar-none select-none">
+          <div className="flex items-center sm:justify-center gap-1.5 p-1.5 rounded-2xl bg-[#f4faf7]/90 dark:bg-slate-900/80 border border-emerald-500/20 dark:border-slate-800/80 overflow-x-auto scrollbar-none select-none">
             {CATEGORIES.map((category) => {
               const isActive = selectedCategory === category.id;
               const count = categoryCounts[category.id] ?? 0;
@@ -200,6 +273,8 @@ export const HomePage: React.FC = () => {
         <ToolGrid
           filteredTools={filteredTools}
           showTwoSections={showTwoSections}
+          scroll3DMode={selected3DMode}
+          is3DEnabled={is3DEnabled}
           onClearSearch={() => {
             setSearchQuery('');
             setSelectedCategory('all');

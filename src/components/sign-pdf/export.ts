@@ -80,17 +80,39 @@ function hexToRgbTuple(hex: string): { r: number; g: number; b: number } {
 }
 
 export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
+  if (!input.fields || input.fields.length === 0) {
+    throw new Error('At least one signature, stamp, or form field must be placed on the PDF.');
+  }
   const inputUint8 = new Uint8Array(input.bytes);
   if (await PDFSanitizer.isEncrypted(inputUint8)) {
     throw new Error(
       'SECURED_LOCKED: This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.'
     );
   }
+  PDFSanitizer.sanitize(inputUint8);
   const { PDFDocument, StandardFonts, degrees, rgb } = await import('@cantoo/pdf-lib');
-  const pdf = await PDFDocument.load(input.bytes);
+  const pdf = await PDFDocument.load(inputUint8);
+  if (pdf.getPageCount() === 0) {
+    throw new Error('The PDF document has 0 pages and cannot be signed.');
+  }
   const font = await pdf.embedFont(StandardFonts.Helvetica);
+
+  // Flatten interactive form fields into permanent content stream FIRST (skip dynamic XFA)
+  // so that opaque form widget backgrounds never paint over user-placed signatures/stamps.
+  try {
+    const { PDFName, PDFDict } = await import('@cantoo/pdf-lib');
+    const acroForm = pdf.catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict);
+    if (!acroForm || !acroForm.has(PDFName.of('XFA'))) {
+      const form = pdf.getForm();
+      form.flatten();
+    }
+  } catch {
+    // PDF might not contain an interactive AcroForm
+  }
+
   const pdfPages = pdf.getPages();
   const imageCache = new Map<string, PDFImage>();
+  let appliedFieldCount = 0;
 
   const embed = async (dataUrl: string) => {
     const cached = imageCache.get(dataUrl);
@@ -139,6 +161,7 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
         height: vh,
         rotate: degrees(totalDeg),
       });
+      appliedFieldCount++;
       continue;
     }
 
@@ -153,7 +176,15 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
           height: vh,
           rotate: degrees(totalDeg),
         });
+      } else {
+        const p1 = toPdf(vx0 + vw * 0.2, vy0 + vh * 0.52);
+        const p2 = toPdf(vx0 + vw * 0.42, vy0 + vh * 0.76);
+        const p3 = toPdf(vx0 + vw * 0.82, vy0 + vh * 0.24);
+        const thickness = Math.max(1.5, Math.min(vw, vh) * 0.12);
+        page.drawLine({ start: p1, end: p2, thickness, color: rgb(0.02, 0.59, 0.41) });
+        page.drawLine({ start: p2, end: p3, thickness, color: rgb(0.02, 0.59, 0.41) });
       }
+      appliedFieldCount++;
       continue;
     }
 
@@ -168,7 +199,16 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
           height: vh,
           rotate: degrees(totalDeg),
         });
+      } else {
+        const a1 = toPdf(vx0 + vw * 0.25, vy0 + vh * 0.25);
+        const a2 = toPdf(vx0 + vw * 0.75, vy0 + vh * 0.75);
+        const b1 = toPdf(vx0 + vw * 0.75, vy0 + vh * 0.25);
+        const b2 = toPdf(vx0 + vw * 0.25, vy0 + vh * 0.75);
+        const thickness = Math.max(1.5, Math.min(vw, vh) * 0.12);
+        page.drawLine({ start: a1, end: a2, thickness, color: rgb(0.86, 0.15, 0.15) });
+        page.drawLine({ start: b1, end: b2, thickness, color: rgb(0.86, 0.15, 0.15) });
       }
+      appliedFieldCount++;
       continue;
     }
 
@@ -183,7 +223,19 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
           height: vh,
           rotate: degrees(totalDeg),
         });
+      } else {
+        page.drawRectangle({
+          x: anchorX,
+          y: anchorY,
+          width: vw,
+          height: vh,
+          borderColor: rgb(0.02, 0.47, 0.34),
+          borderWidth: 1.5,
+          color: rgb(0.93, 0.99, 0.96),
+          rotate: degrees(totalDeg),
+        });
       }
+      appliedFieldCount++;
       continue;
     }
 
@@ -217,6 +269,7 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
           rotate: degrees(rotate),
         });
         drawn = true;
+        appliedFieldCount++;
       } catch {
         drawn = false;
       }
@@ -225,24 +278,37 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
     if (!drawn) {
       // Characters outside WinAnsi or rotated text: rasterize as crisp image
       const asset = rasterizeText(text, vw / vh);
-      if (!asset) continue;
-      const img = await embed(asset);
-      page.drawImage(img, {
-        x: anchorX,
-        y: anchorY,
-        width: vw,
-        height: vh,
-        rotate: degrees(totalDeg),
-      });
+      if (asset) {
+        const img = await embed(asset);
+        page.drawImage(img, {
+          x: anchorX,
+          y: anchorY,
+          width: vw,
+          height: vh,
+          rotate: degrees(totalDeg),
+        });
+        appliedFieldCount++;
+      } else {
+        // Fallback when 2D canvas is unavailable (e.g. headless test environments)
+        const asciiSafe = text.replace(/[^\x20-\x7E]/g, '?') || '?';
+        const size = fitTextSize(font, asciiSafe, vw, vh);
+        page.drawText(asciiSafe, {
+          x: anchorX,
+          y: anchorY,
+          size,
+          font,
+          color: rgb(0.07, 0.07, 0.07),
+          rotate: degrees(totalDeg),
+        });
+        appliedFieldCount++;
+      }
     }
   }
 
-  // Flatten interactive form fields into permanent content stream
-  try {
-    const form = pdf.getForm();
-    form.flatten();
-  } catch {
-    // PDF might not contain an interactive AcroForm
+  if (appliedFieldCount === 0) {
+    throw new Error(
+      'No visible signature, stamp, or text content was provided for the placed fields.'
+    );
   }
 
   pdf.setModificationDate(new Date());

@@ -15,7 +15,7 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { getToolLimit } from '../config/constants';
+import { getToolLimit, UPLOAD_LIMITS } from '../config/constants';
 import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
@@ -56,10 +56,21 @@ export const MergePage: React.FC = () => {
       setDownloadUrl(null);
     }
     const updatedFiles = [...files, ...newFiles];
+    if (updatedFiles.length > UPLOAD_LIMITS.MAX_FILES) {
+      setError(
+        t('errors.maxFilesExceeded', {
+          max: UPLOAD_LIMITS.MAX_FILES,
+          defaultValue: `You can merge up to ${UPLOAD_LIMITS.MAX_FILES} PDF files at once. Please remove some files.`,
+        })
+      );
+      return;
+    }
+
     const totalBytes = updatedFiles.reduce((acc, f) => acc + f.size, 0);
     const maxTotalBytes = (currentLimits.maxTotalMB || 200) * 1024 * 1024;
 
     if (totalBytes > maxTotalBytes) {
+      const attemptedMB = Math.round(totalBytes / 1024 / 1024);
       setError(
         t('errors.totalSizeExceeded', {
           size: (totalBytes / 1024 / 1024).toFixed(2),
@@ -73,6 +84,12 @@ export const MergePage: React.FC = () => {
           } MB. please remove some files.`,
         })
       );
+      if (!isPro) {
+        openLimitModal({
+          reason: 'file_size',
+          attemptedFileSizeMB: attemptedMB,
+        });
+      }
       return;
     }
 
@@ -147,13 +164,16 @@ export const MergePage: React.FC = () => {
     }
 
     try {
-      const filesBytes = await Promise.all(
-        files.map((file) => file.arrayBuffer().then((ab) => new Uint8Array(ab)))
-      );
+      const filesBytes: Uint8Array[] = [];
+      for (const file of files) {
+        const ab = await file.arrayBuffer();
+        filesBytes.push(new Uint8Array(ab));
+      }
+      const transferables = Array.from(new Set(filesBytes.map((b) => b.buffer)));
       const mergedBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'mergePDFs',
         { filesBytes },
-        filesBytes.map((b) => b.buffer)
+        transferables
       );
       const blob = new Blob([mergedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = `pdfminty_merged_${Date.now()}.pdf`;

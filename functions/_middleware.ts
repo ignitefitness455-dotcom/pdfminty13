@@ -287,7 +287,11 @@ export const onRequest: PagesFunction = async (context) => {
 
     // 5b. Canonicalize /en/* to /* and unlocalized /<lang>/<tool-slug>/ to /<tool-slug>/ (301)
     if (!targetPathname.startsWith('/api') && !targetPathname.includes('.')) {
-      const cleanSegments = targetPathname.replace(/^\//, '').replace(/\/$/, '').split('/').filter(Boolean);
+      const cleanSegments = targetPathname
+        .replace(/^\//, '')
+        .replace(/\/$/, '')
+        .split('/')
+        .filter(Boolean);
       const firstSeg = cleanSegments[0] as SupportedLocale | undefined;
       const restSeg = cleanSegments.slice(1).join('/');
 
@@ -435,11 +439,19 @@ export const onRequest: PagesFunction = async (context) => {
       // If a known valid route (such as /pricing/, /login/, /signup/, /dashboard/) returned 404
       // from static asset resolution, serve the root /index.html SPA shell with 200 OK when ASSETS binding is present.
       const assetsFetcher = (
-        context.env as { ASSETS?: { fetch?: (req: Request | string) => Promise<Response> } } | undefined
+        context.env as
+          { ASSETS?: { fetch?: (req: Request | string) => Promise<Response> } } | undefined
       )?.ASSETS;
-      if (isValidRoute && response.status === 404 && assetsFetcher && typeof assetsFetcher.fetch === 'function') {
+      if (
+        isValidRoute &&
+        response.status === 404 &&
+        assetsFetcher &&
+        typeof assetsFetcher.fetch === 'function'
+      ) {
         const spaShellUrl = new URL('/index.html', url.origin);
-        const spaResponse = await assetsFetcher.fetch(new Request(spaShellUrl.toString(), context.request));
+        const spaResponse = await assetsFetcher.fetch(
+          new Request(spaShellUrl.toString(), context.request)
+        );
         if (spaResponse.ok) {
           const fallbackResponse = new Response(spaResponse.body, {
             status: 200,

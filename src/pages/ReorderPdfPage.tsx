@@ -26,12 +26,16 @@ import { EmptyState } from '../components/EmptyState';
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
 import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
+
+const MAX_THUMBNAIL_RENDER_BYTES = 50 * 1024 * 1024; // 50 MB threshold for PDF.js thumbnail rasterization
+const MAX_INTERACTIVE_GRID_PAGES = 500;
 
 interface PageItem {
   id: string; // Unique ID to keep DOM identity stable during reorders
@@ -40,39 +44,66 @@ interface PageItem {
   rotation: number; // 0, 90, 180, 270 degrees
 }
 
-const parsePageSequence = (input: string, maxPages: number): number[] => {
+const getRotationClass = (angle: number): string => {
+  const norm = ((angle % 360) + 360) % 360;
+  if (norm === 90) return 'rotate-90';
+  if (norm === 180) return 'rotate-180';
+  if (norm === 270) return 'rotate-[270deg]';
+  return 'rotate-0';
+};
+
+const parsePageSequence = (
+  input: string,
+  maxPages: number
+): { pages: number[]; invalidToken: string | null } => {
   const result: number[] = [];
-  const parts = input.split(',');
+  const normalized = input.replace(/[–—]/g, '-');
+  const parts = normalized.split(',');
+
   for (const part of parts) {
     const trimmed = part.trim();
     if (!trimmed) continue;
+
     if (trimmed.includes('-')) {
       const rangeParts = trimmed.split('-');
-      if (rangeParts.length === 2) {
-        const start = parseInt(rangeParts[0].trim(), 10);
-        const end = parseInt(rangeParts[1].trim(), 10);
-        if (!isNaN(start) && !isNaN(end) && start > 0 && end > 0) {
-          const step = start <= end ? 1 : -1;
-          for (let i = start; step === 1 ? i <= end : i >= end; i += step) {
-            if (i <= maxPages) {
-              result.push(i);
-            }
-          }
-        }
+      if (rangeParts.length !== 2) {
+        return { pages: [], invalidToken: trimmed };
+      }
+      const startStr = rangeParts[0].trim();
+      const endStr = rangeParts[1].trim();
+      if (!/^\d+$/.test(startStr) || !/^\d+$/.test(endStr)) {
+        return { pages: [], invalidToken: trimmed };
+      }
+      const start = parseInt(startStr, 10);
+      const end = parseInt(endStr, 10);
+      if (start < 1 || end < 1 || start > maxPages || end > maxPages) {
+        return { pages: [], invalidToken: trimmed };
+      }
+      const step = start <= end ? 1 : -1;
+      for (let i = start; step === 1 ? i <= end : i >= end; i += step) {
+        result.push(i);
       }
     } else {
-      const pageNum = parseInt(trimmed, 10);
-      if (!isNaN(pageNum) && pageNum > 0 && pageNum <= maxPages) {
-        result.push(pageNum);
+      if (!/^\d+$/.test(trimmed)) {
+        return { pages: [], invalidToken: trimmed };
       }
+      const pageNum = parseInt(trimmed, 10);
+      if (pageNum < 1 || pageNum > maxPages) {
+        return { pages: [], invalidToken: trimmed };
+      }
+      result.push(pageNum);
     }
   }
-  return result;
+  return { pages: result, invalidToken: null };
 };
 
 export const ReorderPdfPage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isLoggedIn = Boolean(user);
+  const currentLimits = getToolLimit('reorder-pdf', isPro, isLoggedIn);
   const isBn = i18n.language === 'bn' || i18n.language?.startsWith('bn');
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -96,10 +127,13 @@ export const ReorderPdfPage: React.FC = () => {
   const [gridDensity, setGridDensity] = useState<'compact' | 'normal' | 'large'>('normal');
 
   const operationTokenRef = useRef(0);
+  const isSubmittingRef = useRef(false);
   const urlsRef = useRef<string[]>([]);
 
   useEffect(() => {
-    urlsRef.current = [...items, ...deletedItems].map((item) => item.dataUrl);
+    urlsRef.current = [...items, ...deletedItems]
+      .map((item) => item.dataUrl)
+      .filter((u) => Boolean(u));
   }, [items, deletedItems]);
 
   useEffect(() => {
@@ -119,11 +153,22 @@ export const ReorderPdfPage: React.FC = () => {
   }, [downloadUrl]);
 
   useEffect(() => {
+    if (!previewItem) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setPreviewItem(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [previewItem]);
+
+  useEffect(() => {
     const token = operationTokenRef;
     return () => {
       token.current++;
       urlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
+        if (url) URL.revokeObjectURL(url);
       });
     };
   }, []);
@@ -131,8 +176,12 @@ export const ReorderPdfPage: React.FC = () => {
   const handleFilesSelected = async (files: File[]) => {
     if (files.length > 0) {
       const myToken = ++operationTokenRef.current;
-      items.forEach((item) => URL.revokeObjectURL(item.dataUrl));
-      deletedItems.forEach((item) => URL.revokeObjectURL(item.dataUrl));
+      items.forEach((item) => {
+        if (item.dataUrl) URL.revokeObjectURL(item.dataUrl);
+      });
+      deletedItems.forEach((item) => {
+        if (item.dataUrl) URL.revokeObjectURL(item.dataUrl);
+      });
 
       const file = files[0];
       setSelectedFile(file);
@@ -140,6 +189,7 @@ export const ReorderPdfPage: React.FC = () => {
       setItems([]);
       setDeletedItems([]);
       setOriginalBackup([]);
+      setPreviewItem(null);
       setIsSuccess(false);
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
@@ -148,87 +198,90 @@ export const ReorderPdfPage: React.FC = () => {
 
       setRenderingThumbnails(true);
       try {
-        const fileBytes = new Uint8Array(await file.arrayBuffer());
+        const rawBuffer = await file.arrayBuffer();
         if (myToken !== operationTokenRef.current) return;
-        const rendered = await WorkerManager.getInstance().runOperation<
-          { page: number; imageBytes: Uint8Array }[]
-        >(
-          'pdfToImage',
-          {
-            bytes: fileBytes,
-            originalName: file.name,
-            scale: 0.35,
-            maxPages: 50,
-            format: 'image/jpeg',
-          },
-          [fileBytes.buffer]
+
+        // First get exact page count (also validates encryption/corruption cleanly)
+        const countBytes = new Uint8Array(
+          file.size <= MAX_THUMBNAIL_RENDER_BYTES ? rawBuffer.slice(0) : rawBuffer
+        );
+        const totalCount = await WorkerManager.getInstance().runOperation<number>(
+          'getPageCount',
+          { bytes: countBytes },
+          [countBytes.buffer]
         );
         if (myToken !== operationTokenRef.current) return;
 
-        const mapped: PageItem[] = rendered.map((item, idx) => {
-          const blob = new Blob([item.imageBytes as unknown as BlobPart], { type: 'image/jpeg' });
-          return {
-            id: `p-${item.page}-${idx}-${Date.now()}`,
-            page: item.page,
-            dataUrl: URL.createObjectURL(blob),
-            rotation: 0,
-          };
-        });
+        const cappedTotal = Math.min(totalCount, MAX_INTERACTIVE_GRID_PAGES);
+        const mapped: PageItem[] = [];
 
-        if (rendered.length === 50) {
+        if (file.size <= MAX_THUMBNAIL_RENDER_BYTES) {
           try {
-            const countBytes = new Uint8Array(await file.arrayBuffer());
-            const totalCount = await WorkerManager.getInstance().runOperation<number>(
-              'getPageCount',
-              { bytes: countBytes },
-              [countBytes.buffer]
+            const thumbBytes = new Uint8Array(rawBuffer);
+            const rendered = await WorkerManager.getInstance().runOperation<
+              { page: number; imageBytes: Uint8Array }[]
+            >(
+              'pdfToImage',
+              {
+                bytes: thumbBytes,
+                originalName: file.name,
+                scale: 0.35,
+                maxPages: Math.min(50, cappedTotal),
+                format: 'image/jpeg',
+              },
+              [thumbBytes.buffer]
             );
-            for (let p = mapped.length + 1; p <= totalCount; p++) {
+
+            if (myToken !== operationTokenRef.current) {
+              return;
+            }
+
+            rendered.forEach((item, idx) => {
+              const blob = new Blob([item.imageBytes as unknown as BlobPart], {
+                type: 'image/jpeg',
+              });
               mapped.push({
-                id: `p-${p}-${p - 1}-${Date.now()}`,
-                page: p,
-                dataUrl: '',
+                id: `p-${item.page}-${idx}-${Date.now()}`,
+                page: item.page,
+                dataUrl: URL.createObjectURL(blob),
                 rotation: 0,
               });
-            }
-          } catch {
-            // Keep rendered 50 thumbnails if count lookup fails
+            });
+          } catch (thumbErr) {
+            logger.warn('Thumbnail rendering fallback to lightweight page cards:', thumbErr);
           }
         }
 
-        if (myToken !== operationTokenRef.current) return;
+        for (let p = mapped.length + 1; p <= cappedTotal; p++) {
+          mapped.push({
+            id: `p-${p}-${p - 1}-${Date.now()}`,
+            page: p,
+            dataUrl: '',
+            rotation: 0,
+          });
+        }
+
+        if (myToken !== operationTokenRef.current) {
+          mapped.forEach((it) => {
+            if (it.dataUrl) URL.revokeObjectURL(it.dataUrl);
+          });
+          return;
+        }
+
         setItems(mapped);
         setOriginalBackup(mapped);
       } catch (err: unknown) {
         if (myToken !== operationTokenRef.current) return;
-        logger.error('Failed to render previews:', err);
-        try {
-          const fallbackBytes = new Uint8Array(await file.arrayBuffer());
-          if (myToken !== operationTokenRef.current) return;
-          const count = await WorkerManager.getInstance().runOperation<number>('getPageCount', {
-            bytes: fallbackBytes,
-          });
-          if (myToken !== operationTokenRef.current) return;
-          if (count > 0) {
-            const fallbackItems: PageItem[] = Array.from({ length: count }, (_, idx) => ({
-              id: `p-${idx + 1}-${idx}-${Date.now()}`,
-              page: idx + 1,
-              dataUrl: '',
-              rotation: 0,
-            }));
-            setItems(fallbackItems);
-            setOriginalBackup(fallbackItems);
-          }
-        } catch {
-          // Ignore secondary error
-        }
+        logger.error('Failed to load PDF for reordering:', err);
+        setSelectedFile(null);
+        const message = err instanceof Error ? err.message : '';
         setError(
-          isBn
-            ? 'পৃষ্ঠার প্রিভিউ রেন্ডার করা যায়নি। আপনি ম্যানুয়ালি পেজ নম্বর ক্রম লিখতে পারেন।'
-            : t('reorderPdf.previewWarning', {
-                defaultValue:
-                  'Error generating page layouts. You can still confirm standard sequencing if required.',
-              })
+          message ||
+            (isBn
+              ? 'পিডিএফ ফাইলটি পড়া যায়নি। এটি পাসওয়ার্ড সুরক্ষিত বা ক্ষতিগ্রস্ত হতে পারে।'
+              : t('reorderPdf.previewWarning', {
+                  defaultValue: 'Failed to read PDF document. It may be encrypted or corrupted.',
+                }))
         );
       } finally {
         if (myToken === operationTokenRef.current) {
@@ -372,21 +425,24 @@ export const ReorderPdfPage: React.FC = () => {
   // Apply manual text input sequence (e.g. 1, 3, 2, 4-6)
   const applyManualSequence = () => {
     if (items.length === 0 && originalBackup.length === 0) return;
-    const pool = originalBackup.length > 0 ? originalBackup : items;
-    const maxPageNum = pool.length + deletedItems.length;
+    const pool = originalBackup.length > 0 ? originalBackup : [...items, ...deletedItems];
+    const maxPageNum = pool.length;
 
-    const parsedPages = parsePageSequence(manualInput, maxPageNum);
-    if (parsedPages.length === 0) {
+    const { pages: parsedPages, invalidToken } = parsePageSequence(manualInput, maxPageNum);
+    if (invalidToken || parsedPages.length === 0) {
       setError(
-        isBn
-          ? 'অবৈধ পেজ সিকোয়েন্স। উদাহরণ: 1, 3, 2, 4-6 লিখুন।'
-          : 'Invalid page sequence. Please enter valid page numbers (e.g., 1, 3, 2, 4-6).'
+        invalidToken
+          ? isBn
+            ? `অবৈধ পেজ নম্বর বা রেঞ্জ "${invalidToken}"। অনুগ্রহ করে ১ থেকে ${maxPageNum} এর মধ্যে সংখ্যা লিখুন।`
+            : `Invalid page number or range "${invalidToken}". Please enter values between 1 and ${maxPageNum}.`
+          : isBn
+            ? 'অবৈধ পেজ সিকোয়েন্স। উদাহরণ: 1, 3, 2, 4-6 লিখুন।'
+            : 'Invalid page sequence. Please enter valid page numbers (e.g., 1, 3, 2, 4-6).'
       );
       return;
     }
 
     const newItems: PageItem[] = [];
-    const usedIds = new Set<string>();
 
     parsedPages.forEach((pageNum) => {
       const originalItem = pool.find((item) => item.page === pageNum);
@@ -395,7 +451,6 @@ export const ReorderPdfPage: React.FC = () => {
           ...originalItem,
           id: `p-${originalItem.page}-${Date.now()}-${Math.random()}`,
         });
-        usedIds.add(originalItem.id);
       }
     });
 
@@ -412,7 +467,7 @@ export const ReorderPdfPage: React.FC = () => {
 
   // Execute Reorder and Save PDF
   const handleReorder = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
@@ -426,6 +481,8 @@ export const ReorderPdfPage: React.FC = () => {
       return;
     }
 
+    const activeToken = operationTokenRef.current;
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -449,11 +506,14 @@ export const ReorderPdfPage: React.FC = () => {
         [fileBytes.buffer]
       );
 
+      if (activeToken !== operationTokenRef.current) return;
+
       const blob = new Blob([parsedBytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_organized_${selectedFile.name}`);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setDownloadName(name);
+      setIsSuccess(true);
 
       // Record activity to user's dashboard history!
       addActivityItem({
@@ -467,8 +527,8 @@ export const ReorderPdfPage: React.FC = () => {
       });
 
       await downloadBlob(blob, name);
-      setIsSuccess(true);
     } catch (err: unknown) {
+      if (activeToken !== operationTokenRef.current) return;
       logger.error('Reorder PDF failed:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -478,7 +538,10 @@ export const ReorderPdfPage: React.FC = () => {
             : 'Failed to reorder document layout. Confirm pages structure.')
       );
     } finally {
-      setLoading(false);
+      isSubmittingRef.current = false;
+      if (activeToken === operationTokenRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -493,7 +556,7 @@ export const ReorderPdfPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-fadein" id="reorder_page_container">
       <SEO slug="reorder-pdf" />
-      <ToolHeader slug="reorder-pdf" limitMB={TOOL_SIZE_LIMITS['reorder-pdf'].maxSingleMB} />
+      <ToolHeader slug="reorder-pdf" limitMB={currentLimits.maxSingleMB} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Columns: File Upload & Visual Thumbnail Interactive Grid */}
@@ -543,7 +606,7 @@ export const ReorderPdfPage: React.FC = () => {
               <FileUploader
                 onFilesSelected={handleFilesSelected}
                 accept=".pdf,application/pdf"
-                maxSizeMB={TOOL_SIZE_LIMITS['reorder-pdf'].maxSingleMB}
+                maxSizeMB={currentLimits.maxSingleMB}
               />
             ) : (
               <div
@@ -885,19 +948,15 @@ export const ReorderPdfPage: React.FC = () => {
                               src={item.dataUrl}
                               alt={`Page ${item.page}`}
                               referrerPolicy="no-referrer"
-                              style={{
-                                transform: `rotate(${item.rotation}deg)`,
-                                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                              }}
-                              className="max-w-full max-h-full object-contain pointer-events-none"
+                              className={`max-w-full max-h-full object-contain pointer-events-none transition-transform duration-200 ${getRotationClass(
+                                item.rotation
+                              )}`}
                             />
                           ) : (
                             <span
-                              style={{
-                                transform: `rotate(${item.rotation}deg)`,
-                                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                              }}
-                              className="text-xs font-bold text-slate-400 select-none"
+                              className={`text-xs font-bold text-slate-400 select-none transition-transform duration-200 ${getRotationClass(
+                                item.rotation
+                              )}`}
                             >
                               Page {item.page}
                             </span>
@@ -1082,7 +1141,10 @@ export const ReorderPdfPage: React.FC = () => {
           {/* Action Button & Error State */}
           <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             {error && (
-              <div className="flex items-start space-x-2 text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 p-3 rounded-xl animate-fadein">
+              <div
+                role="alert"
+                className="flex items-start space-x-2 text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 p-3 rounded-xl animate-fadein"
+              >
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
@@ -1128,7 +1190,12 @@ export const ReorderPdfPage: React.FC = () => {
       {/* FULL HIGH-RES PAGE INSPECTION / PREVIEW MODAL            */}
       {/* ========================================================= */}
       {previewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fadein">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Page ${previewItem.page} Preview`}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fadein"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl space-y-4 relative flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
@@ -1197,11 +1264,9 @@ export const ReorderPdfPage: React.FC = () => {
               <img
                 src={previewItem.dataUrl}
                 alt={`Preview page ${previewItem.page}`}
-                style={{
-                  transform: `rotate(${previewItem.rotation}deg)`,
-                  transition: 'transform 0.25s ease-out',
-                }}
-                className="max-h-[60vh] max-w-full object-contain shadow-lg rounded-lg"
+                className={`max-h-[60vh] max-w-full object-contain shadow-lg rounded-lg transition-transform duration-200 ${getRotationClass(
+                  previewItem.rotation
+                )}`}
               />
             </div>
 

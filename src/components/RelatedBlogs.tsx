@@ -33,7 +33,23 @@ export const RelatedBlogs: React.FC = () => {
     const currentTokens = currentSlug
       .replace(/^(blog|compare)\//, '')
       .split('-')
-      .filter((w) => w.length > 2 && !['pdf', 'how', 'the', 'for', 'and', 'free', '2026', 'guide', 'online', 'with', 'without'].includes(w));
+      .filter(
+        (w) =>
+          w.length > 2 &&
+          ![
+            'pdf',
+            'how',
+            'the',
+            'for',
+            'and',
+            'free',
+            '2026',
+            'guide',
+            'online',
+            'with',
+            'without',
+          ].includes(w)
+      );
 
     const scoreArticle = (a: ToolCatalogItem): number => {
       let score = 0;
@@ -45,7 +61,9 @@ export const RelatedBlogs: React.FC = () => {
           score += 5;
         }
         if (currentItem.relatedTools && a.relatedTools) {
-          const shared = a.relatedTools.filter((rt) => currentItem.relatedTools?.includes(rt)).length;
+          const shared = a.relatedTools.filter((rt) =>
+            currentItem.relatedTools?.includes(rt)
+          ).length;
           score += shared * 3;
         }
       }

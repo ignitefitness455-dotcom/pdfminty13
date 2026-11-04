@@ -200,5 +200,3 @@ describe('Technical SEO, Canonical Routing & Sitemap Invariants', () => {
     }
   });
 });
-
-

@@ -36,10 +36,14 @@ interface OAuthTokenCacheState {
 
 let jwkCache: JwkCacheState | null = null;
 let oauthTokenCache: OAuthTokenCacheState | null = null;
+let inflightJwkPromise: Promise<GoogleJwk[]> | null = null;
+let inflightOAuthTokenPromise: { clientEmail: string; promise: Promise<string> } | null = null;
 
 export function _clearFirebaseAuthCacheForTesting(): void {
   jwkCache = null;
   oauthTokenCache = null;
+  inflightJwkPromise = null;
+  inflightOAuthTokenPromise = null;
 }
 
 export function base64UrlToUint8Array(base64Url: string): Uint8Array {
@@ -84,26 +88,41 @@ async function fetchGoogleSecureTokenJwks(forceRefresh = false): Promise<GoogleJ
     return jwkCache.keys;
   }
 
-  const res = await fetch(GOOGLE_SECURETOKEN_JWK_URL, {
-    method: 'GET',
-    headers: { Accept: 'application/json' },
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch Firebase public JWKs (${res.status}).`);
+  if (!forceRefresh && inflightJwkPromise) {
+    return inflightJwkPromise;
   }
 
-  const body = (await res.json()) as { keys?: GoogleJwk[] };
-  if (!Array.isArray(body.keys) || body.keys.length === 0) {
-    throw new Error('Firebase public JWK response contained no keys.');
-  }
+  const doFetch = async (): Promise<GoogleJwk[]> => {
+    const res = await fetch(GOOGLE_SECURETOKEN_JWK_URL, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch Firebase public JWKs (${res.status}).`);
+    }
 
-  const ttlMs = parseMaxAgeMs(res.headers.get('Cache-Control'));
-  jwkCache = {
-    keys: body.keys,
-    fetchedAtMs: now,
-    expiresAtMs: now + ttlMs,
+    const body = (await res.json()) as { keys?: GoogleJwk[] };
+    if (!Array.isArray(body.keys) || body.keys.length === 0) {
+      throw new Error('Firebase public JWK response contained no keys.');
+    }
+
+    const fetchedAt = Date.now();
+    const ttlMs = parseMaxAgeMs(res.headers.get('Cache-Control'));
+    jwkCache = {
+      keys: body.keys,
+      fetchedAtMs: fetchedAt,
+      expiresAtMs: fetchedAt + ttlMs,
+    };
+    return body.keys;
   };
-  return body.keys;
+
+  const promise = doFetch().finally(() => {
+    if (inflightJwkPromise === promise) {
+      inflightJwkPromise = null;
+    }
+  });
+  inflightJwkPromise = promise;
+  return promise;
 }
 
 /**
@@ -281,64 +300,79 @@ export async function mintServiceAccountAccessToken(
     return oauthTokenCache.accessToken;
   }
 
-  const privateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    pemPrivateKeyToArrayBuffer(privateKeyPem),
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-
-  const nowSec = Math.floor(nowMs / 1000);
-  const headerB64 = uint8ArrayToBase64Url(
-    new TextEncoder().encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
-  );
-  const claimsB64 = uint8ArrayToBase64Url(
-    new TextEncoder().encode(
-      JSON.stringify({
-        iss: clientEmail,
-        sub: clientEmail,
-        aud: GOOGLE_OAUTH_TOKEN_URL,
-        iat: nowSec,
-        exp: nowSec + 3600,
-        scope: FIRESTORE_SCOPE,
-      })
-    )
-  );
-
-  const signingInput = new TextEncoder().encode(`${headerB64}.${claimsB64}`);
-  const signatureBuffer = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    privateKey,
-    signingInput as BufferSource
-  );
-  const signatureB64 = uint8ArrayToBase64Url(new Uint8Array(signatureBuffer));
-  const assertion = `${headerB64}.${claimsB64}.${signatureB64}`;
-
-  const tokenRes = await fetch(GOOGLE_OAUTH_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=${encodeURIComponent(
-      'urn:ietf:params:oauth:grant-type:jwt-bearer'
-    )}&assertion=${encodeURIComponent(assertion)}`,
-  });
-
-  if (!tokenRes.ok) {
-    throw new Error(`Google OAuth service account token exchange failed (${tokenRes.status}).`);
+  if (inflightOAuthTokenPromise && inflightOAuthTokenPromise.clientEmail === clientEmail) {
+    return inflightOAuthTokenPromise.promise;
   }
 
-  const tokenData = (await tokenRes.json()) as { access_token?: string; expires_in?: number };
-  if (!tokenData.access_token) {
-    throw new Error('Google OAuth response did not include an access_token.');
-  }
+  const doMint = async (): Promise<string> => {
+    const mintStartMs = Date.now();
+    const privateKey = await crypto.subtle.importKey(
+      'pkcs8',
+      pemPrivateKeyToArrayBuffer(privateKeyPem),
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
 
-  const expiresInMs = Math.max(120, tokenData.expires_in || 3600) * 1000;
-  oauthTokenCache = {
-    clientEmail,
-    accessToken: tokenData.access_token,
-    expiresAtMs: nowMs + expiresInMs,
+    const nowSec = Math.floor(mintStartMs / 1000);
+    const headerB64 = uint8ArrayToBase64Url(
+      new TextEncoder().encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
+    );
+    const claimsB64 = uint8ArrayToBase64Url(
+      new TextEncoder().encode(
+        JSON.stringify({
+          iss: clientEmail,
+          sub: clientEmail,
+          aud: GOOGLE_OAUTH_TOKEN_URL,
+          iat: nowSec,
+          exp: nowSec + 3600,
+          scope: FIRESTORE_SCOPE,
+        })
+      )
+    );
+
+    const signingInput = new TextEncoder().encode(`${headerB64}.${claimsB64}`);
+    const signatureBuffer = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      privateKey,
+      signingInput as BufferSource
+    );
+    const signatureB64 = uint8ArrayToBase64Url(new Uint8Array(signatureBuffer));
+    const assertion = `${headerB64}.${claimsB64}.${signatureB64}`;
+
+    const tokenRes = await fetch(GOOGLE_OAUTH_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=${encodeURIComponent(
+        'urn:ietf:params:oauth:grant-type:jwt-bearer'
+      )}&assertion=${encodeURIComponent(assertion)}`,
+    });
+
+    if (!tokenRes.ok) {
+      throw new Error(`Google OAuth service account token exchange failed (${tokenRes.status}).`);
+    }
+
+    const tokenData = (await tokenRes.json()) as { access_token?: string; expires_in?: number };
+    if (!tokenData.access_token) {
+      throw new Error('Google OAuth response did not include an access_token.');
+    }
+
+    const expiresInMs = Math.max(120, tokenData.expires_in || 3600) * 1000;
+    oauthTokenCache = {
+      clientEmail,
+      accessToken: tokenData.access_token,
+      expiresAtMs: Date.now() + expiresInMs,
+    };
+    return tokenData.access_token;
   };
-  return tokenData.access_token;
+
+  const promise = doMint().finally(() => {
+    if (inflightOAuthTokenPromise?.promise === promise) {
+      inflightOAuthTokenPromise = null;
+    }
+  });
+  inflightOAuthTokenPromise = { clientEmail, promise };
+  return promise;
 }
 
 export interface PatchSubscriptionParams {
@@ -359,15 +393,8 @@ export interface PatchSubscriptionParams {
 export async function patchFirestoreUserSubscription(
   params: PatchSubscriptionParams
 ): Promise<void> {
-  const {
-    projectId,
-    accessToken,
-    uid,
-    isPro,
-    subscriptionStatus,
-    subscriptionId,
-    updatedAtIso,
-  } = params;
+  const { projectId, accessToken, uid, isPro, subscriptionStatus, subscriptionId, updatedAtIso } =
+    params;
 
   const maskFields = [
     'uid',
@@ -405,6 +432,8 @@ export async function patchFirestoreUserSubscription(
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    throw new Error(`Firestore subscription PATCH failed (${res.status}): ${errText.slice(0, 200)}`);
+    throw new Error(
+      `Firestore subscription PATCH failed (${res.status}): ${errText.slice(0, 200)}`
+    );
   }
 }

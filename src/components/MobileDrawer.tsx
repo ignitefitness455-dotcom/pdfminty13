@@ -80,14 +80,54 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   if (!mobileMenuOpen) return null;
 
   const quickTools = [
-    { name: t('tools.merge-pdf.name', { defaultValue: 'Merge PDF' }), path: mergePath, icon: Layers, color: 'text-emerald-500 bg-emerald-500/10' },
-    { name: t('tools.compress-pdf.name', { defaultValue: 'Compress PDF' }), path: getLocalizedPath('compress-pdf', activeLocale), icon: Minimize2, color: 'text-emerald-600 bg-emerald-600/10' },
-    { name: t('tools.split-pdf.name', { defaultValue: 'Split PDF' }), path: getLocalizedPath('split-pdf', activeLocale), icon: Scissors, color: 'text-sky-500 bg-sky-500/10' },
-    { name: t('tools.sign-pdf.name', { defaultValue: 'Sign & Stamp' }), path: getLocalizedPath('sign-pdf', activeLocale), icon: FilePenLine, color: 'text-indigo-500 bg-indigo-500/10' },
-    { name: t('tools.protect-pdf.name', { defaultValue: 'Protect PDF' }), path: getLocalizedPath('protect-pdf', activeLocale), icon: Lock, color: 'text-amber-500 bg-amber-500/10' },
-    { name: t('tools.unlock-pdf.name', { defaultValue: 'Unlock PDF' }), path: getLocalizedPath('unlock-pdf', activeLocale), icon: KeyRound, color: 'text-teal-500 bg-teal-500/10' },
-    { name: t('tools.compare-pdf.name', { defaultValue: 'Compare PDF' }), path: getLocalizedPath('compare-pdf', activeLocale), icon: GitCompare, color: 'text-purple-500 bg-purple-500/10' },
-    { name: t('tools.sanitize-pdf.name', { defaultValue: 'Sanitize & PII' }), path: getLocalizedPath('sanitize-pdf', activeLocale), icon: ShieldBan, color: 'text-rose-500 bg-rose-500/10' },
+    {
+      name: t('tools.merge-pdf.name', { defaultValue: 'Merge PDF' }),
+      path: mergePath,
+      icon: Layers,
+      color: 'text-emerald-500 bg-emerald-500/10',
+    },
+    {
+      name: t('tools.compress-pdf.name', { defaultValue: 'Compress PDF' }),
+      path: getLocalizedPath('compress-pdf', activeLocale),
+      icon: Minimize2,
+      color: 'text-emerald-600 bg-emerald-600/10',
+    },
+    {
+      name: t('tools.split-pdf.name', { defaultValue: 'Split PDF' }),
+      path: getLocalizedPath('split-pdf', activeLocale),
+      icon: Scissors,
+      color: 'text-sky-500 bg-sky-500/10',
+    },
+    {
+      name: t('tools.sign-pdf.name', { defaultValue: 'Sign & Stamp' }),
+      path: getLocalizedPath('sign-pdf', activeLocale),
+      icon: FilePenLine,
+      color: 'text-indigo-500 bg-indigo-500/10',
+    },
+    {
+      name: t('tools.protect-pdf.name', { defaultValue: 'Protect PDF' }),
+      path: getLocalizedPath('protect-pdf', activeLocale),
+      icon: Lock,
+      color: 'text-amber-500 bg-amber-500/10',
+    },
+    {
+      name: t('tools.unlock-pdf.name', { defaultValue: 'Unlock PDF' }),
+      path: getLocalizedPath('unlock-pdf', activeLocale),
+      icon: KeyRound,
+      color: 'text-teal-500 bg-teal-500/10',
+    },
+    {
+      name: t('tools.compare-pdf.name', { defaultValue: 'Compare PDF' }),
+      path: getLocalizedPath('compare-pdf', activeLocale),
+      icon: GitCompare,
+      color: 'text-purple-500 bg-purple-500/10',
+    },
+    {
+      name: t('tools.sanitize-pdf.name', { defaultValue: 'Sanitize & PII' }),
+      path: getLocalizedPath('sanitize-pdf', activeLocale),
+      icon: ShieldBan,
+      color: 'text-rose-500 bg-rose-500/10',
+    },
   ];
 
   return (
@@ -208,7 +248,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                       : `Guest Quota: ${tasksRemaining}/5 Tasks Left`}
                   </span>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">
-                    {isBn ? 'সর্বোচ্চ ১০০ মেগাবাইট • ১০০% ফ্রি' : 'Max 100 MB per file • Zero server uploads'}
+                    {isBn
+                      ? 'সর্বোচ্চ ১০০ মেগাবাইট • ১০০% ফ্রি'
+                      : 'Max 100 MB per file • Zero server uploads'}
                   </span>
                 </div>
               </div>
@@ -277,7 +319,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate font-medium">
-                  {isBn ? 'আনলিমিটেড টাস্ক, Gemini AI ও ৫০০MB ফাইল' : 'Unlimited tasks, Gemini AI, OCR & 500MB batch'}
+                  {isBn
+                    ? 'আনলিমিটেড টাস্ক, Gemini AI ও ৫০০MB ফাইল'
+                    : 'Unlimited tasks, Gemini AI, OCR & 500MB batch'}
                 </span>
               </div>
             </div>
@@ -322,7 +366,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                       : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300'
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-lg ${tool.color} flex items-center justify-center shrink-0`}>
+                  <div
+                    className={`w-6 h-6 rounded-lg ${tool.color} flex items-center justify-center shrink-0`}
+                  >
                     <IconComp className="w-3.5 h-3.5" />
                   </div>
                   <span className="truncate">{tool.name}</span>

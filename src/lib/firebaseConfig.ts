@@ -24,10 +24,7 @@ export const firebaseConfig = {
     storedConfig.authDomain ||
     import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
     'pdfminty-9836d.firebaseapp.com',
-  projectId:
-    storedConfig.projectId ||
-    import.meta.env.VITE_FIREBASE_PROJECT_ID ||
-    'pdfminty-9836d',
+  projectId: storedConfig.projectId || import.meta.env.VITE_FIREBASE_PROJECT_ID || 'pdfminty-9836d',
   storageBucket:
     storedConfig.storageBucket ||
     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
@@ -48,10 +45,10 @@ export const firebaseConfig = {
 export const isFirebaseConfigured = (): boolean => {
   return Boolean(
     firebaseConfig.apiKey &&
-      firebaseConfig.apiKey.length > 5 &&
-      firebaseConfig.projectId &&
-      !firebaseConfig.apiKey.includes('your_') &&
-      !firebaseConfig.projectId.includes('your_')
+    firebaseConfig.apiKey.length > 5 &&
+    firebaseConfig.projectId &&
+    !firebaseConfig.apiKey.includes('your_') &&
+    !firebaseConfig.projectId.includes('your_')
   );
 };
 

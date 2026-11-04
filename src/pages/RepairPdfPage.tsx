@@ -1,18 +1,21 @@
 import { RefreshCw, AlertCircle, Wrench, Download, CheckCircle2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FileUploader } from '../components/FileUploader';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
-import { TOOL_SIZE_LIMITS } from '../config/constants';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { WorkerManager } from '../core/WorkerManager';
+import { addActivityItem } from '../utils/activityStore';
 import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 
 export const RepairPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
+  const { user, isPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,6 +24,10 @@ export const RepairPdfPage: React.FC = () => {
   const [repairsList, setRepairsList] = useState<string[]>([]);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState<string>('');
+  const operationTokenRef = useRef(0);
+  const isSubmittingRef = useRef(false);
+
+  const limitMB = getToolLimit('repair-pdf', isPro, Boolean(user)).maxSingleMB;
 
   React.useEffect(() => {
     return () => {
@@ -30,25 +37,64 @@ export const RepairPdfPage: React.FC = () => {
     };
   }, [downloadUrl]);
 
+  React.useEffect(() => {
+    return () => {
+      operationTokenRef.current += 1;
+      isSubmittingRef.current = false;
+    };
+  }, []);
+
+  const resetFileState = () => {
+    operationTokenRef.current += 1;
+    isSubmittingRef.current = false;
+    setLoading(false);
+    setSelectedFile(null);
+    setError(null);
+    setIsSuccess(false);
+    setRepairsList([]);
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl(null);
+    }
+  };
+
   const handleFilesSelected = (files: File[]) => {
     if (files.length > 0) {
-      setSelectedFile(files[0]);
-      setError(null);
-      setIsSuccess(false);
-      setRepairsList([]);
+      const file = files[0];
+      operationTokenRef.current += 1;
+      isSubmittingRef.current = false;
+      setLoading(false);
       if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
         setDownloadUrl(null);
       }
+      setIsSuccess(false);
+      setRepairsList([]);
+
+      if (file.size === 0) {
+        setSelectedFile(null);
+        setError(
+          t('repairPdf.emptyFileError', {
+            defaultValue: 'The selected PDF file is empty (0 bytes). Please select a valid PDF.',
+          })
+        );
+        return;
+      }
+
+      setSelectedFile(file);
+      setError(null);
     }
   };
 
   const handleRepair = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || loading || isSubmittingRef.current) return;
     if (!canPerformTask()) {
       openLimitModal({ reason: 'task_limit' });
       return;
     }
+
+    isSubmittingRef.current = true;
+    const currentToken = ++operationTokenRef.current;
     setLoading(true);
     setError(null);
     setIsSuccess(false);
@@ -60,10 +106,14 @@ export const RepairPdfPage: React.FC = () => {
 
     try {
       const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
+      if (currentToken !== operationTokenRef.current) return;
+
       const response = await WorkerManager.getInstance().runOperation<{
         bytes: Uint8Array;
         repairs: string[];
       }>('repairPDF', { bytes: fileBytes }, [fileBytes.buffer]);
+
+      if (currentToken !== operationTokenRef.current) return;
 
       const blob = new Blob([response.bytes as unknown as BlobPart], { type: 'application/pdf' });
       const name = sanitizeDownloadFilename(`pdfminty_repaired_${selectedFile.name}`);
@@ -71,9 +121,18 @@ export const RepairPdfPage: React.FC = () => {
       setDownloadUrl(url);
       setDownloadName(name);
       await downloadBlob(blob, name);
+      addActivityItem({
+        toolName: t('tools.repairPdf.title', { defaultValue: 'Repair PDF' }),
+        toolId: 'repair-pdf',
+        fileName: name,
+        fileSizeFormatted: `${(blob.size / (1024 * 1024)).toFixed(2)} MB`,
+        status: 'completed',
+        tag: 'Edit',
+      });
       setRepairsList(response.repairs || []);
       setIsSuccess(true);
     } catch (err: unknown) {
+      if (currentToken !== operationTokenRef.current) return;
       logger.error('Repair error:', err);
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -83,11 +142,12 @@ export const RepairPdfPage: React.FC = () => {
           })
       );
     } finally {
-      setLoading(false);
+      if (currentToken === operationTokenRef.current) {
+        isSubmittingRef.current = false;
+        setLoading(false);
+      }
     }
   };
-
-  const limitMB = TOOL_SIZE_LIMITS['repair-pdf']?.maxSingleMB || 100;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadein" id="repair_page_container">
@@ -96,8 +156,8 @@ export const RepairPdfPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-primary font-bold">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-primary dark:text-slate-100 font-bold">
               <Wrench className="w-5 h-5 text-security-green" />
               <span>{t('repairPdf.workspace', { defaultValue: 'Document Workspace' })}</span>
             </div>
@@ -114,7 +174,9 @@ export const RepairPdfPage: React.FC = () => {
                 id="loaded_repair_file"
               >
                 <div className="truncate pr-2">
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selectedFile.name}</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {selectedFile.name}
+                  </p>
                   <p className="text-xs text-slate-400">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB •{' '}
                     {t('repairPdf.pdfDocument', { defaultValue: 'PDF Document' })}
@@ -122,15 +184,7 @@ export const RepairPdfPage: React.FC = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setIsSuccess(false);
-                    setRepairsList([]);
-                    if (downloadUrl) {
-                      URL.revokeObjectURL(downloadUrl);
-                      setDownloadUrl(null);
-                    }
-                  }}
+                  onClick={resetFileState}
                   className="shrink-0 min-h-[40px] text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 px-3.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   {t('toolCommon.changeFile', { defaultValue: 'Change File' })}
@@ -139,8 +193,11 @@ export const RepairPdfPage: React.FC = () => {
             )}
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-xs text-red-700 font-semibold leading-relaxed">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+              <div
+                className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-xl flex items-start gap-2.5 text-xs text-red-700 dark:text-red-300 font-semibold leading-relaxed"
+                role="alert"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                 <span>{error}</span>
               </div>
             )}
@@ -160,8 +217,8 @@ export const RepairPdfPage: React.FC = () => {
                   </span>
                 </div>
                 {repairsList.length > 0 && (
-                  <div className="space-y-1.5 border-t border-emerald-200/50 pt-2.5">
-                    <p className="text-slate-500 text-[10px] uppercase tracking-wider font-extrabold">
+                  <div className="space-y-1.5 border-t border-emerald-200/50 dark:border-emerald-800/50 pt-2.5">
+                    <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider font-extrabold">
                       {t('repairPdf.appliedRepairs', { defaultValue: 'Applied Repairs:' })}
                     </p>
                     <ul className="space-y-1">
@@ -170,7 +227,7 @@ export const RepairPdfPage: React.FC = () => {
                           key={idx}
                           className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300 font-semibold text-[11px]"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           <span>{repair}</span>
                         </li>
                       ))}
@@ -178,7 +235,7 @@ export const RepairPdfPage: React.FC = () => {
                   </div>
                 )}
                 {downloadUrl && (
-                  <div className="pt-2 border-t border-emerald-200/50 flex flex-wrap items-center gap-2.5">
+                  <div className="pt-2 border-t border-emerald-200/50 dark:border-emerald-800/50 flex flex-wrap items-center gap-2.5">
                     <a
                       href={downloadUrl}
                       download={downloadName}
@@ -192,16 +249,7 @@ export const RepairPdfPage: React.FC = () => {
                     </a>
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setIsSuccess(false);
-                        setError(null);
-                        setRepairsList([]);
-                        if (downloadUrl) {
-                          URL.revokeObjectURL(downloadUrl);
-                          setDownloadUrl(null);
-                        }
-                      }}
+                      onClick={resetFileState}
                       className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-emerald-200 dark:border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
                     >
                       {t('toolCommon.processAnother', { defaultValue: 'Repair Another PDF' })}
@@ -213,12 +261,12 @@ export const RepairPdfPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-fit space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between h-fit space-y-6">
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2">
               {t('repairPdf.actionsTitle', { defaultValue: 'Repair Actions' })}
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               {t('repairPdf.actionsDesc', {
                 defaultValue:
                   'This utility performs multi-stage sanitization, including stripping redundant server headers, standardizing EOF offsets, and rebuilding cross-reference metadata tables.',
@@ -226,14 +274,15 @@ export const RepairPdfPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
+              type="button"
               onClick={handleRepair}
               disabled={!selectedFile || loading}
               className={`w-full py-3 px-4 rounded-xl font-bold text-sm tracking-wide text-white flex items-center justify-center space-x-2 transition-all shadow-md shadow-emerald-600/10 ${
                 selectedFile && !loading
                   ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:-translate-y-0.5'
-                  : 'bg-slate-300 pointer-events-none shadow-none'
+                  : 'bg-slate-300 dark:bg-slate-800 dark:text-slate-500 pointer-events-none shadow-none'
               }`}
             >
               {loading ? (
