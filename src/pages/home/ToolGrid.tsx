@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { detectPerformanceMode, readStored3DPreference } from '../../hooks/useHero3D';
+
 import { computeCard3DTransform, type Scroll3DMode } from './scroll3dConfig';
 import { ToolCard } from './ToolCard';
 
@@ -27,6 +29,7 @@ interface ToolGridProps {
   showTwoSections?: boolean;
   scroll3DMode?: Scroll3DMode;
   is3DEnabled?: boolean;
+  performanceMode?: boolean;
 }
 
 const SECTION_COPY: Record<
@@ -140,19 +143,26 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
   showTwoSections = false,
   scroll3DMode = 'auto',
   is3DEnabled = true,
+  performanceMode,
 }) => {
   const { t, i18n } = useTranslation('common');
   const langKey = (i18n.language || 'en').split('-')[0].toLowerCase();
   const copy = SECTION_COPY[langKey] || SECTION_COPY.en;
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
 
+  const isPerfMode =
+    performanceMode !== undefined
+      ? performanceMode || !is3DEnabled
+      : !is3DEnabled || (detectPerformanceMode() && readStored3DPreference() !== true);
+  const effective3DEnabled = !isPerfMode;
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const wrapper = gridWrapperRef.current;
     if (!wrapper) return undefined;
 
-    if (!is3DEnabled) {
-      const cardElements = wrapper.querySelectorAll<HTMLElement>('[data-card-3d="true"]');
+    if (!effective3DEnabled) {
+      const cardElements = wrapper.querySelectorAll<HTMLElement>('.pdf-tool-card-3d');
       cardElements.forEach((cardEl) => {
         cardEl.style.removeProperty('--card-rx');
         cardEl.style.removeProperty('--card-ry');
@@ -167,6 +177,7 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
         cardEl.style.removeProperty('--hover-rx');
         cardEl.style.removeProperty('--hover-ry');
         cardEl.style.removeProperty('--hover-tz');
+        cardEl.style.removeProperty('--hover-scale');
       });
       return undefined;
     }
@@ -183,30 +194,52 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
     let lastTime = performance.now();
     let smoothedVelocity = 0;
 
-    const applyCardTransforms = () => {
-      rafId = 0;
+    let cachedElements: HTMLElement[] = [];
+    let cachedDocCenterY: number[] = [];
+    let vh = Math.max(400, window.innerHeight || 800);
+    let vw = Math.max(320, window.innerWidth || 1280);
+    let totalCols = detectGridColumns(vw);
+
+    // Measure card document positions ONLY on mount/resize (never during scroll) to avoid layout thrashing
+    const measureCardPositions = () => {
       const currentWrapper = gridWrapperRef.current;
       if (!currentWrapper) return;
+      vh = Math.max(400, window.innerHeight || 800);
+      vw = Math.max(320, window.innerWidth || 1280);
+      totalCols = detectGridColumns(vw);
+      const scrollY = window.scrollY || 0;
+      const viewportCenter = vh * 0.52;
+
+      cachedElements = Array.from(
+        currentWrapper.querySelectorAll<HTMLElement>('[data-card-3d="true"]')
+      );
+      cachedDocCenterY = cachedElements.map((cardEl, idx) => {
+        const rect = cardEl.getBoundingClientRect();
+        return rect.height > 0
+          ? rect.top + scrollY + rect.height * 0.5
+          : scrollY + viewportCenter + (idx % 6) * 90;
+      });
+    };
+
+    const applyCardTransforms = () => {
+      rafId = 0;
+      if (cachedElements.length === 0) return;
 
       const now = performance.now();
-      const dt = Math.max(8, now - lastTime);
+      const dtSec = Math.min(0.1, Math.max(0.001, (now - lastTime) / 1000));
       const currentScrollY = window.scrollY || 0;
-      const rawVel = (currentScrollY - lastScrollY) / dt;
-      smoothedVelocity = smoothedVelocity * 0.72 + rawVel * 0.28;
+      const rawVel = (currentScrollY - lastScrollY) / Math.max(8, now - lastTime);
+      const damping = 1 - Math.exp(-dtSec * 8);
+      smoothedVelocity += (rawVel - smoothedVelocity) * damping;
       lastScrollY = currentScrollY;
       lastTime = now;
 
-      const vh = Math.max(400, window.innerHeight || 800);
-      const vw = Math.max(320, window.innerWidth || 1280);
-      const totalCols = detectGridColumns(vw);
       const viewportCenter = vh * 0.52;
       const normSpan = vh * 0.58;
 
-      const cardElements = currentWrapper.querySelectorAll<HTMLElement>('[data-card-3d="true"]');
-      cardElements.forEach((cardEl, idx) => {
-        const rect = cardEl.getBoundingClientRect();
-        const cardCenterY =
-          rect.height > 0 ? rect.top + rect.height * 0.5 : viewportCenter + (idx % 6) * 90;
+      for (let idx = 0; idx < cachedElements.length; idx++) {
+        const cardEl = cachedElements[idx];
+        const cardCenterY = cachedDocCenterY[idx] - currentScrollY;
         const normDist = (cardCenterY - viewportCenter) / normSpan;
         const colIndex = idx % totalCols;
         const rowIndex = Math.floor(idx / totalCols);
@@ -231,7 +264,7 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
         cardEl.style.setProperty('--shimmer-angle', `${tf.shimmerAngle}deg`);
         cardEl.style.setProperty('--shimmer-opacity', `${tf.shimmerOpacity}`);
         cardEl.style.setProperty('--spotlight-opacity', `${tf.spotlightOpacity}`);
-      });
+      }
     };
 
     const scheduleTransformUpdate = () => {
@@ -240,16 +273,22 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
       }
     };
 
+    const handleResize = () => {
+      measureCardPositions();
+      scheduleTransformUpdate();
+    };
+
+    measureCardPositions();
     applyCardTransforms();
     window.addEventListener('scroll', scheduleTransformUpdate, { passive: true });
-    window.addEventListener('resize', scheduleTransformUpdate, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', scheduleTransformUpdate);
-      window.removeEventListener('resize', scheduleTransformUpdate);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [scroll3DMode, is3DEnabled, filteredTools.length, showTwoSections]);
+  }, [scroll3DMode, effective3DEnabled, filteredTools.length, showTwoSections]);
 
   if (filteredTools.length === 0) {
     return (
@@ -285,7 +324,8 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
       <div
         ref={gridWrapperRef}
         data-active-3d-mode={scroll3DMode}
-        data-3d-disabled={is3DEnabled ? 'false' : 'true'}
+        data-3d-disabled={effective3DEnabled ? 'false' : 'true'}
+        data-performance-mode={isPerfMode ? 'true' : 'false'}
         className="pdf-tool-grid-3d-stage max-w-7xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16"
       >
         {/* Part 1: Essential & Daily PDF Tools */}
@@ -320,7 +360,8 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
                 tool={tool}
                 variant="featured"
                 cardIndex={index}
-                is3DEnabled={is3DEnabled}
+                is3DEnabled={effective3DEnabled}
+                performanceMode={isPerfMode}
               />
             ))}
           </div>
@@ -358,7 +399,8 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
                 tool={tool}
                 variant="studio"
                 cardIndex={essentialTools.length + index}
-                is3DEnabled={is3DEnabled}
+                is3DEnabled={effective3DEnabled}
+                performanceMode={isPerfMode}
               />
             ))}
           </div>
@@ -371,7 +413,8 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
     <div
       ref={gridWrapperRef}
       data-active-3d-mode={scroll3DMode}
-      data-3d-disabled={is3DEnabled ? 'false' : 'true'}
+      data-3d-disabled={effective3DEnabled ? 'false' : 'true'}
+      data-performance-mode={isPerfMode ? 'true' : 'false'}
       className="pdf-tool-grid-3d-stage max-w-7xl mx-auto px-4 sm:px-6"
     >
       <div className="pdf-tool-card-3d-scene grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -381,7 +424,8 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
             tool={tool}
             variant={CORE_ESSENTIAL_SLUGS.has(tool.slug) ? 'featured' : 'studio'}
             cardIndex={index}
-            is3DEnabled={is3DEnabled}
+            is3DEnabled={effective3DEnabled}
+            performanceMode={isPerfMode}
           />
         ))}
       </div>

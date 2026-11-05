@@ -377,14 +377,14 @@ export default defineConfig(({ command, mode }) => {
       modulePreload: {
         polyfill: false,
         resolveDependencies: (_filename, deps) => {
-          // Prevent preloading non-critical chunks on initial load (PDF engines, Firebase, heavy SEO data, non-English locales)
+          // Prevent preloading non-critical chunks on initial load (3D hero, PDF engines, Firebase, heavy SEO data, non-English locales)
           return deps.filter((dep) => {
             if (
+              dep.includes('hero-3d') ||
               dep.includes('vendor-pdf') ||
               dep.includes('vendor-fontkit') ||
               dep.includes('vendor-jszip') ||
               dep.includes('vendor-firebase') ||
-              dep.includes('vendor-three') ||
               dep.includes('app-seo-data') ||
               dep.includes('locales-de') ||
               dep.includes('locales-fr') ||
@@ -403,10 +403,10 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
+            if (id.includes('/src/pages/home/HomeThreeBackground')) {
+              return 'hero-3d';
+            }
             if (id.includes('node_modules')) {
-              if (id.includes('/three/')) {
-                return 'vendor-three';
-              }
               // Granular PDF processing engines
               if (id.includes('@pdf-lib/fontkit')) {
                 return 'vendor-fontkit';
@@ -445,32 +445,32 @@ export default defineConfig(({ command, mode }) => {
               }
             }
 
-          // Separate article bodies from general UI localization so initial common.json stays <115KB
-          if (id.includes('articles-body.json')) {
-            const match = id.match(/\/locales\/([a-z]{2})\//);
-            return match ? `locales-${match[1]}-articles` : 'locales-articles';
-          }
+            // Separate article bodies from general UI localization so initial common.json stays <115KB
+            if (id.includes('articles-body.json')) {
+              const match = id.match(/\/locales\/([a-z]{2})\//);
+              return match ? `locales-${match[1]}-articles` : 'locales-articles';
+            }
 
-          // Per-locale chunking so users only download the language they need
-          if (id.includes('/locales/de/')) return 'locales-de';
-          if (id.includes('/locales/fr/')) return 'locales-fr';
-          if (id.includes('/locales/es/')) return 'locales-es';
-          if (id.includes('/locales/bn/')) return 'locales-bn';
-          if (id.includes('/locales/hi/')) return 'locales-hi';
-          if (id.includes('/locales/zh/')) return 'locales-zh';
-          if (id.includes('/locales/en/')) return 'locales-en';
+            // Per-locale chunking so users only download the language they need
+            if (id.includes('/locales/de/')) return 'locales-de';
+            if (id.includes('/locales/fr/')) return 'locales-fr';
+            if (id.includes('/locales/es/')) return 'locales-es';
+            if (id.includes('/locales/bn/')) return 'locales-bn';
+            if (id.includes('/locales/hi/')) return 'locales-hi';
+            if (id.includes('/locales/zh/')) return 'locales-zh';
+            if (id.includes('/locales/en/')) return 'locales-en';
 
-          // Separate lightweight catalog from heavy longFormBody SEO data
-          if (id.includes('/src/config/seo-catalog')) {
-            return 'app-seo-catalog';
-          }
-          if (id.includes('/src/config/seo-data')) {
-            return 'app-seo-data';
-          }
-          return undefined;
+            // Separate lightweight catalog from heavy longFormBody SEO data
+            if (id.includes('/src/config/seo-catalog')) {
+              return 'app-seo-catalog';
+            }
+            if (id.includes('/src/config/seo-data')) {
+              return 'app-seo-data';
+            }
+            return undefined;
+          },
         },
       },
-    },
   },
     server: {
       host: '0.0.0.0',

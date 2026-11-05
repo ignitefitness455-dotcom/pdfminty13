@@ -1,10 +1,11 @@
-import { ShieldCheck, BookOpen, ExternalLink } from 'lucide-react';
+import { ShieldCheck, BookOpen, ExternalLink, Sparkles } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { NORD_AFFILIATE_LINKS } from '../config/constants';
 import { ROUTES } from '../config/routes';
+import { useHero3D } from '../hooks/useHero3D';
 import {
   DEFAULT_LOCALE,
   SUPPORTED_LOCALES,
@@ -20,6 +21,7 @@ export interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal }) => {
   const { t, i18n } = useTranslation('common');
+  const { enabled: is3DEnabled, toggle: toggle3DMode, supported: is3DSupported } = useHero3D();
   const rawLang = (i18n.language || DEFAULT_LOCALE).split('-')[0].toLowerCase();
   const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
     ? (rawLang as SupportedLocale)
@@ -261,6 +263,44 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                   })}
                 </button>
               </li>
+              {is3DSupported && (
+                <li className="pt-1">
+                  <button
+                    type="button"
+                    id="footer-toggle-3d-mode"
+                    role="switch"
+                    aria-checked={is3DEnabled}
+                    aria-label={t('footer.links.toggle3dMode', {
+                      defaultValue: 'Toggle 3D Mode',
+                    })}
+                    onClick={toggle3DMode}
+                    className="inline-flex items-center gap-2 hover:text-emerald-500 transition-colors cursor-pointer text-left group"
+                  >
+                    <Sparkles
+                      className={`w-3.5 h-3.5 shrink-0 ${
+                        is3DEnabled
+                          ? 'text-emerald-500'
+                          : 'text-slate-400 dark:text-slate-500 group-hover:text-emerald-500'
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {t('footer.links.toggle3dMode', {
+                        defaultValue: 'Toggle 3D Mode',
+                      })}
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider border ${
+                        is3DEnabled
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                          : 'bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300/70 dark:border-slate-700'
+                      }`}
+                    >
+                      {is3DEnabled ? 'ON' : 'OFF'}
+                    </span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         </div>

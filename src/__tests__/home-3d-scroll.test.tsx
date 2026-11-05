@@ -1,7 +1,10 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, renderHook, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { Footer } from '../components/Footer';
+import { useHero3D, HERO_3D_STORAGE_KEY, detectPerformanceMode } from '../hooks/useHero3D';
+import { HeroSection } from '../pages/home/HeroSection';
 import {
   AUTO_SCROLL_STEP_PX,
   computeCard3DTransform,
@@ -11,6 +14,20 @@ import { Scroll3DControlBar } from '../pages/home/Scroll3DControlBar';
 import { ToolCard } from '../pages/home/ToolCard';
 
 describe('Homepage 3D Background, Scroll3DControlBar & 3D ToolCard Animations', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    Object.defineProperty(navigator, 'deviceMemory', {
+      writable: true,
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      writable: true,
+      configurable: true,
+      value: 0,
+    });
+  });
+
   it('cycles Auto mode through all 5 3D motions (Flip Cascade -> Helix Spiral -> Deep Zoom -> Orbit Wave -> Prism Fold) every 380px of scroll', () => {
     expect(AUTO_SCROLL_STEP_PX).toBeGreaterThanOrEqual(350);
     expect(AUTO_SCROLL_STEP_PX).toBeLessThanOrEqual(420);
@@ -168,6 +185,7 @@ describe('Homepage 3D Background, Scroll3DControlBar & 3D ToolCard Animations', 
     const cardLink = document.getElementById('tool-card-merge');
     expect(cardLink).not.toBeNull();
     expect(cardLink?.classList.contains('pdf-tool-card-3d')).toBe(true);
+    expect(cardLink?.className).toContain('hover:scale-[1.02]');
     expect(cardLink?.querySelector('.pdf-card-depth-shadow')).not.toBeNull();
     expect(cardLink?.querySelector('.pdf-card-holographic-shimmer')).not.toBeNull();
     expect(cardLink?.querySelector('.pdf-card-spotlight-glow')).not.toBeNull();
@@ -176,4 +194,178 @@ describe('Homepage 3D Background, Scroll3DControlBar & 3D ToolCard Animations', 
     expect(cardLink?.querySelector('[data-layer-depth="22px"]')).not.toBeNull();
     expect(cardLink?.querySelector('[data-layer-depth="26px"]')).not.toBeNull();
   });
+
+  it('uses requestAnimationFrame for ToolCard mouse-tracking rotation and applies 1.02x hover scale', () => {
+    let queuedCallback: FrameRequestCallback | null = null;
+    const rafSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      queuedCallback = cb;
+      return 101;
+    });
+    const cancelRafSpy = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+    render(
+      <MemoryRouter>
+        <ToolCard
+          tool={{
+            slug: 'merge-pdf',
+            name: 'Merge PDF',
+            description: 'Combine multiple PDFs locally in your browser.',
+          }}
+          variant="featured"
+          cardIndex={0}
+        />
+      </MemoryRouter>
+    );
+
+    const cardLink = document.getElementById('tool-card-merge') as HTMLAnchorElement;
+    vi.spyOn(cardLink, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      width: 200,
+      height: 100,
+      right: 200,
+      bottom: 100,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.pointerMove(cardLink, { clientX: 150, clientY: 25 });
+    expect(rafSpy).toHaveBeenCalledTimes(1);
+    expect(queuedCallback).not.toBeNull();
+
+    // Execute the queued animation frame
+    act(() => {
+      queuedCallback?.(16.67);
+    });
+
+    expect(cardLink.style.getPropertyValue('--hover-rx')).toBe('2.50deg');
+    expect(cardLink.style.getPropertyValue('--hover-ry')).toBe('3.00deg');
+    expect(cardLink.style.getPropertyValue('--hover-tz')).toBe('18px');
+    expect(cardLink.style.getPropertyValue('--hover-scale')).toBe('1.02');
+
+    fireEvent.pointerLeave(cardLink);
+    expect(cardLink.style.getPropertyValue('--hover-rx')).toBe('0deg');
+    expect(cardLink.style.getPropertyValue('--hover-ry')).toBe('0deg');
+    expect(cardLink.style.getPropertyValue('--hover-tz')).toBe('0px');
+    expect(cardLink.style.getPropertyValue('--hover-scale')).toBe('1');
+
+    rafSpy.mockRestore();
+    cancelRafSpy.mockRestore();
+  });
+
+  it('enables performance mode and disables 3D transformation on devices with low memory or limited touch capabilities', () => {
+    Object.defineProperty(navigator, 'deviceMemory', {
+      writable: true,
+      configurable: true,
+      value: 2,
+    });
+
+    expect(detectPerformanceMode()).toBe(true);
+
+    render(
+      <MemoryRouter>
+        <ToolCard
+          tool={{
+            slug: 'merge-pdf',
+            name: 'Merge PDF',
+            description: 'Combine multiple PDFs locally in your browser.',
+          }}
+          variant="featured"
+          cardIndex={0}
+        />
+      </MemoryRouter>
+    );
+
+    const cardLink = document.getElementById('tool-card-merge') as HTMLAnchorElement;
+    expect(cardLink.getAttribute('data-performance-mode')).toBe('true');
+    expect(cardLink.getAttribute('data-3d-disabled')).toBe('true');
+    expect(cardLink.getAttribute('data-card-3d')).toBe('false');
+
+    fireEvent.pointerMove(cardLink, { clientX: 120, clientY: 40 });
+    expect(cardLink.style.getPropertyValue('--hover-rx')).toBe('');
+    expect(cardLink.style.getPropertyValue('--hover-ry')).toBe('');
+  });
+
+  it('allows users to toggle 3D mode on/off from the site Footer switch', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(hover: hover) and (pointer: fine)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    render(
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>
+    );
+
+    const footerSwitch = document.getElementById('footer-toggle-3d-mode') as HTMLButtonElement;
+    expect(footerSwitch).not.toBeNull();
+    expect(footerSwitch).toHaveAttribute('aria-checked', 'true');
+
+    fireEvent.click(footerSwitch);
+    expect(footerSwitch).toHaveAttribute('aria-checked', 'false');
+    expect(window.localStorage.getItem(HERO_3D_STORAGE_KEY)).toBe('false');
+
+    fireEvent.click(footerSwitch);
+    expect(footerSwitch).toHaveAttribute('aria-checked', 'true');
+    expect(window.localStorage.getItem(HERO_3D_STORAGE_KEY)).toBe('true');
+  });
+
+  it('useHero3D defaults OFF on mobile/tablet and does not request 3D chunk until manual toggle', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 390 });
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    const { result } = renderHook(() => useHero3D());
+    expect(result.current.isDesktop).toBe(false);
+    expect(result.current.enabled).toBe(false);
+    expect(result.current.shouldRender3D).toBe(false);
+
+    act(() => {
+      result.current.toggle();
+    });
+
+    expect(result.current.enabled).toBe(true);
+    expect(result.current.shouldRender3D).toBe(true);
+    expect(window.localStorage.getItem(HERO_3D_STORAGE_KEY)).toBe('true');
+  });
+
+  it('HeroSection keeps the legacy Enable 3D / Disable 3D toggle button hidden', () => {
+    const onToggle = vi.fn();
+    const { rerender } = render(
+      <HeroSection enabled3D={false} onToggle3D={onToggle} supported3D={true} />
+    );
+
+    const btn = document.getElementById('hero-3d-toggle-btn') as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    expect(btn.hasAttribute('hidden')).toBe(true);
+    expect(btn.className).toContain('hidden');
+
+    rerender(
+      <HeroSection
+        enabled3D={false}
+        onToggle3D={onToggle}
+        supported3D={true}
+        autoDisabledNotice={true}
+      />
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('3D turned off to keep things fast');
+  });
 });
+

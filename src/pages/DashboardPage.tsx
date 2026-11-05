@@ -49,6 +49,7 @@ import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
+import { useHero3D } from '../hooks/useHero3D';
 import {
   getActivityList,
   clearAllActivities,
@@ -158,6 +159,7 @@ export const DashboardPage: React.FC = () => {
   const [copiedUid, setCopiedUid] = useState(false);
 
   // Client-Side Workspace Preferences
+  const { enabled: is3DEnabled, toggle: toggle3DMode } = useHero3D();
   const [perfMode, setPerfMode] = useState<string>(() => {
     return localStorage.getItem('pdfminty_pref_perf') || 'wasm_simd';
   });
@@ -2123,7 +2125,7 @@ export const DashboardPage: React.FC = () => {
                   </span>
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                   <div className="space-y-1.5">
                     <label className="font-bold text-slate-700 dark:text-slate-300 block">
                       {isBn ? 'প্রসেসিং ইঞ্জিন' : 'Processing Core'}
@@ -2178,6 +2180,50 @@ export const DashboardPage: React.FC = () => {
                       </span>
                       <CheckCircle2
                         className={`w-4 h-4 ${autoFlush ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                      {isBn ? 'থ্রিডি কার্ড মোড' : 'Toggle 3D Mode'}
+                    </label>
+                    <button
+                      type="button"
+                      id="dashboard-toggle-3d-mode"
+                      role="switch"
+                      aria-checked={is3DEnabled}
+                      aria-label={isBn ? 'থ্রিডি মোড পরিবর্তন করুন' : 'Toggle 3D Mode'}
+                      onClick={() => {
+                        toggle3DMode();
+                        showToast(
+                          !is3DEnabled
+                            ? isBn
+                              ? 'থ্রিডি কার্ড মোড চালু করা হয়েছে'
+                              : '3D card mode enabled'
+                            : isBn
+                              ? 'পারফরম্যান্সের জন্য থ্রিডি কার্ড মোড বন্ধ করা হয়েছে'
+                              : '3D card mode disabled (Performance Mode)',
+                          'info'
+                        );
+                      }}
+                      className={`w-full py-2 px-3 rounded-xl font-bold transition-all border flex items-center justify-between cursor-pointer ${
+                        is3DEnabled
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      <span>
+                        {is3DEnabled
+                          ? isBn
+                            ? 'চালু (3D ON)'
+                            : '3D Active (ON)'
+                          : isBn
+                            ? 'বন্ধ (Performance OFF)'
+                            : 'Performance (OFF)'}
+                      </span>
+                      <Sparkles
+                        className={`w-4 h-4 ${is3DEnabled ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`}
                       />
                     </button>
                   </div>

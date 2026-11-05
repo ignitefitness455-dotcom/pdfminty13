@@ -1,10 +1,11 @@
 import { Sparkles, ArrowRight } from 'lucide-react';
-import React from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { iconMap, badgeColors, badgeLabels, prefetchToolChunk } from '../../config/homeConfig';
 import { TOOLS_CATALOG as TOOLS } from '../../config/seo-catalog';
+import { detectPerformanceMode, readStored3DPreference } from '../../hooks/useHero3D';
 import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
@@ -23,13 +24,102 @@ interface ToolCardProps {
   variant?: 'featured' | 'studio';
   cardIndex?: number;
   is3DEnabled?: boolean;
+  performanceMode?: boolean;
 }
 
 const TOOLS_BY_SLUG = new Map(TOOLS.map((item) => [item.slug, item]));
 
 export const ToolCard: React.FC<ToolCardProps> = React.memo(
-  ({ tool, variant = 'studio', cardIndex = 0, is3DEnabled = true }) => {
+  ({ tool, variant = 'studio', cardIndex = 0, is3DEnabled = true, performanceMode }) => {
     const { t, i18n } = useTranslation('common');
+    const cardRef = useRef<HTMLAnchorElement | null>(null);
+    const rafIdRef = useRef<number>(0);
+    const pendingPointerRef = useRef<{ clientX: number; clientY: number } | null>(null);
+
+    const isLowEndOrTouchLimited =
+      performanceMode !== undefined
+        ? performanceMode
+        : detectPerformanceMode() && readStored3DPreference() !== true;
+
+    const isPerformanceMode = !is3DEnabled || isLowEndOrTouchLimited;
+    const effective3DEnabled = !isPerformanceMode;
+
+    const cancelPendingFrame = useCallback(() => {
+      if (rafIdRef.current && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = 0;
+      }
+      pendingPointerRef.current = null;
+    }, []);
+
+    useEffect(() => {
+      const el = cardRef.current;
+      if (isPerformanceMode && el) {
+        cancelPendingFrame();
+        el.style.removeProperty('--hover-rx');
+        el.style.removeProperty('--hover-ry');
+        el.style.removeProperty('--hover-tz');
+        el.style.removeProperty('--hover-scale');
+        el.style.removeProperty('--card-rx');
+        el.style.removeProperty('--card-ry');
+        el.style.removeProperty('--card-rz');
+        el.style.removeProperty('--card-tx');
+        el.style.removeProperty('--card-ty');
+        el.style.removeProperty('--card-tz');
+        el.style.removeProperty('--card-scale');
+      }
+      return () => {
+        cancelPendingFrame();
+      };
+    }, [isPerformanceMode, cancelPendingFrame]);
+
+    const applyPointerRotationFrame = useCallback(() => {
+      rafIdRef.current = 0;
+      const el = cardRef.current;
+      const coords = pendingPointerRef.current;
+      if (!el || !coords || !effective3DEnabled) return;
+
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const relX = (coords.clientX - rect.left) / rect.width - 0.5;
+      const relY = (coords.clientY - rect.top) / rect.height - 0.5;
+      el.style.setProperty('--hover-rx', `${(-relY * 10).toFixed(2)}deg`);
+      el.style.setProperty('--hover-ry', `${(relX * 12).toFixed(2)}deg`);
+      el.style.setProperty('--hover-tz', '18px');
+      el.style.setProperty('--hover-scale', '1.02');
+    }, [effective3DEnabled]);
+
+    const handlePointerMove = useCallback(
+      (e: React.PointerEvent<HTMLAnchorElement>) => {
+        if (!effective3DEnabled || e.pointerType === 'touch') return;
+        cardRef.current = e.currentTarget;
+        pendingPointerRef.current = { clientX: e.clientX, clientY: e.clientY };
+
+        if (!rafIdRef.current && typeof window !== 'undefined') {
+          if (typeof window.requestAnimationFrame === 'function') {
+            rafIdRef.current = window.requestAnimationFrame(applyPointerRotationFrame);
+          } else {
+            applyPointerRotationFrame();
+          }
+        }
+      },
+      [effective3DEnabled, applyPointerRotationFrame]
+    );
+
+    const handlePointerLeave = useCallback(
+      (e: React.PointerEvent<HTMLAnchorElement>) => {
+        cancelPendingFrame();
+        if (!effective3DEnabled) return;
+        const el = e.currentTarget;
+        el.style.setProperty('--hover-rx', '0deg');
+        el.style.setProperty('--hover-ry', '0deg');
+        el.style.setProperty('--hover-tz', '0px');
+        el.style.setProperty('--hover-scale', '1');
+      },
+      [effective3DEnabled, cancelPendingFrame]
+    );
+
     if (!tool || !tool.slug) return null;
     const toolSEO = TOOLS_BY_SLUG.get(tool.slug);
     if (!toolSEO) return null;
@@ -66,38 +156,28 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(
     const isFeaturedVariant = variant === 'featured';
     const isAiHybrid = ['ai-analyze-pdf', 'ocr-pdf'].includes(tool.slug);
 
-    const handlePointerMove = (e: React.PointerEvent<HTMLAnchorElement>) => {
-      if (!is3DEnabled) return;
-      const el = e.currentTarget;
-      const rect = el.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) return;
-      const relX = (e.clientX - rect.left) / rect.width - 0.5;
-      const relY = (e.clientY - rect.top) / rect.height - 0.5;
-      el.style.setProperty('--hover-rx', `${(-relY * 10).toFixed(2)}deg`);
-      el.style.setProperty('--hover-ry', `${(relX * 12).toFixed(2)}deg`);
-      el.style.setProperty('--hover-tz', '18px');
-    };
-
-    const handlePointerLeave = (e: React.PointerEvent<HTMLAnchorElement>) => {
-      if (!is3DEnabled) return;
-      const el = e.currentTarget;
-      el.style.setProperty('--hover-rx', '0deg');
-      el.style.setProperty('--hover-ry', '0deg');
-      el.style.setProperty('--hover-tz', '0px');
-    };
-
     return (
       <Link
+        ref={cardRef}
         to={targetPath}
         id={`tool-card-${toolId}`}
-        data-card-3d="true"
+        data-card-3d={effective3DEnabled ? 'true' : 'false'}
+        data-performance-mode={isPerformanceMode ? 'true' : 'false'}
+        data-3d-disabled={isPerformanceMode ? 'true' : 'false'}
         data-card-3d-index={cardIndex}
         onPointerDown={() => prefetchToolChunk(tool.slug)}
-        onMouseEnter={() => prefetchToolChunk(tool.slug)}
-        onPointerMove={is3DEnabled ? handlePointerMove : undefined}
-        onPointerLeave={is3DEnabled ? handlePointerLeave : undefined}
+        onMouseEnter={(e) => {
+          prefetchToolChunk(tool.slug);
+          if (effective3DEnabled) {
+            e.currentTarget.style.setProperty('--hover-scale', '1.02');
+          }
+        }}
+        onPointerMove={effective3DEnabled ? handlePointerMove : undefined}
+        onPointerLeave={effective3DEnabled ? handlePointerLeave : undefined}
         onFocus={() => prefetchToolChunk(tool.slug)}
-        className={`pdf-tool-card-3d rounded-2xl p-5 flex flex-col justify-between text-left group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 no-underline border ${
+        className={`pdf-tool-card-3d rounded-2xl p-5 flex flex-col justify-between text-left group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 no-underline border transition-transform duration-200 ${
+          effective3DEnabled ? 'hover:scale-[1.02]' : ''
+        } ${
           isFeaturedVariant
             ? 'bg-gradient-to-b from-white via-white to-emerald-50/35 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-emerald-950/25 border-emerald-500/25 dark:border-emerald-500/25 hover:border-emerald-500/65 dark:hover:border-emerald-400/65 shadow-xs'
             : 'bg-white/95 dark:bg-slate-900/85 border-slate-200/85 dark:border-slate-800/85 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 shadow-2xs'

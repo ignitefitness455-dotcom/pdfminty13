@@ -109,7 +109,10 @@
       "badgePrivate": "Private In-Browser Tools",
       "h1Part1": "Free Browser-Based PDF Tools — 100% Private, ",
       "h1Part2": "Zero Uploads",
-      "subtitle": "Merge, split, and edit your documents directly in your web browser. PDFMinty processes standard PDF tasks locally on your device without server uploads. No accounts required—fast, privacy-first PDF tools that run in your browser."
+      "subtitle": "Merge, split, and edit your documents directly in your web browser. PDFMinty processes standard PDF tasks locally on your device without server uploads. No accounts required—fast, privacy-first PDF tools that run in your browser.",
+      "enable3D": "Enable 3D",
+      "disable3D": "Disable 3D",
+      "autoDisabled3D": "3D turned off to keep things fast"
     },
     "search": {
       "placeholder": "Search PDF tools...",

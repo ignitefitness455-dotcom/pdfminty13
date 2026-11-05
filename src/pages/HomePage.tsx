@@ -8,6 +8,7 @@ import { SEO } from '../components/SEO';
 import { SeoResourcesSection } from '../components/SeoResourcesSection';
 import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import { useDebounce } from '../hooks/useDebounce';
+import { useHero3D } from '../hooks/useHero3D';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 import { CtaSection } from './home/CtaSection';
@@ -96,27 +97,19 @@ export const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selected3DMode, setSelected3DMode] = useState<Scroll3DMode>('auto');
   const [autoActiveAnim, setAutoActiveAnim] = useState<Active3DAnimation>('flip-cascade');
-  const [is3DEnabled, setIs3DEnabled] = useState<boolean>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem('pdfminty_3d_enabled') !== 'false';
-      }
-    } catch {
-      // Ignore storage access errors
-    }
-    return true;
-  });
 
-  const handleToggle3DEnabled = (enabled: boolean) => {
-    setIs3DEnabled(enabled);
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem('pdfminty_3d_enabled', enabled ? 'true' : 'false');
-      }
-    } catch {
-      // Ignore storage access errors
-    }
-  };
+  const {
+    enabled: is3DEnabled,
+    toggle: handleToggle3D,
+    supported: is3DSupported,
+    isPerformanceMode,
+    shouldRender3D,
+    isLoading3D,
+    autoDisabledNotice,
+    setEnabled: handleToggle3DEnabled,
+    handleLowFps,
+    handleSceneMounted,
+  } = useHero3D();
 
   const { debouncedValue, isDebouncing } = useDebounce(searchQuery, 200);
   const isBn = (i18n.language || '').startsWith('bn');
@@ -200,11 +193,22 @@ export const HomePage: React.FC = () => {
     <div className="animate-fadein relative z-10 font-sans text-on-background bg-transparent pb-12">
       <SEO />
 
-      {/* Three.js 3D Background & 3D Emerald Laser Scroll Progress Bar (when 3D is ON) */}
-      {is3DEnabled && (
+      {/* Zero-CLS Static Ambient Placeholder reserving exact 3D background space */}
+      <div
+        id="hero-3d-static-placeholder"
+        className="fixed inset-0 -z-10 pointer-events-none overflow-hidden select-none bg-[radial-gradient(ellipse_at_50%_22%,rgba(16,185,129,0.08)_0%,transparent_65%)]"
+        aria-hidden="true"
+      />
+
+      {/* Deferred Lightweight 3D Background & Scroll Bar (loaded only after interaction/3s on desktop or manual toggle on mobile) */}
+      {shouldRender3D && (
         <SilentErrorBoundary>
           <React.Suspense fallback={null}>
-            <HomeThreeBackground activeAnimation={effective3DAnimation} />
+            <HomeThreeBackground
+              activeAnimation={effective3DAnimation}
+              onLowFps={handleLowFps}
+              onReady={handleSceneMounted}
+            />
           </React.Suspense>
         </SilentErrorBoundary>
       )}
@@ -224,7 +228,13 @@ export const HomePage: React.FC = () => {
         onToggleEnabled={handleToggle3DEnabled}
       />
 
-      <HeroSection />
+      <HeroSection
+        enabled3D={is3DEnabled}
+        onToggle3D={handleToggle3D}
+        supported3D={is3DSupported}
+        isLoading3D={isLoading3D}
+        autoDisabledNotice={autoDisabledNotice}
+      />
 
       <section aria-labelledby="all-tools-heading">
         <h2 id="all-tools-heading" className="sr-only">
@@ -274,7 +284,8 @@ export const HomePage: React.FC = () => {
           filteredTools={filteredTools}
           showTwoSections={showTwoSections}
           scroll3DMode={selected3DMode}
-          is3DEnabled={is3DEnabled}
+          is3DEnabled={shouldRender3D}
+          performanceMode={isPerformanceMode}
           onClearSearch={() => {
             setSearchQuery('');
             setSelectedCategory('all');

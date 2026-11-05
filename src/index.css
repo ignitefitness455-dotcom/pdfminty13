@@ -778,11 +778,20 @@ textarea {
     )
     rotateX(calc(var(--card-rx, 0deg) + var(--hover-rx, 0deg)))
     rotateY(calc(var(--card-ry, 0deg) + var(--hover-ry, 0deg))) rotateZ(var(--card-rz, 0deg))
-    scale3d(var(--card-scale, 1), var(--card-scale, 1), 1);
+    scale3d(
+      calc(var(--card-scale, 1) * var(--hover-scale, 1)),
+      calc(var(--card-scale, 1) * var(--hover-scale, 1)),
+      1
+    );
   transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.2s ease,
     box-shadow 0.25s ease;
   will-change: transform;
+}
+
+.pdf-tool-card-3d:hover {
+  --hover-scale: 1.02;
 }
 
 .pdf-card-3d-body,
@@ -893,12 +902,24 @@ html.dark .pdf-card-depth-shadow {
 [data-3d-disabled='true'] .pdf-layer-title,
 [data-3d-disabled='true'] .pdf-layer-desc,
 [data-3d-disabled='true'] .pdf-layer-cta,
-[data-3d-disabled='true'] .pdf-card-depth-shadow {
+[data-3d-disabled='true'] .pdf-card-depth-shadow,
+[data-performance-mode='true'].pdf-tool-card-3d,
+[data-performance-mode='true'] .pdf-tool-card-3d,
+[data-performance-mode='true'] .pdf-layer-icon,
+[data-performance-mode='true'] .pdf-layer-badge,
+[data-performance-mode='true'] .pdf-layer-title,
+[data-performance-mode='true'] .pdf-layer-desc,
+[data-performance-mode='true'] .pdf-layer-cta,
+[data-performance-mode='true'] .pdf-card-depth-shadow {
   transform: none !important;
+  will-change: auto;
 }
 
 [data-3d-disabled='true'] .pdf-card-holographic-shimmer,
 [data-3d-disabled='true'] .pdf-card-spotlight-glow,
-[data-3d-disabled='true'] .pdf-card-depth-shadow {
+[data-3d-disabled='true'] .pdf-card-depth-shadow,
+[data-performance-mode='true'] .pdf-card-holographic-shimmer,
+[data-performance-mode='true'] .pdf-card-spotlight-glow,
+[data-performance-mode='true'] .pdf-card-depth-shadow {
   opacity: 0 !important;
 }
