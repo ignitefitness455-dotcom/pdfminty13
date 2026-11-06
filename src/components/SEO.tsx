@@ -80,11 +80,15 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
 
   // Default values for homepage or custom non-tool pathways.
   const title = titleOverride || localizedTitle || item?.metaTitle || HOMEPAGE_META.title;
-  const description =
+  const rawDescription =
     descriptionOverride ||
     localizedDescription ||
     item?.metaDescription ||
     HOMEPAGE_META.description;
+  const description =
+    rawDescription.length > 160
+      ? `${rawDescription.slice(0, 157).replace(/\s+\S*$/, '')}...`
+      : rawDescription;
 
   const ogType = item?.type === 'article' ? 'article' : 'website';
 

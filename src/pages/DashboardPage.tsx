@@ -80,6 +80,7 @@ export const DashboardPage: React.FC = () => {
     isPro,
     upgradeToPro,
     openBillingPortal,
+    manageSubscription,
     logout,
     updateDisplayName,
     resetPassword,
@@ -134,23 +135,30 @@ export const DashboardPage: React.FC = () => {
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
 
-  // Subscription Lifecycle (renewal date & auto-renew)
+  // Subscription Lifecycle derived from Firestore / Lemon Squeezy server state
   const userUid = user?.uid || 'guest';
-  const [autoRenew, setAutoRenew] = useState<boolean>(() => {
-    const saved = localStorage.getItem(`pdfminty_sub_autorenew_${userUid}`);
-    return saved !== null ? saved === 'true' : true;
-  });
-  const [renewalDate] = useState<string>(() => {
-    const saved = localStorage.getItem(`pdfminty_sub_renewal_${userUid}`);
-    if (saved) return saved;
-    const nextMonth = new Date();
-    nextMonth.setDate(nextMonth.getDate() + 30);
-    return nextMonth.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  });
+  const isLifetimePlan = user?.plan === 'lifetime' || user?.subscriptionStatus === 'lifetime';
+  const isSubscriptionCancelled = user?.subscriptionStatus === 'cancelled';
+  const autoRenew = !isLifetimePlan && !isSubscriptionCancelled;
+  const renewalDate = useMemo(() => {
+    if (isLifetimePlan) {
+      return isBn ? 'আজীবন সক্রিয়' : 'Lifetime (Never expires)';
+    }
+    const rawDate = isSubscriptionCancelled
+      ? user?.endsAt || user?.renewsAt
+      : user?.renewsAt || user?.endsAt;
+    if (rawDate) {
+      const parsed = new Date(rawDate);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toLocaleDateString(isBn ? 'bn-BD' : 'en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      }
+    }
+    return isBn ? 'বিলিং পোর্টালে পরিচালিত' : 'Managed via Billing Portal';
+  }, [isLifetimePlan, isSubscriptionCancelled, user?.renewsAt, user?.endsAt, isBn]);
 
   // Clear History Modal State (replacing window.confirm)
   const [showClearHistoryModal, setShowClearHistoryModal] = useState(false);
@@ -394,6 +402,78 @@ export const DashboardPage: React.FC = () => {
         badge: 'Privacy',
         category: 'Security' as ToolCategory,
       },
+      {
+        id: 'extract-pages',
+        name: isBn ? 'পেজ এক্সট্রাক্ট' : 'Extract PDF Pages',
+        route: ROUTES.EXTRACT_PAGES,
+        desc: isBn ? 'নির্বাচিত পেজগুলো আলাদা করে নতুন পিডিএফ তৈরি করুন' : 'Extract selected pages into a new clean PDF document',
+        icon: FolderOpen,
+        badge: 'Organize',
+        category: 'Organize' as ToolCategory,
+      },
+      {
+        id: 'page-numbers',
+        name: isBn ? 'পেজ নম্বর যুক্ত করুন' : 'Add Page Numbers',
+        route: ROUTES.PAGE_NUMBERS,
+        desc: isBn ? 'কাস্টম পজিশন ও ফরম্যাটে পেজ নম্বর স্ট্যাম্প করুন' : 'Insert customizable page numbering headers or footers',
+        icon: FileText,
+        badge: 'Organize',
+        category: 'Organize' as ToolCategory,
+      },
+      {
+        id: 'add-blank',
+        name: isBn ? 'ফাঁকা পেজ যুক্ত করুন' : 'Add Blank Page',
+        route: ROUTES.ADD_BLANK,
+        desc: isBn ? 'পিডিএফ-এর যেকোনো স্থানে নতুন ফাঁকা পেজ যোগ করুন' : 'Insert blank pages anywhere inside your PDF document',
+        icon: FileText,
+        badge: 'Organize',
+        category: 'Organize' as ToolCategory,
+      },
+      {
+        id: 'grayscale',
+        name: isBn ? 'গ্রেস্কেল পিডিএফ' : 'Grayscale PDF',
+        route: ROUTES.GRAYSCALE,
+        desc: isBn ? 'রঙিন পিডিএফ সাদাকালো বা প্রিন্ট-বান্ধব গ্রেস্কেলে রূপান্তর' : 'Convert colored PDF pages to ink-saving grayscale',
+        icon: Sliders,
+        badge: 'Optimize',
+        category: 'Optimize' as ToolCategory,
+      },
+      {
+        id: 'flatten',
+        name: isBn ? 'ফ্ল্যাটেন পিডিএফ' : 'Flatten PDF',
+        route: ROUTES.FLATTEN,
+        desc: isBn ? 'ফর্ম ফিল্ড ও অ্যানোটেশন স্থায়ীভাবে পেজে লক করুন' : 'Lock interactive form fields and annotations permanently',
+        icon: Layers,
+        badge: 'Security',
+        category: 'Security' as ToolCategory,
+      },
+      {
+        id: 'repair',
+        name: isBn ? 'রিপেয়ার পিডিএফ' : 'Repair PDF',
+        route: ROUTES.REPAIR,
+        desc: isBn ? 'ত্রুটিপূর্ণ বা ক্ষতিগ্রস্ত পিডিএফ স্ট্রাকচার রিকভার করুন' : 'Rebuild corrupted XRef tables and broken PDF streams',
+        icon: Settings,
+        badge: 'Optimize',
+        category: 'Optimize' as ToolCategory,
+      },
+      {
+        id: 'edit-metadata',
+        name: isBn ? 'মেটাডেটা এডিটর' : 'Edit PDF Metadata',
+        route: ROUTES.EDIT_METADATA,
+        desc: isBn ? 'পিডিএফ-এর টাইটেল, লেখক ও কীওয়ার্ড প্রপার্টি পরিবর্তন করুন' : 'Inspect and modify PDF title, author, and subject tags',
+        icon: Edit3,
+        badge: 'Organize',
+        category: 'Organize' as ToolCategory,
+      },
+      {
+        id: 'compare-pdf',
+        name: isBn ? 'পিডিএফ তুলনা করুন' : 'Compare PDF',
+        route: ROUTES.COMPARE_PDF,
+        desc: isBn ? 'দুটি পিডিএফ ফাইলের টেক্সট ও ভিজ্যুয়াল পার্থক্য খুঁজুন' : 'Side-by-side visual and text diff between two PDFs',
+        icon: Search,
+        badge: 'Analyze',
+        category: 'AI' as ToolCategory,
+      },
     ],
     [isBn]
   );
@@ -512,13 +592,28 @@ export const DashboardPage: React.FC = () => {
 
   const handleRenewSubscription = async () => {
     setIsRenewing(true);
-    setAutoRenew(true);
     try {
       localStorage.setItem(`pdfminty_sub_autorenew_${userUid}`, 'true');
     } catch {
       // ignore
     }
     try {
+      if (isSubscriptionCancelled && typeof manageSubscription === 'function') {
+        const res = await manageSubscription('resume');
+        if (res?.updatedViaApi) {
+          showToast(
+            isBn
+              ? 'আপনার প্রো সাবস্ক্রিপশন পুনরায় সক্রিয় করা হয়েছে!'
+              : 'Your Pro subscription auto-renewal has been resumed!',
+            'success'
+          );
+          return;
+        }
+        if (res?.requiresPortalRedirect && res.portalUrl) {
+          window.location.assign(res.portalUrl);
+          return;
+        }
+      }
       showToast(
         isBn
           ? 'রিনিউয়াল চেকআউট পেজে রিডাইরেক্ট করা হচ্ছে...'
@@ -542,41 +637,82 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  const handleConfirmCancelSubscription = () => {
-    setAutoRenew(false);
+  const handleConfirmCancelSubscription = async () => {
+    setShowCancelModal(false);
     try {
       localStorage.setItem(`pdfminty_sub_autorenew_${userUid}`, 'false');
     } catch {
       // ignore
     }
-    setShowCancelModal(false);
+    if (typeof manageSubscription === 'function') {
+      const res = await manageSubscription('cancel');
+      if (res?.updatedViaApi) {
+        showToast(
+          isBn
+            ? 'সাবস্ক্রিপশন বাতিল করা হয়েছে। বর্তমান বিলিং মেয়াদ শেষ হওয়া পর্যন্ত প্রো সুবিধা চালু থাকবে।'
+            : 'Subscription cancelled. You will retain Pro access until the end of your current billing period.',
+          'info'
+        );
+        return;
+      }
+      if (res?.requiresPortalRedirect && res.portalUrl) {
+        showToast(
+          isBn
+            ? 'সাবস্ক্রিপশন বাতিল সম্পন্ন করতে Lemon Squeezy বিলিং পোর্টালে নিয়ে যাওয়া হচ্ছে...'
+            : 'Redirecting to Lemon Squeezy Customer Portal to complete cancellation...',
+          'info'
+        );
+        if (typeof openBillingPortal === 'function') {
+          openBillingPortal();
+        } else {
+          window.location.assign(res.portalUrl);
+        }
+        return;
+      }
+    }
     showToast(
       isBn
         ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে। চূড়ান্ত বাতিলের জন্য Lemon Squeezy বিলিং পোর্টালে রিডাইরেক্ট করা হচ্ছে...'
         : 'Auto-renew turned OFF. Redirecting to Lemon Squeezy billing portal to finalize cancellation...',
       'info'
     );
-    openBillingPortal();
+    if (typeof openBillingPortal === 'function') {
+      openBillingPortal();
+    }
   };
 
-  const handleToggleAutoRenew = () => {
-    const newVal = !autoRenew;
-    setAutoRenew(newVal);
-    try {
-      localStorage.setItem(`pdfminty_sub_autorenew_${userUid}`, String(newVal));
-    } catch {
-      // ignore
+  const handleToggleAutoRenew = async () => {
+    if (isLifetimePlan) {
+      showToast(
+        isBn
+          ? 'লাইফটাইম প্ল্যানে কোনো রিনিউয়ালের প্রয়োজন নেই।'
+          : 'Lifetime plan never expires and does not require auto-renewal.',
+        'info'
+      );
+      return;
     }
-    showToast(
-      newVal
-        ? isBn
-          ? 'স্বয়ংক্রিয় রিনিউয়াল চালু করা হয়েছে।'
-          : 'Auto-renew has been turned ON.'
-        : isBn
-          ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে।'
-          : 'Auto-renew has been turned OFF.',
-      'info'
-    );
+    const targetAction = autoRenew ? 'cancel' : 'resume';
+    if (typeof manageSubscription === 'function') {
+      const res = await manageSubscription(targetAction);
+      if (res?.updatedViaApi) {
+        showToast(
+          targetAction === 'resume'
+            ? isBn
+              ? 'স্বয়ংক্রিয় রিনিউয়াল চালু করা হয়েছে।'
+              : 'Auto-renew has been turned ON.'
+            : isBn
+              ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে।'
+              : 'Auto-renew has been turned OFF.',
+          'success'
+        );
+        return;
+      }
+      if (res?.requiresPortalRedirect && res.portalUrl) {
+        window.location.assign(res.portalUrl);
+      }
+    } else if (typeof openBillingPortal === 'function') {
+      openBillingPortal();
+    }
   };
 
   const handlePreferenceChange = (

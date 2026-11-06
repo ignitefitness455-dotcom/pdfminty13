@@ -28,7 +28,9 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
 }) => {
   const { t, i18n } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
-  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isPro = Boolean(
+    authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime'
+  );
   const isLoggedIn = Boolean(user);
   const tool = TOOLS.find((item) => item.slug === slug);
   const tierLimitMB = getToolLimit(slug, isPro, isLoggedIn).maxSingleMB;

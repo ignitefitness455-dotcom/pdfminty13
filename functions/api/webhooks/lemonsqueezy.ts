@@ -17,6 +17,7 @@ interface LemonSqueezyWebhookPayload {
     webhook_id?: string;
     custom_data?: {
       uid?: unknown;
+      plan?: unknown;
     };
   };
   data?: {
@@ -25,8 +26,19 @@ interface LemonSqueezyWebhookPayload {
     attributes?: {
       status?: string;
       refunded?: boolean;
+      renews_at?: string | null;
       ends_at?: string | null;
       updated_at?: string;
+      variant_name?: string;
+      product_name?: string;
+      first_order_item?: {
+        variant_name?: string;
+        product_name?: string;
+      };
+      urls?: {
+        customer_portal?: string;
+        update_payment_method?: string;
+      };
     };
   };
 }
@@ -79,21 +91,34 @@ function timingSafeHexEquals(providedRaw: string, expectedHex: string): boolean 
 interface ResolvedEntitlement {
   actionable: boolean;
   isPro: boolean;
+  plan: 'free' | 'pro' | 'lifetime';
   subscriptionStatus: string;
 }
 
 function resolveSubscriptionEntitlement(
   eventName: string,
-  attributes: NonNullable<LemonSqueezyWebhookPayload['data']>['attributes']
+  attributes: NonNullable<LemonSqueezyWebhookPayload['data']>['attributes'],
+  customPlanHint?: string
 ): ResolvedEntitlement {
   const rawStatus = (attributes?.status || '').trim().toLowerCase();
+  const variantOrProduct = [
+    customPlanHint || '',
+    attributes?.variant_name || '',
+    attributes?.product_name || '',
+    attributes?.first_order_item?.variant_name || '',
+    attributes?.first_order_item?.product_name || '',
+  ]
+    .join(' ')
+    .toLowerCase();
+  const isLifetimeOrder = variantOrProduct.includes('lifetime');
 
   if (eventName === 'order_created') {
     const isPaid = (!rawStatus || rawStatus === 'paid') && attributes?.refunded !== true;
     return {
       actionable: true,
       isPro: isPaid,
-      subscriptionStatus: isPaid ? 'paid' : rawStatus || 'pending',
+      plan: isPaid ? (isLifetimeOrder ? 'lifetime' : 'pro') : 'free',
+      subscriptionStatus: isPaid ? (isLifetimeOrder ? 'lifetime' : 'paid') : rawStatus || 'pending',
     };
   }
 
@@ -105,6 +130,7 @@ function resolveSubscriptionEntitlement(
     return {
       actionable: true,
       isPro: false,
+      plan: 'free',
       subscriptionStatus: rawStatus || eventName,
     };
   }
@@ -121,9 +147,14 @@ function resolveSubscriptionEntitlement(
     let isPro = false;
     if (rawStatus === 'active' || rawStatus === 'on_trial') {
       isPro = true;
-    } else if (rawStatus === 'cancelled' && attributes?.ends_at) {
-      const endsAtMs = Date.parse(attributes.ends_at);
-      isPro = Number.isFinite(endsAtMs) && endsAtMs > Date.now();
+    } else if (rawStatus === 'cancelled' || eventName === 'subscription_cancelled') {
+      if (attributes?.ends_at) {
+        const endsAtMs = Date.parse(attributes.ends_at);
+        isPro = Number.isFinite(endsAtMs) && endsAtMs > Date.now();
+      } else {
+        // Grace period fallback if ends_at was not populated yet on cancellation event
+        isPro = true;
+      }
     } else if (
       (eventName === 'subscription_payment_success' ||
         eventName === 'subscription_payment_recovered') &&
@@ -135,6 +166,7 @@ function resolveSubscriptionEntitlement(
     return {
       actionable: true,
       isPro,
+      plan: isPro ? 'pro' : 'free',
       subscriptionStatus: rawStatus || eventName,
     };
   }
@@ -142,6 +174,7 @@ function resolveSubscriptionEntitlement(
   return {
     actionable: false,
     isPro: false,
+    plan: 'free',
     subscriptionStatus: rawStatus || eventName || 'ignored',
   };
 }
@@ -194,7 +227,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return jsonResponse({ error: 'Missing webhook event_name.' }, 400);
   }
 
-  const entitlement = resolveSubscriptionEntitlement(eventName, payload.data?.attributes);
+  const customPlanHint =
+    typeof payload.meta?.custom_data?.plan === 'string'
+      ? payload.meta.custom_data.plan.trim()
+      : '';
+  const attrs = payload.data?.attributes;
+  const entitlement = resolveSubscriptionEntitlement(eventName, attrs, customPlanHint);
   if (!entitlement.actionable) {
     return jsonResponse({ received: true, ignored: true, event: eventName }, 200);
   }
@@ -290,9 +328,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       accessToken,
       uid,
       isPro: entitlement.isPro,
+      plan: entitlement.plan,
       subscriptionStatus: entitlement.subscriptionStatus,
       subscriptionId,
       updatedAtIso: effectiveUpdatedAtIso,
+      renewsAt: attrs?.renews_at ?? undefined,
+      endsAt: attrs?.ends_at ?? undefined,
+      customerPortalUrl: attrs?.urls?.customer_portal || null,
+      updatePaymentMethodUrl: attrs?.urls?.update_payment_method || null,
     });
 
     if (env.RATELIMIT_KV) {

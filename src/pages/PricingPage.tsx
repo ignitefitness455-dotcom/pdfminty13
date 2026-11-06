@@ -164,7 +164,7 @@ export const PricingPage: React.FC = () => {
         </title>
         <meta
           name="description"
-          content="Simple, affordable pricing for PDFMinty. 100% free forever core tier with budget-friendly upgrades for 500MB batch processing, Priority Gemini 2.5 Flash AI analysis, and batch OCR."
+          content="Simple, affordable pricing for PDFMinty. 100% free core browser PDF tools, plus upgrades for 500MB batch processing, Gemini 2.5 AI analysis, and batch OCR."
         />
         <link rel="canonical" href="https://pdfminty.com/pricing/" />
       </Helmet>
@@ -182,8 +182,8 @@ export const PricingPage: React.FC = () => {
         </h1>
         <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
           {isBn
-            ? 'সবগুলো 23টি ব্রাউজার PDF টুল সম্পূর্ণ বিনামূল্যে ব্যবহার করুন। 500MB ব্যাচ প্রসেসিং, Gemini AI ডকুমেন্ট অ্যানালাইসিস এবং OCR-এর জন্য সুলভ আপগ্রেড নিন।'
-            : 'Start 100% free with all 23 browser PDF tools. Upgrade only if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.'}
+            ? 'সবগুলো 24টি ব্রাউজার PDF টুল সম্পূর্ণ বিনামূল্যে ব্যবহার করুন। 500MB ব্যাচ প্রসেসিং, Gemini AI ডকুমেন্ট অ্যানালাইসিস এবং OCR-এর জন্য সুলভ আপগ্রেড নিন।'
+            : 'Start 100% free with all 24 browser PDF tools. Upgrade only if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.'}
         </p>
 
         {/* Currency Indicator & Switcher */}
@@ -285,9 +285,7 @@ export const PricingPage: React.FC = () => {
             <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>
-                  {isBn ? 'সবগুলো 23টি ব্রাউজার PDF কোর টুল' : 'All 23 in-browser core PDF tools'}
-                </span>
+                <span>{isBn ? 'সবগুলো 24টি ব্রাউজার PDF কোর টুল' : 'All 24 in-browser core PDF tools'}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -569,22 +567,32 @@ export const PricingPage: React.FC = () => {
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={() => handleSelectPlan('Lifetime')}
-              disabled={isProcessingCheckout}
-              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-              id="pricing-upgrade-lifetime-btn"
-            >
-              <span>
-                {isProcessingCheckout
-                  ? 'Redirecting to Checkout...'
-                  : isBn
-                    ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
-                    : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
-              </span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {user?.plan === 'lifetime' ? (
+              <div
+                className="w-full py-3 px-4 rounded-xl font-black text-sm bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2"
+                id="pricing-lifetime-active-badge"
+              >
+                <Sparkles className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <span>{isBn ? 'লাইফটাইম সক্রিয়' : 'Lifetime Active'}</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSelectPlan('Lifetime')}
+                disabled={isProcessingCheckout}
+                id="pricing-upgrade-lifetime-btn"
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                <span>
+                  {isProcessingCheckout
+                    ? 'Redirecting to Checkout...'
+                    : isBn
+                      ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
+                      : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -636,7 +644,7 @@ export const PricingPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
-                  {isBn ? '23টি স্ট্যান্ডার্ড PDF টুলস' : '23 Standard PDF Tools'}
+                  {isBn ? '24টি স্ট্যান্ডার্ড PDF টুলস' : '24 Standard PDF Tools'}
                 </td>
                 <td className="p-4 text-emerald-600 font-bold">&check; Included</td>
                 <td className="p-4 text-emerald-600 font-bold">&check; Included</td>
@@ -791,8 +799,8 @@ export const PricingPage: React.FC = () => {
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'হ্যাঁ, অবশ্যই! আমাদের 23টি মূল PDF টুল (মার্জ, স্প্লিট, রোটেট, ওয়াটারমার্ক, ফ্ল্যাটেন, পাসওয়ার্ড লক ও আনলক) আজীবন 100% ফ্রি থাকবে এবং কোনো রেজিস্ট্রেশনের দরকার হবে না।'
-                : 'Yes, absolutely! All 23 standard PDF tools (merging, splitting, rotating, watermarking, flattening, protecting, unlocking) will remain 100% free with zero registration required.'}
+                ? 'হ্যাঁ, অবশ্যই! আমাদের 24টি মূল PDF টুল (মার্জ, স্প্লিট, রোটেট, ওয়াটারমার্ক, ফ্ল্যাটেন, পাসওয়ার্ড লক ও আনলক) আজীবন 100% ফ্রি থাকবে এবং কোনো রেজিস্ট্রেশনের দরকার হবে না।'
+                : 'Yes, absolutely! All 24 standard PDF tools (merging, splitting, rotating, watermarking, flattening, protecting, unlocking) will remain 100% free with zero registration required.'}
             </p>
           </div>
 

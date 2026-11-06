@@ -7,7 +7,13 @@ export interface FirestoreUserProfile {
   displayName: string | null;
   photoURL: string | null;
   isPro?: boolean;
-  plan?: 'free' | 'pro';
+  plan?: 'free' | 'pro' | 'lifetime';
+  subscriptionId?: string;
+  subscriptionStatus?: string;
+  renewsAt?: string | null;
+  endsAt?: string | null;
+  customerPortalUrl?: string | null;
+  updatePaymentMethodUrl?: string | null;
   emailVerified: boolean;
   createdAt?: unknown;
   updatedAt?: unknown;

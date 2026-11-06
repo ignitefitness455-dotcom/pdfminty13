@@ -22,6 +22,7 @@
     }
   },
   "footer": {
+    "brandDescription": "निःशुल्क, गोपनीयता-प्रथम पीडीएफ टूलकिट। सभी मुख्य दस्तावेज़ उपकरण बिना किसी सर्वर अपलोड के 100% आपके ब्राउज़र में स्थानीय रूप से चलते हैं।",
     "sections": {
       "coreTools": "मुख्य उपकरण",
       "popularTools": "लोकप्रिय उपकरण",
@@ -30,8 +31,6 @@
       "converters": "कनवर्टर",
       "legalTrust": "कानूनी और सुरक्षा"
     },
-    "copyright": "© {{year}} PdfMinty. सर्वाधिकार सुरक्षित।",
-    "brandDescription": "निःशुल्क, गोपनीयता-प्रथम पीडीएफ टूलकिट। सभी मुख्य दस्तावेज़ उपकरण बिना किसी सर्वर अपलोड के 100% आपके ब्राउज़र में स्थानीय रूप से चलते हैं।",
     "links": {
       "mergePdf": "पीडीएफ जोड़ें (Merge PDF)",
       "splitPdf": "पीडीएफ विभाजित करें (Split PDF)",
@@ -60,6 +59,7 @@
       "termsOfService": "सेवा की शर्तें",
       "howItWorks": "यह कैसे काम करता है"
     },
+    "copyright": "© {{year}} PdfMinty. सर्वाधिकार सुरक्षित।",
     "badges": {
       "privacyFirst": "ब्राउज़र में 100% गोपनीयता",
       "clientSide": "क्लाइंट-साइड पीडीएफ सुइट",
@@ -78,7 +78,13 @@
     "displayThemeLabel": "Display Theme",
     "switchToLight": "Switch to Light Theme",
     "switchToDark": "Switch to Dark Theme",
-    "toggleLabel": "Toggle"
+    "toggleLabel": "Toggle",
+    "home": "होम",
+    "tools": "टूल्स",
+    "blog": "ब्लॉग",
+    "about": "हमारे बारे में",
+    "contact": "संपर्क करें",
+    "individualUtilities": "सभी पीडीएफ टूल्स"
   },
   "languageSwitcher": {
     "selectLanguage": "भाषा चुनें",
@@ -90,7 +96,10 @@
       "badgePrivate": "प्राइवेसी-फर्स्ट ब्राउज़र टूल्स",
       "h1Part1": "मुफ़्त ब्राउज़र-आधारित पीडीएफ उपकरण — 100% निजी, ",
       "h1Part2": "कोई अपलोड नहीं",
-      "subtitle": "सीधे अपने वेब ब्राउज़र में दस्तावेज़ों को मर्ज, स्प्लिट और एडिट करें। PDFMinty सर्वर अपलोड के बिना आपके डिवाइस पर स्थानीय रूप से सभी मानक पीडीएफ कार्यों को प्रोसेस करता है। बिना किसी खाते के—तेज़, सुरक्षित और निजी पीडीएफ उपकरण।"
+      "subtitle": "सीधे अपने वेब ब्राउज़र में दस्तावेज़ों को मर्ज, स्प्लिट और एडिट करें। PDFMinty सर्वर अपलोड के बिना आपके डिवाइस पर स्थानीय रूप से सभी मानक पीडीएफ कार्यों को प्रोसेस करता है। बिना किसी खाते के—तेज़, सुरक्षित और निजी पीडीएफ उपकरण।",
+      "enable3D": "Enable 3D",
+      "disable3D": "Disable 3D",
+      "autoDisabled3D": "3D turned off to keep things fast"
     },
     "search": {
       "placeholder": "पीडीएफ उपकरण खोजें...",
@@ -139,7 +148,8 @@
       "step2Title": "फ़ाइलें जोड़ें",
       "step2Desc": "अपनी पीडीएफ फाइलों को सीधे अपने ब्राउज़र विंडो में खींचें और छोड़ें। मानक टूल आपकी फ़ाइलों को स्थानीय मेमोरी में रखते हैं।",
       "step3Title": "प्रोसेस और डाउनलोड",
-      "step3Desc": "आपकी पीडीएफ आपके हार्डवेयर पर तुरंत प्रोसेस हो जाती है। परिणाम तुरंत सहेजने के लिए डाउनलोड पर क्लिक करें।"
+      "step3Desc": "आपकी पीडीएफ आपके हार्डवेयर पर तुरंत प्रोसेस हो जाती है। परिणाम तुरंत सहेजने के लिए डाउनलोड पर क्लिक करें।",
+      "stepsSubtitle": "अपने ब्राउज़र में सीधे फ़ाइलें प्रोसेस करने के 3 आसान चरण।"
     },
     "faq": {
       "badge": "अक्सर पूछे जाने वाले प्रश्न",
@@ -172,6 +182,56 @@
       "title": "पूर्ण गोपनीयता के साथ अपनी पीडीएफ प्रबंधित करने के लिए तैयार हैं?",
       "subtitle": "अपने डिवाइस पर व्यक्तिगत रूप से दस्तावेज़ों को प्रोसेस करने के लिए ऊपर से कोई भी उपकरण चुनें। तेज़ गति, अनिवार्य साइन-अप नहीं और प्राइवेसी-फर्स्ट लोकल प्रोसेसिंग।",
       "button": "सभी उपकरण देखें"
+    },
+    "toolCard": {
+      "highDemand": "लोकप्रिय",
+      "useTool": "टूल खोलें"
+    },
+    "trustBadge": {
+      "eyebrow": "कम्युनिटी द्वारा सत्यापित",
+      "title": "प्रमुख प्लेटफ़ॉर्म पर मान्यता प्राप्त",
+      "description": "PdfMinty एक सुरक्षित, गोपनीयता-प्रथम इन-ब्राउज़र PDF टूलकिट है।",
+      "launchbuffTitle": "LaunchBuff पर फ़ीचर्ड",
+      "launchstagTitle": "Launchstag पर फ़ीचर्ड",
+      "privacyBadge": "100% इन-ब्राउज़र गोपनीयता",
+      "verifiedBadge": "सत्यापित डायरेक्टरी लिस्टिंग",
+      "loggingBadge": "ज़ीरो डेटा लॉगिंग"
+    },
+    "recommended": {
+      "badge": "अनुशंसित सुरक्षा",
+      "title": "अनुशंसित सुरक्षा टूल्स",
+      "subtitle": "आपके संवेदनशील दस्तावेज़ों की सुरक्षा के लिए विश्वसनीय गोपनीयता सेवाएँ।",
+      "nordVpnTitle": "NordVPN के साथ सुरक्षित ब्राउज़ करें",
+      "nordVpnDesc": "संवेदनशील दस्तावेज़ों पर काम करते समय अपने इंटरनेट कनेक्शन को सुरक्षित रखें।",
+      "nordVpnCta": "NordVPN प्राप्त करें",
+      "nordPassTitle": "अपने पासवर्ड सुरक्षित रखें",
+      "nordPassDesc": "एंड-टू-एंड एन्क्रिप्शन के साथ अपने PDF पासवर्ड सुरक्षित रूप से प्रबंधित करें।",
+      "nordPassCta": "NordPass प्राप्त करें"
+    },
+    "seoResources": {
+      "badge": "ज्ञान और संसाधन केंद्र",
+      "title": "PDF गाइड, तुलना और संसाधन",
+      "subtitle": "PDF दस्तावेज़ों को निजी और कुशलता से प्रबंधित करने के लिए विस्तृत ट्यूटोरियल।",
+      "exploreResource": "गाइड देखें",
+      "viewAllHub": "ज्ञान केंद्र में सभी लेख देखें",
+      "cards": {
+        "pdfToWordTitle": "Free PDF to Word Guide",
+        "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
+        "adobeAltTitle": "Adobe Acrobat Alternative",
+        "adobeAltDesc": "Replace expensive ~$240/year Adobe subscriptions with a 100% private, free client-side PDF utility suite.",
+        "compressGuideTitle": "PDF Compression Guide",
+        "compressGuideDesc": "Understand lossy vs. lossless PDF reduction, image stream optimization, and how to shrink PDFs safely.",
+        "smallpdfTitle": "PDFMinty vs SmallPDF",
+        "smallpdfDesc": "Compare zero-upload browser processing against SmallPDF’s cloud server storage model.",
+        "ilovepdfTitle": "PDFMinty vs iLovePDF",
+        "ilovepdfDesc": "In-depth speed, security, and feature breakdown vs iLovePDF. No file limits or ad trackers.",
+        "trustArticleTitle": "Is Online PDF Safe?",
+        "trustArticleDesc": "Crucial security analysis explaining the privacy hazards of sending sensitive PDFs to remote servers.",
+        "signGuideTitle": "Free PDF E-Signatures",
+        "signGuideDesc": "How to sign contracts and legal documents locally on your device without third-party server exposure.",
+        "metadataGuideTitle": "Remove PDF Metadata",
+        "metadataGuideDesc": "Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs."
+      }
     }
   },
   "tools": {
@@ -321,6 +381,7 @@
       "change": "बदलें",
       "create": "बनाएं",
       "clickToSet": "हस्ताक्षर सेट करने के लिए क्लिक करें",
+      "sigAlt": "सहेजा गया हस्ताक्षर",
       "fields": "फील्ड्स",
       "fieldsHelp": "फील्ड पर क्लिक करें और फिर दस्तावेज़ में जहां चाहें वहां क्लिक करें, या सीधे ड्रैग करें।",
       "dateFormat": "तारीख का प्रारूप",
@@ -353,6 +414,8 @@
       "signature": "हस्ताक्षर",
       "clear": "साफ़ करें",
       "drawHere": "यहाँ हस्ताक्षर करें",
+      "drawAria": "हस्ताक्षर बनाने का कैनवास",
+      "previewAlt": "हस्ताक्षर पूर्वावलोकन",
       "clickOrDrop": "क्लिक करें या यहाँ इमेज डालें",
       "removeBg": "सफेद बैकग्राउंड हटाएं",
       "cancel": "रद्द करें",
@@ -365,6 +428,7 @@
     "fieldView": {
       "doubleClickToEdit": "संपादित करने के लिए दो बार क्लिक करें",
       "rotateAria": "हस्ताक्षर घुमाएं। घुमाने के लिए ड्रैग करें या 90 डिग्री मोड़ने के लिए टैप करें।",
+      "resizeAria": "हस्ताक्षर फ़ील्ड का आकार बदलें",
       "removeAria": "फील्ड हटाएं",
       "fieldAria": "{{kind}} फील्ड। स्थानांतरित करने के लिए खींचें, घुमाएं, तीर कुंजियों से खिसकाएं, हटाने के लिए Delete दबाएं।",
       "pageAria": "पेज {{page}}"
@@ -710,23 +774,24 @@
     "compressToolPromptTitle": "Need to compress a PDF right now?",
     "compressToolPromptSubtitle": "Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.",
     "openCompressTool": "Open Compress PDF Tool →",
-    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide"
+    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide",
+    "comparisonBadge": "तुलना गाइड"
   },
   "newsletter": {
-    "title": "Join Our Newsletter",
-    "subtitle": "Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.",
-    "placeholder": "Enter your email address...",
-    "button": "Join",
-    "buttonLoading": "Joining...",
-    "success": "Thank you for joining! Check your inbox for updates.",
-    "emptyEmail": "Please enter your email address.",
-    "invalidEmail": "Please enter a valid email address.",
-    "error": "Failed to process subscription. Please try again."
+    "title": "हमारे न्यूज़लेटर से जुड़ें",
+    "subtitle": "नवीनतम PDF टिप्स और सुरक्षा अपडेट सीधे अपने इनबॉक्स में प्राप्त करें।",
+    "placeholder": "अपना ईमेल पता दर्ज करें...",
+    "button": "जुड़ें",
+    "buttonLoading": "जुड़ रहे हैं...",
+    "success": "जुड़ने के लिए धन्यवाद! अपडेट के लिए अपना इनबॉक्स देखें।",
+    "emptyEmail": "कृपया अपना ईमेल पता दर्ज करें।",
+    "invalidEmail": "कृपया एक मान्य ईमेल पता दर्ज करें।",
+    "error": "सब्सक्रिप्शन विफल रहा। कृपया पुनः प्रयास करें।"
   },
   "toolCommon": {
     "returnToDashboard": "डैशबोर्ड पर वापस जाएं",
     "limit": "सीमा: {{limit}}MB",
-    "selectPdf": "शुरू करने के लिए एक पीडीएफ चुनें",
+    "selectPdf": "शुरू करने के लिए PDF चुनें",
     "changeFile": "फ़ाइल बदलें",
     "settings": "सेटिंग्स",
     "options": "विकल्प",
@@ -742,8 +807,8 @@
     "allPages": "सभी पेज",
     "selectedPages": "चयनित पेज",
     "preview": "लाइव प्रीव्यू",
-    "apply": "परिवर्तन लागू करें",
-    "pdfDocument": "पीडीएफ दस्तावेज़"
+    "apply": "बदलाव लागू करें",
+    "pdfDocument": "PDF दस्तावेज़"
   },
   "fileUploader": {
     "dragDrop": "अपनी फ़ाइलें यहाँ खींचें और छोड़ें",
@@ -753,7 +818,7 @@
     "maxSize": "अधिकतम फ़ाइल आकार: {{size}}MB",
     "chooseFile": "फ़ाइलें चुनें",
     "selectPdf": "एक पीडीएफ फ़ाइल चुनें",
-    "browseAria": "फ़ाइल चुनने के लिए Enter या Space दबाएं।",
+    "browseAria": "फ़ाइल चुनने के लिए Enter या Space दबाएँ।",
     "inputAria": "फ़ाइल इनपुट"
   },
   "emptyState": {
@@ -851,20 +916,20 @@
     "invalidPageNumber": "Invalid page number(s): {{tokens}}. Document has {{total}} page(s). Use numbers between 1 and {{total}}.",
     "atLeastOneValid": "Please enter at least one valid page number to delete.",
     "cannotDeleteAll": "Cannot delete all pages of the document.",
-    "selectedBadge": "{{count}} page selected",
-    "selectedBadge_plural": "{{count}} pages selected",
-    "pageCheckboxAria": "Select page {{page}}",
-    "deleteAria": "Delete {{count}} selected pages",
-    "success": "Pages deleted successfully!",
-    "rangeInputLabel": "Page numbers or ranges to delete",
-    "deleteRangeButton": "Delete Pages",
-    "pageInputPlaceholder": "e.g. 1, 3-5, 8",
-    "rangeExample": "e.g. enter 1-3, 5, 8-10",
-    "invalidRangeError": "Invalid page range or number. e.g. 1, 3-5, 8",
-    "selectAll": "Select All",
-    "clearSelection": "Clear Selection",
-    "noPagesSelected": "Please select at least one page to delete.",
-    "allPagesDeleted": "Cannot delete all pages. Document must contain at least one page.",
+    "selectedBadge": "{{count}} पेज चयनित",
+    "selectedBadge_plural": "{{count}} पेज चयनित",
+    "pageCheckboxAria": "हटाने के लिए पेज {{page}} चुनें",
+    "deleteAria": "चयनित पेज हटाएँ",
+    "success": "चयनित पेज सफलतापूर्वक हटा दिए गए!",
+    "rangeInputLabel": "हटाने के लिए पेज रेंज (उदा. 1, 3-5)",
+    "deleteRangeButton": "पेज हटाएँ",
+    "pageInputPlaceholder": "उदा. 1, 3-5, 8",
+    "rangeExample": "अल्पविराम से अलग करके पेज नंबर या रेंज दर्ज करें।",
+    "invalidRangeError": "कृपया मान्य पेज नंबर दर्ज करें।",
+    "selectAll": "सभी चुनें",
+    "clearSelection": "चयन साफ़ करें",
+    "noPagesSelected": "कृपया हटाने के लिए कम से कम एक पेज चुनें।",
+    "allPagesDeleted": "आप PDF के सभी पेज नहीं हटा सकते।",
     "pdfDocument": "PDF Document",
     "successTitle": "Pages Deleted Successfully! Your modified PDF has been generated.",
     "successDesc": "The selected pages have been removed completely offline in your browser.",
@@ -1050,7 +1115,7 @@
     "watermarkError": "An unexpected error occurred while adding the watermark.",
     "previewTitle": "Real-time Visual Preview",
     "page1": "Page 1",
-    "page1Alt": "PDF Page 1 Preview",
+    "page1Alt": "वॉटरमार्क के साथ पेज 1 का पूर्वावलोकन",
     "loadingDoc": "Loading Document...",
     "templateView": "Template View",
     "successTitle": "Watermark Applied Successfully! Your stamped PDF has been generated.",
@@ -1088,7 +1153,7 @@
     "repairButton": "Repair & Download"
   },
   "extractPages": {
-    "failedToExtract": "Failed to extract pages. Please try again.",
+    "failedToExtract": "पेज निकालने में विफल।",
     "previewWarning": "Previews could not be rendered, but you can still run extraction using standard page parameters.",
     "selectOnePage": "Please select at least one page to extract.",
     "extractError": "Failed to extract selected pages from the document.",
@@ -1121,7 +1186,7 @@
     "outputMatrix": "Output Ordering Matrix",
     "processingButton": "Reordering Assembling...",
     "reorderSaveButton": "Reorder and Save PDF",
-    "reorderedSuccess": "Pages reordered successfully!",
+    "reorderedSuccess": "PDF पेज सफलतापूर्वक पुनर्व्यवस्थित किए गए!",
     "successTitle": "Pages Reordered Successfully! Your custom PDF is ready.",
     "downloadReordered": "Download Reordered PDF",
     "emptyTitle": "Upload a PDF to reorder pages",
@@ -1133,7 +1198,7 @@
     "processingButton": "Transcribing via AI Vision...",
     "processButton": "Extract Text with AI Vision",
     "rateLimitReached": "Rate limit reached. Please wait a few minutes before trying again.",
-    "ocrCompleted": "OCR Completed Successfully!",
+    "ocrCompleted": "OCR टेक्स्ट पहचान सफलतापूर्वक पूरी हुई!",
     "resultTitle": "OCR Extracted Result",
     "engineTranscribing": "AI OCR Engine Transcribing Pixels...",
     "analyzingStructure": "Analyzing page structures, text blocks, and table formats to build clean Markdown.",
@@ -1143,7 +1208,10 @@
     "downloadMd": "Download Markdown (MD)",
     "autoDetect": "Auto-Detect (Multilingual)",
     "busyMessage": "⏳ AI is busy. Please try again in a few minutes.",
-    "orUseOffline": "Or use our offline tools:"
+    "orUseOffline": "Or use our offline tools:",
+    "consentTitle": "क्लाउड AI प्रोसेसिंग सहमति",
+    "consentDesc": "टेक्स्ट निकालने के लिए चयनित पेज छवियाँ सुरक्षित रूप से Google Gemini को भेजी जाती हैं।",
+    "consentCheckbox": "मैं OCR प्रोसेसिंग के लिए चयनित पेज भेजने की सहमति देता हूँ।"
   },
   "sanitizePdf": {
     "workspace": "Document Workspace",
@@ -1189,14 +1257,14 @@
     "orUseOffline": "Or use our offline tools:",
     "aiVisionMode": "AI Vision OCR Mode (For Scanned / Image PDFs)",
     "scannedDetected": "Scanned / Image-Only PDF Detected",
-    "ocrNotice": "Tip: Scanned image documents use automated Optical Character Recognition (OCR)."
+    "ocrNotice": "स्कैन की गई PDF? छवियों से टेक्स्ट निकालने के लिए हमारे OCR PDF टूल का उपयोग करें।"
   },
   "editMetadata": {
     "selectDocument": "Select Document",
     "documentProperties": "Document Properties",
     "metadataUpdate": "Metadata Update",
     "metadataUpdateDesc": "Updates your document info tags without modifying page contents or layout quality.",
-    "titlePlaceholder": "Document Title...",
+    "titlePlaceholder": "दस्तावेज़ का शीर्षक दर्ज करें...",
     "authorPlaceholder": "Author Name...",
     "subjectPlaceholder": "Subject / Purpose...",
     "keywordsPlaceholder": "keyword1, keyword2, keyword3...",
@@ -1405,6 +1473,12 @@
     "sec2Desc": "We do not maintain backend servers or cloud storage buckets that store, cache, or buffer your PDF documents. All binary file transformations execute entirely within your device's RAM. When you close the browser tab or refresh the page, all file data is completely purged from memory.",
     "sec3Title": "3. Opt-In AI Feature Disclosure (/ai-analyze-pdf)",
     "sec3Desc": "PdfMinty offers an optional AI PDF Assistant. If you select a file and check the explicit consent checkbox in the AI tool, extracted text from up to the first 12 pages is transmitted over an encrypted TLS connection to Google Gemini API to answer your questions or generate summaries. Binary PDF files are never stored, and text is transmitted solely for processing your immediate query.",
+    "secGoogleTitle": "4. Google उपयोगकर्ता डेटा, OAuth 2.0 प्रमाणीकरण और खाता जानकारी",
+    "secGoogleDesc": "जब आप Google Sign-In (OAuth 2.0) का उपयोग करके PDFMinty में साइन इन करते हैं, तो हम आपके Google खाते से बुनियादी प्रोफ़ाइल जानकारी (ईमेल पता, नाम, प्रोफ़ाइल फ़ोटो और UID) का अनुरोध करते हैं। हम इसका उपयोग केवल प्रमाणीकरण और Google Cloud Firestore में आपके खाता कोटा प्रबंधन के लिए करते हैं। PDFMinty कभी भी आपके Google Drive या Gmail डेटा तक नहीं पहुँचता है।",
+    "secLimitedUseTitle": "5. Google API सेवाएँ उपयोगकर्ता डेटा नीति (सीमित उपयोग प्रकटीकरण)",
+    "secLimitedUseDesc": "Google API से प्राप्त जानकारी का PDFMinty द्वारा उपयोग और किसी अन्य ऐप में स्थानांतरण Google API Services User Data Policy (सीमित उपयोग आवश्यकताओं सहित) का पूरी तरह पालन करेगा।",
+    "secRetentionTitle": "6. डेटा प्रतिधारण, खाता हटाना और पहुँच निरसन",
+    "secRetentionDesc": "हम आपके खाता डेटा को केवल तब तक रखते हैं जब तक आपका खाता सक्रिय रहता है। आप Google सुरक्षा सेटिंग्स (https://myaccount.google.com/permissions) से पहुँच रद्द कर सकते हैं और अपने डैशबोर्ड या support@pdfminty.com पर ईमेल करके खाता स्थायी रूप से हटा सकते हैं (7 कार्य दिवसों के भीतर)।",
     "sec4Title": "4. Google AdSense & Third-Party Advertising Cookies",
     "sec4Intro": "PdfMinty uses Google AdSense to display advertisements when you visit our website. To comply with Google AdSense policies, please review the following required advertising disclosures:",
     "sec4Li1": "Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites on the Internet.",
@@ -1412,6 +1486,8 @@
     "sec4OptOut": "Users may opt out of personalized advertising by visiting Google's",
     "sec4Or": "or by visiting",
     "sec4Partner": "For more details on how Google processes data when you visit partner sites, please see Google's policy at",
+    "secCmpTitle": "9. सहमति प्रबंधन प्लेटफ़ॉर्म (CMP) और कुकी प्राथमिकताएँ (EEA, UK और स्विट्ज़रलैंड)",
+    "secCmpIntro": "EEA, यूनाइटेड किंगडम, स्विट्ज़रलैंड और दुनिया भर के आगंतुकों के लिए, PDFMinty Google Consent Mode v2 द्वारा संचालित सख्त ऑप्ट-इन कुकी नियंत्रण लागू करता है।",
     "sec5Title": "5. Web Analytics & Cookie Usage",
     "sec5Desc": "PdfMinty uses privacy-respecting website performance analytics (such as Google Analytics 4 with IP anonymization and Cloudflare Web Analytics) to understand aggregate traffic trends, pageviews, and browser performance. We do not sell user data, track individual personal identities, or store cookies containing sensitive document data.",
     "sec6Title": "6. GDPR & CCPA/CPRA Privacy Rights",
@@ -1427,15 +1503,7 @@
     "orEmail": "or by email at",
     "sec6Li1Title": "Right of Access & Deletion:",
     "sec6Li2Title": "Do Not Sell My Information:",
-    "sec6Li3Title": "Browser Controls:",
-    "secGoogleTitle": "4. Google उपयोगकर्ता डेटा, OAuth 2.0 प्रमाणीकरण और खाता जानकारी",
-    "secGoogleDesc": "जब आप Google Sign-In (OAuth 2.0) का उपयोग करके PDFMinty में साइन इन करते हैं, तो हम आपके Google खाते से बुनियादी प्रोफ़ाइल जानकारी (ईमेल पता, नाम, प्रोफ़ाइल फ़ोटो और UID) का अनुरोध करते हैं। हम इसका उपयोग केवल प्रमाणीकरण और Google Cloud Firestore में आपके खाता कोटा प्रबंधन के लिए करते हैं। PDFMinty कभी भी आपके Google Drive या Gmail डेटा तक नहीं पहुँचता है।",
-    "secLimitedUseTitle": "5. Google API सेवाएँ उपयोगकर्ता डेटा नीति (सीमित उपयोग प्रकटीकरण)",
-    "secLimitedUseDesc": "Google API से प्राप्त जानकारी का PDFMinty द्वारा उपयोग और किसी अन्य ऐप में स्थानांतरण Google API Services User Data Policy (सीमित उपयोग आवश्यकताओं सहित) का पूरी तरह पालन करेगा।",
-    "secRetentionTitle": "6. डेटा प्रतिधारण, खाता हटाना और पहुँच निरसन",
-    "secRetentionDesc": "हम आपके खाता डेटा को केवल तब तक रखते हैं जब तक आपका खाता सक्रिय रहता है। आप Google सुरक्षा सेटिंग्स (https://myaccount.google.com/permissions) से पहुँच रद्द कर सकते हैं और अपने डैशबोर्ड या support@pdfminty.com पर ईमेल करके खाता स्थायी रूप से हटा सकते हैं (7 कार्य दिवसों के भीतर)।",
-    "secCmpTitle": "9. सहमति प्रबंधन प्लेटफ़ॉर्म (CMP) और कुकी प्राथमिकताएँ (EEA, UK और स्विट्ज़रलैंड)",
-    "secCmpIntro": "EEA, यूनाइटेड किंगडम, स्विट्ज़रलैंड और दुनिया भर के आगंतुकों के लिए, PDFMinty Google Consent Mode v2 द्वारा संचालित सख्त ऑप्ट-इन कुकी नियंत्रण लागू करता है।"
+    "sec6Li3Title": "Browser Controls:"
   },
   "contact": {
     "hereToHelp": "We're Here to Help",
@@ -1645,17 +1713,17 @@
     "tip5Text": "बैकग्राउंड प्रोसेसिंग से ब्राउज़र तेज़ और सुचारू रहता है।"
   },
   "pwa": {
-    "installApp": "Install App",
-    "installed": "Installed!",
-    "installTooltip": "Install PDFMinty as a desktop/mobile app for 100% offline access",
-    "installMobileTitle": "Install PDFMinty App",
-    "installMobileSubtitle": "Work 100% offline without internet",
-    "iosModalTitle": "Install on iPhone & iPad",
-    "desktopModalTitle": "Install PDFMinty App",
-    "offlineBenefit": "Access all PDF tools 100% offline without network.",
-    "offlineActive": "Offline Mode Active",
-    "offlineNotice": "All core PDF tools process locally in your device RAM without internet.",
-    "reconnected": "Back online. All services synced."
+    "installApp": "ऐप इंस्टॉल करें",
+    "installed": "इंस्टॉल हो गया!",
+    "installTooltip": "100% ऑफ़लाइन एक्सेस के लिए PDFMinty ऐप इंस्टॉल करें",
+    "installMobileTitle": "PDFMinty ऐप इंस्टॉल करें",
+    "installMobileSubtitle": "बिना इंटरनेट के 100% ऑफ़लाइन काम करें",
+    "iosModalTitle": "iPhone और iPad पर इंस्टॉल करें",
+    "desktopModalTitle": "PDFMinty ऐप इंस्टॉल करें",
+    "offlineBenefit": "बिना नेटवर्क के सभी PDF टूल्स 100% ऑफ़लाइन उपयोग करें।",
+    "offlineActive": "ऑफ़लाइन मोड सक्रिय",
+    "offlineNotice": "सभी मुख्य PDF टूल्स आपके डिवाइस की मेमोरी में लोकल रूप से काम करते हैं।",
+    "reconnected": "वापस ऑनलाइन। सभी सेवाएँ सिंक हो गईं।"
   },
   "usageLimits": {
     "tier": {

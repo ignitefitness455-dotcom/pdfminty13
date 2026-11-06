@@ -14,7 +14,6 @@ interface NavigatorWithConnection extends Navigator {
   mozConnection?: NetworkInformationLike;
   webkitConnection?: NetworkInformationLike;
   deviceMemory?: number;
-  hardwareConcurrency?: number;
 }
 
 export function checkCss3DSupported(): boolean {

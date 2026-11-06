@@ -46,7 +46,9 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   '/profile': '/dashboard/',
   '/my-profile': '/dashboard/',
   '/signin': '/login/',
+  '/sign-in': '/login/',
   '/register': '/signup/',
+  '/sign-up': '/signup/',
   '/blog/best-free-pdf-compressor-without-losing-quality':
     '/blog/how-to-compress-a-pdf-without-losing-quality-2026/',
   '/blog/how-to-compress-pdf-without-losing-quality-locally':
@@ -195,6 +197,7 @@ export const onRequest: PagesFunction = async (context) => {
       rawPath.startsWith('/cmaps/') ||
       rawPath.startsWith('/standard_fonts/') ||
       rawPath.startsWith('/og-images/') ||
+      rawPath.startsWith('/cdn-cgi/') ||
       /\.(js|css|png|jpe?g|svg|gif|ico|webp|woff2?|ttf|pfb|bcmap|wasm|webmanifest|xml|txt|map|json)$/i.test(
         rawPath
       );
@@ -345,6 +348,7 @@ export const onRequest: PagesFunction = async (context) => {
       '/api/gemini-proxy',
       '/api/health',
       '/api/subscribe',
+      '/api/subscription',
       '/api/webhooks/lemonsqueezy',
     ];
 
@@ -508,7 +512,7 @@ export const onRequest: PagesFunction = async (context) => {
     // Content-Security-Policy — supports Firebase Auth (Google Sign-In), AdSense, GA4/GTM, and local PDF WebAssembly
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://apis.google.com https://www.gstatic.com https://www.google.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://*.doubleclick.net",
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://apis.google.com https://www.gstatic.com https://www.google.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://static.cloudflareinsights.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://*.doubleclick.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' blob: data: https://lh3.googleusercontent.com https://*.googleusercontent.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://launchbuff.com https://launchstag.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com",

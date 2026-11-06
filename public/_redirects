@@ -3,6 +3,17 @@
 /about/ /about-us/ 301
 /contact-us /contact/ 301
 /contact-us/ /contact/ 301
+/signin /login/ 301
+/signin/ /login/ 301
+/sign-in /login/ 301
+/sign-in/ /login/ 301
+/register /signup/ 301
+/register/ /signup/ 301
+/sign-up /signup/ 301
+/sign-up/ /signup/ 301
+/login /login/ 301
+/signup /signup/ 301
+/dashboard /dashboard/ 301
 /edit-metadata /edit-pdf-metadata/ 301
 /edit-metadata/ /edit-pdf-metadata/ 301
 /protect /protect-pdf/ 301

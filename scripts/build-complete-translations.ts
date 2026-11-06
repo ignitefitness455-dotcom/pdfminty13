@@ -83,6 +83,43 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = ${JSON.stringify(catalog, null, 
   console.log(`✓ Generated src/config/seo-catalog.ts (${catalog.length} items)`);
 }
 
+function isPlainObject(val: unknown): val is Record<string, unknown> {
+  return Boolean(val) && typeof val === 'object' && !Array.isArray(val);
+}
+
+function deepMergeWithEnglishFallback(
+  enVal: unknown,
+  existingVal: unknown,
+  overrideVal: unknown
+): unknown {
+  if (overrideVal !== undefined && !isPlainObject(overrideVal)) {
+    return overrideVal;
+  }
+  if (!isPlainObject(enVal)) {
+    if (overrideVal !== undefined) return overrideVal;
+    if (existingVal !== undefined) return existingVal;
+    return enVal;
+  }
+
+  const result: Record<string, unknown> = {};
+  const existingObj = isPlainObject(existingVal) ? existingVal : {};
+  const overrideObj = isPlainObject(overrideVal) ? overrideVal : {};
+
+  const allKeys = new Set([
+    ...Object.keys(enVal),
+    ...Object.keys(existingObj),
+    ...Object.keys(overrideObj),
+  ]);
+
+  for (const key of allKeys) {
+    result[key] = deepMergeWithEnglishFallback(
+      enVal[key],
+      existingObj[key],
+      overrideObj[key]
+    );
+  }
+  return result;
+}
 function main() {
   console.log('Building full 7-locale translations and SEO catalog...');
   generateSeoCatalog();
@@ -126,21 +163,15 @@ function main() {
       existingBodies = JSON.parse(fs.readFileSync(locBodyPath, 'utf8'));
     }
 
-    // Merge UI translations
+    // Recursively merge EN fallback + existing locale data + UI_TRANSLATIONS[loc]
     const uiData = UI_TRANSLATIONS[loc] || {};
-    for (const [sectionKey, sectionObj] of Object.entries(uiData)) {
-      locData[sectionKey] = {
-        ...(enData[sectionKey] || {}),
-        ...(locData[sectionKey] || {}),
-        ...(sectionObj as any),
-      };
-    }
-
-    // Ensure any missing top-level UI key from EN is present
     for (const k of Object.keys(enData)) {
       if (k === 'articles') continue;
-      if (!locData[k]) {
-        locData[k] = enData[k];
+      locData[k] = deepMergeWithEnglishFallback(enData[k], locData[k], uiData[k]);
+    }
+    for (const [sectionKey, sectionObj] of Object.entries(uiData)) {
+      if (!(sectionKey in enData)) {
+        locData[sectionKey] = deepMergeWithEnglishFallback({}, locData[sectionKey], sectionObj);
       }
     }
 

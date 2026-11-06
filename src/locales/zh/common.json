@@ -22,6 +22,7 @@
     }
   },
   "footer": {
+    "brandDescription": "免费、隐私至上的 PDF 工具套件。核心文档工具 100% 在您的浏览器本地运行，无需上传文件到外部服务器。",
     "sections": {
       "coreTools": "核心工具",
       "popularTools": "热门工具",
@@ -30,8 +31,6 @@
       "converters": "格式转换",
       "legalTrust": "法律与隐私安全"
     },
-    "copyright": "© {{year}} PdfMinty. 保留所有权利。",
-    "brandDescription": "免费、隐私至上的 PDF 工具套件。核心文档工具 100% 在您的浏览器本地运行，无需上传文件到外部服务器。",
     "links": {
       "mergePdf": "合并 PDF 文件",
       "splitPdf": "拆分 PDF 页面",
@@ -60,6 +59,7 @@
       "termsOfService": "服务条款",
       "howItWorks": "工作原理"
     },
+    "copyright": "© {{year}} PdfMinty. 保留所有权利。",
     "badges": {
       "privacyFirst": "浏览器本地隐私至上",
       "clientSide": "客户端本地 PDF 套件",
@@ -78,7 +78,13 @@
     "displayThemeLabel": "Display Theme",
     "switchToLight": "Switch to Light Theme",
     "switchToDark": "Switch to Dark Theme",
-    "toggleLabel": "Toggle"
+    "toggleLabel": "Toggle",
+    "home": "首页",
+    "tools": "工具",
+    "blog": "知识库",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "individualUtilities": "全部 PDF 工具"
   },
   "languageSwitcher": {
     "selectLanguage": "选择语言",
@@ -90,7 +96,10 @@
       "badgePrivate": "100% 隐私安全浏览器工具",
       "h1Part1": "免费的基于浏览器的 PDF 工具 — 100% 私密，",
       "h1Part2": "零上传",
-      "subtitle": "直接在 Web 浏览器中合并、拆分和编辑文档。PDFMinty 无需服务器上传即可在您的设备上本地处理所有常规 PDF 任务。无需注册账号——极速、私密、安全。"
+      "subtitle": "直接在 Web 浏览器中合并、拆分和编辑文档。PDFMinty 无需服务器上传即可在您的设备上本地处理所有常规 PDF 任务。无需注册账号——极速、私密、安全。",
+      "enable3D": "Enable 3D",
+      "disable3D": "Disable 3D",
+      "autoDisabled3D": "3D turned off to keep things fast"
     },
     "search": {
       "placeholder": "搜索 PDF 工具...",
@@ -139,7 +148,8 @@
       "step2Title": "添加文件",
       "step2Desc": "将 PDF 文件直接拖放至浏览器窗口中，标准工具将所有文件保留在本地内存中。",
       "step3Title": "处理并下载",
-      "step3Desc": "您的 PDF 会在您的硬件上极速处理完成。点击下载即可立即保存结果。"
+      "step3Desc": "您的 PDF 会在您的硬件上极速处理完成。点击下载即可立即保存结果。",
+      "stepsSubtitle": "只需简单三步，即可在浏览器中直接处理您的文件。"
     },
     "faq": {
       "badge": "常见问题解答",
@@ -172,6 +182,56 @@
       "title": "准备好体验完全私密的 PDF 管理了吗？",
       "subtitle": "从上方挑选任意工具，直接在您的设备上安全处理文档。极速性能、无需强制注册，隐私优先的客户端本地处理。",
       "button": "浏览全部工具"
+    },
+    "toolCard": {
+      "highDemand": "热门",
+      "useTool": "打开工具"
+    },
+    "trustBadge": {
+      "eyebrow": "社区验证",
+      "title": "获各大主流平台认可与推荐",
+      "description": "PdfMinty 是备受信任的隐私优先客户端 PDF 工具套件，文档完全在浏览器内处理。",
+      "launchbuffTitle": "LaunchBuff 推荐产品",
+      "launchstagTitle": "Launchstag 推荐产品",
+      "privacyBadge": "100% 浏览器本地隐私",
+      "verifiedBadge": "权威目录认证",
+      "loggingBadge": "零数据日志记录"
+    },
+    "recommended": {
+      "badge": "推荐安全工具",
+      "title": "推荐隐私与安全服务",
+      "subtitle": "值得信赖的隐私和安全服务，全方位保护您的敏感文档与数字身份。",
+      "nordVpnTitle": "使用 NordVPN 安全浏览",
+      "nordVpnDesc": "在处理敏感文档时加密您的网络连接，严格零日志政策。",
+      "nordVpnCta": "获取 NordVPN",
+      "nordPassTitle": "保护您的密码安全",
+      "nordPassDesc": "使用端到端加密管理您的密码与 PDF 密钥。",
+      "nordPassCta": "获取 NordPass"
+    },
+    "seoResources": {
+      "badge": "知识与资源中心",
+      "title": "PDF 指南、对比与实用资源",
+      "subtitle": "全面的教程、安全性解析和工具对比，帮助您私密高效地管理 PDF 文档。",
+      "exploreResource": "查看指南",
+      "viewAllHub": "在知识中心查看全部文章与指南",
+      "cards": {
+        "pdfToWordTitle": "Free PDF to Word Guide",
+        "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
+        "adobeAltTitle": "Adobe Acrobat Alternative",
+        "adobeAltDesc": "Replace expensive ~$240/year Adobe subscriptions with a 100% private, free client-side PDF utility suite.",
+        "compressGuideTitle": "PDF Compression Guide",
+        "compressGuideDesc": "Understand lossy vs. lossless PDF reduction, image stream optimization, and how to shrink PDFs safely.",
+        "smallpdfTitle": "PDFMinty vs SmallPDF",
+        "smallpdfDesc": "Compare zero-upload browser processing against SmallPDF’s cloud server storage model.",
+        "ilovepdfTitle": "PDFMinty vs iLovePDF",
+        "ilovepdfDesc": "In-depth speed, security, and feature breakdown vs iLovePDF. No file limits or ad trackers.",
+        "trustArticleTitle": "Is Online PDF Safe?",
+        "trustArticleDesc": "Crucial security analysis explaining the privacy hazards of sending sensitive PDFs to remote servers.",
+        "signGuideTitle": "Free PDF E-Signatures",
+        "signGuideDesc": "How to sign contracts and legal documents locally on your device without third-party server exposure.",
+        "metadataGuideTitle": "Remove PDF Metadata",
+        "metadataGuideDesc": "Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs."
+      }
     }
   },
   "tools": {
@@ -321,6 +381,7 @@
       "change": "更改",
       "create": "创建",
       "clickToSet": "点击设置您的签名",
+      "sigAlt": "已保存的签名",
       "fields": "字段",
       "fieldsHelp": "点击一个字段然后点击文档进行放置，也可以直接拖拽到页面上。",
       "dateFormat": "日期格式",
@@ -353,6 +414,8 @@
       "signature": "签名",
       "clear": "清除",
       "drawHere": "在此处绘制签名",
+      "drawAria": "手写签名画布",
+      "previewAlt": "签名预览",
       "clickOrDrop": "点击或拖放图片至此处",
       "removeBg": "去除白色背景",
       "cancel": "取消",
@@ -365,6 +428,7 @@
     "fieldView": {
       "doubleClickToEdit": "双击进行编辑",
       "rotateAria": "旋转签名。拖动旋转或轻触旋转 90 度。",
+      "resizeAria": "调整签名区域大小",
       "removeAria": "移除字段",
       "fieldAria": "{{kind}} 字段。拖拽移动、旋转、方向键微调、Delete 键删除。",
       "pageAria": "第 {{page}} 页"
@@ -710,36 +774,37 @@
     "compressToolPromptTitle": "Need to compress a PDF right now?",
     "compressToolPromptSubtitle": "Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.",
     "openCompressTool": "Open Compress PDF Tool →",
-    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide"
+    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide",
+    "comparisonBadge": "对比指南"
   },
   "newsletter": {
-    "title": "Join Our Newsletter",
-    "subtitle": "Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.",
-    "placeholder": "Enter your email address...",
-    "button": "Join",
-    "buttonLoading": "Joining...",
-    "success": "Thank you for joining! Check your inbox for updates.",
-    "emptyEmail": "Please enter your email address.",
-    "invalidEmail": "Please enter a valid email address.",
-    "error": "Failed to process subscription. Please try again."
+    "title": "订阅我们的通讯",
+    "subtitle": "获取最新的 PDF 高效工作流与文档安全技巧。",
+    "placeholder": "输入您的电子邮箱...",
+    "button": "订阅",
+    "buttonLoading": "订阅中...",
+    "success": "感谢您的订阅！请查收您的邮箱。",
+    "emptyEmail": "请输入您的电子邮箱地址。",
+    "invalidEmail": "请输入有效的电子邮箱地址。",
+    "error": "订阅失败，请稍后重试。"
   },
   "toolCommon": {
-    "returnToDashboard": "返回控制面板",
-    "limit": "限制：{{limit}}MB",
+    "returnToDashboard": "返回工作台",
+    "limit": "大小限制：{{limit}}MB",
     "selectPdf": "选择一个 PDF 文件开始",
     "changeFile": "更换文件",
     "settings": "设置",
     "options": "选项",
     "process": "开始处理",
-    "processing": "正在处理...",
+    "processing": "处理中...",
     "download": "下载文件",
     "downloadAll": "下载全部文件",
     "reset": "重新开始",
-    "success": "处理成功完成！请在下方下载。",
+    "success": "处理成功！请在下方下载文件。",
     "error": "处理过程中发生错误。",
     "fileInfo": "{{name}} ({{size}} MB)",
     "pageRange": "页面范围",
-    "allPages": "全部页面",
+    "allPages": "所有页面",
     "selectedPages": "已选页面",
     "preview": "实时预览",
     "apply": "应用更改",
@@ -754,7 +819,7 @@
     "chooseFile": "浏览文件",
     "selectPdf": "选择 PDF 文件",
     "browseAria": "按回车键或空格键浏览文件。",
-    "inputAria": "文件输入"
+    "inputAria": "文件上传输入"
   },
   "emptyState": {
     "title": "Upload a PDF to get started",
@@ -851,20 +916,20 @@
     "invalidPageNumber": "Invalid page number(s): {{tokens}}. Document has {{total}} page(s). Use numbers between 1 and {{total}}.",
     "atLeastOneValid": "Please enter at least one valid page number to delete.",
     "cannotDeleteAll": "Cannot delete all pages of the document.",
-    "selectedBadge": "{{count}} page selected",
-    "selectedBadge_plural": "{{count}} pages selected",
-    "pageCheckboxAria": "Select page {{page}}",
-    "deleteAria": "Delete {{count}} selected pages",
-    "success": "Pages deleted successfully!",
-    "rangeInputLabel": "Page numbers or ranges to delete",
-    "deleteRangeButton": "Delete Pages",
-    "pageInputPlaceholder": "e.g. 1, 3-5, 8",
-    "rangeExample": "e.g. enter 1-3, 5, 8-10",
-    "invalidRangeError": "Invalid page range or number. e.g. 1, 3-5, 8",
-    "selectAll": "Select All",
-    "clearSelection": "Clear Selection",
-    "noPagesSelected": "Please select at least one page to delete.",
-    "allPagesDeleted": "Cannot delete all pages. Document must contain at least one page.",
+    "selectedBadge": "已选择 {{count}} 页",
+    "selectedBadge_plural": "已选择 {{count}} 页",
+    "pageCheckboxAria": "选择删除第 {{page}} 页",
+    "deleteAria": "删除所选页面",
+    "success": "所选页面已成功删除！",
+    "rangeInputLabel": "要删除的页面范围（例如 1, 3-5）",
+    "deleteRangeButton": "删除页面",
+    "pageInputPlaceholder": "例如 1, 3-5, 8",
+    "rangeExample": "输入用逗号分隔的页码或页面范围。",
+    "invalidRangeError": "请输入有效的文档页码。",
+    "selectAll": "全选",
+    "clearSelection": "清除选择",
+    "noPagesSelected": "请至少选择一页进行删除。",
+    "allPagesDeleted": "不能删除 PDF 文档中的所有页面。",
     "pdfDocument": "PDF Document",
     "successTitle": "Pages Deleted Successfully! Your modified PDF has been generated.",
     "successDesc": "The selected pages have been removed completely offline in your browser.",
@@ -1050,7 +1115,7 @@
     "watermarkError": "An unexpected error occurred while adding the watermark.",
     "previewTitle": "Real-time Visual Preview",
     "page1": "Page 1",
-    "page1Alt": "PDF Page 1 Preview",
+    "page1Alt": "带水印的第 1 页预览",
     "loadingDoc": "Loading Document...",
     "templateView": "Template View",
     "successTitle": "Watermark Applied Successfully! Your stamped PDF has been generated.",
@@ -1088,7 +1153,7 @@
     "repairButton": "Repair & Download"
   },
   "extractPages": {
-    "failedToExtract": "Failed to extract pages. Please try again.",
+    "failedToExtract": "提取页面失败。",
     "previewWarning": "Previews could not be rendered, but you can still run extraction using standard page parameters.",
     "selectOnePage": "Please select at least one page to extract.",
     "extractError": "Failed to extract selected pages from the document.",
@@ -1121,7 +1186,7 @@
     "outputMatrix": "Output Ordering Matrix",
     "processingButton": "Reordering Assembling...",
     "reorderSaveButton": "Reorder and Save PDF",
-    "reorderedSuccess": "Pages reordered successfully!",
+    "reorderedSuccess": "PDF 页面顺序已成功更新！",
     "successTitle": "Pages Reordered Successfully! Your custom PDF is ready.",
     "downloadReordered": "Download Reordered PDF",
     "emptyTitle": "Upload a PDF to reorder pages",
@@ -1133,7 +1198,7 @@
     "processingButton": "Transcribing via AI Vision...",
     "processButton": "Extract Text with AI Vision",
     "rateLimitReached": "Rate limit reached. Please wait a few minutes before trying again.",
-    "ocrCompleted": "OCR Completed Successfully!",
+    "ocrCompleted": "OCR 文字识别成功完成！",
     "resultTitle": "OCR Extracted Result",
     "engineTranscribing": "AI OCR Engine Transcribing Pixels...",
     "analyzingStructure": "Analyzing page structures, text blocks, and table formats to build clean Markdown.",
@@ -1143,7 +1208,10 @@
     "downloadMd": "Download Markdown (MD)",
     "autoDetect": "Auto-Detect (Multilingual)",
     "busyMessage": "⏳ AI is busy. Please try again in a few minutes.",
-    "orUseOffline": "Or use our offline tools:"
+    "orUseOffline": "Or use our offline tools:",
+    "consentTitle": "云端 AI 处理知情同意",
+    "consentDesc": "所选页面图像将加密传输至 Google Gemini 进行高精度文字提取。",
+    "consentCheckbox": "我同意将所选页面加密发送以进行 OCR 识别。"
   },
   "sanitizePdf": {
     "workspace": "Document Workspace",
@@ -1189,14 +1257,14 @@
     "orUseOffline": "Or use our offline tools:",
     "aiVisionMode": "AI Vision OCR Mode (For Scanned / Image PDFs)",
     "scannedDetected": "Scanned / Image-Only PDF Detected",
-    "ocrNotice": "Tip: Scanned image documents use automated Optical Character Recognition (OCR)."
+    "ocrNotice": "检测到扫描版 PDF？请使用我们的 OCR PDF 工具提取图像中的文字。"
   },
   "editMetadata": {
     "selectDocument": "Select Document",
     "documentProperties": "Document Properties",
     "metadataUpdate": "Metadata Update",
     "metadataUpdateDesc": "Updates your document info tags without modifying page contents or layout quality.",
-    "titlePlaceholder": "Document Title...",
+    "titlePlaceholder": "输入文档标题...",
     "authorPlaceholder": "Author Name...",
     "subjectPlaceholder": "Subject / Purpose...",
     "keywordsPlaceholder": "keyword1, keyword2, keyword3...",
@@ -1405,6 +1473,12 @@
     "sec2Desc": "We do not maintain backend servers or cloud storage buckets that store, cache, or buffer your PDF documents. All binary file transformations execute entirely within your device's RAM. When you close the browser tab or refresh the page, all file data is completely purged from memory.",
     "sec3Title": "3. Opt-In AI Feature Disclosure (/ai-analyze-pdf)",
     "sec3Desc": "PdfMinty offers an optional AI PDF Assistant. If you select a file and check the explicit consent checkbox in the AI tool, extracted text from up to the first 12 pages is transmitted over an encrypted TLS connection to Google Gemini API to answer your questions or generate summaries. Binary PDF files are never stored, and text is transmitted solely for processing your immediate query.",
+    "secGoogleTitle": "4. Google 用户数据、OAuth 2.0 身份验证与账户信息",
+    "secGoogleDesc": "当您选择使用 Google 登录 (OAuth 2.0) 登录 PDFMinty 时，我们会请求您 Google 账户的基本个人资料信息：电子邮件地址 (userinfo.email)、显示名称、头像 URL (userinfo.profile) 和唯一用户标识符 (openid / UID)。我们仅将这些信息用于身份验证以及在 Google Cloud Firestore 中管理您的配额和会员等级。PDFMinty 绝不会访问您的 Google Drive 或 Gmail 数据。",
+    "secLimitedUseTitle": "5. Google API 服务用户数据政策（有限使用披露）",
+    "secLimitedUseDesc": "PDFMinty 对从 Google API 收到的信息的使用以及向任何其他应用程序的传输均将遵守 Google API Services User Data Policy，包括有限使用 (Limited Use) 要求。",
+    "secRetentionTitle": "6. 数据保留、账户删除与访问权限撤销",
+    "secRetentionDesc": "我们仅在您的 PDFMinty 账户处于活跃状态期间保留您的账户资料。您可以随时通过 Google 安全设置 (https://myaccount.google.com/permissions) 撤销访问权限，并通过账户仪表板或发送邮件至 support@pdfminty.com 请求永久删除您的账户（将在 7 个工作日内彻底清除）。",
     "sec4Title": "4. Google AdSense & Third-Party Advertising Cookies",
     "sec4Intro": "PdfMinty uses Google AdSense to display advertisements when you visit our website. To comply with Google AdSense policies, please review the following required advertising disclosures:",
     "sec4Li1": "Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites on the Internet.",
@@ -1412,6 +1486,8 @@
     "sec4OptOut": "Users may opt out of personalized advertising by visiting Google's",
     "sec4Or": "or by visiting",
     "sec4Partner": "For more details on how Google processes data when you visit partner sites, please see Google's policy at",
+    "secCmpTitle": "9. 同意管理平台 (CMP) 与 Cookie 偏好设置（欧洲经济区、英国和瑞士）",
+    "secCmpIntro": "对于位于欧洲经济区 (EEA)、英国、瑞士及全球的访问者，PDFMinty 通过 Google Consent Mode v2 实施严格的选择加入 (Opt-in) Cookie 控制。",
     "sec5Title": "5. Web Analytics & Cookie Usage",
     "sec5Desc": "PdfMinty uses privacy-respecting website performance analytics (such as Google Analytics 4 with IP anonymization and Cloudflare Web Analytics) to understand aggregate traffic trends, pageviews, and browser performance. We do not sell user data, track individual personal identities, or store cookies containing sensitive document data.",
     "sec6Title": "6. GDPR & CCPA/CPRA Privacy Rights",
@@ -1427,15 +1503,7 @@
     "orEmail": "or by email at",
     "sec6Li1Title": "Right of Access & Deletion:",
     "sec6Li2Title": "Do Not Sell My Information:",
-    "sec6Li3Title": "Browser Controls:",
-    "secGoogleTitle": "4. Google 用户数据、OAuth 2.0 身份验证与账户信息",
-    "secGoogleDesc": "当您选择使用 Google 登录 (OAuth 2.0) 登录 PDFMinty 时，我们会请求您 Google 账户的基本个人资料信息：电子邮件地址 (userinfo.email)、显示名称、头像 URL (userinfo.profile) 和唯一用户标识符 (openid / UID)。我们仅将这些信息用于身份验证以及在 Google Cloud Firestore 中管理您的配额和会员等级。PDFMinty 绝不会访问您的 Google Drive 或 Gmail 数据。",
-    "secLimitedUseTitle": "5. Google API 服务用户数据政策（有限使用披露）",
-    "secLimitedUseDesc": "PDFMinty 对从 Google API 收到的信息的使用以及向任何其他应用程序的传输均将遵守 Google API Services User Data Policy，包括有限使用 (Limited Use) 要求。",
-    "secRetentionTitle": "6. 数据保留、账户删除与访问权限撤销",
-    "secRetentionDesc": "我们仅在您的 PDFMinty 账户处于活跃状态期间保留您的账户资料。您可以随时通过 Google 安全设置 (https://myaccount.google.com/permissions) 撤销访问权限，并通过账户仪表板或发送邮件至 support@pdfminty.com 请求永久删除您的账户（将在 7 个工作日内彻底清除）。",
-    "secCmpTitle": "9. 同意管理平台 (CMP) 与 Cookie 偏好设置（欧洲经济区、英国和瑞士）",
-    "secCmpIntro": "对于位于欧洲经济区 (EEA)、英国、瑞士及全球的访问者，PDFMinty 通过 Google Consent Mode v2 实施严格的选择加入 (Opt-in) Cookie 控制。"
+    "sec6Li3Title": "Browser Controls:"
   },
   "contact": {
     "hereToHelp": "We're Here to Help",
@@ -1645,17 +1713,17 @@
     "tip5Text": "后台工作线程确保压缩期间界面保持流畅响应。"
   },
   "pwa": {
-    "installApp": "Install App",
-    "installed": "Installed!",
-    "installTooltip": "Install PDFMinty as a desktop/mobile app for 100% offline access",
-    "installMobileTitle": "Install PDFMinty App",
-    "installMobileSubtitle": "Work 100% offline without internet",
-    "iosModalTitle": "Install on iPhone & iPad",
-    "desktopModalTitle": "Install PDFMinty App",
-    "offlineBenefit": "Access all PDF tools 100% offline without network.",
-    "offlineActive": "Offline Mode Active",
-    "offlineNotice": "All core PDF tools process locally in your device RAM without internet.",
-    "reconnected": "Back online. All services synced."
+    "installApp": "安装应用",
+    "installed": "已安装！",
+    "installTooltip": "将 PDFMinty 安装为桌面/移动应用，享受 100% 离线访问",
+    "installMobileTitle": "安装 PDFMinty 应用",
+    "installMobileSubtitle": "无需网络，100% 离线工作",
+    "iosModalTitle": "在 iPhone 和 iPad 上安装",
+    "desktopModalTitle": "安装 PDFMinty 应用",
+    "offlineBenefit": "无需网络即可 100% 离线使用所有核心 PDF 工具。",
+    "offlineActive": "离线模式已激活",
+    "offlineNotice": "所有核心 PDF 工具均在您的设备内存中本地运行。",
+    "reconnected": "已重新连接网络，服务已同步。"
   },
   "usageLimits": {
     "tier": {

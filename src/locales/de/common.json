@@ -80,11 +80,11 @@
     "switchToDark": "Dunkles Design",
     "toggleLabel": "Umschalten",
     "home": "Startseite",
-    "tools": "Tools",
-    "blog": "Blog",
-    "about": "About",
+    "tools": "Werkzeuge",
+    "blog": "Wissensdatenbank",
+    "about": "Über uns",
     "contact": "Kontakt",
-    "individualUtilities": "Individual Utilities"
+    "individualUtilities": "Einzelne PDF-Tools"
   },
   "languageSwitcher": {
     "selectLanguage": "Sprache auswählen",
@@ -96,7 +96,10 @@
       "badgePrivate": "100% private Browser-Werkzeuge",
       "h1Part1": "Kostenlose browserbasierte PDF-Werkzeuge — 100% privat, ",
       "h1Part2": "Ohne Uploads",
-      "subtitle": "Fügen Sie Ihre Dokumente direkt im Webbrowser zusammen, teilen und bearbeiten Sie sie. PDFMinty verarbeitet Standard-PDF-Aufgaben lokal auf Ihrem Gerät ohne Server-Uploads. Keine Konten erforderlich – schnelle, datenschutzorientierte PDF-Tools."
+      "subtitle": "Fügen Sie Ihre Dokumente direkt im Webbrowser zusammen, teilen und bearbeiten Sie sie. PDFMinty verarbeitet Standard-PDF-Aufgaben lokal auf Ihrem Gerät ohne Server-Uploads. Keine Konten erforderlich – schnelle, datenschutzorientierte PDF-Tools.",
+      "enable3D": "Enable 3D",
+      "disable3D": "Disable 3D",
+      "autoDisabled3D": "3D turned off to keep things fast"
     },
     "search": {
       "placeholder": "PDF-Werkzeuge durchsuchen...",
@@ -145,7 +148,8 @@
       "step2Title": "Dateien hinzufügen",
       "step2Desc": "Ziehen Sie Ihre PDF-Dateien direkt in das Browserfenster. Standard-Tools halten alles lokal im Speicher.",
       "step3Title": "Verarbeiten & Herunterladen",
-      "step3Desc": "Ihre PDF wird sofort auf Ihrer Hardware verarbeitet. Klicken Sie auf Herunterladen, um das Ergebnis zu speichern."
+      "step3Desc": "Ihre PDF wird sofort auf Ihrer Hardware verarbeitet. Klicken Sie auf Herunterladen, um das Ergebnis zu speichern.",
+      "stepsSubtitle": "Drei einfache Schritte zur Verarbeitung Ihrer Dateien direkt im Browser."
     },
     "faq": {
       "badge": "Häufig gestellte Fragen",
@@ -180,36 +184,36 @@
       "button": "Alle Werkzeuge entdecken"
     },
     "toolCard": {
-      "highDemand": "★ HIGH DEMAND",
-      "useTool": "Use Tool"
+      "highDemand": "Beliebt",
+      "useTool": "Tool öffnen"
     },
     "trustBadge": {
-      "eyebrow": "Community Verified",
-      "title": "100% Sicher & Verifiziert",
-      "description": "Alle Standard-PDF-Operationen werden lokal in Ihrem Browser ausgeführt.",
-      "launchbuffTitle": "Vorgestellt auf Launchbuff",
+      "eyebrow": "Community-geprüft",
+      "title": "Anerkannt auf führenden Plattformen",
+      "description": "PdfMinty wird als vertrauenswürdiges, datenschutzorientiertes Client-Side-PDF-Toolkit empfohlen.",
+      "launchbuffTitle": "Vorgestellt auf LaunchBuff",
       "launchstagTitle": "Vorgestellt auf Launchstag",
-      "privacyBadge": "100% In-Browser Privacy",
-      "verifiedBadge": "Verifizierte lokale Privatsphäre",
-      "loggingBadge": "Keine Serverprotokolle"
+      "privacyBadge": "100% Browser-Datenschutz",
+      "verifiedBadge": "Geprüfte Verzeichniseinträge",
+      "loggingBadge": "Keine Datenprotokollierung"
     },
     "recommended": {
-      "badge": "Recommended Security",
-      "title": "Recommended Tools",
-      "subtitle": "Die beliebtesten PDF-Werkzeuge für den täglichen Gebrauch.",
-      "nordVpnTitle": "Browse Securely with NordVPN",
-      "nordVpnDesc": "Protect your connection while working with sensitive documents. Military-grade encryption, no logs policy.",
-      "nordVpnCta": "Get NordVPN",
-      "nordPassTitle": "Secure Your Passwords",
-      "nordPassDesc": "Manage passwords, passkeys, and credit cards with end-to-end encryption. Never lose track of PDF passwords.",
-      "nordPassCta": "Get NordPass"
+      "badge": "Empfohlene Sicherheit",
+      "title": "Empfohlene Sicherheitstools",
+      "subtitle": "Vertrauenswürdige Sicherheitsdienste zum Schutz Ihrer vertraulichen Dokumente.",
+      "nordVpnTitle": "Sicher surfen mit NordVPN",
+      "nordVpnDesc": "Schützen Sie Ihre Verbindung bei der Arbeit mit sensiblen Dokumenten.",
+      "nordVpnCta": "NordVPN sichern",
+      "nordPassTitle": "Passwörter schützen mit NordPass",
+      "nordPassDesc": "Verwalten Sie Passwörter und PDF-Schlüssel mit Ende-zu-Ende-Verschlüsselung.",
+      "nordPassCta": "NordPass sichern"
     },
     "seoResources": {
-      "badge": "Knowledge & Resource Hub",
-      "title": "Ressourcen & Leitfäden für PDF-Sicherheit",
-      "subtitle": "Comprehensive tutorials, security breakdowns, and tool comparisons to help you manage PDF documents privately and efficiently.",
-      "exploreResource": "Explore Resource",
-      "viewAllHub": "View All Articles & Guides in Knowledge Hub",
+      "badge": "Wissens- & Ressourcen-Hub",
+      "title": "PDF-Anleitungen, Vergleiche & Ressourcen",
+      "subtitle": "Umfassende Tutorials, Sicherheitsanalysen und Tool-Vergleiche für sichere PDF-Workflows.",
+      "exploreResource": "Ressource öffnen",
+      "viewAllHub": "Alle Artikel im Knowledge Hub ansehen",
       "cards": {
         "pdfToWordTitle": "Free PDF to Word Guide",
         "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
@@ -414,6 +418,7 @@
       "change": "Ändern",
       "create": "Erstellen",
       "clickToSet": "Klicken, um Unterschrift festzulegen",
+      "sigAlt": "Gespeicherte Unterschrift",
       "fields": "Felder",
       "fieldsHelp": "Klicken Sie auf ein Feld und dann auf das Dokument, oder ziehen Sie es per Drag & Drop auf eine Seite.",
       "dateFormat": "Datumsformat",
@@ -446,6 +451,8 @@
       "signature": "Unterschrift",
       "clear": "Löschen",
       "drawHere": "Hier unterschreiben",
+      "drawAria": "Zeichenfläche für Unterschrift",
+      "previewAlt": "Unterschriftsvorschau",
       "clickOrDrop": "Klicken oder Bild hierher ziehen",
       "removeBg": "Weißen Hintergrund entfernen",
       "cancel": "Abbrechen",
@@ -458,6 +465,7 @@
     "fieldView": {
       "doubleClickToEdit": "Doppelklicken zum Bearbeiten",
       "rotateAria": "Unterschrift drehen. Ziehen zum Drehen oder tippen für 90-Grad-Drehung.",
+      "resizeAria": "Größe des Signaturfelds ändern",
       "removeAria": "Feld entfernen",
       "fieldAria": "{{kind}}-Feld. Ziehen zum Bewegen, Drehen, Pfeiltasten zum Verschieben, Entf zum Entfernen.",
       "pageAria": "Seite {{page}}"
@@ -543,6 +551,20 @@
     "invalidPageNumber": "Ungültige Seitenzahl(en): {{tokens}}. Das Dokument hat {{total}} Seite(n). Verwenden Sie Zahlen zwischen 1 und {{total}}.",
     "atLeastOneValid": "Bitte geben Sie mindestens eine gültige Seitenzahl zum Löschen ein.",
     "cannotDeleteAll": "Es können nicht alle Seiten des Dokuments gelöscht werden.",
+    "selectedBadge": "{{count}} Seite ausgewählt",
+    "selectedBadge_plural": "{{count}} Seiten ausgewählt",
+    "pageCheckboxAria": "Seite {{page}} zum Löschen auswählen",
+    "deleteAria": "Ausgewählte Seiten löschen",
+    "success": "Ausgewählte Seiten erfolgreich entfernt!",
+    "rangeInputLabel": "Seitenbereiche zum Löschen (z. B. 1, 3-5)",
+    "deleteRangeButton": "Seiten löschen",
+    "pageInputPlaceholder": "z. B. 1, 3-5, 8",
+    "rangeExample": "Geben Sie Seitenzahlen oder Bereiche getrennt durch Kommas ein.",
+    "invalidRangeError": "Bitte geben Sie gültige Seitenzahlen innerhalb des Dokuments ein.",
+    "selectAll": "Alle auswählen",
+    "clearSelection": "Auswahl aufheben",
+    "noPagesSelected": "Bitte wählen Sie mindestens eine Seite zum Löschen aus.",
+    "allPagesDeleted": "Sie können nicht alle Seiten eines PDF-Dokuments löschen.",
     "pdfDocument": "PDF-Dokument",
     "successTitle": "Seiten erfolgreich gelöscht! Ihre bearbeitete PDF wurde erstellt.",
     "successDesc": "Die ausgewählten Seiten wurden entfernt und vollständig offline in Ihrem Browser gespeichert.",
@@ -728,6 +750,7 @@
     "watermarkError": "Beim Hinzufügen des Wasserzeichens ist ein unerwarteter Fehler aufgetreten.",
     "previewTitle": "Visuelle Echtzeit-Vorschau",
     "page1": "Seite 1",
+    "page1Alt": "Vorschau von Seite 1 mit Wasserzeichen",
     "loadingDoc": "Dokument wird geladen...",
     "templateView": "Vorlagenansicht",
     "successTitle": "Wasserzeichen erfolgreich hinzugefügt! Ihr gestempeltes PDF ist fertig.",
@@ -806,7 +829,8 @@
     "compressToolPromptTitle": "Need to compress a PDF right now?",
     "compressToolPromptSubtitle": "Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.",
     "openCompressTool": "Open Compress PDF Tool →",
-    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide"
+    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide",
+    "comparisonBadge": "Vergleich"
   },
   "articles": {
     "blog-merge-pdf": {
@@ -1107,6 +1131,7 @@
     }
   },
   "extractPages": {
+    "failedToExtract": "Seiten konnten nicht extrahiert werden.",
     "previewWarning": "Vorschauen konnten nicht generiert werden, Sie können jedoch weiterhin Seiten manuell extrahieren.",
     "selectOnePage": "Bitte wählen Sie mindestens eine Seite zum Extrahieren aus.",
     "extractError": "Fehler beim Extrahieren der ausgewählten Seiten aus dem Dokument.",
@@ -1139,6 +1164,7 @@
     "outputMatrix": "Ausgabeordnungsmatrix",
     "processingButton": "Wird neu angeordnet...",
     "reorderSaveButton": "PDF neu ordnen & speichern",
+    "reorderedSuccess": "PDF-Seiten erfolgreich neu angeordnet!",
     "successTitle": "Seiten erfolgreich neu geordnet! Ihre angepasste PDF ist bereit.",
     "downloadReordered": "Neu geordnete PDF herunterladen",
     "emptyTitle": "Laden Sie eine PDF hoch, um Seiten neu zu ordnen",
@@ -1150,6 +1176,7 @@
     "processingButton": "Wird über KI-Vision transkribiert...",
     "processButton": "Text mit KI-Vision extrahieren",
     "rateLimitReached": "Ratenlimit erreicht. Bitte warten Sie einige Minuten, bevor Sie es erneut versuchen.",
+    "ocrCompleted": "OCR-Texterkennung erfolgreich abgeschlossen!",
     "resultTitle": "OCR Extrahierter Text",
     "engineTranscribing": "KI-OCR-Engine transkribiert Pixel...",
     "analyzingStructure": "Seitenstrukturen, Textblöcke und Tabellenformate werden analysiert, um sauberes Markdown zu erstellen.",
@@ -1159,7 +1186,10 @@
     "downloadMd": "Markdown (MD) herunterladen",
     "autoDetect": "Automatische Erkennung (Mehrsprachig)",
     "busyMessage": "⏳ KI ist ausgelastet. Bitte versuchen Sie es in wenigen Minuten erneut.",
-    "orUseOffline": "Oder nutzen Sie unsere Offline-Werkzeuge:"
+    "orUseOffline": "Oder nutzen Sie unsere Offline-Werkzeuge:",
+    "consentTitle": "Einwilligung zur Cloud-KI-Verarbeitung",
+    "consentDesc": "Ausgewählte Seitenbilder werden verschlüsselt an Google Gemini zur Texterkennung gesendet.",
+    "consentCheckbox": "Ich stimme der verschlüsselten Übertragung für OCR zu."
   },
   "sanitizePdf": {
     "workspace": "Dokumenten-Arbeitsbereich",
@@ -1204,13 +1234,19 @@
     "busyMessage": "⏳ KI ist ausgelastet. Bitte versuchen Sie es in wenigen Minuten erneut.",
     "orUseOffline": "Oder nutzen Sie unsere Offline-Werkzeuge:",
     "aiVisionMode": "KI-Vision-OCR-Modus (Für gescannte PDFs / Bild-PDFs)",
-    "scannedDetected": "Gescannte oder reine Bild-PDF erkannt"
+    "scannedDetected": "Gescannte oder reine Bild-PDF erkannt",
+    "ocrNotice": "Gescanntes PDF erkannt? Nutzen Sie unser OCR-PDF-Tool für Bild-zu-Text-Erkennung."
   },
   "editMetadata": {
     "selectDocument": "Dokument auswählen",
     "documentProperties": "Dokumenteneigenschaften",
     "metadataUpdate": "Metadaten-Update",
     "metadataUpdateDesc": "Aktualisiert die Info-Tags Ihres Dokuments, ohne den Seiteninhalt oder die Layoutqualität zu ändern.",
+    "titlePlaceholder": "Dokumenttitel eingeben...",
+    "authorPlaceholder": "Author Name...",
+    "subjectPlaceholder": "Subject / Purpose...",
+    "keywordsPlaceholder": "keyword1, keyword2, keyword3...",
+    "creatorPlaceholder": "Application or Creator...",
     "howToEdit": "So bearbeiten Sie PDF-Eigenschaften mit PdfMinty in 3 Schritten",
     "lblTitle": "Titel",
     "lblAuthor": "Autor",
@@ -1236,6 +1272,7 @@
     "zeroUploadGuarantee": "🔒 Clientseitige Garantie ohne Uploads"
   },
   "pageNumbers": {
+    "failedToAdd": "Failed to add page numbers. Please try again.",
     "realtimePreview": "Echtzeit-Platzierungsvorschau",
     "pageIndicator": "Seite 1 von 12",
     "loadingDocument": "Dokument wird geladen...",
@@ -1250,6 +1287,8 @@
     "bottomRight": "Unten rechts (Standard)"
   },
   "aiAnalyze": {
+    "privacyBadge": "Safe & Private: Data not retained",
+    "analysisResult": "Analysis Result",
     "documentUpload": "Dokumenten-Upload",
     "extractingText": "PDF-Text wird lokal extrahiert...",
     "textIndexesLoaded": "Textindizes erfolgreich geladen!",
@@ -1412,6 +1451,12 @@
     "sec2Desc": "Wir betreiben keine Backend-Server oder Cloud-Speicher, auf denen Ihre PDF-Dokumente gespeichert, zwischengespeichert oder gepuffert werden. Alle Transformationen finden im RAM Ihres Geräts statt. Nach dem Schließen des Browser-Tabs werden alle Daten rückstandslos gelöscht.",
     "sec3Title": "3. Offenlegung der optionalen KI-Funktion (/ai-analyze-pdf)",
     "sec3Desc": "PdfMinty bietet einen optionalen KI-PDF-Assistenten an. Wenn Sie eine Datei auswählen und das Zustimmungsfeld aktivieren, wird der extrahierte Text (bis zu den ersten 12 Seiten) verschlüsselt an die Google Gemini API übertragen. Es werden keine PDF-Dateien gespeichert.",
+    "secGoogleTitle": "4. Google-Nutzerdaten, OAuth 2.0-Authentifizierung & Kontoinformationen",
+    "secGoogleDesc": "Wenn Sie sich über Google Sign-In (OAuth 2.0) bei PDFMinty anmelden, erfassen wir grundlegende Profilinformationen Ihres Google-Kontos: E-Mail-Adresse (userinfo.email), Anzeigename, Profilbild-URL (userinfo.profile) und Ihre eindeutige Google-Nutzer-ID (openid / UID). Wir verwenden diese Daten ausschließlich zur Authentifizierung, Sitzungsverwaltung und Kontingentverwaltung in Google Cloud Firestore. PDFMinty greift niemals auf Google Drive, Gmail oder Google Kontakte zu.",
+    "secLimitedUseTitle": "5. Richtlinie zu Nutzerdaten der Google API-Dienste (Limited Use Disclosure)",
+    "secLimitedUseDesc": "Die Nutzung und Weitergabe von Informationen, die PDFMinty von Google APIs erhält, an andere Apps erfolgt unter Einhaltung der Google API Services User Data Policy, einschließlich der Anforderungen zur eingeschränkten Nutzung (Limited Use).",
+    "secRetentionTitle": "6. Datenspeicherung, Kontolöschung & Widerruf des Zugriffs",
+    "secRetentionDesc": "Wir speichern Ihr Kontoprofil nur so lange, wie Sie ein aktives Konto bei PDFMinty unterhalten. Sie können den Zugriff jederzeit in den Google-Sicherheitseinstellungen (https://myaccount.google.com/permissions) widerrufen und Ihr Konto über das Dashboard oder per E-Mail an support@pdfminty.com dauerhaft löschen lassen (Löschung innerhalb von 7 Werktagen).",
     "sec4Title": "4. Google AdSense & Werbe-Cookies von Drittanbietern",
     "sec4Intro": "PdfMinty nutzt Google AdSense zur Anzeige von Werbung beim Besuch unserer Website. Gemäß den Google AdSense-Richtlinien beachten Sie bitte folgende Hinweise:",
     "sec4Li1": "Drittanbieter, einschließlich Google, verwenden Cookies zur Anzeigenschaltung auf Grundlage vorheriger Besuche auf unserer oder anderen Websites im Internet.",
@@ -1419,6 +1464,8 @@
     "sec4OptOut": "Nutzer können personalisierte Werbung deaktivieren in den",
     "sec4Or": "oder unter",
     "sec4Partner": "Weitere Informationen zur Datenverarbeitung durch Google finden Sie unter",
+    "secCmpTitle": "9. Consent Management Platform (CMP) & Cookie-Einstellungen (EWR, UK & Schweiz)",
+    "secCmpIntro": "Für Besucher im Europäischen Wirtschaftsraum (EWR), im Vereinigten Königreich, in der Schweiz und weltweit setzt PDFMinty strikte Opt-in-Cookie-Einstellungen über Google Consent Mode v2 durch.",
     "sec5Title": "5. Web-Analytics & Cookie-Nutzung",
     "sec5Desc": "PdfMinty verwendet datenschutzfreundliche Webanalyse (wie Google Analytics 4 mit IP-Anonymisierung und Cloudflare Web Analytics), um Trends und Browser-Performance zu verstehen. Wir verkaufen keine Daten und speichern keine sensiblen Dokumentdaten in Cookies.",
     "sec6Title": "6. Datenschutzrechte nach DSGVO & CCPA/CPRA",
@@ -1434,15 +1481,7 @@
     "orEmail": "oder per E-Mail an",
     "sec6Li1Title": "Auskunfts- & Löschungsrecht:",
     "sec6Li2Title": "Kein Verkauf persönlicher Daten:",
-    "sec6Li3Title": "Browser-Einstellungen:",
-    "secGoogleTitle": "4. Google-Nutzerdaten, OAuth 2.0-Authentifizierung & Kontoinformationen",
-    "secGoogleDesc": "Wenn Sie sich über Google Sign-In (OAuth 2.0) bei PDFMinty anmelden, erfassen wir grundlegende Profilinformationen Ihres Google-Kontos: E-Mail-Adresse (userinfo.email), Anzeigename, Profilbild-URL (userinfo.profile) und Ihre eindeutige Google-Nutzer-ID (openid / UID). Wir verwenden diese Daten ausschließlich zur Authentifizierung, Sitzungsverwaltung und Kontingentverwaltung in Google Cloud Firestore. PDFMinty greift niemals auf Google Drive, Gmail oder Google Kontakte zu.",
-    "secLimitedUseTitle": "5. Richtlinie zu Nutzerdaten der Google API-Dienste (Limited Use Disclosure)",
-    "secLimitedUseDesc": "Die Nutzung und Weitergabe von Informationen, die PDFMinty von Google APIs erhält, an andere Apps erfolgt unter Einhaltung der Google API Services User Data Policy, einschließlich der Anforderungen zur eingeschränkten Nutzung (Limited Use).",
-    "secRetentionTitle": "6. Datenspeicherung, Kontolöschung & Widerruf des Zugriffs",
-    "secRetentionDesc": "Wir speichern Ihr Kontoprofil nur so lange, wie Sie ein aktives Konto bei PDFMinty unterhalten. Sie können den Zugriff jederzeit in den Google-Sicherheitseinstellungen (https://myaccount.google.com/permissions) widerrufen und Ihr Konto über das Dashboard oder per E-Mail an support@pdfminty.com dauerhaft löschen lassen (Löschung innerhalb von 7 Werktagen).",
-    "secCmpTitle": "9. Consent Management Platform (CMP) & Cookie-Einstellungen (EWR, UK & Schweiz)",
-    "secCmpIntro": "Für Besucher im Europäischen Wirtschaftsraum (EWR), im Vereinigten Königreich, in der Schweiz und weltweit setzt PDFMinty strikte Opt-in-Cookie-Einstellungen über Google Consent Mode v2 durch."
+    "sec6Li3Title": "Browser-Einstellungen:"
   },
   "contact": {
     "hereToHelp": "Wir sind hier, um zu helfen",
@@ -1674,17 +1713,17 @@
     "tip5Text": "Multi-Thread-Hintergrundverarbeitung hält den Browser reaktionsschnell."
   },
   "pwa": {
-    "installApp": "Install App",
-    "installed": "Installed!",
-    "installTooltip": "Install PDFMinty as a desktop/mobile app for 100% offline access",
-    "installMobileTitle": "Install PDFMinty App",
-    "installMobileSubtitle": "Work 100% offline without internet",
-    "iosModalTitle": "Install on iPhone & iPad",
-    "desktopModalTitle": "Install PDFMinty App",
-    "offlineBenefit": "Access all PDF tools 100% offline without network.",
-    "offlineActive": "Offline Mode Active",
-    "offlineNotice": "All core PDF tools process locally in your device RAM without internet.",
-    "reconnected": "Back online. All services synced."
+    "installApp": "App installieren",
+    "installed": "Installiert!",
+    "installTooltip": "PDFMinty als Desktop-/Mobil-App für 100% Offline-Zugriff installieren",
+    "installMobileTitle": "PDFMinty-App installieren",
+    "installMobileSubtitle": "100% offline ohne Internet arbeiten",
+    "iosModalTitle": "Auf iPhone & iPad installieren",
+    "desktopModalTitle": "PDFMinty-App installieren",
+    "offlineBenefit": "Greifen Sie zu 100% offline ohne Netzwerk auf alle PDF-Tools zu.",
+    "offlineActive": "Offline-Modus aktiv",
+    "offlineNotice": "Alle Kern-PDF-Tools arbeiten lokal im Arbeitsspeicher Ihres Geräts.",
+    "reconnected": "Wieder online. Alle Dienste synchronisiert."
   },
   "usageLimits": {
     "tier": {

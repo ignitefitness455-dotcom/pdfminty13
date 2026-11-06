@@ -38,6 +38,7 @@ import { ToolHeader } from '../components/ToolHeader';
 import { TOOL_SIZE_LIMITS } from '../config/constants';
 import { ROUTES } from '../config/routes';
 import { useAuth } from '../contexts/AuthContext';
+import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getPdfJs } from '../core/index';
 import { PDFSanitizer } from '../core/PDFSanitizer';
 import { sanitizeDownloadFilename } from '../utils/download';
@@ -322,6 +323,7 @@ export const AiAnalyzePage: React.FC = () => {
 
   // Usage quota state & real-time Firestore Pro status
   const { user, firebaseUser, isPro, upgradeToPro } = useAuth();
+  const { canPerformTask, openLimitModal } = useUsageLimit();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const maxAllowedPages = isPro ? 50 : 15;
   const PRO_DAILY_AI_LIMIT = 50;
@@ -383,6 +385,10 @@ export const AiAnalyzePage: React.FC = () => {
   }, []);
 
   const handleFilesSelected = async (files: File[]) => {
+    if (!canPerformTask()) {
+      openLimitModal({ reason: 'task_limit' });
+      return;
+    }
     if (!isPro) {
       setError(
         'AI Analyze is a Pro-only feature. Please upgrade to PDFMinty Pro ($2.49/month) to unlock AI document analysis.'

@@ -300,7 +300,14 @@ ${footerHtml}
     `;
   }
   
+  function clampMetaDesc(desc: string, maxLen = 160): string {
+    const clean = (desc || '').trim();
+    if (clean.length <= maxLen) return clean;
+    return `${clean.slice(0, maxLen - 3).replace(/\s+\S*$/, '')}...`;
+  }
+
   TOOLS.forEach((item: ToolSEOInfo) => {
+    const itemMetaDesc = clampMetaDesc(item.metaDescription || item.shortDescription);
     const pageUrl: string = `${SITE_URL}/${item.slug}/`;
     const targetFolder: string = path.join(distDir, item.slug);
     
@@ -581,18 +588,18 @@ ${footerHtml}
     // Set custom page head meta tags
     const headMeta: string = `
   <title>${item.metaTitle}</title>
-  <meta name="description" content="${item.metaDescription}">
+  <meta name="description" content="${itemMetaDesc}">
   <meta name="keywords" content="${pageKeywords}">
   <link rel="canonical" href="${pageUrl}">
 ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content="${item.type === 'article' ? 'article' : 'website'}">
   <meta property="og:title" content="${item.metaTitle}">
-  <meta property="og:description" content="${item.metaDescription}">
+  <meta property="og:description" content="${itemMetaDesc}">
   <meta property="og:url" content="${pageUrl}">
   <meta property="og:image" content="${pageOgImage}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="${pageUrl}">
   <meta name="twitter:title" content="${item.metaTitle}">
-  <meta name="twitter:description" content="${item.metaDescription}">
+  <meta name="twitter:description" content="${itemMetaDesc}">
   <meta name="twitter:image" content="${pageOgImage}">
   ${jsonLdMarkup}
   `;
@@ -714,11 +721,13 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
           const locMetaTitle = locData
             ? locData.metaTitle
             : `${locToolName} — ${locPrivacyBadge} | ${SITE_NAME}`;
-          const locMetaDesc = locData
-            ? locData.metaDescription
-            : locToolDesc.length >= 60
-              ? locToolDesc
-              : `${locToolDesc} — ${locPrivacyBadge}.`;
+          const locMetaDesc = clampMetaDesc(
+            locData
+              ? locData.metaDescription
+              : locToolDesc.length >= 60
+                ? locToolDesc
+                : `${locToolDesc} — ${locPrivacyBadge}.`
+          );
 
           let locPreRenderedContent = preRenderedContent;
           if (locData) {
@@ -1017,7 +1026,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 
   const pricingTitle = "Pricing Plans — $2.49/mo Pro & $50 Lifetime Deal | PDFMinty";
   const pricingDesc =
-    "Simple, transparent USD pricing for PDFMinty. 100% free forever core tier, $2.49/month Pro subscription, or $50 one-time Lifetime Pro access for 500MB batch processing, Gemini AI analysis, and batch OCR.";
+    "Simple, affordable pricing for PDFMinty. 100% free core browser PDF tools, plus upgrades for 500MB batch processing, Gemini 2.5 AI analysis, and batch OCR.";
   const pricingUrl = `${SITE_URL}/pricing/`;
 
   const pricingHeadMeta = `

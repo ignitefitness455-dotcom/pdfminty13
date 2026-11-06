@@ -103,13 +103,18 @@ export const setSyncedAuthUid = (uid: string | null): void => {
  * Keep free-tier and guest behavior unchanged; `pro` tier is active only when `isPro === true`.
  */
 export const resolveCurrentSession = (
-  providedUser?: { uid?: string; plan?: 'free' | 'pro'; isPro?: boolean } | null
+  providedUser?: { uid?: string; plan?: 'free' | 'pro' | 'lifetime'; isPro?: boolean } | null
 ): {
   tier: UserTier;
   uid: string | null;
 } => {
   if (providedUser && providedUser.uid) {
-    if (providedUser.isPro === true || providedUser.plan === 'pro' || syncedProStatus) {
+    if (
+      providedUser.isPro === true ||
+      providedUser.plan === 'pro' ||
+      providedUser.plan === 'lifetime' ||
+      syncedProStatus
+    ) {
       return { tier: 'pro', uid: providedUser.uid };
     }
     return { tier: 'free', uid: providedUser.uid };
@@ -154,7 +159,7 @@ export interface UsageStatus {
  * Returns complete usage statistics for the given session.
  */
 export const getUsageStatus = (
-  user?: { uid?: string; plan?: 'free' | 'pro'; isPro?: boolean } | null
+  user?: { uid?: string; plan?: 'free' | 'pro' | 'lifetime'; isPro?: boolean } | null
 ): UsageStatus => {
   const { tier, uid } = resolveCurrentSession(user);
   const data = getStoredUsage();
@@ -214,7 +219,7 @@ export const _resetUsageDeduplicatorForTesting = (): void => {
  * Includes a 500ms deduplication window to guard against duplicate events.
  */
 export const recordDailyTask = (
-  user?: { uid?: string; plan?: 'free' | 'pro'; isPro?: boolean } | null,
+  user?: { uid?: string; plan?: 'free' | 'pro' | 'lifetime'; isPro?: boolean } | null,
   taskIdentifier = 'task'
 ): { success: boolean; remaining: number | 'unlimited'; tier: UserTier } => {
   const { tier, uid } = resolveCurrentSession(user);

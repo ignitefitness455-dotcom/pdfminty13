@@ -429,10 +429,17 @@ export const BlogPage: React.FC = () => {
                 <div className="space-y-4">
                   {/* Category and Meta info */}
                   <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-high border border-border-muted rounded-lg text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
-                      {getCategoryIcon(category)}
-                      {getCategoryLabel(category)}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-high border border-border-muted rounded-lg text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
+                        {getCategoryIcon(category)}
+                        {getCategoryLabel(category)}
+                      </span>
+                      {post.slug?.startsWith('compare/') && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/25 rounded-lg text-amber-700 dark:text-amber-300 font-bold text-[10px] uppercase tracking-wider">
+                          {t('blog.comparisonBadge', { defaultValue: 'Comparison Guide' })}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-3 font-mono text-[11px]">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />

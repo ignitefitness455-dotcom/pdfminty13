@@ -380,9 +380,14 @@ export interface PatchSubscriptionParams {
   accessToken: string;
   uid: string;
   isPro: boolean;
+  plan?: 'free' | 'pro' | 'lifetime';
   subscriptionStatus: string;
   subscriptionId: string;
   updatedAtIso: string;
+  renewsAt?: string | null;
+  endsAt?: string | null;
+  customerPortalUrl?: string | null;
+  updatePaymentMethodUrl?: string | null;
 }
 
 /**
@@ -393,8 +398,30 @@ export interface PatchSubscriptionParams {
 export async function patchFirestoreUserSubscription(
   params: PatchSubscriptionParams
 ): Promise<void> {
-  const { projectId, accessToken, uid, isPro, subscriptionStatus, subscriptionId, updatedAtIso } =
-    params;
+  const {
+    projectId,
+    accessToken,
+    uid,
+    isPro,
+    plan,
+    subscriptionStatus,
+    subscriptionId,
+    updatedAtIso,
+    renewsAt,
+    endsAt,
+    customerPortalUrl,
+    updatePaymentMethodUrl,
+  } = params;
+
+  const resolvedPlan = plan || (isPro ? 'pro' : 'free');
+  const fields: Record<string, unknown> = {
+    uid: { stringValue: uid },
+    isPro: { booleanValue: isPro },
+    plan: { stringValue: resolvedPlan },
+    subscriptionStatus: { stringValue: subscriptionStatus },
+    subscriptionId: { stringValue: subscriptionId },
+    subscriptionUpdatedAt: { timestampValue: updatedAtIso },
+  };
 
   const maskFields = [
     'uid',
@@ -404,6 +431,24 @@ export async function patchFirestoreUserSubscription(
     'subscriptionId',
     'subscriptionUpdatedAt',
   ];
+
+  if (renewsAt !== undefined) {
+    maskFields.push('renewsAt');
+    fields.renewsAt = renewsAt ? { stringValue: renewsAt } : { nullValue: null };
+  }
+  if (endsAt !== undefined) {
+    maskFields.push('endsAt');
+    fields.endsAt = endsAt ? { stringValue: endsAt } : { nullValue: null };
+  }
+  if (customerPortalUrl !== undefined && customerPortalUrl) {
+    maskFields.push('customerPortalUrl');
+    fields.customerPortalUrl = { stringValue: customerPortalUrl };
+  }
+  if (updatePaymentMethodUrl !== undefined && updatePaymentMethodUrl) {
+    maskFields.push('updatePaymentMethodUrl');
+    fields.updatePaymentMethodUrl = { stringValue: updatePaymentMethodUrl };
+  }
+
   const maskQuery = maskFields
     .map((field) => `updateMask.fieldPaths=${encodeURIComponent(field)}`)
     .join('&');
@@ -418,16 +463,7 @@ export async function patchFirestoreUserSubscription(
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      fields: {
-        uid: { stringValue: uid },
-        isPro: { booleanValue: isPro },
-        plan: { stringValue: isPro ? 'pro' : 'free' },
-        subscriptionStatus: { stringValue: subscriptionStatus },
-        subscriptionId: { stringValue: subscriptionId },
-        subscriptionUpdatedAt: { timestampValue: updatedAtIso },
-      },
-    }),
+    body: JSON.stringify({ fields }),
   });
 
   if (!res.ok) {

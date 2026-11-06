@@ -4,10 +4,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { isFirebaseConfigured } from '../lib/firebaseConfig';
 import { setSyncedProStatus, setSyncedAuthUid } from '../utils/usageLimit';
 
-export type SubscriptionPlanOption = 'monthly' | 'lifetime';
+export type SubscriptionPlanOption = 'monthly' | 'annual' | 'lifetime';
+export type CheckoutPlanType = 'pro_monthly' | 'pro_annual' | 'lifetime' | SubscriptionPlanOption;
 
 export interface UpgradeToProOptions {
-  plan?: SubscriptionPlanOption;
+  plan?: CheckoutPlanType;
   allowWhenPro?: boolean;
 }
 
@@ -16,9 +17,24 @@ const envCheckoutUrl =
     ? String(import.meta.env.VITE_LEMON_SQUEEZY_CHECKOUT_URL).trim()
     : '';
 
+const envMonthlyCheckoutUrl =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_LS_CHECKOUT_PRO_MONTHLY
+    ? String(import.meta.env.VITE_LS_CHECKOUT_PRO_MONTHLY).trim()
+    : '';
+
+const envAnnualCheckoutUrl =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_LS_CHECKOUT_PRO_ANNUAL
+    ? String(import.meta.env.VITE_LS_CHECKOUT_PRO_ANNUAL).trim()
+    : '';
+
 const envLifetimeCheckoutUrl =
-  typeof import.meta !== 'undefined' && import.meta.env?.VITE_LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL
-    ? String(import.meta.env.VITE_LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL).trim()
+  typeof import.meta !== 'undefined' &&
+  (import.meta.env?.VITE_LS_CHECKOUT_LIFETIME ||
+    import.meta.env?.VITE_LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL)
+    ? String(
+        import.meta.env.VITE_LS_CHECKOUT_LIFETIME ||
+          import.meta.env.VITE_LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL
+      ).trim()
     : '';
 
 const envBillingPortalUrl =
@@ -30,8 +46,16 @@ export const LEMON_SQUEEZY_CHECKOUT_URL =
   envCheckoutUrl ||
   'https://pdfminty.lemonsqueezy.com/checkout/buy/6cc92d05-f59d-4a1b-9d04-abcb89f50da6';
 
+export const LEMON_SQUEEZY_CHECKOUT_PRO_MONTHLY =
+  envMonthlyCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
+
+export const LEMON_SQUEEZY_CHECKOUT_PRO_ANNUAL =
+  envAnnualCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
+
 export const LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL =
   envLifetimeCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
+
+export const LEMON_SQUEEZY_CHECKOUT_LIFETIME = LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL;
 
 export const LEMON_SQUEEZY_BILLING_PORTAL_URL =
   envBillingPortalUrl || 'https://pdfminty.lemonsqueezy.com/billing';
@@ -39,15 +63,20 @@ export const LEMON_SQUEEZY_BILLING_PORTAL_URL =
 export function buildLemonSqueezyCheckoutUrl(
   uid: string,
   email?: string | null,
-  plan: SubscriptionPlanOption = 'monthly'
+  planType: CheckoutPlanType = 'monthly'
 ): string {
-  const targetCheckoutUrl =
-    plan === 'lifetime' ? LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL : LEMON_SQUEEZY_CHECKOUT_URL;
-  const url = new URL(targetCheckoutUrl);
+  const baseUrl =
+    planType === 'lifetime'
+      ? LEMON_SQUEEZY_CHECKOUT_LIFETIME
+      : planType === 'pro_annual' || planType === 'annual'
+        ? LEMON_SQUEEZY_CHECKOUT_PRO_ANNUAL
+        : LEMON_SQUEEZY_CHECKOUT_PRO_MONTHLY;
+  const url = new URL(baseUrl);
+  // Strip any accidental test-mode query flags so production checkouts are never forced into test mode
   url.searchParams.delete('test');
   url.searchParams.delete('checkout[test]');
   url.searchParams.set('checkout[custom][uid]', uid);
-  url.searchParams.set('checkout[custom][plan]', plan);
+  url.searchParams.set('checkout[custom][plan]', planType);
   url.searchParams.set('checkout[email]', email || '');
   return url.toString();
 }
@@ -57,10 +86,29 @@ export interface AppUser {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  plan: 'free' | 'pro';
+  plan: 'free' | 'pro' | 'lifetime';
   isPro?: boolean;
+  subscriptionId?: string;
+  subscriptionStatus?: string;
+  renewsAt?: string | null;
+  endsAt?: string | null;
+  customerPortalUrl?: string | null;
+  updatePaymentMethodUrl?: string | null;
   emailVerified: boolean;
   createdAt?: string;
+}
+
+export interface SubscriptionActionResult {
+  ok: boolean;
+  action: 'cancel' | 'resume' | 'portal';
+  updatedViaApi?: boolean;
+  requiresPortalRedirect?: boolean;
+  portalUrl?: string;
+  updatePaymentMethodUrl?: string | null;
+  subscriptionStatus?: string;
+  renewsAt?: string | null;
+  endsAt?: string | null;
+  error?: string;
 }
 
 interface AuthContextType {
@@ -72,8 +120,9 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  upgradeToPro: (options?: UpgradeToProOptions) => Promise<void>;
+  upgradeToPro: (options?: UpgradeToProOptions | CheckoutPlanType) => Promise<void>;
   openBillingPortal: () => void;
+  manageSubscription: (action: 'cancel' | 'resume' | 'portal') => Promise<SubscriptionActionResult>;
   signInAsDemo: (customEmail?: string) => void;
   sendVerificationEmail: () => Promise<void>;
   verifyEmailWithCode: (code: string) => Promise<void>;
@@ -81,7 +130,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateDisplayName: (name: string) => Promise<void>;
-  updatePlan: (plan: 'free' | 'pro') => void;
+  updatePlan: (plan: 'free' | 'pro' | 'lifetime') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -203,6 +252,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               (firestoreProfile) => {
                 if (!isMounted) return;
                 const proActive = firestoreProfile.isPro === true;
+                const resolvedPlan: 'free' | 'pro' | 'lifetime' =
+                  firestoreProfile.plan === 'lifetime'
+                    ? 'lifetime'
+                    : proActive
+                      ? 'pro'
+                      : 'free';
                 setIsPro(proActive);
                 setSyncedProStatus(proActive);
                 setUser((prev) =>
@@ -210,7 +265,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     ? {
                         ...prev,
                         isPro: proActive,
-                        plan: proActive ? 'pro' : 'free',
+                        plan: resolvedPlan,
+                        subscriptionId: firestoreProfile.subscriptionId ?? prev.subscriptionId,
+                        subscriptionStatus:
+                          firestoreProfile.subscriptionStatus ?? prev.subscriptionStatus,
+                        renewsAt:
+                          firestoreProfile.renewsAt !== undefined
+                            ? firestoreProfile.renewsAt
+                            : prev.renewsAt,
+                        endsAt:
+                          firestoreProfile.endsAt !== undefined
+                            ? firestoreProfile.endsAt
+                            : prev.endsAt,
+                        customerPortalUrl:
+                          firestoreProfile.customerPortalUrl !== undefined
+                            ? firestoreProfile.customerPortalUrl
+                            : prev.customerPortalUrl,
+                        updatePaymentMethodUrl:
+                          firestoreProfile.updatePaymentMethodUrl !== undefined
+                            ? firestoreProfile.updatePaymentMethodUrl
+                            : prev.updatePaymentMethodUrl,
                       }
                     : null
                 );
@@ -386,13 +460,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isConfigured]);
 
   const openBillingPortal = useCallback(() => {
-    dispatchCheckoutRedirect(LEMON_SQUEEZY_BILLING_PORTAL_URL);
-  }, [dispatchCheckoutRedirect]);
+    dispatchCheckoutRedirect(user?.customerPortalUrl || LEMON_SQUEEZY_BILLING_PORTAL_URL);
+  }, [dispatchCheckoutRedirect, user?.customerPortalUrl]);
 
   const upgradeToPro = useCallback(
-    async (options?: UpgradeToProOptions) => {
-      const selectedPlan: SubscriptionPlanOption = options?.plan || 'monthly';
-      const allowExistingPro = Boolean(options?.allowWhenPro || selectedPlan === 'lifetime');
+    async (optionsOrPlan?: UpgradeToProOptions | CheckoutPlanType) => {
+      const options: UpgradeToProOptions =
+        typeof optionsOrPlan === 'string' ? { plan: optionsOrPlan } : optionsOrPlan || {};
+      const selectedPlan: CheckoutPlanType = options.plan || 'monthly';
+      const allowExistingPro = Boolean(options.allowWhenPro || selectedPlan === 'lifetime');
 
       if (isPro && !allowExistingPro) {
         return;
@@ -439,10 +515,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setSyncedAuthUid(result.user.uid);
 
               let existingIsPro = false;
+              let existingPlan: 'free' | 'pro' | 'lifetime' = 'free';
               try {
                 const userService = await loadUserService();
                 const profile = await userService.fetchUserProfileFromFirestore(result.user.uid);
-                existingIsPro = Boolean(profile?.isPro === true || profile?.plan === 'pro');
+                existingIsPro = Boolean(
+                  profile?.isPro === true ||
+                    profile?.plan === 'pro' ||
+                    profile?.plan === 'lifetime'
+                );
+                existingPlan =
+                  profile?.plan === 'lifetime'
+                    ? 'lifetime'
+                    : existingIsPro
+                      ? 'pro'
+                      : 'free';
               } catch {
                 // Ignore profile read errors and proceed to checkout
               }
@@ -454,7 +541,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: result.user.email,
                 displayName: result.user.displayName || 'Google User',
                 photoURL: result.user.photoURL,
-                plan: existingIsPro ? 'pro' : 'free',
+                plan: existingPlan,
                 isPro: existingIsPro,
                 emailVerified: result.user.emailVerified,
               });
@@ -485,6 +572,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return promise;
     },
     [firebaseUser, user, isPro, isConfigured, dispatchCheckoutRedirect]
+  );
+
+  const manageSubscription = useCallback(
+    async (action: 'cancel' | 'resume' | 'portal'): Promise<SubscriptionActionResult> => {
+      const fallbackPortalUrl =
+        user?.customerPortalUrl || LEMON_SQUEEZY_BILLING_PORTAL_URL;
+
+      if (action === 'portal' && user?.customerPortalUrl) {
+        return {
+          ok: true,
+          action: 'portal',
+          requiresPortalRedirect: true,
+          portalUrl: user.customerPortalUrl,
+          updatePaymentMethodUrl: user.updatePaymentMethodUrl || null,
+        };
+      }
+
+      if (isConfigured) {
+        try {
+          const fb = await loadFirebaseSdk();
+          const currentUser = firebaseUser || fb.auth?.currentUser;
+          if (currentUser) {
+            const idToken = await currentUser.getIdToken();
+            const response = await fetch('/api/subscription', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({ action }),
+            });
+            if (response.ok) {
+              const data = (await response.json()) as SubscriptionActionResult;
+              if (data.updatedViaApi) {
+                setUser((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        subscriptionStatus: data.subscriptionStatus ?? prev.subscriptionStatus,
+                        renewsAt:
+                          data.renewsAt !== undefined ? data.renewsAt : prev.renewsAt,
+                        endsAt: data.endsAt !== undefined ? data.endsAt : prev.endsAt,
+                        customerPortalUrl: data.portalUrl ?? prev.customerPortalUrl,
+                      }
+                    : null
+                );
+              }
+              return data;
+            }
+          }
+        } catch (err) {
+          console.warn('[Subscription] Server subscription management fallback:', err);
+        }
+      }
+
+      return {
+        ok: true,
+        action,
+        updatedViaApi: false,
+        requiresPortalRedirect: true,
+        portalUrl: fallbackPortalUrl,
+      };
+    },
+    [firebaseUser, user, isConfigured]
   );
 
   const signInAsDemo = useCallback((customEmail?: string) => {
@@ -626,7 +777,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   // Client never writes `isPro` — only the Cloudflare Worker webhook writes `isPro` to Firestore.
-  const updatePlan = useCallback((_newPlan: 'free' | 'pro') => {
+  const updatePlan = useCallback((_newPlan: 'free' | 'pro' | 'lifetime') => {
     // Intentionally a no-op on the client to enforce server-authoritative `isPro`
   }, []);
 
@@ -643,6 +794,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         upgradeToPro,
         openBillingPortal,
+        manageSubscription,
         signInAsDemo,
         sendVerificationEmail,
         verifyEmailWithCode,
@@ -669,6 +821,12 @@ const defaultAuthContext: AuthContextType = {
   signInWithGoogle: async () => {},
   upgradeToPro: async () => {},
   openBillingPortal: () => {},
+  manageSubscription: async () => ({
+    ok: true,
+    action: 'portal',
+    requiresPortalRedirect: true,
+    portalUrl: LEMON_SQUEEZY_BILLING_PORTAL_URL,
+  }),
   signInAsDemo: () => {},
   sendVerificationEmail: async () => {},
   verifyEmailWithCode: async () => {},
