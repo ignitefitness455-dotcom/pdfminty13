@@ -82,7 +82,9 @@ export const PricingPage: React.FC = () => {
       return;
     }
 
-    if (isPro) {
+    const isLifetimeSelection = planName === 'Lifetime';
+
+    if (isPro && !isLifetimeSelection) {
       showToast(
         isBn
           ? 'আপনার অ্যাকাউন্টে ইতিমধ্যেই প্রো মেম্বারশিপ সক্রিয় রয়েছে!'
@@ -99,7 +101,10 @@ export const PricingPage: React.FC = () => {
     checkoutLockRef.current = true;
     setIsProcessingCheckout(true);
     try {
-      await upgradeToPro();
+      await upgradeToPro({
+        plan: isLifetimeSelection ? 'lifetime' : 'monthly',
+        allowWhenPro: isLifetimeSelection,
+      });
     } catch {
       showToast(
         isBn
@@ -114,13 +119,17 @@ export const PricingPage: React.FC = () => {
   };
 
   const handleConfirmCheckout = async () => {
-    if (checkoutLockRef.current || isProcessingCheckout || isPro) {
+    const isLifetimeModal = checkoutModalPlan === 'Lifetime';
+    if (checkoutLockRef.current || isProcessingCheckout || (isPro && !isLifetimeModal)) {
       return;
     }
     checkoutLockRef.current = true;
     setIsProcessingCheckout(true);
     try {
-      await upgradeToPro();
+      await upgradeToPro({
+        plan: isLifetimeModal ? 'lifetime' : 'monthly',
+        allowWhenPro: isLifetimeModal,
+      });
     } finally {
       checkoutLockRef.current = false;
       setIsProcessingCheckout(false);
@@ -560,32 +569,22 @@ export const PricingPage: React.FC = () => {
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-            {isPro ? (
-              <div
-                className="w-full py-3 px-4 rounded-xl font-black text-sm bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2"
-                id="pricing-lifetime-pro-active-badge"
-              >
-                <Sparkles className="w-4 h-4 fill-amber-500 text-amber-500" />
-                <span>Pro Active</span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleSelectPlan('Lifetime')}
-                disabled={isProcessingCheckout}
-                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-                id="pricing-upgrade-lifetime-btn"
-              >
-                <span>
-                  {isProcessingCheckout
-                    ? 'Redirecting to Checkout...'
-                    : isBn
-                      ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
-                      : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => handleSelectPlan('Lifetime')}
+              disabled={isProcessingCheckout}
+              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              id="pricing-upgrade-lifetime-btn"
+            >
+              <span>
+                {isProcessingCheckout
+                  ? 'Redirecting to Checkout...'
+                  : isBn
+                    ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
+                    : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>

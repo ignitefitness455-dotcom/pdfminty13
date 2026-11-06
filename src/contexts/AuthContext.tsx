@@ -4,12 +4,50 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { isFirebaseConfigured } from '../lib/firebaseConfig';
 import { setSyncedProStatus, setSyncedAuthUid } from '../utils/usageLimit';
 
+export type SubscriptionPlanOption = 'monthly' | 'lifetime';
+
+export interface UpgradeToProOptions {
+  plan?: SubscriptionPlanOption;
+  allowWhenPro?: boolean;
+}
+
+const envCheckoutUrl =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_LEMON_SQUEEZY_CHECKOUT_URL
+    ? String(import.meta.env.VITE_LEMON_SQUEEZY_CHECKOUT_URL).trim()
+    : '';
+
+const envLifetimeCheckoutUrl =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL
+    ? String(import.meta.env.VITE_LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL).trim()
+    : '';
+
+const envBillingPortalUrl =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_LEMON_SQUEEZY_BILLING_PORTAL_URL
+    ? String(import.meta.env.VITE_LEMON_SQUEEZY_BILLING_PORTAL_URL).trim()
+    : '';
+
 export const LEMON_SQUEEZY_CHECKOUT_URL =
+  envCheckoutUrl ||
   'https://pdfminty.lemonsqueezy.com/checkout/buy/6cc92d05-f59d-4a1b-9d04-abcb89f50da6';
 
-export function buildLemonSqueezyCheckoutUrl(uid: string, email?: string | null): string {
-  const url = new URL(LEMON_SQUEEZY_CHECKOUT_URL);
+export const LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL =
+  envLifetimeCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
+
+export const LEMON_SQUEEZY_BILLING_PORTAL_URL =
+  envBillingPortalUrl || 'https://pdfminty.lemonsqueezy.com/billing';
+
+export function buildLemonSqueezyCheckoutUrl(
+  uid: string,
+  email?: string | null,
+  plan: SubscriptionPlanOption = 'monthly'
+): string {
+  const targetCheckoutUrl =
+    plan === 'lifetime' ? LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL : LEMON_SQUEEZY_CHECKOUT_URL;
+  const url = new URL(targetCheckoutUrl);
+  url.searchParams.delete('test');
+  url.searchParams.delete('checkout[test]');
   url.searchParams.set('checkout[custom][uid]', uid);
+  url.searchParams.set('checkout[custom][plan]', plan);
   url.searchParams.set('checkout[email]', email || '');
   return url.toString();
 }
@@ -34,7 +72,8 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  upgradeToPro: () => Promise<void>;
+  upgradeToPro: (options?: UpgradeToProOptions) => Promise<void>;
+  openBillingPortal: () => void;
   signInAsDemo: (customEmail?: string) => void;
   sendVerificationEmail: () => Promise<void>;
   verifyEmailWithCode: (code: string) => Promise<void>;
@@ -346,91 +385,107 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isConfigured]);
 
-  const upgradeToPro = useCallback(async () => {
-    if (isPro) {
-      return;
-    }
+  const openBillingPortal = useCallback(() => {
+    dispatchCheckoutRedirect(LEMON_SQUEEZY_BILLING_PORTAL_URL);
+  }, [dispatchCheckoutRedirect]);
 
-    if (upgradeInFlightRef.current) {
-      return upgradeInFlightRef.current;
-    }
+  const upgradeToPro = useCallback(
+    async (options?: UpgradeToProOptions) => {
+      const selectedPlan: SubscriptionPlanOption = options?.plan || 'monthly';
+      const allowExistingPro = Boolean(options?.allowWhenPro || selectedPlan === 'lifetime');
 
-    const runUpgrade = async () => {
-      if (firebaseUser?.uid) {
-        const checkoutUrl = buildLemonSqueezyCheckoutUrl(
-          firebaseUser.uid,
-          firebaseUser.email || user?.email
-        );
-        dispatchCheckoutRedirect(checkoutUrl);
+      if (isPro && !allowExistingPro) {
         return;
       }
 
-      if (user?.uid && !user.uid.startsWith('demo_')) {
-        const checkoutUrl = buildLemonSqueezyCheckoutUrl(user.uid, user.email);
-        dispatchCheckoutRedirect(checkoutUrl);
-        return;
+      if (upgradeInFlightRef.current) {
+        return upgradeInFlightRef.current;
       }
 
-      if (isConfigured) {
-        setLoading(true);
-        try {
-          const fb = await loadFirebaseSdk();
-          const auth = fb.auth;
-          if (auth?.currentUser?.uid) {
-            const checkoutUrl = buildLemonSqueezyCheckoutUrl(
-              auth.currentUser.uid,
-              auth.currentUser.email || user?.email
-            );
-            dispatchCheckoutRedirect(checkoutUrl);
-            return;
-          }
-          if (auth) {
-            const result = await fb.signInWithPopup(auth, fb.googleProvider);
-            setFirebaseUser(result.user);
-            setSyncedAuthUid(result.user.uid);
+      const runUpgrade = async () => {
+        if (firebaseUser?.uid) {
+          const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+            firebaseUser.uid,
+            firebaseUser.email || user?.email,
+            selectedPlan
+          );
+          dispatchCheckoutRedirect(checkoutUrl);
+          return;
+        }
 
-            let existingIsPro = false;
-            try {
-              const userService = await loadUserService();
-              const profile = await userService.fetchUserProfileFromFirestore(result.user.uid);
-              existingIsPro = Boolean(profile?.isPro === true || profile?.plan === 'pro');
-            } catch {
-              // Ignore profile read errors and proceed to checkout
-            }
+        if (user?.uid && !user.uid.startsWith('demo_')) {
+          const checkoutUrl = buildLemonSqueezyCheckoutUrl(user.uid, user.email, selectedPlan);
+          dispatchCheckoutRedirect(checkoutUrl);
+          return;
+        }
 
-            setIsPro(existingIsPro);
-            setSyncedProStatus(existingIsPro);
-            setUser({
-              uid: result.user.uid,
-              email: result.user.email,
-              displayName: result.user.displayName || 'Google User',
-              photoURL: result.user.photoURL,
-              plan: existingIsPro ? 'pro' : 'free',
-              isPro: existingIsPro,
-              emailVerified: result.user.emailVerified,
-            });
-
-            if (existingIsPro) {
+        if (isConfigured) {
+          setLoading(true);
+          try {
+            const fb = await loadFirebaseSdk();
+            const auth = fb.auth;
+            if (auth?.currentUser?.uid) {
+              const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+                auth.currentUser.uid,
+                auth.currentUser.email || user?.email,
+                selectedPlan
+              );
+              dispatchCheckoutRedirect(checkoutUrl);
               return;
             }
+            if (auth) {
+              const result = await fb.signInWithPopup(auth, fb.googleProvider);
+              setFirebaseUser(result.user);
+              setSyncedAuthUid(result.user.uid);
 
-            const checkoutUrl = buildLemonSqueezyCheckoutUrl(result.user.uid, result.user.email);
-            dispatchCheckoutRedirect(checkoutUrl);
-            return;
+              let existingIsPro = false;
+              try {
+                const userService = await loadUserService();
+                const profile = await userService.fetchUserProfileFromFirestore(result.user.uid);
+                existingIsPro = Boolean(profile?.isPro === true || profile?.plan === 'pro');
+              } catch {
+                // Ignore profile read errors and proceed to checkout
+              }
+
+              setIsPro(existingIsPro);
+              setSyncedProStatus(existingIsPro);
+              setUser({
+                uid: result.user.uid,
+                email: result.user.email,
+                displayName: result.user.displayName || 'Google User',
+                photoURL: result.user.photoURL,
+                plan: existingIsPro ? 'pro' : 'free',
+                isPro: existingIsPro,
+                emailVerified: result.user.emailVerified,
+              });
+
+              if (existingIsPro && !allowExistingPro) {
+                return;
+              }
+
+              const checkoutUrl = buildLemonSqueezyCheckoutUrl(
+                result.user.uid,
+                result.user.email,
+                selectedPlan
+              );
+              dispatchCheckoutRedirect(checkoutUrl);
+              return;
+            }
+          } finally {
+            setLoading(false);
           }
-        } finally {
-          setLoading(false);
         }
-      }
-      throw new Error('AUTH_NOT_CONFIGURED');
-    };
+        throw new Error('AUTH_NOT_CONFIGURED');
+      };
 
-    const promise = runUpgrade().finally(() => {
-      upgradeInFlightRef.current = null;
-    });
-    upgradeInFlightRef.current = promise;
-    return promise;
-  }, [firebaseUser, user, isPro, isConfigured, dispatchCheckoutRedirect]);
+      const promise = runUpgrade().finally(() => {
+        upgradeInFlightRef.current = null;
+      });
+      upgradeInFlightRef.current = promise;
+      return promise;
+    },
+    [firebaseUser, user, isPro, isConfigured, dispatchCheckoutRedirect]
+  );
 
   const signInAsDemo = useCallback((customEmail?: string) => {
     const demoEmail = customEmail || 'demo.user@pdfminty.com';
@@ -587,6 +642,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUpWithEmail,
         signInWithGoogle,
         upgradeToPro,
+        openBillingPortal,
         signInAsDemo,
         sendVerificationEmail,
         verifyEmailWithCode,
@@ -612,6 +668,7 @@ const defaultAuthContext: AuthContextType = {
   signUpWithEmail: async () => {},
   signInWithGoogle: async () => {},
   upgradeToPro: async () => {},
+  openBillingPortal: () => {},
   signInAsDemo: () => {},
   sendVerificationEmail: async () => {},
   verifyEmailWithCode: async () => {},

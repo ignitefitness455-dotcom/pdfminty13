@@ -79,6 +79,7 @@ export const DashboardPage: React.FC = () => {
     user,
     isPro,
     upgradeToPro,
+    openBillingPortal,
     logout,
     updateDisplayName,
     resetPassword,
@@ -492,7 +493,10 @@ export const DashboardPage: React.FC = () => {
   const handleActivatePro = async () => {
     setIsUpgrading(true);
     try {
-      await upgradeToPro();
+      await upgradeToPro({
+        plan: selectedUpgradePlan,
+        allowWhenPro: true,
+      });
     } catch {
       showToast(
         isBn
@@ -508,8 +512,30 @@ export const DashboardPage: React.FC = () => {
 
   const handleRenewSubscription = async () => {
     setIsRenewing(true);
+    setAutoRenew(true);
     try {
-      await upgradeToPro();
+      localStorage.setItem(`pdfminty_sub_autorenew_${userUid}`, 'true');
+    } catch {
+      // ignore
+    }
+    try {
+      showToast(
+        isBn
+          ? 'রিনিউয়াল চেকআউট পেজে রিডাইরেক্ট করা হচ্ছে...'
+          : 'Redirecting to Lemon Squeezy renewal checkout...',
+        'success'
+      );
+      await upgradeToPro({
+        plan: 'monthly',
+        allowWhenPro: true,
+      });
+    } catch {
+      showToast(
+        isBn
+          ? 'প্রো রিনিউয়াল শুরু করতে অনুগ্রহ করে গুগল সাইন-ইন সম্পন্ন করুন।'
+          : 'Please complete Google sign-in to renew your Pro subscription.',
+        'info'
+      );
     } finally {
       setIsRenewing(false);
       setShowRenewModal(false);
@@ -526,10 +552,11 @@ export const DashboardPage: React.FC = () => {
     setShowCancelModal(false);
     showToast(
       isBn
-        ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে। সাবস্ক্রিপশন স্ট্যাটাস আপনার বিলিং পোর্টাল ওয়েবহুক দ্বারা পরিচালিত হয়।'
-        : 'Auto-renew preference updated. Subscription status is managed via Lemon Squeezy billing webhook.',
+        ? 'স্বয়ংক্রিয় রিনিউয়াল বন্ধ করা হয়েছে। চূড়ান্ত বাতিলের জন্য Lemon Squeezy বিলিং পোর্টালে রিডাইরেক্ট করা হচ্ছে...'
+        : 'Auto-renew turned OFF. Redirecting to Lemon Squeezy billing portal to finalize cancellation...',
       'info'
     );
+    openBillingPortal();
   };
 
   const handleToggleAutoRenew = () => {
