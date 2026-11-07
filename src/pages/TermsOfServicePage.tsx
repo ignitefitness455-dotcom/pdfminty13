@@ -113,10 +113,10 @@ export const TermsOfServicePage: React.FC = () => {
             <p>
               By visiting, accessing, browsing, or utilizing PdfMinty (
               <a
-                href="https://pdfminty.com"
+                href="https://pdfminty.com/"
                 className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
               >
-                https://pdfminty.com
+                PDFMinty Online PDF Toolkit
               </a>
               ) and any of its 24 document manipulation tools, web applications, or documentation,
               you enter into a legally binding agreement with PdfMinty and agree to comply with and
@@ -565,10 +565,10 @@ export const TermsOfServicePage: React.FC = () => {
               <p>
                 <strong>Website:</strong>{' '}
                 <a
-                  href="https://pdfminty.com"
+                  href="https://pdfminty.com/"
                   className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
                 >
-                  https://pdfminty.com
+                  Visit PDFMinty Official Website (pdfminty.com)
                 </a>
               </p>
               <p>

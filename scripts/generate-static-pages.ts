@@ -130,11 +130,12 @@ async function run(): Promise<void> {
     throw new Error("Unable to locate any base index.html template file for static generation.");
   }
   
-  // Clean base HTML to avoid double definitions (purging titles, descriptions, canonicals, OGs, Twitters, and JSON-LD markup)
+  // Clean base HTML to avoid double definitions (purging titles, descriptions, keywords, canonicals, OGs, Twitters, and JSON-LD markup)
   function cleanBaseTemplate(html: string): string {
     let clean: string = html;
     clean = clean.replace(/<title>[^<]*<\/title>/gi, "");
     clean = clean.replace(/<meta\s+name="description"[^>]*>/gi, "");
+    clean = clean.replace(/<meta\s+name="keywords"[^>]*>/gi, "");
     clean = clean.replace(/<link\s+rel="canonical"[^>]*>/gi, "");
     clean = clean.replace(/<link\s+rel="alternate"\s+hreflang="[^"]*"\s+href="[^"]*"\s*\/?>/gi, "");
     clean = clean.replace(/<meta\s+property="og:[^>]*>/gi, ""); // Purge all og: properties
@@ -179,23 +180,245 @@ async function run(): Promise<void> {
     { slug: 'add-blank-page', name: 'Add Blank Page' },
   ];
 
+  interface StaticShellLocaleStrings {
+    navAria: string;
+    home: string;
+    allTools: string;
+    pricing: string;
+    blog: string;
+    compare: string;
+    about: string;
+    contact: string;
+    pdfToolsHeading: string;
+    companyHeading: string;
+    aboutUs: string;
+    pricingPlans: string;
+    contactUs: string;
+    adobeAlt: string;
+    legalHeading: string;
+    privacyPolicy: string;
+    termsOfService: string;
+    resourcesHeading: string;
+    knowledgeHub: string;
+    vsSmallpdf: string;
+    vsIlovepdf: string;
+    isOnlineSafe: string;
+    adobeSecurity: string;
+    compressGuide: string;
+    copyrightTagline: string;
+  }
+
+  const STATIC_SHELL_STRINGS: Record<string, StaticShellLocaleStrings> = {
+    en: {
+      navAria: 'Main Navigation',
+      home: 'Home',
+      allTools: 'All Tools',
+      pricing: 'Pricing',
+      blog: 'Blog',
+      compare: 'Compare',
+      about: 'About',
+      contact: 'Contact',
+      pdfToolsHeading: 'PDF Tools',
+      companyHeading: 'Company',
+      aboutUs: 'About Us',
+      pricingPlans: 'Pricing Plans',
+      contactUs: 'Contact Us',
+      adobeAlt: 'Adobe Acrobat Alternative',
+      legalHeading: 'Legal',
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service',
+      resourcesHeading: 'Blog & Resources',
+      knowledgeHub: 'Knowledge Hub',
+      vsSmallpdf: 'PDFMinty vs Smallpdf',
+      vsIlovepdf: 'PDFMinty vs iLovePDF',
+      isOnlineSafe: 'Is Online PDF Safe?',
+      adobeSecurity: 'Adobe vs Browser Security',
+      compressGuide: 'How to Compress PDF Without Losing Quality',
+      copyrightTagline: 'Free Privacy-First Browser PDF Toolkit. 100% Local Processing.',
+    },
+    de: {
+      navAria: 'Hauptnavigation',
+      home: 'Startseite',
+      allTools: 'Alle Werkzeuge',
+      pricing: 'Preise',
+      blog: 'Ratgeber',
+      compare: 'Vergleich',
+      about: 'Über uns',
+      contact: 'Kontakt',
+      pdfToolsHeading: 'PDF-Werkzeuge',
+      companyHeading: 'Unternehmen',
+      aboutUs: 'Über uns',
+      pricingPlans: 'Preise & Tarife',
+      contactUs: 'Kontakt',
+      adobeAlt: 'Adobe Acrobat Alternative',
+      legalHeading: 'Rechtliches',
+      privacyPolicy: 'Datenschutzerklärung',
+      termsOfService: 'Nutzungsbedingungen',
+      resourcesHeading: 'Blog & Ressourcen',
+      knowledgeHub: 'Wissensdatenbank',
+      vsSmallpdf: 'PDFMinty vs. Smallpdf',
+      vsIlovepdf: 'PDFMinty vs. iLovePDF',
+      isOnlineSafe: 'Sind Online-PDF-Tools sicher?',
+      adobeSecurity: 'Adobe vs. Browser-Sicherheit',
+      compressGuide: 'PDF komprimieren ohne Qualitätsverlust',
+      copyrightTagline: 'Kostenloses datenschutzorientiertes Browser-PDF-Toolkit. 100% lokale Verarbeitung.',
+    },
+    fr: {
+      navAria: 'Navigation principale',
+      home: 'Accueil',
+      allTools: 'Tous les outils',
+      pricing: 'Tarifs',
+      blog: 'Blog',
+      compare: 'Comparer',
+      about: 'À propos',
+      contact: 'Contact',
+      pdfToolsHeading: 'Outils PDF',
+      companyHeading: 'Entreprise',
+      aboutUs: 'À propos de nous',
+      pricingPlans: 'Forfaits et tarifs',
+      contactUs: 'Nous contacter',
+      adobeAlt: 'Alternative à Adobe Acrobat',
+      legalHeading: 'Mentions légales',
+      privacyPolicy: 'Politique de confidentialité',
+      termsOfService: 'Conditions d’utilisation',
+      resourcesHeading: 'Blog et ressources',
+      knowledgeHub: 'Centre de connaissances',
+      vsSmallpdf: 'PDFMinty vs Smallpdf',
+      vsIlovepdf: 'PDFMinty vs iLovePDF',
+      isOnlineSafe: 'Les outils PDF en ligne sont-ils sûrs ?',
+      adobeSecurity: 'Sécurité Adobe vs navigateur',
+      compressGuide: 'Compresser un PDF sans perte de qualité',
+      copyrightTagline: 'Boîte à outils PDF gratuite et confidentielle dans le navigateur. Traitement 100 % local.',
+    },
+    es: {
+      navAria: 'Navegación principal',
+      home: 'Inicio',
+      allTools: 'Todas las herramientas',
+      pricing: 'Precios',
+      blog: 'Blog',
+      compare: 'Comparar',
+      about: 'Nosotros',
+      contact: 'Contacto',
+      pdfToolsHeading: 'Herramientas PDF',
+      companyHeading: 'Empresa',
+      aboutUs: 'Sobre nosotros',
+      pricingPlans: 'Planes y precios',
+      contactUs: 'Contacto',
+      adobeAlt: 'Alternativa a Adobe Acrobat',
+      legalHeading: 'Legal',
+      privacyPolicy: 'Política de privacidad',
+      termsOfService: 'Términos de servicio',
+      resourcesHeading: 'Blog y recursos',
+      knowledgeHub: 'Centro de conocimiento',
+      vsSmallpdf: 'PDFMinty vs Smallpdf',
+      vsIlovepdf: 'PDFMinty vs iLovePDF',
+      isOnlineSafe: '¿Es seguro usar herramientas PDF en línea?',
+      adobeSecurity: 'Seguridad de Adobe vs navegador',
+      compressGuide: 'Cómo comprimir un PDF sin perder calidad',
+      copyrightTagline: 'Kit de herramientas PDF gratuito y privado en el navegador. Procesamiento 100 % local.',
+    },
+    bn: {
+      navAria: 'প্রধান নেভিগেশন',
+      home: 'হোম',
+      allTools: 'সকল টুলস',
+      pricing: 'মূল্য তালিকা',
+      blog: 'ব্লগ',
+      compare: 'তুলনা',
+      about: 'আমাদের সম্পর্কে',
+      contact: 'যোগাযোগ',
+      pdfToolsHeading: 'পিডিএফ টুলস',
+      companyHeading: 'প্রতিষ্ঠান',
+      aboutUs: 'আমাদের সম্পর্কে',
+      pricingPlans: 'প্রাইসিং প্ল্যান',
+      contactUs: 'যোগাযোগ করুন',
+      adobeAlt: 'অ্যাডোবি অ্যাক্রোব্যাট বিকল্প',
+      legalHeading: 'আইনি তথ্য',
+      privacyPolicy: 'গোপনীয়তা নীতি',
+      termsOfService: 'ব্যবহারের শর্তাবলী',
+      resourcesHeading: 'ব্লগ ও রিসোর্স',
+      knowledgeHub: 'নলেজ হাব',
+      vsSmallpdf: 'PDFMinty বনাম Smallpdf',
+      vsIlovepdf: 'PDFMinty বনাম iLovePDF',
+      isOnlineSafe: 'অনলাইন পিডিএফ টুল কি নিরাপদ?',
+      adobeSecurity: 'অ্যাডোবি বনাম ব্রাউজার নিরাপত্তা',
+      compressGuide: 'মান না কমিয়ে পিডিএফ কমপ্রেস করার উপায়',
+      copyrightTagline: 'বিনামূল্যে প্রাইভেসি-ফার্স্ট ব্রাউজার পিডিএফ টুলকিট। ১০০% লোকাল প্রসেসিং।',
+    },
+    hi: {
+      navAria: 'मुख्य नेविगेशन',
+      home: 'होम',
+      allTools: 'सभी टूल्स',
+      pricing: 'मूल्य निर्धारण',
+      blog: 'ब्लॉग',
+      compare: 'तुलना करें',
+      about: 'हमारे बारे में',
+      contact: 'संपर्क करें',
+      pdfToolsHeading: 'पीडीएफ टूल्स',
+      companyHeading: 'कंपनी',
+      aboutUs: 'हमारे बारे में',
+      pricingPlans: 'प्राइसिंग प्लान',
+      contactUs: 'संपर्क करें',
+      adobeAlt: 'Adobe Acrobat का विकल्प',
+      legalHeading: 'कानूनी जानकारी',
+      privacyPolicy: 'गोपनीयता नीति',
+      termsOfService: 'सेवा की शर्तें',
+      resourcesHeading: 'ब्लॉग और संसाधन',
+      knowledgeHub: 'नॉलेज हब',
+      vsSmallpdf: 'PDFMinty बनाम Smallpdf',
+      vsIlovepdf: 'PDFMinty बनाम iLovePDF',
+      isOnlineSafe: 'क्या ऑनलाइन पीडीएफ सुरक्षित है?',
+      adobeSecurity: 'Adobe बनाम ब्राउज़र सुरक्षा',
+      compressGuide: 'बिना गुणवत्ता खोए पीडीएफ कंप्रेस कैसे करें',
+      copyrightTagline: 'मुफ़्त प्राइवेसी-फर्स्ट ब्राउज़र पीडीएफ टूलकिट। 100% लोकल प्रोसेसिंग।',
+    },
+    zh: {
+      navAria: '主导航',
+      home: '首页',
+      allTools: '所有工具',
+      pricing: '价格方案',
+      blog: '技术博客',
+      compare: '功能对比',
+      about: '关于我们',
+      contact: '联系我们',
+      pdfToolsHeading: 'PDF 工具箱',
+      companyHeading: '关于公司',
+      aboutUs: '关于我们',
+      pricingPlans: '订阅与终身方案',
+      contactUs: '联系客服',
+      adobeAlt: 'Adobe Acrobat 免费替代方案',
+      legalHeading: '法律与隐私',
+      privacyPolicy: '隐私政策',
+      termsOfService: '服务条款',
+      resourcesHeading: '知识库与指南',
+      knowledgeHub: 'PDF 知识中心',
+      vsSmallpdf: 'PDFMinty 对比 Smallpdf',
+      vsIlovepdf: 'PDFMinty 对比 iLovePDF',
+      isOnlineSafe: '在线 PDF 工具安全吗？',
+      adobeSecurity: '本地浏览器与传统软件安全性对比',
+      compressGuide: '如何无损压缩 PDF 文件大小',
+      copyrightTagline: '免费隐私优先的浏览器端 PDF 工具箱。100% 本地 WebAssembly 处理。',
+    },
+  };
+
   // Helper to build semantic lightweight static header for pre-rendered pages
   function buildStaticHeader(locale: string = DEFAULT_LOCALE): string {
     const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
+    const s = STATIC_SHELL_STRINGS[locale] || STATIC_SHELL_STRINGS.en;
     return `      <header data-prerender="true" class="site-header">
         <div class="site-header-inner">
-          <a href="${homeHref}" class="brand-logo" aria-label="PDFMinty Home">
+          <a href="${homeHref}" class="brand-logo" aria-label="PDFMinty home">
+            <img src="/logo.svg" alt="PDFMinty" width="28" height="28" />
             <span>PDFMinty</span>
           </a>
-          <nav aria-label="Main Navigation">
+          <nav aria-label="${s.navAria}">
             <ul>
-              <li><a href="${homeHref}">Home</a></li>
-              <li><a href="${homeHref}#all-tools">All Tools</a></li>
-              <li><a href="/pricing/">Pricing</a></li>
-              <li><a href="/blog/">Blog</a></li>
-              <li><a href="/compare/pdfminty-vs-smallpdf/">Compare</a></li>
-              <li><a href="/about-us/">About</a></li>
-              <li><a href="/contact/">Contact</a></li>
+              <li><a href="${homeHref}">${s.home}</a></li>
+              <li><a href="${homeHref}#all-tools">${s.allTools}</a></li>
+              <li><a href="/pricing/">${s.pricing}</a></li>
+              <li><a href="/blog/">${s.blog}</a></li>
+              <li><a href="/compare/pdfminty-vs-smallpdf/">${s.compare}</a></li>
+              <li><a href="/about-us/">${s.about}</a></li>
+              <li><a href="/contact/">${s.contact}</a></li>
             </ul>
           </nav>
         </div>
@@ -235,8 +458,10 @@ async function run(): Promise<void> {
   function buildStaticFooter(locale: string = DEFAULT_LOCALE): string {
     const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
     const locDict = localeCommonCache[locale];
+    const s = STATIC_SHELL_STRINGS[locale] || STATIC_SHELL_STRINGS.en;
     const toolsListHtml = STATIC_FOOTER_TOOL_LINKS.map((t) => {
-      const toolHref = locale === DEFAULT_LOCALE ? `/${t.slug}/` : `/${locale}/${t.slug}/`;
+      const isLocTool = isI18nToolSlug(t.slug);
+      const toolHref = locale === DEFAULT_LOCALE || !isLocTool ? `/${t.slug}/` : `/${locale}/${t.slug}/`;
       const toolName =
         locale === DEFAULT_LOCALE ? t.name : locDict?.tools?.[t.slug]?.name || t.name;
       return `              <li><a href="${toolHref}">${toolName}</a></li>`;
@@ -245,41 +470,41 @@ async function run(): Promise<void> {
     return `      <footer data-prerender="true" class="site-footer">
         <div class="site-footer-inner">
           <div>
-            <h3>PDF Tools</h3>
+            <h3>${s.pdfToolsHeading}</h3>
             <ul>
 ${toolsListHtml}
             </ul>
           </div>
           <div>
-            <h3>Company</h3>
+            <h3>${s.companyHeading}</h3>
             <ul>
-              <li><a href="/about-us/">About Us</a></li>
-              <li><a href="/pricing/">Pricing Plans</a></li>
-              <li><a href="/contact/">Contact Us</a></li>
-              <li><a href="/adobe-acrobat-alternative/">Adobe Acrobat Alternative</a></li>
+              <li><a href="/about-us/">${s.aboutUs}</a></li>
+              <li><a href="/pricing/">${s.pricingPlans}</a></li>
+              <li><a href="/contact/">${s.contactUs}</a></li>
+              <li><a href="/adobe-acrobat-alternative/">${s.adobeAlt}</a></li>
             </ul>
           </div>
           <div>
-            <h3>Legal</h3>
+            <h3>${s.legalHeading}</h3>
             <ul>
-              <li><a href="/privacy-policy/">Privacy Policy</a></li>
-              <li><a href="/terms-of-service/">Terms of Service</a></li>
+              <li><a href="/privacy-policy/">${s.privacyPolicy}</a></li>
+              <li><a href="/terms-of-service/">${s.termsOfService}</a></li>
             </ul>
           </div>
           <div>
-            <h3>Blog & Resources</h3>
+            <h3>${s.resourcesHeading}</h3>
             <ul>
-              <li><a href="/blog/">Knowledge Hub</a></li>
-              <li><a href="/compare/pdfminty-vs-smallpdf/">PDFMinty vs Smallpdf</a></li>
-              <li><a href="/compare/pdfminty-vs-ilovepdf/">PDFMinty vs iLovePDF</a></li>
-              <li><a href="/blog/is-it-safe-to-upload-pdf-to-online-tools/">Is Online PDF Safe?</a></li>
-              <li><a href="/blog/adobe-security-vulnerabilities-offline-pdf-tools/">Adobe vs Browser Security</a></li>
-              <li><a href="/blog/how-to-compress-a-pdf-without-losing-quality-2026/">How to Compress PDF Without Losing Quality</a></li>
+              <li><a href="/blog/">${s.knowledgeHub}</a></li>
+              <li><a href="/compare/pdfminty-vs-smallpdf/">${s.vsSmallpdf}</a></li>
+              <li><a href="/compare/pdfminty-vs-ilovepdf/">${s.vsIlovepdf}</a></li>
+              <li><a href="/blog/is-it-safe-to-upload-pdf-to-online-tools/">${s.isOnlineSafe}</a></li>
+              <li><a href="/blog/adobe-security-vulnerabilities-offline-pdf-tools/">${s.adobeSecurity}</a></li>
+              <li><a href="/blog/how-to-compress-a-pdf-without-losing-quality-2026/">${s.compressGuide}</a></li>
             </ul>
           </div>
         </div>
         <div>
-          <p>&copy; ${new Date().getFullYear()} <a href="${homeHref}">PDFMinty</a>. Free Privacy-First Browser PDF Toolkit. 100% Local Processing.</p>
+          <p>&copy; ${new Date().getFullYear()} <a href="${homeHref}" aria-label="PDFMinty home">PDFMinty</a>. ${s.copyrightTagline}</p>
         </div>
       </footer>`;
   }
@@ -323,19 +548,42 @@ ${footerHtml}
       schemas.push({
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": `PdfMinty - ${item.name}`,
+        "name": `PDFMinty - ${item.name}`,
         "url": `https://pdfminty.com/${item.slug}/`,
+        "inLanguage": "en",
         "description": item.metaDescription || item.shortDescription,
         "applicationCategory": "UtilitiesApplication",
-        "operatingSystem": "All",
+        "applicationSubCategory": "PDF Software",
+        "operatingSystem": "Any",
         "browserRequirements": "Requires HTML5, WebAssembly",
-        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock"},
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": SITE_NAME,
+          "url": `${SITE_URL}/`
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": SITE_NAME,
+          "url": `${SITE_URL}/`,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${SITE_URL}/logo-512.png`,
+            "width": 512,
+            "height": 512
+          }
+        },
         "featureList": [
-          "100% client-side processing for standard tools",
-          "Zero file uploads for our standard PDF tools",
-          "The AI Analyze tool only sends extracted text to Google Gemini after you explicitly check a consent box",
-          "Free to use",
-          "No registration required"
+          "100% client-side processing for our 22 standard PDF tools",
+          "Zero file uploads for standard browser PDF operations",
+          "Opt-in AI Analyze and OCR PDF tools only send extracted text or page images to Google Gemini after explicit user consent",
+          "Free tier available (5 tasks/day for guests up to 100MB, 10 tasks/day for free accounts up to 150MB)",
+          "No mandatory registration required"
         ]
       });
       
@@ -348,6 +596,7 @@ ${footerHtml}
           "totalTime": item.howTo.totalTime,
           "step": item.howTo.steps.map((stepText: string, index: number) => ({
             "@type": "HowToStep",
+            "position": index + 1,
             "url": `${pageUrl}#step${index + 1}`,
             "name": stepText,
             "itemListElement": [{ "@type": "HowToDirection", "text": stepText }]
@@ -405,7 +654,16 @@ ${footerHtml}
           "publisher": {
             "@type": "Organization",
             "name": SITE_NAME,
-            "url": `${SITE_URL}/`
+            "url": `${SITE_URL}/`,
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${SITE_URL}/logo-512.png`,
+              "width": 512,
+              "height": 512
+            },
+            "sameAs": [
+              PRIMARY_AUTHOR.github
+            ]
           }
         },
         {
@@ -428,7 +686,16 @@ ${footerHtml}
           "publisher": {
             "@type": "Organization",
             "name": SITE_NAME,
-            "url": `${SITE_URL}/`
+            "url": `${SITE_URL}/`,
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${SITE_URL}/logo-512.png`,
+              "width": 512,
+              "height": 512
+            },
+            "sameAs": [
+              PRIMARY_AUTHOR.github
+            ]
           }
         },
         {
@@ -483,7 +750,16 @@ ${footerHtml}
           "publisher": {
             "@type": "Organization",
             "name": SITE_NAME,
-            "logo": `${SITE_URL}/logo-192.png`
+            "url": `${SITE_URL}/`,
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${SITE_URL}/logo-512.png`,
+              "width": 512,
+              "height": 512
+            },
+            "sameAs": [
+              PRIMARY_AUTHOR.github
+            ]
           }
         },
         {
@@ -522,10 +798,16 @@ ${footerHtml}
         "publisher": {
           "@type": "Organization",
           "name": SITE_NAME,
+          "url": `${SITE_URL}/`,
           "logo": {
             "@type": "ImageObject",
-            "url": `${SITE_URL}/logo-192.png`
-          }
+            "url": `${SITE_URL}/logo-512.png`,
+            "width": 512,
+            "height": 512
+          },
+          "sameAs": [
+            PRIMARY_AUTHOR.github
+          ]
         },
         "image": {
           "@type": "ImageObject",
@@ -604,13 +886,8 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   ${jsonLdMarkup}
   `;
   
-    // Inject metadata immediately inside the head element and replace sitewide default keywords
+    // Inject metadata immediately inside the head element
     let preRenderedHtml: string = optimizedBase.replace("</head>", `${headMeta}\n</head>`);
-    if (preRenderedHtml.match(/<meta\s+name="keywords"[^>]*\/?>/i)) {
-      // Remove any duplicate keywords tag from base template so only the per-page tag remains
-      const firstKwRegex = /<meta\s+name="keywords"[^>]*\/?>/i;
-      preRenderedHtml = preRenderedHtml.replace(firstKwRegex, '');
-    }
     
     // Helper function to build related tools list using contextual subset (4-6 tools)
     const getRelatedToolsHtml = (currentSlug: string): string => {
@@ -630,6 +907,88 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
 `;
     };
 
+    // Helper function to render structured tool data (problemSolved, howTo, supportedFormats, technicalNotes, privacyNote, troubleshooting, faqs)
+    // so static HTML matches ToolContentSection.tsx and eliminates low word-count / low text-to-HTML ratio issues.
+    const buildToolStructuredSectionsHtml = (tool: ToolSEOInfo, existingBody: string): string => {
+      if (tool.type !== 'tool') return '';
+      const blocks: string[] = [];
+
+      if (tool.problemSolved && !existingBody.includes(tool.problemSolved.slice(0, 32))) {
+        blocks.push(`
+<section aria-label="Problem Solved">
+  <h2>Why Use ${tool.name}?</h2>
+  <p>${tool.problemSolved}</p>
+</section>`);
+      }
+
+      if (tool.howTo && tool.howTo.steps.length > 0 && !existingBody.includes(tool.howTo.steps[0].slice(0, 32))) {
+        blocks.push(`
+<section aria-label="Step-by-Step Guide">
+  <h2>${tool.howTo.name}</h2>
+  <ol>
+${tool.howTo.steps.map((step, idx) => `    <li id="step${idx + 1}"><strong>Step ${idx + 1}:</strong> ${step}</li>`).join('\n')}
+  </ol>
+</section>`);
+      }
+
+      if (tool.supportedFormats) {
+        blocks.push(`
+<section aria-label="Supported Formats and File Limits">
+  <h2>Supported Formats &amp; Processing Limits</h2>
+  <ul>
+    <li><strong>Input Format:</strong> ${tool.supportedFormats.input}</li>
+    <li><strong>Output Format:</strong> ${tool.supportedFormats.output}</li>
+    <li><strong>File Size &amp; Daily Quota:</strong> ${tool.supportedFormats.limits} (Guest: 5 free tasks/day up to 100MB; Free Account: 10 tasks/day up to 150MB; Pro $2.49/mo &amp; Lifetime $50: unlimited daily tasks up to 500MB).</li>
+  </ul>
+</section>`);
+      }
+
+      if (tool.technicalNotes) {
+        blocks.push(`
+<section aria-label="Technical Specifications">
+  <h2>Technical Architecture &amp; Browser Execution</h2>
+  <ul>
+    <li><strong>Device &amp; Browser Compatibility:</strong> ${tool.technicalNotes.deviceBrowser}</li>
+    <li><strong>File Size &amp; Memory Management:</strong> ${tool.technicalNotes.fileSizeMemory}</li>
+    <li><strong>Accessibility &amp; Standards:</strong> ${tool.technicalNotes.accessibility}</li>
+  </ul>
+</section>`);
+      }
+
+      if (tool.privacyNote && !existingBody.includes(tool.privacyNote.slice(0, 32))) {
+        blocks.push(`
+<section aria-label="Privacy and Data Security">
+  <h2>100% Privacy-First Architecture</h2>
+  <p>${tool.privacyNote}</p>
+</section>`);
+      }
+
+      if (tool.troubleshooting && tool.troubleshooting.length > 0) {
+        blocks.push(`
+<section aria-label="Troubleshooting Guide">
+  <h2>Common Troubleshooting &amp; Tips for ${tool.name}</h2>
+  <div>
+${tool.troubleshooting.map((ts) => `    <div>\n      <h3>${ts.issue}</h3>\n      <p>${ts.resolution}</p>\n    </div>`).join('\n')}
+  </div>
+</section>`);
+      }
+
+      if (tool.faqs && tool.faqs.length > 0) {
+        const firstQuestionProbe = tool.faqs[0].q.slice(0, 28).toLowerCase();
+        if (!existingBody.toLowerCase().includes(firstQuestionProbe)) {
+          blocks.push(`
+<section aria-label="Frequently Asked Questions">
+  <h2>Frequently Asked Questions About ${tool.name}</h2>
+  <div>
+${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n    </div>`).join('\n')}
+  </div>
+</section>`);
+        }
+      }
+
+      return blocks.join('\n');
+    };
+
     let finalBody: string = item.longFormBody;
     // Strip any existing <h1> in body completely to avoid duplicate title headings
     finalBody = finalBody.replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/gi, '');
@@ -641,6 +1000,7 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
     finalBody = `<h1>${item.h1 || item.name}</h1>\n${finalBody}`;
 
     if (item.type !== 'article') {
+      finalBody += buildToolStructuredSectionsHtml(item, finalBody);
       finalBody += getRelatedToolsHtml(item.slug);
     } else {
       if (item.faqs && item.faqs.length > 0) {
@@ -730,6 +1090,10 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
           );
 
           let locPreRenderedContent = preRenderedContent;
+          let locStepsForSchema: { title: string; desc: string }[] = [];
+          let locFaqsForSchema: { q: string; a: string }[] = [];
+          let locHowToTitleForSchema = locToolName;
+
           if (locData) {
             const locArticleHtml = buildLocalizedMergePdfHtml(locData, locLang);
             locPreRenderedContent = wrapInPrerenderedShell(locArticleHtml, locLang);
@@ -746,24 +1110,215 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
               .filter(Boolean)
               .join('\n');
 
+            interface LocalizedToolRichTemplate {
+              howToHeading: string;
+              overviewHeading: string;
+              overviewP1: string;
+              overviewP2: string;
+              steps: { title: string; desc: string }[];
+              specsHeading: string;
+              specsItems: string[];
+              privacyHeading: string;
+              privacyText: string;
+              extraFaqs: { q: string; a: string }[];
+              keywords: string;
+            }
+
+            const locTemplates: Record<string, LocalizedToolRichTemplate> = {
+              de: {
+                howToHeading: `So funktioniert ${locToolName} Schritt für Schritt im Browser`,
+                overviewHeading: `Überblick: ${locToolName} ohne Server-Upload`,
+                overviewP1: `${locToolName} von PDFMinty ermöglicht es Ihnen, vertrauliche PDF-Dokumente direkt in Ihrem Webbrowser zu bearbeiten. Dank moderner WebAssembly- und HTML5-Technologie werden alle 22 Standard-PDF-Werkzeuge zu 100 % lokal im Arbeitsspeicher Ihres Endgeräts ausgeführt. Ihre sensiblen Verträge, Rechnungen, Steuerunterlagen oder Personalakten werden niemals auf externe Server hochgeladen.`,
+                overviewP2: `Sie können sofort ohne Registrierung starten: Als Gast stehen Ihnen täglich 5 kostenlose Aufgaben mit bis zu 100 MB pro Datei zur Verfügung. Mit einem kostenlosen PDFMinty-Konto erhöhen Sie Ihr Kontingent auf 10 Aufgaben pro Tag und 150 MB Dateigröße. Für professionelle Workflows bieten der Pro-Tarif ($2,49/Monat) und der Lifetime-Tarif ($50 einmalig) unbegrenzte tägliche Aufgaben und 500 MB Dateigröße.`,
+                steps: [
+                  { title: '1. PDF-Datei im Browser auswählen', desc: `${locCommon?.fileUploader?.dragDrop || 'Ziehen Sie Ihre PDF-Datei per Drag-and-Drop in das Auswahlfeld'} oder klicken Sie auf die Schaltfläche, um ein Dokument bis zu 100 MB (Gast), 150 MB (Konto) bzw. 500 MB (Pro) direkt von Ihrem Gerät zu laden.` },
+                  { title: '2. Einstellungen & Optionen anpassen', desc: `Konfigurieren Sie die gewünschten Parameter für ${locToolName} direkt in der übersichtlichen Vorschau. Alle Seiten- und Dokumenteigenschaften werden verzögerungsfrei in Ihrem Browser berechnet.` },
+                  { title: '3. Lokale WebAssembly-Verarbeitung starten', desc: `Klicken Sie auf „${locCommon?.toolCommon?.process || 'Verarbeiten'}“. Die Berechnung erfolgt vollständig lokal auf Ihrem Computer oder Smartphone ohne Datenübertragung ins Internet.` },
+                  { title: '4. Fertiges PDF sofort herunterladen', desc: `Speichern Sie das bearbeitete PDF-Dokument ohne Wasserzeichen direkt auf Ihrem Gerät. Nach dem Schließen des Tabs wird der Browser-Speicher automatisch bereinigt.` },
+                ],
+                specsHeading: 'Technische Spezifikationen & Kontingente',
+                specsItems: [
+                  'Verarbeitungsarchitektur: 100 % clientseitiges WebAssembly (@cantoo/pdf-lib & PDF.js) für alle 22 Standard-Tools',
+                  'Optionale Cloud-KI: Nur die 2 Werkzeuge „AI Analyze PDF“ und „OCR PDF“ senden nach ausdrücklicher Zustimmung Daten an Google Gemini',
+                  'Maximale Dateigröße: 100 MB (Gast ohne Login) • 150 MB (Kostenloses Konto) • 500 MB (Pro & Lifetime)',
+                  'Tägliches Aufgabenlimit: 5 Aufgaben/Tag (Gast) • 10 Aufgaben/Tag (Kostenloses Konto) • Unbegrenzt (Pro $2,49/Monat & Lifetime $50)',
+                  'Kompatibilität: Windows, macOS, Linux, iOS und Android in Chrome, Firefox, Safari und Edge (auch offline als PWA)',
+                ],
+                privacyHeading: 'Datenschutz & DSGVO-Konformität',
+                privacyText: `Da ${locToolName} als Teil unserer 22 Standard-PDF-Werkzeuge lokal im Browser arbeitet, verlassen Ihre Dateien Ihr Gerät zu keinem Zeitpunkt. Dies erfüllt höchste Anforderungen an den Datenschutz gemäß DSGVO für Kanzleien, Arztpraxen, Behörden und Unternehmen.`,
+                extraFaqs: [
+                  { q: `Werden meine Dateien bei der Nutzung von ${locToolName} gespeichert?`, a: 'Nein. Bei unseren 22 Standard-PDF-Tools findet keinerlei Upload auf unsere Server statt. Die gesamte Verarbeitung läuft lokal im RAM Ihres Browsers.' },
+                  { q: `Fügt ${locToolName} ein Wasserzeichen in mein Dokument ein?`, a: 'Nein. Alle mit PDFMinty erstellten oder bearbeiteten PDF-Dateien sind auch im kostenlosen Tarif vollständig frei von Wasserzeichen oder Werbestempeln.' },
+                ],
+                keywords: `${locToolName}, PDF online bearbeiten, PDF Werkzeug kostenlos, PDF im Browser, Datenschutz PDF, PDFMinty Deutsch`,
+              },
+              fr: {
+                howToHeading: `Comment utiliser ${locToolName} étape par étape dans votre navigateur`,
+                overviewHeading: `Présentation : ${locToolName} 100 % local sans téléversement`,
+                overviewP1: `L’outil ${locToolName} de PDFMinty vous permet de traiter vos documents PDF confidentiels directement dans votre navigateur web. Grâce à la technologie WebAssembly et HTML5, nos 22 outils PDF standard s’exécutent à 100 % localement dans la mémoire vive de votre appareil. Vos contrats, factures, relevés bancaires et dossiers médicaux ne quittent jamais votre ordinateur ou votre smartphone.`,
+                overviewP2: `Aucune inscription n’est requise pour commencer : les visiteurs invités bénéficient de 5 tâches gratuites par jour jusqu’à 100 Mo par fichier. En créant un compte gratuit, vous disposez de 10 tâches quotidiennes et d’une limite de 150 Mo par fichier. Les formules Pro (2,49 $/mois) et Lifetime (50 $ en paiement unique) débloquent des tâches illimitées et des fichiers jusqu’à 500 Mo.`,
+                steps: [
+                  { title: '1. Sélectionnez votre fichier PDF', desc: `${locCommon?.fileUploader?.dragDrop || 'Glissez-déposez votre document PDF dans la zone dédiée'} ou sélectionnez un fichier depuis votre appareil (jusqu’à 100 Mo en invité, 150 Mo avec compte gratuit, 500 Mo en Pro).` },
+                  { title: '2. Configurez vos options de traitement', desc: `Ajustez les paramètres de ${locToolName} grâce à l’aperçu interactif instantané. Toutes les pages sont analysées localement sans latence réseau.` },
+                  { title: '3. Lancez l’exécution locale WebAssembly', desc: `Cliquez sur « ${locCommon?.toolCommon?.process || 'Traiter'} ». Le moteur client-side transforme votre PDF en quelques secondes directement dans votre navigateur.` },
+                  { title: '4. Téléchargez votre PDF finalisé', desc: `Enregistrez immédiatement votre fichier PDF modifié sans aucun filigrane. La mémoire temporaire du navigateur est automatiquement purgée après l’opération.` },
+                ],
+                specsHeading: 'Spécifications techniques et limites d’utilisation',
+                specsItems: [
+                  'Moteur d’exécution : WebAssembly 100 % côté client (@cantoo/pdf-lib et PDF.js) pour les 22 outils PDF standard',
+                  'Outils IA optionnels : Seuls les 2 outils Analyse IA et OCR PDF transmettent des données à Google Gemini après votre consentement explicite',
+                  'Taille maximale par fichier : 100 Mo (Invité) • 150 Mo (Compte gratuit) • 500 Mo (Pro et Lifetime)',
+                  'Quota quotidien : 5 tâches/jour (Invité) • 10 tâches/jour (Compte gratuit) • Illimité (Pro 2,49 $/mois et Lifetime 50 $)',
+                  'Systèmes supportés : Windows, macOS, Linux, iOS et Android sur Chrome, Firefox, Safari et Edge (compatible PWA hors ligne)',
+                ],
+                privacyHeading: 'Confidentialité absolue et conformité RGPD',
+                privacyText: `Avec ${locToolName}, vos documents sensibles restent strictement sur votre appareil pour l’ensemble des 22 outils standard. Cette architecture zéro-serveur garantit une conformité optimale avec le RGPD pour les professionnels du droit, de la santé et de la finance.`,
+                extraFaqs: [
+                  { q: `Mes fichiers sont-ils envoyés sur un serveur lors de l’utilisation de ${locToolName} ?`, a: 'Non. Pour nos 22 outils PDF standard, aucun fichier n’est téléversé sur un serveur distant. Tout le traitement s’effectue localement dans votre navigateur.' },
+                  { q: `L’outil ${locToolName} ajoute-t-il un filigrane sur mes documents ?`, a: 'Jamais. Tous les fichiers générés sur PDFMinty sont propres, professionnels et garantis sans filigrane publicitaire, même sur l’offre gratuite.' },
+                ],
+                keywords: `${locToolName}, outil PDF gratuit, modifier PDF en ligne, PDF sans téléversement, confidentialité PDF, PDFMinty Français`,
+              },
+              es: {
+                howToHeading: `Cómo usar ${locToolName} paso a paso en tu navegador`,
+                overviewHeading: `Descripción general: ${locToolName} sin subir archivos al servidor`,
+                overviewP1: `La herramienta ${locToolName} de PDFMinty te permite procesar documentos PDF confidenciales directamente en tu navegador web. Mediante motores WebAssembly y HTML5 de última generación, nuestras 22 herramientas PDF estándar funcionan al 100 % de manera local en la memoria de tu dispositivo. Tus contratos legales, declaraciones fiscales, historiales médicos y facturas nunca se suben a servidores externos.`,
+                overviewP2: `Puedes empezar gratis sin registro: los usuarios invitados cuentan con 5 tareas diarias gratuitas para archivos de hasta 100 MB. Al crear una cuenta gratuita, obtienes 10 tareas al día y soporte para archivos de hasta 150 MB. Además, los planes Pro ($2.49/mes) y Lifetime ($50 pago único) ofrecen tareas diarias ilimitadas y archivos de hasta 500 MB.`,
+                steps: [
+                  { title: '1. Selecciona tu documento PDF', desc: `${locCommon?.fileUploader?.dragDrop || 'Arrastra y suelta tu archivo PDF en el panel'} o selecciónalo desde tu dispositivo (hasta 100 MB como invitado, 150 MB con cuenta gratuita o 500 MB en Pro).` },
+                  { title: '2. Ajusta las opciones de la herramienta', desc: `Personaliza la configuración de ${locToolName} con vista previa instantánea. El documento se carga directamente en la memoria local del navegador.` },
+                  { title: '3. Procesa el archivo localmente con WebAssembly', desc: `Haz clic en «${locCommon?.toolCommon?.process || 'Procesar'}». La operación se ejecuta en segundos dentro de tu navegador sin enviar datos por internet.` },
+                  { title: '4. Descarga tu archivo PDF listo', desc: `Guarda el documento resultante en tu equipo sin marcas de agua. Al cerrar la pestaña, la memoria temporal del navegador se limpia automáticamente.` },
+                ],
+                specsHeading: 'Especificaciones técnicas y límites del servicio',
+                specsItems: [
+                  'Arquitectura de procesamiento: 100 % del lado del cliente con WebAssembly (@cantoo/pdf-lib y PDF.js) en las 22 herramientas estándar',
+                  'IA en la nube opcional: Solo las 2 herramientas de Análisis IA y OCR PDF envían datos a Google Gemini tras tu consentimiento explícito',
+                  'Tamaño máximo de archivo: 100 MB (Invitado) • 150 MB (Cuenta gratuita) • 500 MB (Pro y Lifetime)',
+                  'Límite diario de tareas: 5 tareas/día (Invitado) • 10 tareas/día (Cuenta gratuita) • Ilimitado (Pro $2.49/mes y Lifetime $50)',
+                  'Compatibilidad multiplataforma: Windows, macOS, Linux, iOS y Android en Chrome, Firefox, Safari y Edge (funciona sin conexión vía PWA)',
+                ],
+                privacyHeading: 'Privacidad garantizada y seguridad de datos',
+                privacyText: `Con ${locToolName}, tus documentos privados nunca abandonan tu dispositivo en las 22 utilidades estándar. Este diseño sin servidor protege tu información confidencial frente a filtraciones y cumple con los estándares europeos e internacionales de protección de datos.`,
+                extraFaqs: [
+                  { q: `¿Se guardan mis archivos en algún servidor al usar ${locToolName}?`, a: 'No. En nuestras 22 herramientas estándar de PDF, los documentos se procesan exclusivamente en la memoria RAM de tu navegador sin subirse a ningún servidor.' },
+                  { q: `¿${locToolName} añade marcas de agua al PDF descargado?`, a: 'No. Todos los documentos procesados con PDFMinty se exportan limpios y sin marcas de agua tanto en el plan gratuito como en los planes Pro.' },
+                ],
+                keywords: `${locToolName}, herramientas PDF gratis, editar PDF en el navegador, PDF privado sin subir archivos, PDFMinty Español`,
+              },
+              bn: {
+                howToHeading: `ব্রাউজারে ধাপে ধাপে ${locToolName} ব্যবহারের নিয়ম`,
+                overviewHeading: `সংক্ষিপ্ত পরিচিতি: কোনো সার্ভার আপলোড ছাড়াই ${locToolName}`,
+                overviewP1: `PDFMinty-এর ${locToolName} টুলটি আপনাকে সম্পূর্ণ গোপনীয়তা বজায় রেখে সরাসরি ওয়েব ব্রাউজারের ভেতর পিডিএফ ফাইল প্রসেস করার সুবিধা দেয়। আধুনিক WebAssembly এবং HTML5 প্রযুক্তির সাহায্যে আমাদের ২২টি স্ট্যান্ডার্ড পিডিএফ টুল ১০০% আপনার ডিভাইসের র‍্যামে (RAM) লোকালভাবে কাজ করে। আপনার সংবেদনশীল অফিসিয়াল ডকুমেন্ট, ব্যাংক স্টেটমেন্ট, মেডিকেল রিপোর্ট বা আইনি চুক্তিপত্র কখনোই কোনো সার্ভারে আপলোড হয় না।`,
+                overviewP2: `কোনো অ্যাকাউন্ট ছাড়াই গেস্ট হিসেবে প্রতিদিন ৫টি ফ্রি কাজ (প্রতি ফাইল সর্বোচ্চ ১০০ মেগাবাইট) সম্পন্ন করতে পারবেন। ফ্রি অ্যাকাউন্টে লগইন করলে প্রতিদিন ১০টি কাজ এবং ১৫০ মেগাবাইট পর্যন্ত ফাইল প্রসেস করা যায়। এছাড়া পেশাদার কাজের জন্য Pro ($2.49/মাস) এবং Lifetime ($50 এককালীন) প্ল্যানে রয়েছে আনলিমিটেড দৈনিক কাজ ও ৫০০ মেগাবাইট ফাইল সাপোর্ট।`,
+                steps: [
+                  { title: '১. আপনার পিডিএফ ফাইল নির্বাচন করুন', desc: `${locCommon?.fileUploader?.dragDrop || 'আপনার পিডিএফ ফাইলটি ড্র্যাগ অ্যান্ড ড্রপ করে আপলোড বক্সে রাখুন'} অথবা ডিভাইস থেকে সিলেক্ট করুন (গেস্ট ১০০MB, ফ্রি অ্যাকাউন্ট ১৫০MB, প্রো ৫০০MB পর্যন্ত)।` },
+                  { title: '২. প্রয়োজনীয় অপশন ও সেটিংস নির্ধারণ করুন', desc: `${locToolName} টুলের প্রিভিউ প্যানেলে আপনার পছন্দমতো পেজ বা সেটিংস সাজিয়ে নিন। সবকিছু তাৎক্ষণিকভাবে ব্রাউজারে লোড হয়।` },
+                  { title: '৩. লোকাল WebAssembly প্রসেসিং শুরু করুন', desc: `“${locCommon?.toolCommon?.process || 'প্রসেস করুন'}” বাটনে ক্লিক করুন। কোনো ইন্টারনেট ডেটা ট্রান্সফার ছাড়াই কয়েক সেকেন্ডের মধ্যে আপনার ডিভাইসেই ফাইলটি প্রস্তুত হয়ে যাবে।` },
+                  { title: '৪. ওয়াটারমার্ক ছাড়া ফাইল ডাউনলোড করুন', desc: `প্রসেস শেষ হলে সাথে সাথে আপনার নতুন পিডিএফ ফাইলটি ডাউনলোড করে নিন। ট্যাব বন্ধ করার সাথে সাথে ব্রাউজারের অস্থায়ী মেমরি মুছে যায়।` },
+                ],
+                specsHeading: 'প্রযুক্তিগত বৈশিষ্ট্য ও ব্যবহারের সীমা',
+                specsItems: [
+                  'প্রসেসিং ইঞ্জিন: ২২টি স্ট্যান্ডার্ড টুলের জন্য ১০০% ক্লায়েন্ট-সাইড WebAssembly (@cantoo/pdf-lib ও PDF.js)',
+                  'ঐচ্ছিক ক্লাউড এআই: শুধুমাত্র AI Analyze PDF এবং OCR PDF টুল দুটি আপনার সুস্পষ্ট সম্মতির পর Google Gemini ব্যবহার করে',
+                  'সর্বোচ্চ ফাইল সাইজ: ১০০ মেগাবাইট (গেস্ট) • ১৫০ মেগাবাইট (ফ্রি অ্যাকাউন্ট) • ৫০০ মেগাবাইট (Pro ও Lifetime)',
+                  'দৈনিক কাজের কোটা: ৫টি কাজ/দিন (গেস্ট) • ১০টি কাজ/দিন (ফ্রি অ্যাকাউন্ট) • আনলিমিটেড (Pro $2.49/মাস ও Lifetime $50)',
+                  'ডিভাইস সাপোর্ট: Windows, macOS, Linux, Android ও iOS-এর যেকোনো আধুনিক ব্রাউজারে এবং অফলাইন PWA মোডে কার্যকর',
+                ],
+                privacyHeading: '১০০% ডেটা গোপনীয়তা ও নিরাপত্তা নিশ্চয়তা',
+                privacyText: `${locToolName} আমাদের ২২টি লোকাল ব্রাউজার টুলের অন্তর্ভুক্ত হওয়ায় আপনার ফাইল কখনোই আপনার কম্পিউটার বা মোবাইল ফোন ছেড়ে বাইরে যায় না। ফলে ব্যক্তিগত ও প্রাতিষ্ঠানিক গোপনীয়তা শতভাগ সুরক্ষিত থাকে।`,
+                extraFaqs: [
+                  { q: `${locToolName} ব্যবহারের সময় আমার ফাইল কি কোনো সার্ভারে জমা থাকে?`, a: 'না। আমাদের ২২টি স্ট্যান্ডার্ড পিডিএফ টুল সম্পূর্ণভাবে আপনার ব্রাউজারের ভেতর লোকাল মেমরিতে কাজ করে, তাই কোনো সার্ভারে ফাইল আপলোড বা সংরক্ষণ করা হয় না।' },
+                  { q: `ফ্রি প্ল্যানে ${locToolName} ব্যবহার করলে কি পিডিএফে ওয়াটারমার্ক থাকবে?`, a: 'একেবারেই না। PDFMinty-তে ফ্রি কিংবা প্রো—সকল টিয়ারেই সম্পূর্ণ ওয়াটারমার্কমুক্ত ও পরিচ্ছন্ন পিডিএফ ফাইল পাওয়া যায়।' },
+                ],
+                keywords: `${locToolName}, ফ্রি পিডিএফ টুল, ব্রাউজার পিডিএফ এডিটর, নিরাপদ পিডিএফ প্রসেসিং, PDFMinty বাংলা`,
+              },
+              hi: {
+                howToHeading: `ब्राउज़र में ${locToolName} का उपयोग कैसे करें (चरण-दर-चरण मार्गदर्शिका)`,
+                overviewHeading: `परिचय: बिना सर्वर अपलोड के ${locToolName}`,
+                overviewP1: `PDFMinty का ${locToolName} टूल आपको पूर्ण गोपनीयता के साथ सीधे अपने वेब ब्राउज़र में पीडीएफ दस्तावेज़ों को प्रोसेस करने की सुविधा देता है। आधुनिक WebAssembly और HTML5 तकनीक की मदद से हमारे सभी 22 मानक पीडीएफ उपकरण 100% आपके डिवाइस की मेमोरी (RAM) में स्थानीय रूप से चलते हैं। आपके संवेदनशील अनुबंध, बैंक स्टेटमेंट, टैक्स रिकॉर्ड या मेडिकल दस्तावेज़ कभी भी किसी बाहरी सर्वर पर अपलोड नहीं होते हैं।`,
+                overviewP2: `बिना किसी पंजीकरण के तुरंत शुरुआत करें: अतिथि (Guest) उपयोगकर्ताओं को प्रतिदिन 5 मुफ़्त कार्य और 100 MB तक की फ़ाइल सीमा मिलती है। मुफ़्त खाते में साइन-इन करने पर प्रतिदिन 10 कार्य और 150 MB फ़ाइल आकार की सुविधा मिलती है। असीमित दैनिक कार्यों और 500 MB फ़ाइलों के लिए Pro ($2.49/माह) और Lifetime ($50 एकबारगी भुगतान) प्लान उपलब्ध हैं।`,
+                steps: [
+                  { title: '1. अपनी पीडीएफ फ़ाइल चुनें', desc: `${locCommon?.fileUploader?.dragDrop || 'अपनी पीडीएफ फ़ाइल को अपलोड बॉक्स में ड्रैग और ड्रॉप करें'} या अपने डिवाइस से चुनें (अतिथि: 100MB, मुफ़्त खाता: 150MB, Pro: 500MB तक)।` },
+                  { title: '2. टूल विकल्प और सेटिंग्स समायोजित करें', desc: `${locToolName} के इंटरैक्टिव प्रीव्यू में अपनी आवश्यकता के अनुसार पेज और विकल्प सेट करें। सभी गणनाएँ तुरंत ब्राउज़र में होती हैं।` },
+                  { title: '3. लोकल WebAssembly प्रोसेसिंग शुरू करें', desc: `“${locCommon?.toolCommon?.process || 'प्रोसेस करें'}” बटन पर क्लिक करें। आपकी फ़ाइल बिना इंटरनेट अपलोड के कुछ ही सेकंड में आपके डिवाइस पर प्रोसेस हो जाती है।` },
+                  { title: '4. बिना वॉटरमार्क के अपनी पीडीएफ डाउनलोड करें', desc: `तैयार पीडीएफ दस्तावेज़ को तुरंत अपने कंप्यूटर या मोबाइल में सेव करें। टैब बंद करते ही ब्राउज़र मेमोरी अपने आप साफ़ हो जाती है।` },
+                ],
+                specsHeading: 'तकनीकी विशेषताएँ और उपयोग सीमाएँ',
+                specsItems: [
+                  'प्रोसेसिंग तकनीक: सभी 22 मानक पीडीएफ टूल्स के लिए 100% क्लाइंट-साइड WebAssembly (@cantoo/pdf-lib और PDF.js)',
+                  'वैकल्पिक क्लाउड AI: केवल 2 टूल्स (AI Analyze PDF और OCR PDF) आपकी स्पष्ट सहमति के बाद Google Gemini का उपयोग करते हैं',
+                  'अधिकतम फ़ाइल आकार: 100 MB (अतिथि) • 150 MB (मुफ़्त खाता) • 500 MB (Pro और Lifetime)',
+                  'दैनिक कार्य सीमा: 5 कार्य/दिन (अतिथि) • 10 कार्य/दिन (मुफ़्त खाता) • असीमित (Pro $2.49/माह और Lifetime $50)',
+                  'संगतता: Windows, macOS, Linux, Android और iOS के सभी आधुनिक ब्राउज़रों में और ऑफ़लाइन PWA मोड में काम करता है',
+                ],
+                privacyHeading: '100% डेटा गोपनीयता और सुरक्षा गारंटी',
+                privacyText: `चूँकि ${locToolName} हमारे 22 स्थानीय ब्राउज़र उपकरणों का हिस्सा है, इसलिए आपकी फ़ाइलें कभी भी आपके डिवाइस से बाहर नहीं जाती हैं। यह व्यक्तिगत, कानूनी और व्यावसायिक दस्तावेज़ों के लिए उच्चतम सुरक्षा सुनिश्चित करता है।`,
+                extraFaqs: [
+                  { q: `क्या ${locToolName} का उपयोग करते समय मेरी फ़ाइलें किसी सर्वर पर अपलोड होती हैं?`, a: 'नहीं। हमारे 22 मानक पीडीएफ टूल्स पूरी तरह से आपके ब्राउज़र की लोकल मेमोरी में काम करते हैं, इसलिए कोई भी फ़ाइल सर्वर पर अपलोड या सेव नहीं होती है।' },
+                  { q: `क्या मुफ़्त प्लान में ${locToolName} से आउटपुट पीडीएफ पर वॉटरमार्क आता है?`, a: 'बिल्कुल नहीं। PDFMinty के मुफ़्त और Pro दोनों प्लान्स में बिना किसी वॉटरमार्क के साफ़ और प्रोफेशनल पीडीएफ फ़ाइल मिलती है।' },
+                ],
+                keywords: `${locToolName}, मुफ़्त पीडीएफ टूल्स, ऑनलाइन पीडीएफ एडिटर, प्राइवेसी पीडीएफ टूल, PDFMinty हिंदी`,
+              },
+              zh: {
+                howToHeading: `如何在浏览器中分步使用 ${locToolName}`,
+                overviewHeading: `工具概述：零服务器上传的 ${locToolName} 本地处理方案`,
+                overviewP1: `PDFMinty 提供的 ${locToolName} 工具让您能够直接在网页浏览器中私密、高效地处理 PDF 文档。依托先进的 WebAssembly 与 HTML5 客户端架构，我们的 22 款标准 PDF 工具 100% 在您设备的本地内存（RAM）中运行。您的机密合同、财务报表、税务文件、医疗记录或个人证件绝不会上传到任何远程服务器。`,
+                overviewP2: `无需注册即可立即免费使用：访客模式每天可免费执行 5 次任务，单文件最高支持 100 MB；注册并登录免费账户后，每天可享 10 次免费任务，单文件上限提升至 150 MB。如果您需要处理超大文档或高频办公，可选的 Pro 订阅方案（$2.49/月）与终身买断方案（$50 一次性付费）提供无限次每日任务及高达 500 MB 的文件支持。`,
+                steps: [
+                  { title: '1. 在浏览器中选择或拖拽 PDF 文件', desc: `${locCommon?.fileUploader?.dragDrop || '将需要处理的 PDF 文件直接拖拽到上传区域'}，或点击按钮从本地设备中选择文件（访客最高 100MB，免费账户 150MB，Pro 版高达 500MB）。` },
+                  { title: '2. 预览文档并配置处理参数', desc: `在 ${locToolName} 的交互式预览界面中调整页面范围或工具参数。所有解析与渲染均在本地浏览器内存中即时完成，无需等待网络传输。` },
+                  { title: '3. 启动本地 WebAssembly 引擎高速处理', desc: `点击“${locCommon?.toolCommon?.process || '开始处理'}”按钮，浏览器内置的 WebAssembly 引擎将在数秒内完成文档计算与转换，全程零数据外传。` },
+                  { title: '4. 立即下载无水印的生成文件', desc: `处理完成后即可将生成的 PDF 文件直接保存到您的电脑或手机中，导出文档绝无任何水印。关闭标签页后，浏览器会自动清空临时内存缓存。` },
+                ],
+                specsHeading: '技术规格与账户额度说明',
+                specsItems: [
+                  '核心运行架构：全部 22 款标准 PDF 工具均采用 100% 客户端 WebAssembly（@cantoo/pdf-lib 与 PDF.js）本地运算',
+                  '可选云端 AI 工具：仅“AI 智能分析 PDF”与“OCR 识别 PDF”2 款可选工具会在您明确勾选授权同意后向 Google Gemini 发送提取文本或页面图像',
+                  '单文件大小上限：访客模式 100 MB • 免费注册账户 150 MB • Pro 与终身版高达 500 MB（批量操作最高 1,000 MB）',
+                  '每日免费任务额度：访客每日 5 次 • 免费账户每日 10 次 • Pro（$2.49/月）与终身版（$50 一次付清）无限次使用',
+                  '跨平台与离线支持：完美兼容 Windows、macOS、Linux、iOS 与 Android 上的 Chrome、Firefox、Safari、Edge 浏览器，支持安装 PWA 离线使用',
+                ],
+                privacyHeading: '100% 隐私保护与数据安全承诺',
+                privacyText: `由于 ${locToolName} 属于 PDFMinty 的 22 款标准本地工具之一，您的原始 PDF 文件和生成结果始终保留在您的本地设备上，绝不经过第三方服务器。这一零上传设计为律所、金融机构、医疗单位及注重隐私的企业提供了最高等级的数据安全保障。`,
+                extraFaqs: [
+                  { q: `使用 ${locToolName} 处理文档时，我的文件会被上传或保存在服务器上吗？`, a: '绝不会。我们的 22 款标准 PDF 工具完全在您浏览器的本地内存中运行，文件不会离开您的电脑或手机，服务器不会接收或存储您的任何文档。' },
+                  { q: `免费使用 ${locToolName} 导出的 PDF 文件会带有水印吗？`, a: '没有任何水印。无论您是未登录访客、免费注册用户还是 Pro 会员，通过 PDFMinty 处理并导出的所有文档均保持原始清晰度且完全无水印。' },
+                ],
+                keywords: `${locToolName}, 免费PDF工具, 在线处理PDF, 浏览器本地PDF工具, 隐私安全PDF, PDFMinty 中文版`,
+              },
+            };
+
+            const richTpl = locTemplates[locLang] || locTemplates.de;
+            locStepsForSchema = richTpl.steps;
+            locHowToTitleForSchema = richTpl.howToHeading;
+
+            const combinedFaqs = [...(locMergeFallback?.faqs || []), ...richTpl.extraFaqs];
+            locFaqsForSchema = combinedFaqs;
+
             const featuresHtml = (locMergeFallback?.features || [])
               .map((f) => `              <li><strong>${f.title}</strong> ${f.desc}</li>`)
               .join('\n');
 
-            const faqsHtml = (locMergeFallback?.faqs || [])
-              .slice(0, 3)
+            const stepsHtml = richTpl.steps
+              .map(
+                (st) => `            <li><strong>${st.title}：</strong> ${st.desc}</li>`
+              )
+              .join('\n');
+
+            const specsHtml = richTpl.specsItems
+              .map((sp) => `              <li>${sp}</li>`)
+              .join('\n');
+
+            const faqsHtml = combinedFaqs
               .map(
                 (faq) => `            <div>
-              <h4 class="font-bold text-slate-900 dark:text-white mb-1">${faq.q}</h4>
+              <h3 class="font-bold text-slate-900 dark:text-white mb-1">${faq.q}</h3>
               <p class="text-sm text-slate-600 dark:text-slate-300">${faq.a}</p>
             </div>`
               )
               .join('\n');
 
-            const stepSelect = `1. ${locCommon?.toolCommon?.selectPdf || 'Select a PDF to begin'}`;
-            const stepDrop = locCommon?.fileUploader?.dragDrop || 'Drag and drop your files here';
-            const stepProcess = `2. ${locCommon?.toolCommon?.process || 'Process'}`;
-            const stepDownload = `3. ${locCommon?.toolCommon?.download || 'Download File'}`;
             const relatedHeading =
               locCommon?.relatedTools?.title || locMergeFallback?.relatedTitle || 'Related PDF Tools';
             const whyHeading = locMergeFallback?.whyTitle || `${locToolName} — PDFMinty`;
@@ -774,19 +1329,39 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
           <p class="lead text-lg font-medium text-slate-700 dark:text-slate-300">
             ${locToolDesc}
           </p>
-          <ol class="space-y-2 my-4">
-            <li><strong>${stepSelect}:</strong> ${stepDrop}</li>
-            <li><strong>${stepProcess}:</strong> ${locPrivacyBadge}</li>
-            <li><strong>${stepDownload}:</strong> ${locToolName}</li>
-          </ol>
-          <h2>${whyHeading}</h2>
-          <ul class="space-y-2 my-4">
+          <section aria-label="${richTpl.overviewHeading}">
+            <h2>${richTpl.overviewHeading}</h2>
+            <p>${richTpl.overviewP1}</p>
+            <p>${richTpl.overviewP2}</p>
+          </section>
+          <section aria-label="${richTpl.howToHeading}">
+            <h2>${richTpl.howToHeading}</h2>
+            <ol class="space-y-2 my-4">
+${stepsHtml}
+            </ol>
+          </section>
+          <section aria-label="${whyHeading}">
+            <h2>${whyHeading}</h2>
+            <ul class="space-y-2 my-4">
 ${featuresHtml}
-          </ul>
-          <h2>${faqHeading}</h2>
-          <div class="space-y-4 my-6">
+            </ul>
+          </section>
+          <section aria-label="${richTpl.specsHeading}">
+            <h2>${richTpl.specsHeading}</h2>
+            <ul class="space-y-2 my-4">
+${specsHtml}
+            </ul>
+          </section>
+          <section aria-label="${richTpl.privacyHeading}">
+            <h2>${richTpl.privacyHeading}</h2>
+            <p>${richTpl.privacyText}</p>
+          </section>
+          <section aria-label="${faqHeading}">
+            <h2>${faqHeading}</h2>
+            <div class="space-y-4 my-6">
 ${faqsHtml}
-          </div>
+            </div>
+          </section>
           <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
             <h2>${relatedHeading}</h2>
             <ul>
@@ -803,13 +1378,36 @@ ${relatedToolsHtml}
               {
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
-                "name": `PdfMinty - ${locMetaTitle.split('—')[0].trim()}`,
+                "name": `PDFMinty - ${locMetaTitle.split('—')[0].trim()}`,
                 "url": locPageUrl,
                 "description": locMetaDesc,
                 "applicationCategory": "UtilitiesApplication",
-                "operatingSystem": "All",
+                "applicationSubCategory": "PDF Software",
+                "operatingSystem": "Any",
                 "browserRequirements": "Requires HTML5, WebAssembly",
-                "inLanguage": locLang
+                "inLanguage": locLang,
+                "offers": {
+                  "@type": "Offer",
+                  "price": "0",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock"
+                },
+                "author": {
+                  "@type": "Organization",
+                  "name": SITE_NAME,
+                  "url": `${SITE_URL}/`
+                },
+                "publisher": {
+                  "@type": "Organization",
+                  "name": SITE_NAME,
+                  "url": `${SITE_URL}/`,
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": `${SITE_URL}/logo-512.png`,
+                    "width": 512,
+                    "height": 512
+                  }
+                }
               },
               {
                 "@context": "https://schema.org",
@@ -818,7 +1416,7 @@ ${relatedToolsHtml}
                   {
                     "@type": "ListItem",
                     "position": 1,
-                    "name": "Home",
+                    "name": locCommon?.header?.nav?.home || STATIC_SHELL_STRINGS[locLang]?.home || "Home",
                     "item": `${SITE_URL}/${locLang}/`
                   },
                   {
@@ -859,13 +1457,36 @@ ${relatedToolsHtml}
               {
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
-                "name": `PdfMinty - ${locToolName}`,
+                "name": `PDFMinty - ${locToolName}`,
                 "url": locPageUrl,
                 "description": locMetaDesc,
                 "applicationCategory": "UtilitiesApplication",
-                "operatingSystem": "All",
+                "applicationSubCategory": "PDF Software",
+                "operatingSystem": "Any",
                 "browserRequirements": "Requires HTML5, WebAssembly",
-                "inLanguage": locLang
+                "inLanguage": locLang,
+                "offers": {
+                  "@type": "Offer",
+                  "price": "0",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock"
+                },
+                "author": {
+                  "@type": "Organization",
+                  "name": SITE_NAME,
+                  "url": `${SITE_URL}/`
+                },
+                "publisher": {
+                  "@type": "Organization",
+                  "name": SITE_NAME,
+                  "url": `${SITE_URL}/`,
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": `${SITE_URL}/logo-512.png`,
+                    "width": 512,
+                    "height": 512
+                  }
+                }
               },
               {
                 "@context": "https://schema.org",
@@ -874,7 +1495,7 @@ ${relatedToolsHtml}
                   {
                     "@type": "ListItem",
                     "position": 1,
-                    "name": locCommon?.header?.nav?.home || "Home",
+                    "name": locCommon?.header?.nav?.home || STATIC_SHELL_STRINGS[locLang]?.home || "Home",
                     "item": `${SITE_URL}/${locLang}/`
                   },
                   {
@@ -884,14 +1505,39 @@ ${relatedToolsHtml}
                     "item": locPageUrl
                   }
                 ]
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": locFaqsForSchema.map(f => ({
+                  "@type": "Question",
+                  "name": f.q,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": f.a
+                  }
+                }))
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "HowTo",
+                "name": locHowToTitleForSchema,
+                "step": locStepsForSchema.map((step, idx) => ({
+                  "@type": "HowToStep",
+                  "position": idx + 1,
+                  "name": step.title,
+                  "text": step.desc
+                }))
               }
             ];
             locJsonLdMarkup = locSchemas.map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n  ');
           }
 
+          const locKeywords = `${locToolName}, ${locPrivacyBadge}, PDFMinty`;
           const locHeadMeta: string = `
   <title>${locMetaTitle}</title>
   <meta name="description" content="${locMetaDesc}">
+  <meta name="keywords" content="${locKeywords}">
   <link rel="canonical" href="${locPageUrl}">
 ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content="${item.type === 'article' ? 'article' : 'website'}">
   <meta property="og:title" content="${locMetaTitle}">
@@ -960,6 +1606,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   const blogHeadMeta = `
   <title>PdfMinty Knowledge Hub — Free Guides & PDF Tutorials</title>
   <meta name="description" content="Explore expert guides, security tips, and privacy-first PDF tutorials in the PdfMinty Knowledge Hub.">
+  <meta name="keywords" content="pdf guides, pdf security tutorials, privacy-first pdf tools, offline pdf workflow, pdfminty blog">
   <link rel="canonical" href="${SITE_URL}/blog/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="PdfMinty Knowledge Hub — Free Guides & PDF Tutorials">
@@ -981,10 +1628,16 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
     "publisher": {
       "@type": "Organization",
       "name": "${SITE_NAME}",
+      "url": "${SITE_URL}/",
       "logo": {
         "@type": "ImageObject",
-        "url": "${SITE_URL}/og-image.png"
-      }
+        "url": "${SITE_URL}/logo-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "sameAs": [
+        "${PRIMARY_AUTHOR.github}"
+      ]
     }
   }
   </script>
@@ -1029,9 +1682,37 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
     "Simple, affordable pricing for PDFMinty. 100% free core browser PDF tools, plus upgrades for 500MB batch processing, Gemini 2.5 AI analysis, and batch OCR.";
   const pricingUrl = `${SITE_URL}/pricing/`;
 
+  const pricingFaqs = [
+    {
+      q: "Is the Free Forever tier really free without a credit card?",
+      a: "Yes. Every visitor can use all 24 PDFMinty tools immediately without registering or entering a credit card. Guest users receive 5 free daily tasks with a 100 MB per-file limit, and creating a free account unlocks 10 daily tasks and a 150 MB per-file limit with zero watermarks."
+    },
+    {
+      q: "What is the difference between Monthly Pro ($2.49/mo) and the Lifetime Pro Deal ($50)?",
+      a: "Both Pro Monthly ($2.49 per month) and Lifetime Pro ($50 one-time payment) unlock identical premium capabilities: unlimited daily PDF tasks, up to 500 MB per file (1,000 MB batch limit), priority Google Gemini AI document analysis and batch OCR quotas, and commercial usage rights. Monthly Pro bills recurringly until canceled, whereas Lifetime Pro is a single one-time payment for permanent account access."
+    },
+    {
+      q: "Are my PDF files uploaded to servers on the Free or Pro plans?",
+      a: "For all 22 standard PDF tools (merge, split, compress, protect, unlock, sign, rotate, watermark, sanitize, grayscale, and page organization), your files are processed 100% locally in your browser using WebAssembly on every tier—they never touch our servers. The only exceptions are our 2 opt-in Cloud AI tools (AI Analyze PDF and OCR PDF), which require your explicit consent before transmitting extracted text or rendered page images to Google Gemini."
+    },
+    {
+      q: "Can I cancel my $2.49/month Pro subscription at any time?",
+      a: "Yes, you can cancel your monthly subscription at any time with a single click from your Account Dashboard or by contacting support@pdfminty.com. You will retain full Pro access through the end of your current billing period with no cancellation fees."
+    },
+    {
+      q: "Does PDFMinty add watermarks to documents processed on the Free tier?",
+      a: "Never. Whether you are a guest user, a free registered account holder, or a Pro subscriber, every PDF exported by PDFMinty is 100% free of branding stamps or watermarks."
+    },
+    {
+      q: "Do the PDF tools work offline after upgrading or installing the app?",
+      a: "Yes. PDFMinty is a Progressive Web App (PWA). Once loaded or installed on your desktop or mobile browser, all 22 client-side WebAssembly PDF utilities operate completely offline without an active internet connection."
+    }
+  ];
+
   const pricingHeadMeta = `
   <title>${pricingTitle}</title>
   <meta name="description" content="${pricingDesc}">
+  <meta name="keywords" content="pdfminty pricing, privacy-first pdf tools pricing, $2.49 pdf pro plan, $50 lifetime pdf toolkit, offline browser pdf tools">
   <link rel="canonical" href="${pricingUrl}">
   <meta property="og:type" content="website">
   <meta property="og:title" content="${pricingTitle}">
@@ -1056,31 +1737,144 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
       "url": "${SITE_URL}/",
       "logo": {
         "@type": "ImageObject",
-        "url": "${SITE_URL}/logo-512.png"
-      }
+        "url": "${SITE_URL}/logo-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "sameAs": [
+        "${PRIMARY_AUTHOR.github}"
+      ]
     }
   }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "${SITE_URL}/"},
+      {"@type": "ListItem", "position": 2, "name": "Pricing Plans", "item": "${pricingUrl}"}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  ${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": pricingFaqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": f.a
+      }
+    }))
+  })}
   </script>
   `;
 
   const pricingArticleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
-          <h1>Pick the plan that fits your workflow</h1>
-          <p>Start 100% free with all 24 browser PDF tools. Upgrade to Pro ($2.49/month) or Lifetime Pro ($50 one-time) if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.</p>
-          <h2>Free Forever Plan ($0)</h2>
-          <ul>
-            <li>All 24 in-browser core PDF tools with 100% client-side WebAssembly privacy</li>
-            <li>Guest (No Login): 100 MB file limit and 5 free tasks per day</li>
-            <li>Free Account (Logged In): 150 MB file limit and 10 free tasks per day</li>
-            <li>Works offline once loaded — zero server uploads for standard tools</li>
-          </ul>
-          <h2>PDFMinty Pro Plan ($2.49 / month) &amp; Lifetime Deal ($50 One-Time)</h2>
-          <ul>
-            <li>Pro Monthly ($2.49/mo) or Lifetime Deal ($50 one-time payment)</li>
-            <li>Up to 500 MB batch file processing limits</li>
-            <li>Unlimited daily PDF operations across all client-side tools</li>
-            <li>Priority Gemini AI document analysis &amp; OCR quotas</li>
-          </ul>
-          <p><a href="/sign-up/">Create a Free Account or Upgrade to Pro</a> • <a href="/sign-in/">Sign In</a> • <a href="/">Explore all free PDF tools</a> • <a href="/contact/">Contact us</a> for team and enterprise inquiries.</p>
+          <h1>Pick the plan that fits your PDF workflow</h1>
+          <p>Start 100% free across all 24 PDFMinty tools (22 client-side WebAssembly tools that run locally in your browser with zero server uploads + 2 opt-in Cloud AI tools powered by Google Gemini only with your explicit consent). Upgrade to Monthly Pro ($2.49/month) or our Lifetime Pro Deal ($50 one-time payment) when you need 500 MB large file support, unlimited daily operations, and priority AI &amp; OCR quotas.</p>
+
+          <section aria-label="Pricing Tiers">
+            <h2>1. Free Forever Plan ($0 / Forever)</h2>
+            <p>Designed for everyday document tasks with strict in-browser privacy and no credit card required:</p>
+            <ul>
+              <li><strong>All 24 PDF Tools Included:</strong> Full access to 22 local WebAssembly PDF tools plus 2 opt-in AI Analyze and OCR PDF tools</li>
+              <li><strong>Guest Access (No Login Required):</strong> Up to 100 MB per file and 5 free tasks per day immediately in your browser</li>
+              <li><strong>Free Registered Account:</strong> Up to 150 MB per file (and 150 MB batch operations) with 10 free tasks per day</li>
+              <li><strong>Zero Watermarks:</strong> Clean, professional PDF exports with no branding stamps</li>
+              <li><strong>Offline PWA Support:</strong> Install once and run all 22 standard PDF tools without an internet connection</li>
+            </ul>
+
+            <h2>2. PDFMinty Pro Monthly ($2.49 / month)</h2>
+            <p>Built for professionals, legal teams, accountants, and researchers handling heavy document workloads:</p>
+            <ul>
+              <li><strong>Unlimited Daily PDF Tasks:</strong> Remove all daily task counters across every browser-based PDF tool</li>
+              <li><strong>Up to 500 MB Per File:</strong> Process large scanned books, blueprints, and multi-hundred-page legal bundles (up to 1,000 MB combined batch limit)</li>
+              <li><strong>Priority Gemini AI &amp; Batch OCR Quotas:</strong> Higher daily limits for opt-in AI document summaries, Q&amp;A, and multilingual optical character recognition</li>
+              <li><strong>Commercial Usage Rights &amp; Priority Support:</strong> Dedicated email support and flexible monthly billing you can cancel anytime</li>
+            </ul>
+
+            <h2>3. PDFMinty Lifetime Pro Deal ($50 One-Time Payment)</h2>
+            <p>Pay once and own permanent Pro access forever without recurring subscriptions:</p>
+            <ul>
+              <li><strong>Everything in Monthly Pro Included Forever:</strong> Unlimited daily tasks, 500 MB file size limit, and 1,000 MB batch processing</li>
+              <li><strong>One-Time $50 USD Payment:</strong> No recurring monthly or annual charges—ideal for independent consultants and privacy-conscious power users</li>
+              <li><strong>All Future Tool Updates Included:</strong> Immediate access to new client-side WebAssembly utilities and priority support</li>
+            </ul>
+          </section>
+
+          <section aria-label="Feature Comparison Table">
+            <h2>Complete Plan Comparison: Guest vs. Free Account vs. Pro &amp; Lifetime</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Feature / Quota</th>
+                  <th>Guest (No Login)</th>
+                  <th>Free Account ($0)</th>
+                  <th>Pro ($2.49/mo) &amp; Lifetime ($50)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>22 Standard Local WebAssembly PDF Tools</td>
+                  <td>Included (100% Local)</td>
+                  <td>Included (100% Local)</td>
+                  <td>Included (100% Local)</td>
+                </tr>
+                <tr>
+                  <td>2 Opt-In Gemini AI &amp; OCR Tools (With Consent)</td>
+                  <td>Standard Quota</td>
+                  <td>Expanded Free Quota</td>
+                  <td>Priority High-Volume Quota</td>
+                </tr>
+                <tr>
+                  <td>Maximum Single File Size</td>
+                  <td>100 MB</td>
+                  <td>150 MB</td>
+                  <td>500 MB (1,000 MB Batch)</td>
+                </tr>
+                <tr>
+                  <td>Daily Task Limit</td>
+                  <td>5 tasks / day</td>
+                  <td>10 tasks / day</td>
+                  <td>Unlimited tasks / day</td>
+                </tr>
+                <tr>
+                  <td>Watermarks on Exported PDFs</td>
+                  <td>None</td>
+                  <td>None</td>
+                  <td>None</td>
+                </tr>
+                <tr>
+                  <td>Offline PWA Mode (Standard Tools)</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>Commercial Use &amp; Priority Support</td>
+                  <td>Community</td>
+                  <td>Standard</td>
+                  <td>Full Commercial + Priority Support</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section aria-label="Privacy Architecture Guarantee">
+            <h2>How Your Privacy Is Protected Across Every Plan</h2>
+            <p>Unlike cloud-heavy PDF suites that upload every file to remote servers, PDFMinty executes all 22 standard PDF tools directly inside your device's browser memory using WebAssembly (<code>@cantoo/pdf-lib</code> and <code>pdfjs-dist</code>). Whether you use the Free tier or Lifetime Pro, your tax returns, contracts, medical records, and financial statements never leave your computer or phone during standard operations. Our 2 opt-in AI tools (<a href="/ai-analyze-pdf/">AI Analyze PDF</a> and <a href="/ocr-pdf/">OCR PDF</a>) are strictly separated and require you to check an explicit consent box before sending extracted text or page images to Google Gemini.</p>
+          </section>
+
+          <section aria-label="Pricing Frequently Asked Questions">
+            <h2>Frequently Asked Questions About Pricing &amp; Billing</h2>
+            ${pricingFaqs.map((f) => `<div>\n              <h3>${f.q}</h3>\n              <p>${f.a}</p>\n            </div>`).join('\n            ')}
+          </section>
+
+          <p><a href="/sign-up/">Create a Free Account or Upgrade to Pro</a> • <a href="/sign-in/">Sign In to Your Account</a> • <a href="/">Explore All 24 Free PDF Tools</a> • <a href="/contact/">Contact Customer Support</a> for team and enterprise licensing inquiries.</p>
         </article>`;
 
   let pricingHtml = optimizedBase.replace("</head>", `${pricingHeadMeta}\n</head>`);
@@ -1245,6 +2039,7 @@ ${toolsListHtml}
   const homepageHead = `
   <title>PDFMinty — Free Privacy-First PDF Toolkit</title>
   <meta name="description" content="Free privacy-first PDF toolkit. Merge, split, protect, sign, OCR, and edit PDFs 100% in your browser. No uploads, no sign-up, complete confidentiality.">
+  <meta name="keywords" content="free pdf tools, merge pdf, split pdf, compress pdf, sign pdf, protect pdf, ocr pdf, privacy-first pdf toolkit, browser pdf editor, pdfminty">
   <link rel="canonical" href="${SITE_URL}/">
 ${homepageHreflangs}
   <meta property="og:type" content="website">
@@ -1259,7 +2054,9 @@ ${homepageHreflangs}
   <meta name="twitter:image" content="${SITE_URL}/og-image.png">
   <script type="application/ld+json">
   { "@context": "https://schema.org", "@type": "WebApplication",
+    "@id": "${SITE_URL}/#webapp",
     "name": "PDFMinty", "url": "${SITE_URL}/",
+    "inLanguage": "en",
     "description": "Free, privacy-first online PDF toolkit. Merge, split, protect, sign, rotate, watermark, and OCR PDFs entirely in your browser.",
     "applicationCategory": "UtilitiesApplication",
     "applicationSubCategory": "PDF Software",
@@ -1267,8 +2064,8 @@ ${homepageHreflangs}
     "browserRequirements": "Requires JavaScript. Requires HTML5.",
     "softwareVersion": "1.0.0",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
-    "author": { "@type": "Organization", "name": "PDFMinty", "url": "${SITE_URL}/" },
-    "publisher": { "@type": "Organization", "name": "PDFMinty", "logo": { "@type": "ImageObject", "url": "${SITE_URL}/logo-512.png", "width": 512, "height": 512 } },
+    "author": { "@id": "${SITE_URL}/#organization" },
+    "publisher": { "@id": "${SITE_URL}/#organization" },
     "image": { "@type": "ImageObject", "url": "${SITE_URL}/og-image.png", "width": 1200, "height": 630 },
     "featureList": [
       "Merge multiple PDF files", "Split PDF into separate pages", "Grayscale PDF for smaller size",
@@ -1286,6 +2083,7 @@ ${homepageHreflangs}
     "image": "${SITE_URL}/og-image.png",
     "description": "Privacy-first PDF toolkit with ${toolsCount} tools (22 client-side standard tools + 2 opt-in AI/OCR tools).",
     "foundingDate": "2025",
+    "sameAs": ["${PRIMARY_AUTHOR.github}"],
     "contactPoint": {
       "@type": "ContactPoint", "contactType": "customer support",
       "email": "support@pdfminty.com",
@@ -1298,6 +2096,7 @@ ${homepageHreflangs}
   { "@context": "https://schema.org", "@type": "WebSite",
     "@id": "${SITE_URL}/#website",
     "url": "${SITE_URL}/", "name": "PDFMinty",
+    "inLanguage": "en",
     "publisher": { "@id": "${SITE_URL}/#organization" },
     "potentialAction": {
       "@type": "SearchAction",
@@ -1749,19 +2548,10 @@ ${locData.faqs.map(faq => `    <h3>${faq.q}</h3>\n    <p>${faq.a}</p>`).join('\n
       "availability": "https://schema.org/InStock"
     },
     "author": {
-      "@type": "Organization",
-      "name": "PDFMinty",
-      "url": "${cleanSiteUrl}/"
+      "@id": "${cleanSiteUrl}/#organization"
     },
     "publisher": {
-      "@type": "Organization",
-      "name": "PDFMinty",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "${cleanSiteUrl}/logo-512.png",
-        "width": 512,
-        "height": 512
-      }
+      "@id": "${cleanSiteUrl}/#organization"
     },
     "image": {
       "@type": "ImageObject",
@@ -1779,7 +2569,6 @@ ${locData.faqs.map(faq => `    <h3>${faq.q}</h3>\n    <p>${faq.a}</p>`).join('\n
     "@id": "${cleanSiteUrl}/#organization",
     "name": "PDFMinty",
     "url": "${cleanSiteUrl}/",
-    "inLanguage": "${code}",
     "logo": {
       "@type": "ImageObject",
       "url": "${cleanSiteUrl}/logo-512.png",
@@ -1789,6 +2578,9 @@ ${locData.faqs.map(faq => `    <h3>${faq.q}</h3>\n    <p>${faq.a}</p>`).join('\n
     "image": "${cleanSiteUrl}/og-image.png",
     "description": ${JSON.stringify(locData.orgDesc)},
     "foundingDate": "2025",
+    "sameAs": [
+      "${PRIMARY_AUTHOR.github}"
+    ],
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer support",
@@ -1840,9 +2632,11 @@ ${locData.faqs.map(faq => `      {
   </script>
 `;
 
+    const euKeywords = `${locData.features.slice(0, 6).join(', ')}, PDFMinty`;
     const euHeadMeta = `
   <title>${locData.title}</title>
   <meta name="description" content="${locData.desc}">
+  <meta name="keywords" content="${euKeywords}">
   <link rel="canonical" href="${euCanonical}">
 ${hreflangLinks}
   <link rel="alternate" hreflang="x-default" href="${cleanSiteUrl}/">

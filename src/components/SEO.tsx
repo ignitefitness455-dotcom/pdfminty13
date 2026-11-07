@@ -94,13 +94,16 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
 
   // Per-tool og:image if declared in seo-data, else generic.
   const ogImage = item?.ogImage ? `${SITE_URL}${item.ogImage}` : `${SITE_URL}/og-image.png`;
-  const keywords = item?.keywords
-    ? Array.isArray(item.keywords)
-      ? item.keywords.join(', ')
-      : item.keywords
-    : item?.name
-      ? `${item.name.toLowerCase()}, ${item.slug.replace(/^(?:blog|compare)\//, '').replace(/-/g, ' ')}, pdf tools`
-      : 'pdf toolkit, client-side pdf editor, privacy pdf tools, local pdf tools, free browser pdf tools';
+  const keywords =
+    currentLocale !== DEFAULT_LOCALE
+      ? `${title.split('—')[0].split('|')[0].trim()}, ${t('footer.badges.privacyFirst', { ns: 'common', defaultValue: 'Privacy-First PDF' })}, PDFMinty`
+      : item?.keywords
+        ? Array.isArray(item.keywords)
+          ? item.keywords.join(', ')
+          : item.keywords
+        : item?.name
+          ? `${item.name.toLowerCase()}, ${item.slug.replace(/^(?:blog|compare)\//, '').replace(/-/g, ' ')}, pdf tools`
+          : 'pdf toolkit, client-side pdf editor, privacy pdf tools, local pdf tools, free browser pdf tools';
 
   return (
     <Helmet>

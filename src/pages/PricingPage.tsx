@@ -159,12 +159,12 @@ export const PricingPage: React.FC = () => {
       <Helmet>
         <title>
           {isBn
-            ? 'প্রাইসিং ও সাবস্ক্রিপশন — সাশ্রয়ী PDF টুলস | PDFMinty'
-            : 'Pricing Plans — Affordable Privacy-First PDF Tools | PDFMinty'}
+            ? 'প্রাইসিং ও সাবস্ক্রিপশন — $2.49/মাস Pro ও $50 লাইফটাইম ডিল | PDFMinty'
+            : 'Pricing Plans — $2.49/mo Pro & $50 Lifetime Deal | PDFMinty'}
         </title>
         <meta
           name="description"
-          content="Simple, affordable pricing for PDFMinty. 100% free core browser PDF tools, plus upgrades for 500MB batch processing, Gemini 2.5 AI analysis, and batch OCR."
+          content="Simple, transparent USD pricing for PDFMinty. Free forever core tier (5 guest / 10 free account tasks/day), $2.49/month Pro plan, and $50 one-time Lifetime Pro access with 500MB limits."
         />
         <link rel="canonical" href="https://pdfminty.com/pricing/" />
       </Helmet>
@@ -182,8 +182,8 @@ export const PricingPage: React.FC = () => {
         </h1>
         <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
           {isBn
-            ? 'সবগুলো 24টি ব্রাউজার PDF টুল সম্পূর্ণ বিনামূল্যে ব্যবহার করুন। 500MB ব্যাচ প্রসেসিং, Gemini AI ডকুমেন্ট অ্যানালাইসিস এবং OCR-এর জন্য সুলভ আপগ্রেড নিন।'
-            : 'Start 100% free with all 24 browser PDF tools. Upgrade only if you need large 500MB batch processing, Gemini AI document analysis, and batch OCR.'}
+            ? 'সবগুলো 22টি ক্লায়েন্ট-সাইড স্ট্যান্ডার্ড ব্রাউজার PDF টুল সম্পূর্ণ বিনামূল্যে ব্যবহার করুন। 500MB ব্যাচ প্রসেসিং, অপ্ট-ইন Gemini AI ডকুমেন্ট অ্যানালাইসিস এবং OCR-এর জন্য সুলভ আপগ্রেড নিন।'
+            : 'Start 100% free with all 22 client-side browser PDF tools (plus 2 opt-in Gemini AI tools). Upgrade only if you need large 500MB batch processing, 50 daily AI queries, and batch OCR.'}
         </p>
 
         {/* Currency Indicator & Switcher */}
@@ -285,7 +285,11 @@ export const PricingPage: React.FC = () => {
             <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{isBn ? 'সবগুলো 24টি ব্রাউজার PDF কোর টুল' : 'All 24 in-browser core PDF tools'}</span>
+                <span>
+                  {isBn
+                    ? 'সবগুলো 22টি ক্লায়েন্ট-সাইড স্ট্যান্ডার্ড ব্রাউজার PDF টুল'
+                    : 'All 22 client-side standard PDF tools (100% local)'}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -481,8 +485,8 @@ export const PricingPage: React.FC = () => {
             )}
             <p className="text-[11px] text-center text-slate-400 mt-2">
               {isBn
-                ? '14 দিনের 100% মানি-ব্যাক গ্যারান্টি • যেকোনো সময় বাতিলযোগ্য'
-                : '14-day 100% money-back guarantee • Cancel anytime'}
+                ? 'তাৎক্ষণিক প্রো অ্যাক্টিভেশন • যেকোনো সময় বাতিলযোগ্য'
+                : 'Instant Pro activation • Cancel anytime with 1 click'}
             </p>
           </div>
         </div>
@@ -567,32 +571,22 @@ export const PricingPage: React.FC = () => {
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-            {user?.plan === 'lifetime' ? (
-              <div
-                className="w-full py-3 px-4 rounded-xl font-black text-sm bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2"
-                id="pricing-lifetime-active-badge"
-              >
-                <Sparkles className="w-4 h-4 fill-amber-500 text-amber-500" />
-                <span>{isBn ? 'লাইফটাইম সক্রিয়' : 'Lifetime Active'}</span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleSelectPlan('Lifetime')}
-                disabled={isProcessingCheckout}
-                id="pricing-upgrade-lifetime-btn"
-                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-              >
-                <span>
-                  {isProcessingCheckout
-                    ? 'Redirecting to Checkout...'
-                    : isBn
-                      ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
-                      : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => handleSelectPlan('Lifetime')}
+              disabled={isProcessingCheckout}
+              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              id="pricing-upgrade-lifetime-btn"
+            >
+              <span>
+                {isProcessingCheckout
+                  ? 'Redirecting to Checkout...'
+                  : isBn
+                    ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
+                    : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
@@ -607,7 +601,11 @@ export const PricingPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <HeartHandshake className="w-5 h-5 text-emerald-500" />
-          <span>{isBn ? '14 দিনের মানি-ব্যাক গ্যারান্টি' : '14-Day Money-Back Guarantee'}</span>
+          <span>
+            {isBn
+              ? 'নিরাপদ এনক্রিপ্টেড পেমেন্ট • জিরো হিডেন চার্জ'
+              : '256-Bit Encrypted Checkout • Zero Hidden Fees'}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Clock className="w-5 h-5 text-emerald-500" />
@@ -644,7 +642,9 @@ export const PricingPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               <tr>
                 <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
-                  {isBn ? '24টি স্ট্যান্ডার্ড PDF টুলস' : '24 Standard PDF Tools'}
+                  {isBn
+                    ? '22টি ক্লায়েন্ট-সাইড স্ট্যান্ডার্ড PDF টুলস'
+                    : 'All 22 Client-Side Standard PDF Tools'}
                 </td>
                 <td className="p-4 text-emerald-600 font-bold">&check; Included</td>
                 <td className="p-4 text-emerald-600 font-bold">&check; Included</td>
@@ -799,8 +799,8 @@ export const PricingPage: React.FC = () => {
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'হ্যাঁ, অবশ্যই! আমাদের 24টি মূল PDF টুল (মার্জ, স্প্লিট, রোটেট, ওয়াটারমার্ক, ফ্ল্যাটেন, পাসওয়ার্ড লক ও আনলক) আজীবন 100% ফ্রি থাকবে এবং কোনো রেজিস্ট্রেশনের দরকার হবে না।'
-                : 'Yes, absolutely! All 24 standard PDF tools (merging, splitting, rotating, watermarking, flattening, protecting, unlocking) will remain 100% free with zero registration required.'}
+                ? 'হ্যাঁ, অবশ্যই! আমাদের 22টি ক্লায়েন্ট-সাইড স্ট্যান্ডার্ড PDF টুল (মার্জ, স্প্লিট, রোটেট, ওয়াটারমার্ক, ফ্ল্যাটেন, পাসওয়ার্ড লক ও আনলক) আজীবন 100% ফ্রি থাকবে এবং কোনো রেজিস্ট্রেশনের দরকার হবে না।'
+                : 'Yes, absolutely! All 22 client-side standard PDF tools (merging, splitting, rotating, watermarking, flattening, protecting, unlocking) will remain 100% free with zero registration required.'}
             </p>
           </div>
 
@@ -820,13 +820,13 @@ export const PricingPage: React.FC = () => {
           <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
               {isBn
-                ? '14 দিনের মানি-ব্যাক গ্যারান্টি কীভাবে কাজ করে?'
-                : 'How does the 14-day money-back guarantee work?'}
+                ? 'সাবস্ক্রিপশন ম্যানেজমেন্ট ও লাইফটাইম প্ল্যান কীভাবে কাজ করে?'
+                : 'How do subscription management and the Lifetime Deal work?'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'যেকোনো কারণে সেবা পছন্দ না হলে ক্রয়ের 14 দিনের মধ্যে support@pdfminty.com এ যোগাযোগ করলে কোনো শর্ত ছাড়াই সম্পূর্ণ অর্থ ফেরত দেওয়া হবে।'
-                : 'If for any reason you are not completely satisfied with PDFMinty Pro, contact us at support@pdfminty.com within 14 days of purchase and we will issue an immediate, full refund with no questions asked.'}
+                ? 'পেমেন্ট সম্পন্ন হওয়ার সাথে সাথেই আপনার অ্যাকাউন্টে স্বয়ংক্রিয়ভাবে প্রো অ্যাক্সেস চালু হয়ে যাবে। মাসিক সাবস্ক্রিপশন যেকোনো সময় আপনার ড্যাশবোর্ড থেকে ১-ক্লিকে বাতিল করতে পারবেন, আর লাইফটাইম ডিলে মাত্র একবার পেমেন্ট করলেই আজীবন সব প্রো ফিচার ও ভবিষ্যৎ আপডেট উপভোগ করতে পারবেন।'
+                : 'Your Pro access activates automatically the moment checkout completes. Monthly subscriptions can be cancelled anytime in one click from your dashboard with zero hidden fees, while the Lifetime Deal unlocks permanent Pro access and all future tool updates with a single one-time payment.'}
             </p>
           </div>
         </div>
@@ -903,7 +903,7 @@ export const PricingPage: React.FC = () => {
               </button>
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>256-bit SSL Encrypted • 14-day refund guarantee</span>
+                <span>256-bit SSL Encrypted • Instant Pro Activation</span>
               </div>
             </div>
           </div>

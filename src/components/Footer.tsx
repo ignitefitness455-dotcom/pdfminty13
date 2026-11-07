@@ -26,6 +26,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
   const activeLocale: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(rawLang)
     ? (rawLang as SupportedLocale)
     : DEFAULT_LOCALE;
+  const homePath = getLocalizedPath('', activeLocale);
   const mergePath = getLocalizedPath('merge-pdf', activeLocale);
 
   return (
@@ -35,18 +36,22 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Col 1: Brand & Security Statement */}
           <div className="space-y-4 md:col-span-1">
-            <div className="flex items-center gap-2.5">
+            <Link
+              to={homePath}
+              aria-label="PDFMinty home"
+              className="inline-flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl"
+            >
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 p-0.5 shadow-sm shadow-emerald-500/20 flex items-center justify-center overflow-hidden">
                 <img
                   src="/logo.svg"
-                  alt="PdfMinty Logo"
+                  alt="PDFMinty"
                   className="w-full h-full object-contain p-0.5"
                 />
               </div>
-              <span className="font-extrabold text-lg text-slate-900 dark:text-white">
+              <span className="font-extrabold text-lg text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                 {t('header.siteName', { defaultValue: 'PdfMinty' })}
               </span>
-            </div>
+            </Link>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
               {t('footer.brandDescription', {
                 defaultValue:

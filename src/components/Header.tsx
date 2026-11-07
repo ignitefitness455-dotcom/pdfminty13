@@ -55,6 +55,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
           {/* Zone 1: Brand Wordmark & Monogram */}
           <Link
             to={homePath}
+            aria-label="PDFMinty home"
             className="flex items-center gap-2.5 shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl p-1 -ml-1 transition-all"
             id="header-logo-link"
           >
@@ -62,7 +63,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
               {logoLoaded ? (
                 <img
                   src="/logo.svg"
-                  alt="PdfMinty Logo"
+                  alt="PDFMinty"
                   width="36"
                   height="36"
                   className="w-full h-full object-contain p-0.5"

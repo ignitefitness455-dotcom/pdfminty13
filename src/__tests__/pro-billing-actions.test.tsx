@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   buildLemonSqueezyCheckoutUrl,
   LEMON_SQUEEZY_CHECKOUT_URL,
+  LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL,
   type UpgradeToProOptions,
 } from '../contexts/AuthContext';
 import { DashboardPage } from '../pages/DashboardPage';
@@ -83,12 +84,19 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
     mockUpgradeToPro.mockResolvedValue(undefined);
   });
 
-  it('builds Lemon Squeezy checkout URL with uid, email, and plan metadata without test flags', () => {
+  it('builds Lemon Squeezy checkout URL with uid, email, and plan metadata without test flags for both Monthly ($2.49) and Lifetime ($50)', () => {
+    expect(LEMON_SQUEEZY_CHECKOUT_URL).toBe(
+      'https://checkout.pdfminty.com/checkout/buy/0deca708-5914-4536-8742-ce0bca45e338'
+    );
+    expect(LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL).toBe(
+      'https://checkout.pdfminty.com/checkout/buy/4584e207-22ab-49c9-a29f-a09a2e76c417'
+    );
+
     const monthlyUrl = new URL(
       buildLemonSqueezyCheckoutUrl('user_abc', 'owner@pdfminty.com', 'monthly')
     );
     expect(monthlyUrl.origin + monthlyUrl.pathname).toBe(
-      new URL(LEMON_SQUEEZY_CHECKOUT_URL).origin + new URL(LEMON_SQUEEZY_CHECKOUT_URL).pathname
+      'https://checkout.pdfminty.com/checkout/buy/0deca708-5914-4536-8742-ce0bca45e338'
     );
     expect(monthlyUrl.searchParams.get('checkout[custom][uid]')).toBe('user_abc');
     expect(monthlyUrl.searchParams.get('checkout[custom][plan]')).toBe('monthly');
@@ -99,7 +107,12 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
     const lifetimeUrl = new URL(
       buildLemonSqueezyCheckoutUrl('user_abc', 'owner@pdfminty.com', 'lifetime')
     );
+    expect(lifetimeUrl.origin + lifetimeUrl.pathname).toBe(
+      'https://checkout.pdfminty.com/checkout/buy/4584e207-22ab-49c9-a29f-a09a2e76c417'
+    );
+    expect(lifetimeUrl.searchParams.get('checkout[custom][uid]')).toBe('user_abc');
     expect(lifetimeUrl.searchParams.get('checkout[custom][plan]')).toBe('lifetime');
+    expect(lifetimeUrl.searchParams.get('checkout[email]')).toBe('owner@pdfminty.com');
   });
 
   it('executes Confirm Renewal, Confirm Lifetime ($50), and Confirm Cancel on DashboardPage when user is already Pro', async () => {
@@ -156,7 +169,7 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
     expect(mockOpenBillingPortal).toHaveBeenCalledTimes(1);
   });
 
-  it('allows an active Monthly Pro user to purchase the Lifetime Deal ($50) on PricingPage', async () => {
+  it('allows an active Monthly Pro user to purchase the Lifetime Deal ($50) on PricingPage and displays no money-back guarantee claims', async () => {
     render(
       <HelmetProvider>
         <MemoryRouter>
@@ -164,6 +177,10 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
         </MemoryRouter>
       </HelmetProvider>
     );
+
+    expect(screen.queryByText(/money-back/i)).toBeNull();
+    expect(screen.queryByText(/14-day/i)).toBeNull();
+    expect(screen.getByText(/256-Bit Encrypted Checkout/i)).toBeInTheDocument();
 
     const lifetimeButton = screen.getByRole('button', { name: /Get Lifetime Deal/i });
     fireEvent.click(lifetimeButton);

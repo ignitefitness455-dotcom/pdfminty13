@@ -1,6 +1,10 @@
 # Robots.txt for PDFMinty (https://pdfminty.com)
 User-agent: *
 Allow: /
+Allow: /assets/
+Allow: /cmaps/
+Allow: /standard_fonts/
+Allow: /cdn-cgi/
 Allow: /ads.txt
 Allow: /fonts/
 Allow: /icons/
@@ -13,7 +17,6 @@ Allow: /*.ico
 Allow: /llms.txt
 Allow: /llms-full.txt
 Disallow: /api/
-Disallow: /cdn-cgi/
 Disallow: /_internal/
 Disallow: /graphql
 
@@ -21,86 +24,164 @@ Disallow: /graphql
 User-agent: Mediapartners-Google
 Allow: /
 Allow: /ads.txt
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Google-Display-Ads-Bot
 Allow: /
 Allow: /ads.txt
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Google-adstxt
 Allow: /
 Allow: /ads.txt
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 # Search Engine Crawlers
 User-agent: Googlebot
 Allow: /
+Allow: /assets/
+Allow: /cdn-cgi/
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Googlebot-Image
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Bingbot
 Allow: /
+Allow: /assets/
+Allow: /cdn-cgi/
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Applebot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Yandex
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Baiduspider
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 # AI Assistants & LLM Crawlers
 User-agent: GPTBot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Claude-Web
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Anthropic-AI
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Meta-ExternalAgent
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Meta-ExternalFetcher
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Bytespider
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: CCBot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: cohere-ai
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 User-agent: Diffbot
 Allow: /
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
 
 # XML Sitemaps & AI Index
 Sitemap: https://pdfminty.com/sitemap.xml
 Sitemap: https://pdfminty.com/sitemap-tools.xml
 Sitemap: https://pdfminty.com/sitemap-blog.xml
 Sitemap: https://pdfminty.com/sitemap-pages.xml
-

@@ -44,7 +44,7 @@ const envBillingPortalUrl =
 
 export const LEMON_SQUEEZY_CHECKOUT_URL =
   envCheckoutUrl ||
-  'https://pdfminty.lemonsqueezy.com/checkout/buy/6cc92d05-f59d-4a1b-9d04-abcb89f50da6';
+  'https://checkout.pdfminty.com/checkout/buy/0deca708-5914-4536-8742-ce0bca45e338';
 
 export const LEMON_SQUEEZY_CHECKOUT_PRO_MONTHLY =
   envMonthlyCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
@@ -53,12 +53,13 @@ export const LEMON_SQUEEZY_CHECKOUT_PRO_ANNUAL =
   envAnnualCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
 
 export const LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL =
-  envLifetimeCheckoutUrl || LEMON_SQUEEZY_CHECKOUT_URL;
+  envLifetimeCheckoutUrl ||
+  'https://checkout.pdfminty.com/checkout/buy/4584e207-22ab-49c9-a29f-a09a2e76c417';
 
 export const LEMON_SQUEEZY_CHECKOUT_LIFETIME = LEMON_SQUEEZY_LIFETIME_CHECKOUT_URL;
 
 export const LEMON_SQUEEZY_BILLING_PORTAL_URL =
-  envBillingPortalUrl || 'https://pdfminty.lemonsqueezy.com/billing';
+  envBillingPortalUrl || 'https://checkout.pdfminty.com/billing';
 
 export function buildLemonSqueezyCheckoutUrl(
   uid: string,

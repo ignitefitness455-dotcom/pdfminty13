@@ -150,6 +150,7 @@ export const Breadcrumbs: React.FC = () => {
 
 export default function InternalSEO() {
   const location = useLocation();
+  const { t } = useTranslation('common');
   const [fullTools, setFullTools] = useState<ToolSEOInfo[] | null>(getCachedFullTools);
 
   const nonce = React.useMemo(() => {
@@ -233,10 +234,37 @@ export default function InternalSEO() {
       list.push(
         {
           '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          '@id': `${homeUrl}#webapp`,
+          name: SITE_NAME,
+          url: homeUrl,
+          inLanguage: currentLocale,
+          description:
+            t(
+              'seo.defaultDescription',
+              'Free, privacy-first online PDF toolkit. Merge, split, protect, sign, rotate, watermark, and OCR PDFs entirely in your browser.'
+            ),
+          applicationCategory: 'UtilitiesApplication',
+          applicationSubCategory: 'PDF Software',
+          operatingSystem: 'Any',
+          browserRequirements: 'Requires JavaScript. Requires HTML5.',
+          softwareVersion: '1.0.0',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+          author: { '@id': `${SITE_URL}/#organization` },
+          publisher: { '@id': `${SITE_URL}/#organization` },
+        },
+        {
+          '@context': 'https://schema.org',
           '@type': 'WebSite',
           '@id': `${SITE_URL}/#website`,
           name: SITE_NAME,
           url: homeUrl,
+          inLanguage: currentLocale,
           publisher: { '@id': `${SITE_URL}/#organization` },
         },
         {
@@ -245,11 +273,18 @@ export default function InternalSEO() {
           '@id': `${SITE_URL}/#organization`,
           name: SITE_NAME,
           url: `${SITE_URL}/`,
-          logo: `${SITE_URL}/logo-192.png`,
+          logo: {
+            '@type': 'ImageObject',
+            url: `${SITE_URL}/logo-512.png`,
+            width: 512,
+            height: 512,
+          },
+          sameAs: [PRIMARY_AUTHOR.github],
           contactPoint: {
             '@type': 'ContactPoint',
             email: 'support@pdfminty.com',
             contactType: 'customer support',
+            url: `${SITE_URL}/contact/`,
           },
         }
         // FAQPage is provided in static HTML by homepageFaqSchema
@@ -267,7 +302,14 @@ export default function InternalSEO() {
           publisher: {
             '@type': 'Organization',
             name: SITE_NAME,
-            logo: `${SITE_URL}/logo-192.png`,
+            url: `${SITE_URL}/`,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${SITE_URL}/logo-512.png`,
+              width: 512,
+              height: 512,
+            },
+            sameAs: [PRIMARY_AUTHOR.github],
           },
         },
         {
@@ -302,14 +344,25 @@ export default function InternalSEO() {
           : `${SITE_URL}/${currentLocale}/${seoInfo.slug}/`;
 
       if (seoInfo.type === 'tool') {
+        const localizedToolName =
+          currentLocale !== DEFAULT_LOCALE
+            ? t(`tools.${seoInfo.slug}.name`, seoInfo.name)
+            : seoInfo.name;
+        const localizedToolDesc =
+          currentLocale !== DEFAULT_LOCALE
+            ? t(`tools.${seoInfo.slug}.desc`, seoInfo.shortDescription || seoInfo.metaDescription)
+            : seoInfo.shortDescription || seoInfo.metaDescription;
+
         list.push({
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
-          name: `PdfMinty - ${seoInfo.name}`,
-          description: seoInfo.shortDescription || seoInfo.metaDescription,
+          name: `PDFMinty - ${localizedToolName}`,
+          description: localizedToolDesc,
           url: pageCanonicalUrl,
+          inLanguage: currentLocale,
           applicationCategory: 'UtilitiesApplication',
-          operatingSystem: 'All',
+          applicationSubCategory: 'PDF Software',
+          operatingSystem: 'Any',
           browserRequirements: 'Requires HTML5, WebAssembly',
           offers: {
             '@type': 'Offer',
@@ -317,12 +370,28 @@ export default function InternalSEO() {
             priceCurrency: 'USD',
             availability: 'https://schema.org/InStock',
           },
+          author: {
+            '@type': 'Organization',
+            name: SITE_NAME,
+            url: `${SITE_URL}/`,
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: SITE_NAME,
+            url: `${SITE_URL}/`,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${SITE_URL}/logo-512.png`,
+              width: 512,
+              height: 512,
+            },
+          },
           featureList: [
-            '100% client-side processing for standard tools',
-            'Zero file uploads for our standard PDF tools',
-            'The AI Analyze and OCR PDF tools only send extracted text or page images to Google Gemini after you explicitly check a consent box',
-            'Free to use',
-            'No registration required',
+            '100% client-side processing for our 22 standard PDF tools',
+            'Zero file uploads for standard browser PDF operations',
+            'Opt-in AI Analyze and OCR PDF tools only send extracted text or page images to Google Gemini after explicit user consent',
+            'Free tier available (5 tasks/day for guests up to 100MB, 10 tasks/day for free accounts up to 150MB)',
+            'No mandatory registration required',
           ],
         });
 
@@ -334,6 +403,7 @@ export default function InternalSEO() {
             totalTime: seoInfo.howTo.totalTime,
             step: seoInfo.howTo.steps.map((stepText, index) => ({
               '@type': 'HowToStep',
+              position: index + 1,
               url: `${pageCanonicalUrl}#step${index + 1}`,
               name: stepText,
               itemListElement: [{ '@type': 'HowToDirection', text: stepText }],
@@ -348,13 +418,13 @@ export default function InternalSEO() {
             {
               '@type': 'ListItem',
               position: 1,
-              name: 'Home',
+              name: t('header.nav.home', 'Home'),
               item: homeUrl,
             },
             {
               '@type': 'ListItem',
               position: 2,
-              name: seoInfo.name,
+              name: localizedToolName,
               item: pageCanonicalUrl,
             },
           ],
@@ -386,6 +456,13 @@ export default function InternalSEO() {
               '@type': 'Organization',
               name: SITE_NAME,
               url: `${SITE_URL}/`,
+              logo: {
+                '@type': 'ImageObject',
+                url: `${SITE_URL}/logo-512.png`,
+                width: 512,
+                height: 512,
+              },
+              sameAs: [PRIMARY_AUTHOR.github],
             },
           },
           {
@@ -419,6 +496,13 @@ export default function InternalSEO() {
               '@type': 'Organization',
               name: SITE_NAME,
               url: `${SITE_URL}/`,
+              logo: {
+                '@type': 'ImageObject',
+                url: `${SITE_URL}/logo-512.png`,
+                width: 512,
+                height: 512,
+              },
+              sameAs: [PRIMARY_AUTHOR.github],
             },
           },
           {
@@ -487,10 +571,14 @@ export default function InternalSEO() {
           publisher: {
             '@type': 'Organization',
             name: SITE_NAME,
+            url: `${SITE_URL}/`,
             logo: {
               '@type': 'ImageObject',
-              url: `${SITE_URL}/logo-192.png`,
+              url: `${SITE_URL}/logo-512.png`,
+              width: 512,
+              height: 512,
             },
+            sameAs: [PRIMARY_AUTHOR.github],
           },
           image: {
             '@type': 'ImageObject',
@@ -547,7 +635,7 @@ export default function InternalSEO() {
     }
 
     return list;
-  }, [baseSlug, currentLocale, fullTools]);
+  }, [baseSlug, currentLocale, fullTools, t]);
 
   // DUPLICATION GUARD:
   // Check if static HTML already contains JSON-LD blocks with the same @type

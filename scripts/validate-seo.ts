@@ -455,9 +455,193 @@ try {
   hasError = true;
 }
 
+// 8. Validate H1 vs MetaTitle uniqueness and descriptive anchor texts in TOOLS
+try {
+  let duplicateTitleH1Count = 0;
+  let nakedAnchorCount = 0;
+  const anchorRegex = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+
+  TOOLS.forEach((item) => {
+    if (item.metaTitle && item.h1 && item.metaTitle.trim() === item.h1.trim()) {
+      console.error(`❌ Duplicate metaTitle and h1 detected in "${item.slug}": "${item.h1}"`);
+      hasError = true;
+      duplicateTitleH1Count++;
+    }
+
+    const body = item.longFormBody || '';
+    let match: RegExpExecArray | null;
+    while ((match = anchorRegex.exec(body)) !== null) {
+      const innerText = match[2].replace(/<[^>]+>/g, '').trim();
+      if (!innerText || /^https?:\/\//i.test(innerText)) {
+        console.error(
+          `❌ Empty or naked URL anchor text in "${item.slug}": <a href="${match[1]}">${innerText}</a>`
+        );
+        hasError = true;
+        nakedAnchorCount++;
+      }
+    }
+  });
+
+  console.log(
+    `✅ Title/H1 uniqueness & descriptive anchor text audited across ${TOOLS.length} items (Duplicate H1/Title: ${duplicateTitleH1Count}, Naked/Empty Anchors: ${nakedAnchorCount}).`
+  );
+} catch (e) {
+  console.error('Error checking H1/Title uniqueness and anchor texts:', e);
+  hasError = true;
+}
+
+// 9. Validate Pre-rendered Static HTML & JSON-LD Schemas in dist/ (when dist/ exists)
+try {
+  const distDir = path.join(__dirname, '../dist');
+  if (fs.existsSync(distDir)) {
+    const htmlFiles: string[] = [];
+    const walkDir = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walkDir(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith('.html') && entry.name !== '404.html') {
+          htmlFiles.push(fullPath);
+        }
+      }
+    };
+    walkDir(distDir);
+
+    let jsonLdBlocksChecked = 0;
+    let jsonLdErrors = 0;
+    let langMismatchErrors = 0;
+
+    const validateSchemaNode = (node: Record<string, unknown>, fileRel: string) => {
+      const type = node['@type'];
+      if (type === 'WebApplication' || type === 'SoftwareApplication') {
+        const name = node['name'];
+        const url = node['url'];
+        const appCat = node['applicationCategory'];
+        const os = node['operatingSystem'];
+        const offers = node['offers'] as Record<string, unknown> | undefined;
+
+        if (!name || !url || !appCat || !os) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: missing required property (name, url, applicationCategory, or operatingSystem)`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (
+          !offers ||
+          offers['@type'] !== 'Offer' ||
+          offers['price'] === undefined ||
+          !offers['priceCurrency']
+        ) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: missing valid offers (@type: Offer, price, priceCurrency)`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (node['aggregateRating'] || node['review']) {
+          console.error(
+            `❌ Policy Violation in ${fileRel}: ${String(type)} must not contain fabricated aggregateRating or review`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+      }
+
+      if (type === 'Organization') {
+        if ('inLanguage' in node) {
+          console.error(
+            `❌ Invalid Organization in ${fileRel}: "inLanguage" is not a valid schema.org/Organization property`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        // Only require full Organization properties when not a pure @id reference
+        if (Object.keys(node).length > 2 || !node['@id']) {
+          if (!node['name'] || !node['url'] || !node['logo']) {
+            console.error(
+              `❌ Incomplete Organization in ${fileRel}: missing name, url, or logo`
+            );
+            hasError = true;
+            jsonLdErrors++;
+          }
+        }
+      }
+    };
+
+    const scriptRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+
+    for (const filePath of htmlFiles) {
+      const fileRel = path.relative(distDir, filePath);
+      const html = fs.readFileSync(filePath, 'utf-8');
+
+      // Validate <html lang="..."> matches self-referencing hreflang if hreflang is present
+      const htmlLangMatch = html.match(/<html[^>]*\slang=["']([^"']+)["']/i);
+      const canonicalMatch = html.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
+      if (htmlLangMatch && canonicalMatch) {
+        const htmlLang = htmlLangMatch[1];
+        const canonicalUrl = canonicalMatch[1];
+        const selfHreflangRegex = new RegExp(
+          `<link\\s+rel=["']alternate["']\\s+hreflang=["']([^"']+)["']\\s+href=["']${canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`,
+          'i'
+        );
+        const allHreflangs = [
+          ...html.matchAll(
+            /<link\s+rel=["']alternate["']\s+hreflang=["']([^"']+)["']\s+href=["']([^"']+)["']/gi
+          ),
+        ];
+        if (allHreflangs.length > 0) {
+          const matchingLangs = allHreflangs
+            .filter((m) => m[2] === canonicalUrl && m[1] !== 'x-default')
+            .map((m) => m[1]);
+          if (matchingLangs.length === 0 || !matchingLangs.includes(htmlLang)) {
+            console.error(
+              `❌ Hreflang / <html lang> mismatch in ${fileRel}: <html lang="${htmlLang}"> vs self-hreflang [${matchingLangs.join(', ')}]`
+            );
+            hasError = true;
+            langMismatchErrors++;
+          }
+        }
+        void selfHreflangRegex;
+      }
+
+      // Validate all JSON-LD blocks
+      let match: RegExpExecArray | null;
+      while ((match = scriptRegex.exec(html)) !== null) {
+        jsonLdBlocksChecked++;
+        const rawJson = match[1].trim();
+        try {
+          const parsed = JSON.parse(rawJson) as Record<string, unknown>;
+          if (Array.isArray(parsed['@graph'])) {
+            for (const item of parsed['@graph']) {
+              if (item && typeof item === 'object') {
+                validateSchemaNode(item as Record<string, unknown>, fileRel);
+              }
+            }
+          } else if (parsed && typeof parsed === 'object') {
+            validateSchemaNode(parsed, fileRel);
+          }
+        } catch (err) {
+          console.error(`❌ Malformed JSON-LD in ${fileRel}:`, err);
+          hasError = true;
+          jsonLdErrors++;
+        }
+      }
+    }
+
+    console.log(
+      `✅ Audited ${htmlFiles.length} built HTML files in dist/: ${jsonLdBlocksChecked} JSON-LD blocks validated (Schema errors: ${jsonLdErrors}, Lang/Hreflang mismatches: ${langMismatchErrors}).`
+    );
+  }
+} catch (e) {
+  console.error('Error validating dist/ HTML files:', e);
+  hasError = true;
+}
+
 if (hasError) {
   console.error('\n⚠️ SEO Validation Failed!');
   process.exit(1);
 } else {
   console.log('\n🚀 ALL ARCHITECTURAL SEO & CANONICAL AUDIT CHECKS PASSED!');
 }
+
