@@ -345,7 +345,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               }}
               className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
             >
-              <span>{isBn ? 'সবগুলো দেখুন' : 'All 23 Tools'}</span>
+              <span>{isBn ? 'সবগুলো দেখুন (২৪টি টুলস)' : 'All 24 Tools'}</span>
               <ChevronRight className="w-3 h-3" />
             </Link>
           </div>

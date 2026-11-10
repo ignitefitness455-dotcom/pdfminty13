@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
               {t('footer.brandDescription', {
                 defaultValue:
-                  'Free, privacy-first PDF utility suite. Core document tools run 100% locally in your browser without uploads. AI and OCR features utilize secure, encrypted API processing.',
+                  'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis.',
               })}
             </p>
             <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
@@ -246,6 +246,11 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                 </Link>
               </li>
               <li>
+                <a href="/sitemap.xml" className="hover:text-emerald-500 transition-colors">
+                  XML Sitemap
+                </a>
+              </li>
+              <li>
                 <button
                   type="button"
                   onClick={() => {
@@ -324,9 +329,11 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
           <div className="flex flex-wrap items-center gap-4 text-on-surface-variant/80 font-medium">
             <span>{t('footer.badges.clientSide', { defaultValue: 'Client-side PDF Suite' })}</span>
             <span>•</span>
-            <span>{t('footer.badges.zeroLogs', { defaultValue: 'Zero Data Logs' })}</span>
+            <span>
+              {t('footer.badges.zeroLogs', { defaultValue: 'Zero File Uploads (Standard Tools)' })}
+            </span>
             <span>•</span>
-            <span>{t('footer.badges.openFree', { defaultValue: 'Open & Free' })}</span>
+            <span>{t('footer.badges.openFree', { defaultValue: 'Free Forever Core Plan' })}</span>
           </div>
         </div>
       </div>

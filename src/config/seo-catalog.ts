@@ -15,11 +15,11 @@ export const HOMEPAGE_META = {
 export const FAQS = [
   {
     "q": "How does PdfMinty process my PDF files privately?",
-    "a": "PdfMinty executes our 22 standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
+    "a": "PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. Standard PDF tools (merging, splitting, compressing, protecting, editing, signing) execute 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
   },
   {
     "q": "Is PdfMinty free to use?",
-    "a": "Yes — PDFMinty offers a free tier across all 24 tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Pro ($2.49/month) and Lifetime ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and higher AI/OCR quotas."
+    "a": "Yes — PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are available for users who need unlimited daily usage, larger file limits, priority AI/OCR quotas, commercial usage rights, and priority support. Guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Monthly Pro costs $2.49/month and Lifetime Pro costs $50 one time."
   },
   {
     "q": "Do my files ever leave my computer or mobile device?",

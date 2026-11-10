@@ -181,6 +181,28 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
     expect(screen.queryByText(/money-back/i)).toBeNull();
     expect(screen.queryByText(/14-day/i)).toBeNull();
     expect(screen.getByText(/256-Bit Encrypted Checkout/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        /PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis/i
+      ).length
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText(
+        /PdfMinty offers a Free Forever plan for core PDF tools\. Optional Monthly Pro and Lifetime Pro plans are available/i
+      ).length
+    ).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Last Updated: November 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Is the Free Forever plan really free\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. What is included in Pro\?/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/3\. What is the difference between Monthly Pro and Lifetime Pro\?/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/4\. Can users cancel Monthly Pro\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/5\. Are standard PDF files uploaded\?/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/6\. Which AI\/OCR data is sent to Google Gemini\?/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/7\. What does Lifetime access mean\?/i)).toBeInTheDocument();
 
     const lifetimeButton = screen.getByRole('button', { name: /Get Lifetime Deal/i });
     fireEvent.click(lifetimeButton);
@@ -193,3 +215,4 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
     });
   });
 });
+

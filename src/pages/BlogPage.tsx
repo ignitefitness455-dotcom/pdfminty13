@@ -529,10 +529,10 @@ export const BlogPage: React.FC = () => {
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             {isDefaultLocale
-              ? 'All 20+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side JavaScript and Web Workers with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).'
+              ? 'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are available for users who need unlimited daily usage, larger file limits, priority AI/OCR quotas, commercial usage rights, and priority support.'
               : t('blog.privacyCalloutDesc', {
                   defaultValue:
-                    'All 20+ standard PDFMinty tools process your documents 100% locally inside your browser memory using client-side JavaScript and Web Workers with zero cloud uploads (opt-in AI Analyze and OCR tools operate only upon explicit user consent).',
+                    'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are available for users who need unlimited daily usage, larger file limits, priority AI/OCR quotas, commercial usage rights, and priority support.',
                 })}
           </p>
         </div>

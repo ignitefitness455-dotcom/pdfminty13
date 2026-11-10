@@ -190,7 +190,7 @@ export const ConsentManager: React.FC = () => {
                 <p className="text-xs text-on-surface-variant leading-relaxed">
                   {t('consentBanner.description', {
                     defaultValue:
-                      'PdfMinty processes files 100% locally in your web browser with zero server uploads for core tools. With your permission, we and our partners use cookies and device identifiers to measure anonymous site usage and display relevant advertisements via Google Consent Mode v2.',
+                      'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. With your permission, we and our partners use cookies and device identifiers to measure anonymous site usage and display relevant advertisements via Google Consent Mode v2.',
                   })}
                 </p>
                 <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/80 pt-0.5">

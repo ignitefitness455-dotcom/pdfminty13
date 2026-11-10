@@ -185,8 +185,20 @@ export const AdobeAlternativePage: React.FC = () => {
           </h1>
 
           <p className="text-base sm:text-xl font-medium text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-            Merge, split, protect, sign, and convert PDFs without an Adobe account, without a
-            subscription, and without your files ever leaving your device.
+            Merge, split, protect, sign, and convert PDFs without an Adobe account, without forced
+            subscriptions for core tools, and without your standard files ever leaving your device.
+          </p>
+
+          <p className="text-xs sm:text-sm text-on-surface-variant/80 max-w-2xl mx-auto leading-relaxed">
+            PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the
+            browser, plus 2 opt-in AI tools for OCR and document analysis. PdfMinty offers a Free
+            Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are
+            available for users who need unlimited daily usage, larger file limits, priority AI/OCR
+            quotas, commercial usage rights, and priority support.
+          </p>
+
+          <p className="text-xs font-mono text-on-surface-variant/70">
+            Last Updated &amp; Reviewed: November 2026 • Author: Mohammed Tanveer Munshi
           </p>
 
           <div className="pt-4 flex flex-col items-center gap-4">
@@ -210,7 +222,9 @@ export const AdobeAlternativePage: React.FC = () => {
               <span>{t('adobeAlternative.noWatermarks', { defaultValue: 'No watermarks' })}</span>
               <span className="text-border-muted">•</span>
               <span>
-                {t('adobeAlternative.noSubscription', { defaultValue: 'No subscription' })}
+                {t('adobeAlternative.noSubscription', {
+                  defaultValue: 'Free Forever core tier (No credit card required)',
+                })}
               </span>
             </div>
           </div>
@@ -253,7 +267,7 @@ export const AdobeAlternativePage: React.FC = () => {
                     ~$19.99/mo ($239.88/yr)
                   </td>
                   <td className="py-3.5 px-4 sm:px-6 text-emerald-600 dark:text-emerald-400 font-black bg-emerald-500/5">
-                    $0 — 100% Free Forever
+                    $0 Free Forever (Optional $2.49/mo Pro or $50 Lifetime)
                   </td>
                 </tr>
                 <tr>
@@ -494,9 +508,11 @@ export const AdobeAlternativePage: React.FC = () => {
             </table>
           </div>
           <p className="text-xs sm:text-sm text-on-surface-variant font-medium leading-relaxed">
-            * Plus Adobe's 50% early termination fee on remaining contracts and the sunset of
-            perpetual licenses like Acrobat 2020. With PDFMinty, you get zero contracts, zero
-            recurring invoices, and zero upgrade walls.
+            * Plus Adobe&apos;s 50% early termination fee on remaining annual contracts and the
+            sunset of perpetual licenses like Acrobat 2020. With PDFMinty, core PDF tools are $0 on
+            the Free Forever plan (5 daily guest tasks, 10 daily free-account tasks), with optional
+            cancel-anytime Monthly Pro ($2.49/month) and one-time Lifetime Pro ($50) upgrades for
+            unlimited tasks and 500MB file limits.
           </p>
         </section>
 

@@ -47,7 +47,7 @@ export const TermsOfServicePage: React.FC = () => {
           <p className="text-xs sm:text-sm font-semibold text-on-surface-variant max-w-2xl mx-auto">
             {t('termsOfService.updated', {
               defaultValue:
-                'Last Updated & Effective Date: October 2026 • Publisher: PdfMinty (Operated by Mohammed Tanveer Munshi, Dhaka, Bangladesh)',
+                'Last Updated & Effective Date: November 2026 • Publisher: PdfMinty (Operated by Mohammed Tanveer Munshi, Dhaka, Bangladesh)',
             })}
           </p>
         </header>
@@ -63,8 +63,8 @@ export const TermsOfServicePage: React.FC = () => {
                 Key Takeaways in Plain English (Summary)
               </h2>
               <p className="text-xs text-on-surface-variant font-medium">
-                A quick summary of our privacy-first service model before reading the full agreement
-                below.
+                PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the
+                browser, plus 2 opt-in AI tools for OCR and document analysis.
               </p>
             </div>
           </div>
@@ -95,8 +95,10 @@ export const TermsOfServicePage: React.FC = () => {
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
               <span>
-                <strong>No Mandatory Accounts or Paywalls:</strong> Free for personal and commercial
-                usage without forced user registrations or hidden subscription paywalls.
+                <strong>Free Forever &amp; Optional Pro Plans:</strong> PdfMinty offers a Free
+                Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are
+                available for users who need unlimited daily usage, larger file limits, priority
+                AI/OCR quotas, commercial usage rights, and priority support.
               </span>
             </li>
           </ul>
@@ -233,6 +235,85 @@ export const TermsOfServicePage: React.FC = () => {
             </ul>
           </section>
 
+          {/* Section 3B: Service Plans, Subscriptions, Lifetime Access, Cancellation & Refunds */}
+          <section className="space-y-3 pt-6 border-t border-border-muted" id="plans-and-billing">
+            <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              3A. Service Plans, Monthly Pro, Lifetime Pro, Cancellation &amp; Refund Policy
+            </h2>
+            <p>
+              PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and
+              Lifetime Pro plans are available for users who need unlimited daily usage, larger file
+              limits, priority AI/OCR quotas, commercial usage rights, and priority support.
+            </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <strong>Free Forever Plan ($0):</strong> Available without a credit card or forced
+                subscription. Guest visitors receive up to 5 daily tasks (100MB per file limit), and
+                registered Free account holders receive up to 10 daily tasks (150MB per file limit)
+                with zero watermarks. The Free Forever plan remains permanently available alongside
+                optional Pro upgrades.
+              </li>
+              <li>
+                <strong>Monthly Pro Plan ($2.49 USD/month):</strong> An optional recurring monthly
+                subscription providing unlimited daily PDF tasks, up to 500MB per file (1,000MB
+                combined batch limit), priority AI/OCR quotas (up to 50 AI queries/day and 15 OCR
+                pages/batch), commercial usage rights, an ad-free workspace, and priority email
+                support.
+              </li>
+              <li>
+                <strong>Lifetime Pro Plan ($50 USD one-time payment):</strong> An optional single
+                one-time payment with no recurring billing. Lifetime Pro includes all Pro tier
+                allowances (unlimited daily PDF tasks, up to 500MB per file, priority AI/OCR
+                quotas, commercial usage rights, and priority support).
+              </li>
+              <li>
+                <strong>Definition of &ldquo;Lifetime&rdquo; &amp; Future Updates:</strong>{' '}
+                &ldquo;Lifetime&rdquo; access refers to the active operational lifetime of the
+                PdfMinty web platform and service. Lifetime Pro includes access to all future PDF
+                tool updates, engine upgrades, and feature improvements released on PdfMinty at no
+                additional cost.
+              </li>
+              <li>
+                <strong>Subscription Cancellation Policy:</strong> Monthly Pro subscribers may
+                cancel recurring billing at any time with one click via their{' '}
+                <Link
+                  to={ROUTES.DASHBOARD}
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  Account Dashboard
+                </Link>{' '}
+                or through the Lemon Squeezy customer billing portal. There are no cancellation
+                penalties. Upon cancellation, your Pro benefits remain active through the end of
+                your current paid monthly billing period, after which your account automatically
+                reverts to the Free Forever tier.
+              </li>
+              <li>
+                <strong>Payment Processing &amp; Refund Policy:</strong> All Pro checkouts, taxes,
+                and invoices are processed by our authorized Merchant of Record,{' '}
+                <strong>Lemon Squeezy</strong>. Refund requests and billing disputes are governed by
+                applicable consumer protection statutes and{' '}
+                <a
+                  href="https://www.lemonsqueezy.com/buyer-terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-1"
+                >
+                  Lemon Squeezy&apos;s Buyer Terms &amp; Refund Policy{' '}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                . For billing assistance or refund inquiries, please contact{' '}
+                <a
+                  href="mailto:support@pdfminty.com"
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  support@pdfminty.com
+                </a>
+                .
+              </li>
+            </ul>
+          </section>
+
           {/* Section 4: User Ownership & IP */}
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
@@ -350,8 +431,9 @@ export const TermsOfServicePage: React.FC = () => {
               7. Third-Party Advertisements, Google AdSense & Cookies Disclosures
             </h2>
             <p>
-              To keep our tools free and accessible to users worldwide without paid subscriptions,
-              PdfMinty displays advertisements served by Google AdSense and reputable third-party
+              To support our Free Forever tier and keep core PDF tools accessible to users
+              worldwide without forced subscriptions, PdfMinty displays advertisements on public
+              pages for non-Pro visitors served by Google AdSense and reputable third-party
               advertising partners:
             </p>
             <ul className="list-disc pl-5 space-y-2">

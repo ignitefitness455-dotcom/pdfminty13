@@ -33,7 +33,7 @@ export const TrustBadgeSection: React.FC = () => {
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
             {t('home.trustBadge.description', {
               defaultValue:
-                'PdfMinty is recognized on top product directories as a trusted privacy-first, client-side PDF utility. Your documents are processed entirely in your browser and never touch a remote server.',
+                'PdfMinty is recognized on top product directories as a trusted privacy-first, client-side PDF utility. PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis.',
             })}
           </p>
 
@@ -109,7 +109,9 @@ export const TrustBadgeSection: React.FC = () => {
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
               <span>
-                {t('home.trustBadge.loggingBadge', { defaultValue: 'Zero Data Logging' })}
+                {t('home.trustBadge.loggingBadge', {
+                  defaultValue: 'Zero File Uploads (Standard Tools)',
+                })}
               </span>
             </span>
           </div>

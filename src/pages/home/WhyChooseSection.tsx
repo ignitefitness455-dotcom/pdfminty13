@@ -74,12 +74,12 @@ export const WhyChooseSection: React.FC = () => {
               <Gift className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
-              {t('home.whyChoose.freeTitle', { defaultValue: 'Free Daily Tier' })}
+              {t('home.whyChoose.freeTitle', { defaultValue: 'Free Forever Core Plan' })}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.whyChoose.freeDesc', {
                 defaultValue:
-                  'Merge, split, compress, sign, and edit PDFs for free (5 daily tasks for guests, 10 with a free account) with zero watermarks, plus optional Pro plans for unlimited usage.',
+                  'PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are available for users who need unlimited daily usage, larger file limits, priority AI/OCR quotas, commercial usage rights, and priority support.',
               })}
             </p>
           </div>
@@ -94,12 +94,12 @@ export const WhyChooseSection: React.FC = () => {
               <Layers className="w-5 h-5 text-teal-600 dark:text-teal-400" aria-hidden="true" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
-              {t('home.whyChoose.toolsCountTitle', { defaultValue: `${toolsCount} Tools` })}
+              {t('home.whyChoose.toolsCountTitle', { defaultValue: `${toolsCount} PDF Tools` })}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed font-normal">
               {t('home.whyChoose.toolsCountDesc', {
                 defaultValue:
-                  'From merging and splitting to encryption, OCR, and document signing — complete every PDF workflow right here.',
+                  'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis.',
               })}
             </p>
           </div>

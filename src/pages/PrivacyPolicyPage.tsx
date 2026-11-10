@@ -27,8 +27,8 @@ export const PrivacyPolicyPage: React.FC = () => {
     <div className="min-h-screen bg-surface py-12 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
       <SEO
         slug="privacy-policy"
-        titleOverride="Privacy Policy — 100% Zero-Data Collection & Google OAuth Compliance | PDFMinty"
-        descriptionOverride="Read PDFMinty's comprehensive Privacy Policy. Standard PDF tools process files 100% locally in your browser with zero uploads. Includes complete Google OAuth Limited Use, Google Gemini AI, AdSense, GDPR, and CCPA disclosures."
+        titleOverride="Privacy Policy — In-Browser PDF Privacy, AI & Google OAuth Compliance | PDFMinty"
+        descriptionOverride="Read PDFMinty's comprehensive Privacy Policy. 22 standard PDF tools process files 100% locally in your browser with zero uploads, plus 2 opt-in Gemini AI tools, Google OAuth Limited Use, AdSense, GDPR, and CCPA disclosures."
       />
 
       <div className="max-w-4xl mx-auto space-y-10" id="privacy-policy-container">
@@ -48,7 +48,7 @@ export const PrivacyPolicyPage: React.FC = () => {
           <p className="text-xs sm:text-sm font-semibold text-on-surface-variant max-w-2xl mx-auto">
             {t('privacyPolicy.updated', {
               defaultValue:
-                'Effective Date: January 1, 2026 • Last Updated & Reviewed: October 18, 2026 • Controller: PDFMinty Security & Compliance Architecture Team',
+                'Effective Date: January 1, 2026 • Last Updated & Reviewed: November 2026 • Controller: PDFMinty Security & Compliance Architecture Team',
             })}
           </p>
         </div>
@@ -66,10 +66,20 @@ export const PrivacyPolicyPage: React.FC = () => {
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
+            PdfMinty provides 24 tools in total: 22 standard browser-local PDF tools and 2 optional
+            cloud AI tools. PdfMinty offers 24 PDF tools: 22 standard tools that process files
+            locally in the browser, plus 2 opt-in AI tools for OCR and document analysis.
+          </p>
+          <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
             {t('privacyPolicy.summary', {
               defaultValue:
                 "PDFMinty's 22 standard PDF tools process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI features — the AI PDF Assistant (/ai-analyze-pdf/), the OCR PDF tool (/ocr-pdf/), or the optional AI Vision OCR mode in PDF to Markdown (/pdf-to-markdown/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
             })}
+          </p>
+          <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
+            PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and
+            Lifetime Pro plans are available for users who need unlimited daily usage, larger file
+            limits, priority AI/OCR quotas, commercial usage rights, and priority support.
           </p>
         </div>
 
@@ -80,14 +90,17 @@ export const PrivacyPolicyPage: React.FC = () => {
             <span>Data Processing &amp; Privacy Architecture Matrix</span>
           </h2>
           <p className="text-xs sm:text-sm text-on-surface-variant">
-            The table below summarizes exactly how data is handled across every part of the PDFMinty
-            platform (<strong>https://pdfminty.com/</strong>):
+            The table below clearly distinguishes how <strong>PDF file privacy</strong>,{' '}
+            <strong>opt-in AI/OCR data</strong>, <strong>account data</strong>,{' '}
+            <strong>subscription data</strong>, <strong>analytics data</strong>, and{' '}
+            <strong>advertising/cookie data</strong> are handled across the PDFMinty platform (
+            <strong>https://pdfminty.com/</strong>):
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-border-muted text-on-surface font-bold bg-surface-variant/40">
-                  <th className="py-3 px-4">Service / Feature Category</th>
+                  <th className="py-3 px-4">Service / Data Category</th>
                   <th className="py-3 px-4">Data Accessed or Collected</th>
                   <th className="py-3 px-4">Processing Location</th>
                   <th className="py-3 px-4">Retention &amp; Storage</th>
@@ -96,8 +109,8 @@ export const PrivacyPolicyPage: React.FC = () => {
               <tbody className="divide-y divide-border-muted text-on-surface-variant">
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    22 Standard PDF Tools (Merge, Split, Compress, Sign, Protect, Unlock, Compare,
-                    etc.)
+                    1. PDF File Privacy — 22 Standard PDF Tools (Merge, Split, Compress, Sign,
+                    Protect, Unlock, Compare, etc.)
                   </td>
                   <td className="py-3 px-4">
                     User-selected PDF/Image files in local browser memory only
@@ -111,8 +124,8 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    Opt-In Cloud AI Tools (/ai-analyze-pdf/, /ocr-pdf/, &amp; optional AI Vision
-                    mode in /pdf-to-markdown/)
+                    2. Opt-In AI/OCR Data — 2 Optional Cloud AI Tools (/ai-analyze-pdf/, /ocr-pdf/,
+                    &amp; optional AI Vision mode in /pdf-to-markdown/)
                   </td>
                   <td className="py-3 px-4">
                     Extracted document text (up to 15 pages / 30,000 chars standard; 50 pages /
@@ -129,10 +142,11 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    Optional User Accounts &amp; Google Sign-In (OAuth 2.0)
+                    3. Account Data — Optional User Accounts &amp; Google Sign-In (OAuth 2.0)
                   </td>
                   <td className="py-3 px-4">
-                    Email address, display name, profile photo URL, unique user ID (UID), plan tier
+                    Email address, display name, profile photo URL, unique user ID (UID), daily
+                    quota counters
                   </td>
                   <td className="py-3 px-4">
                     Google Firebase Authentication &amp; Google Cloud Firestore
@@ -143,14 +157,52 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    Guest Quota &amp; UI Preferences
+                    4. Subscription &amp; Plan-Status Data (Free Forever, Monthly Pro $2.49/mo,
+                    Lifetime Pro $50 one-time)
                   </td>
                   <td className="py-3 px-4">
-                    Daily task counter, dark/light theme, language preference, cookie consent state
+                    Plan tier (free vs. pro), subscription status, billing cycle / license metadata
+                    (payment cards processed directly by Lemon Squeezy Merchant of Record)
                   </td>
-                  <td className="py-3 px-4">Client-Side Browser localStorage</td>
                   <td className="py-3 px-4">
-                    Stored locally in user&apos;s browser; user can clear anytime
+                    Lemon Squeezy (billing checkout) &amp; Google Cloud Firestore (plan status sync)
+                  </td>
+                  <td className="py-3 px-4">
+                    Plan status retained with user profile; payment records retained per statutory
+                    tax/accounting laws
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-semibold text-on-surface">
+                    5. Analytics Data (Performance &amp; Traffic Measurement)
+                  </td>
+                  <td className="py-3 px-4">
+                    Anonymized page views, core web vitals, device/browser type (never PDF filenames
+                    or document contents)
+                  </td>
+                  <td className="py-3 px-4">
+                    Google Analytics 4 (IP anonymization enabled) &amp; Cloudflare Web Analytics
+                  </td>
+                  <td className="py-3 px-4">
+                    Gated by Google Consent Mode v2 (analytics_storage defaults to denied until
+                    consent)
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-semibold text-on-surface">
+                    6. Advertising, Cookie &amp; Local Storage Data
+                  </td>
+                  <td className="py-3 px-4">
+                    Advertising cookies (Google AdSense on public informational pages for non-Pro
+                    visitors) &amp; local browser storage (guest task counter, theme, language,
+                    cookie consent state)
+                  </td>
+                  <td className="py-3 px-4">
+                    Google AdSense (with Consent Mode v2) &amp; Client-Side Browser localStorage
+                  </td>
+                  <td className="py-3 px-4">
+                    Ad cookies gated by Consent Mode v2; localStorage controllable and clearable by
+                    user anytime
                   </td>
                 </tr>
               </tbody>
@@ -829,7 +881,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             <p>
               {t('privacyPolicy.sec7Desc', {
                 defaultValue:
-                  'PDFMinty supports open web standards. Search engine crawlers (Googlebot, Bingbot), Google OAuth and Brand Verification crawlers, Google AdSense crawlers (Mediapartners-Google and Google-Display-Ads-Bot), and benign AI indexers (GPTBot, ClaudeBot, PerplexityBot) are explicitly permitted to access, crawl, and verify our homepage, privacy policy, terms of service, and all 30+ public PDF tools without authentication.',
+                  'PDFMinty supports open web standards. Search engine crawlers (Googlebot, Bingbot), Google OAuth and Brand Verification crawlers, Google AdSense crawlers (Mediapartners-Google and Google-Display-Ads-Bot), and benign AI indexers (GPTBot, ClaudeBot, PerplexityBot) are explicitly permitted to access, crawl, and verify our homepage, privacy policy, terms of service, and all 24 public PDF tools without authentication.',
               })}
             </p>
           </section>

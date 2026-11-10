@@ -48,6 +48,11 @@ export const AboutUsPage: React.FC = () => {
           <p className="text-base sm:text-xl font-medium text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
             {t('aboutUs.intro')}
           </p>
+
+          <p className="text-xs sm:text-sm font-medium text-on-surface-variant/80">
+            Last Updated &amp; Reviewed: November 2026 • Author &amp; Technical Reviewer:{' '}
+            {PRIMARY_AUTHOR.name} ({PRIMARY_AUTHOR.jobTitle})
+          </p>
         </header>
 
         {/* The Problem & Solution */}
@@ -77,7 +82,7 @@ export const AboutUsPage: React.FC = () => {
               <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
                 {t('aboutUs.solutionDesc', {
                   defaultValue:
-                    'PdfMinty processes your files directly in your web browser across our 22 standard client-side PDF tools without server uploads. Our opt-in cloud AI features — the AI Analyze tool (which transmits extracted text to Google Gemini), the OCR PDF tool, and the optional AI Vision OCR mode in PDF to Markdown (which transmit selected page images to Google Gemini Multimodal Vision) — require your explicit consent before running.',
+                    'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. The two opt-in exceptions are the AI Analyze tool (which transmits extracted text to Google Gemini) and the OCR PDF tool (which transmits selected scanned page images to Google Gemini Multimodal Vision), both of which require your explicit consent before running.',
                 })}
               </p>
             </div>
@@ -137,8 +142,58 @@ export const AboutUsPage: React.FC = () => {
               <p className="text-xs text-on-surface-variant leading-relaxed font-medium">
                 {t('aboutUs.freeForever', {
                   defaultValue:
-                    'No signups, paywalls, or hidden watermarks. Professional PDF tools for everyone.',
+                    'Core PDF tools are available through the Free Forever plan with no credit card required and zero watermarks.',
                 })}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Transparent Service Plans & Pricing Overview */}
+        <section className="space-y-6 bg-surface-container-low border border-border-muted p-8 sm:p-10 rounded-3xl shadow-sm">
+          <div className="space-y-3">
+            <h2 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight">
+              Transparent Service Plans: Free Forever &amp; Optional Pro Upgrades
+            </h2>
+            <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
+              PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and
+              Lifetime Pro plans are available for users who need unlimited daily usage, larger file
+              limits, priority AI/OCR quotas, commercial usage rights, and priority support.
+            </p>
+            <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
+              Core PDF tools are available through the Free Forever plan. Optional paid plans
+              provide higher limits and premium usage benefits; they do not replace access to the
+              core free tools.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5 text-xs">
+            <div className="p-5 rounded-2xl bg-surface-container-high/60 border border-border-muted space-y-2">
+              <h3 className="text-sm font-black text-on-surface">Free Forever Plan ($0)</h3>
+              <p className="text-on-surface-variant leading-relaxed">
+                Available without a credit card or forced subscription. Includes 5 daily tasks for
+                guests (up to 100MB per file) and 10 daily tasks for registered free accounts (up to
+                150MB per file) across all 24 tools with zero watermarks.
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl bg-surface-container-high/60 border border-emerald-500/30 space-y-2">
+              <h3 className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                Monthly Pro ($2.49/month)
+              </h3>
+              <p className="text-on-surface-variant leading-relaxed">
+                Optional recurring plan for high-volume workflows: unlimited daily PDF tasks, up to
+                500MB per file (1,000MB batch limit), priority AI/OCR quotas, commercial usage
+                rights, ad-free workspace, and cancel-anytime flexibility.
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl bg-surface-container-high/60 border border-amber-500/30 space-y-2">
+              <h3 className="text-sm font-black text-amber-600 dark:text-amber-400">
+                Lifetime Pro ($50 one-time)
+              </h3>
+              <p className="text-on-surface-variant leading-relaxed">
+                Optional one-time payment with no recurring billing. Unlocks permanent Pro access,
+                unlimited daily tasks, 500MB file limits, priority AI/OCR quotas, and all future
+                PdfMinty tool updates for the lifetime of the service.
               </p>
             </div>
           </div>
@@ -255,17 +310,40 @@ export const AboutUsPage: React.FC = () => {
 
             {/* Backstory & Philosophy */}
             <div className="space-y-4 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              <p className="font-semibold text-on-surface">
+                PdfMinty is independently designed and maintained by Mohammed Tanveer Munshi, a
+                full-stack software engineer and privacy-focused web developer based in Dhaka,
+                Bangladesh.
+              </p>
               <p>
                 {t('aboutUs.creatorBioP1', {
                   defaultValue:
-                    'PdfMinty was engineered and founded by Mohammed Tanveer Munshi, a full-stack software engineer and open-web security researcher based in Dhaka, Bangladesh. With over 6 years of expertise building browser-native architectures and high-performance WebAssembly applications, Tanveer created PdfMinty after witnessing countless online conversion sites silently store private contracts, tax records, and medical files on third-party cloud servers.',
+                    'With over 6 years of expertise building browser-native architectures and high-performance WebAssembly applications, Tanveer created PdfMinty after witnessing countless online conversion sites silently store private contracts, tax records, and medical files on third-party cloud servers.',
                 })}
               </p>
               <p>
                 {t('aboutUs.creatorBioP2', {
                   defaultValue:
-                    'Rather than building another subscription-gated cloud service, PdfMinty was architected with a strict zero-upload mandate. All core operations execute directly inside the user’s browser memory via compiled WebAssembly and Web Workers. We believe software developers have a responsibility to design tools that respect user autonomy and privacy by default.',
+                    'PdfMinty was architected with a strict zero-upload mandate for standard PDF operations. All 22 standard tools execute directly inside the user’s browser memory via compiled WebAssembly and Web Workers, while 2 opt-in AI tools (OCR PDF and AI Analyze PDF) connect to Google Gemini only after explicit user consent. Core PDF tools are available through the Free Forever plan. Optional paid plans provide higher limits and premium usage benefits; they do not replace access to the core free tools.',
                 })}
+              </p>
+              <p className="text-xs text-on-surface-variant">
+                Official Support Email:{' '}
+                <a
+                  href={`mailto:${PRIMARY_AUTHOR.email}`}
+                  className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  {PRIMARY_AUTHOR.email}
+                </a>{' '}
+                • Public Source &amp; Documentation:{' '}
+                <a
+                  href={PRIMARY_AUTHOR.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  {PRIMARY_AUTHOR.github}
+                </a>
               </p>
             </div>
 
@@ -316,13 +394,19 @@ export const AboutUsPage: React.FC = () => {
           <p className="text-base sm:text-lg font-bold text-emerald-100 max-w-xl mx-auto">
             {t('aboutUs.tryTools')}
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
             <Link
               to={ROUTES.HOME}
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-emerald-900 dark:!bg-white dark:!text-emerald-900 hover:dark:!bg-emerald-50 font-black text-base rounded-2xl transition-all shadow-lg hover:bg-emerald-50 hover:scale-105 active:scale-100"
             >
               <span>{t('aboutUs.exploreTools', { defaultValue: 'Explore All PDF Tools' })}</span>
               <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link
+              to={ROUTES.PRICING}
+              className="inline-flex items-center gap-2 px-6 py-4 bg-emerald-800/80 hover:bg-emerald-800 text-white font-bold text-sm rounded-2xl border border-emerald-400/30 transition-all"
+            >
+              <span>View Free &amp; Pro Plans</span>
             </Link>
           </div>
         </section>

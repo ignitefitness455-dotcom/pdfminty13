@@ -182,8 +182,13 @@ export const PricingPage: React.FC = () => {
         </h1>
         <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
           {isBn
-            ? 'সবগুলো 22টি ক্লায়েন্ট-সাইড স্ট্যান্ডার্ড ব্রাউজার PDF টুল সম্পূর্ণ বিনামূল্যে ব্যবহার করুন। 500MB ব্যাচ প্রসেসিং, অপ্ট-ইন Gemini AI ডকুমেন্ট অ্যানালাইসিস এবং OCR-এর জন্য সুলভ আপগ্রেড নিন।'
-            : 'Start 100% free with all 22 client-side browser PDF tools (plus 2 opt-in Gemini AI tools). Upgrade only if you need large 500MB batch processing, 50 daily AI queries, and batch OCR.'}
+            ? 'PdfMinty মোট ২৪টি PDF টুল অফার করে: ২২টি স্ট্যান্ডার্ড টুল যা ব্রাউজারে লোকালি ফাইল প্রসেস করে এবং ২টি অপ্ট-ইন AI টুল (OCR এবং ডকুমেন্ট অ্যানালাইসিস)। কোর টুলের জন্য Free Forever প্ল্যানের পাশাপাশি অতিরিক্ত সুবিধার জন্য ঐচ্ছিক Monthly Pro ($2.49/মাস) এবং Lifetime Pro ($50 এককালীন) প্ল্যান রয়েছে।'
+            : 'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are available for users who need unlimited daily usage, larger file limits, priority AI/OCR quotas, commercial usage rights, and priority support.'}
+        </p>
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+          {isBn
+            ? 'সর্বশেষ আপডেট: নভেম্বর ২০২৬ • কোর ফ্রি টুল ব্যবহারের জন্য কোনো বাধ্যতামূলক সাবস্ক্রিপশন বা ক্রেডিট কার্ডের প্রয়োজন নেই।'
+            : 'Last Updated: November 2026 • No credit card or forced subscription required to use core free tools.'}
         </p>
 
         {/* Currency Indicator & Switcher */}
@@ -386,14 +391,16 @@ export const PricingPage: React.FC = () => {
               <div className="flex items-center gap-2.5 font-semibold">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  {isBn ? 'ফ্রি প্ল্যানের সবকিছু, সাথে আরও:' : 'Everything in Free, plus:'}
+                  {isBn
+                    ? 'আনলিমিটেড দৈনিক PDF টাস্ক (কোনো দৈনিক সীমা নেই)'
+                    : 'Unlimited daily PDF tasks (no daily task cap)'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   <strong>
-                    {isBn ? '500MB ব্যাচ ও ফাইল লিমিট:' : '500MB Batch & File Limit:'}
+                    {isBn ? '500MB ফাইল ও 1,000MB ব্যাচ লিমিট:' : 'Up to 500MB per file & 1,000MB combined batch limit:'}
                   </strong>{' '}
                   {isBn
                     ? 'ভারী স্ক্যান ও আইনি PDF নির্বিঘ্নে প্রসেস করুন'
@@ -405,25 +412,23 @@ export const PricingPage: React.FC = () => {
                 <span>
                   <strong>
                     {isBn
-                      ? 'প্রায়োরিটি AI অ্যানালাইসিস (50 কুয়েরি/দিন):'
-                      : 'Priority AI Analysis (50/day • 50 pages/PDF):'}
+                      ? 'প্রায়োরিটি AI ও OCR কোটা:'
+                      : 'Priority AI/OCR Quota (50 AI/day • 15 OCR pages/run):'}
                   </strong>{' '}
                   {isBn
-                    ? 'Gemini 2.5 Flash দিয়ে সারসংক্ষেপ ও তথ্য এক্সট্রাক্ট'
-                    : 'Summarize, query & extract insights using Gemini 2.5 Flash'}
+                    ? 'Gemini 2.5 Flash দিয়ে সারসংক্ষেপ, OCR ও তথ্য এক্সট্রাক্ট'
+                    : 'Summarize, transcribe & extract insights using Google Gemini'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   <strong>
-                    {isBn
-                      ? 'সম্পূর্ণ ব্যাচ OCR (15 পেজ/ব্যাচ):'
-                      : 'Full Batch OCR (Up to 15 pages/run):'}
+                    {isBn ? 'কমার্শিয়াল ব্যবহারের অধিকার:' : 'Commercial Usage Rights:'}
                   </strong>{' '}
                   {isBn
-                    ? 'স্ক্যান করা ডকুমেন্ট এডিটেবল Markdown ও Text-এ রূপান্তর'
-                    : 'Convert scanned documents & images into editable Markdown & Text'}
+                    ? 'ব্যবসায়িক ও প্রাতিষ্ঠানিক কাজের পূর্ণ অনুমোদন'
+                    : 'Licensed for professional, client, and business workflows'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
@@ -440,7 +445,7 @@ export const PricingPage: React.FC = () => {
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? '100% বিজ্ঞাপন মুক্ত:' : '100% Ad-Free:'}</strong>{' '}
+                  <strong>{isBn ? '100% বিজ্ঞাপন মুক্ত:' : '100% Ad-Free Workspace:'}</strong>{' '}
                   {isBn
                     ? 'পরিচ্ছন্ন ও মনোযোগহীন কাজের ইন্টারফেস'
                     : 'Clean, distraction-free interface'}
@@ -449,10 +454,12 @@ export const PricingPage: React.FC = () => {
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  <strong>{isBn ? 'প্রায়োরিটি সাপোর্ট:' : 'Priority Support:'}</strong>{' '}
+                  <strong>
+                    {isBn ? 'প্রায়োরিটি সাপোর্ট ও যেকোনো সময় বাতিল:' : 'Priority Support & Cancel Anytime:'}
+                  </strong>{' '}
                   {isBn
-                    ? 'দ্রুত ইমেইল রেসপন্স ও সরাসরি ফিচার রিকোয়েস্ট'
-                    : 'Fast email responses and direct feature requests'}
+                    ? 'দ্রুত ইমেইল রেসপন্স ও ১-ক্লিকে সাবস্ক্রিপশন বাতিলের সুবিধা'
+                    : 'Fast email responses and 1-click cancellation anytime'}
                 </span>
               </div>
             </div>
@@ -531,24 +538,24 @@ export const PricingPage: React.FC = () => {
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   {isBn
-                    ? 'সব PDFMinty Pro সুবিধা আজীবনের জন্য'
-                    : 'All PDFMinty Pro features included forever'}
+                    ? 'আনলিমিটেড দৈনিক টাস্ক ও ফাইল প্রতি 500MB লিমিট'
+                    : 'Unlimited daily tasks & up to 500MB per file (1,000MB batch)'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   {isBn
-                    ? 'কোনো মাসিক বা বার্ষিক রিনিউয়াল নেই'
-                    : 'No recurring monthly or annual renewals'}
+                    ? 'কোনো মাসিক বা বার্ষিক রিকারিং বিলিং নেই ($50 এককালীন)'
+                    : 'No recurring monthly or annual billing ($50 USD one-time)'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   {isBn
-                    ? 'ভবিষ্যতের সমস্ত নতুন PDF টুলের নিশ্চয়তা'
-                    : 'Guaranteed access to all future PDF tools'}
+                    ? 'ভবিষ্যতের সমস্ত নতুন PDF টুল ও আপডেটের নিশ্চয়তা'
+                    : 'Includes all future PDF tool updates & feature releases'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
@@ -556,15 +563,15 @@ export const PricingPage: React.FC = () => {
                 <span>
                   {isBn
                     ? 'ব্যক্তিগত ও ব্যবসায়িক ব্যবহারের জন্য কমার্শিয়াল লাইসেন্স'
-                    : 'Commercial license for personal & business use'}
+                    : 'Commercial usage rights for personal & business workflows'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
                   {isBn
-                    ? 'ভিআইপি ডিরেক্ট ইঞ্জিনিয়ারিং সাপোর্ট'
-                    : 'VIP direct engineering priority support'}
+                    ? 'PdfMinty সার্ভিসের সম্পূর্ণ কার্যকাল জুড়ে প্রো অ্যাক্সেস ও ভিআইপি সাপোর্ট'
+                    : 'Valid for the operational lifetime of PdfMinty + VIP priority support'}
                 </span>
               </div>
             </div>
@@ -794,39 +801,91 @@ export const PricingPage: React.FC = () => {
           <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
               {isBn
-                ? 'ফ্রি প্ল্যান কি সত্যিই চিরতরে ফ্রি?'
-                : 'Is the Free Plan truly free forever?'}
+                ? '১. ফ্রি প্ল্যান কি সত্যিই ফ্রি?'
+                : '1. Is the Free Forever plan really free?'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'হ্যাঁ, অবশ্যই! আমাদের 22টি ক্লায়েন্ট-সাইড স্ট্যান্ডার্ড PDF টুল (মার্জ, স্প্লিট, রোটেট, ওয়াটারমার্ক, ফ্ল্যাটেন, পাসওয়ার্ড লক ও আনলক) আজীবন 100% ফ্রি থাকবে এবং কোনো রেজিস্ট্রেশনের দরকার হবে না।'
-                : 'Yes, absolutely! All 22 client-side standard PDF tools (merging, splitting, rotating, watermarking, flattening, protecting, unlocking) will remain 100% free with zero registration required.'}
+                ? 'হ্যাঁ। PdfMinty কোর PDF টুলগুলোর জন্য একটি Free Forever প্ল্যান অফার করে, যার জন্য কোনো ক্রেডিট কার্ড বা বাধ্যতামূলক সাবস্ক্রিপশনের প্রয়োজন নেই। লগইন ছাড়া গেস্ট হিসেবে দৈনিক ৫টি টাস্ক (ফাইল প্রতি 100MB পর্যন্ত) এবং ফ্রি রেজিস্টার্ড অ্যাকাউন্টে দৈনিক ১০টি টাস্ক (ফাইল প্রতি 150MB পর্যন্ত) সম্পূর্ণ বিনামূল্যে ও ওয়াটারমার্ক ছাড়া ব্যবহার করা যায়।'
+                : 'Yes. PdfMinty offers a Free Forever plan for core PDF tools with no credit card and no forced subscription required. Guest users get 5 daily tasks (up to 100MB per file) and registered free users get 10 daily tasks (up to 150MB per file) with zero watermarks.'}
             </p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
               {isBn
-                ? 'Adobe Acrobat-এর তুলনায় PDFMinty Pro এত সাশ্রয়ী কেন?'
-                : 'Why is PDFMinty Pro so affordable compared to Adobe Acrobat?'}
+                ? '২. Pro প্ল্যানে কী কী সুবিধা অন্তর্ভুক্ত রয়েছে?'
+                : '2. What is included in Pro?'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'Adobe Acrobat Pro সাধারণত বছরে $239.88 ($19.99/মাস) চার্জ করে। যেহেতু PDFMinty আপনার ব্রাউজারে ক্লায়েন্ট-সাইডে কাজ করে তাই আমাদের সার্ভার খরচ অনেক কম। সেই সাশ্রয়ের সুবিধা সরাসরি আপনাদেরকে নামমাত্র মূল্যে দিচ্ছি!'
-                : 'Adobe Acrobat Pro charges $239.88/year ($19.99/month). Because PDFMinty processes your documents client-side directly in your browser rather than burning expensive cloud server clusters, our infrastructure costs are low. We pass those massive savings directly to you at affordable local rates!'}
+                ? 'Pro প্ল্যানে রয়েছে আনলিমিটেড দৈনিক PDF টাস্ক, ফাইল প্রতি সর্বোচ্চ 500MB এবং সম্মিলিত ব্যাচে 1,000MB পর্যন্ত প্রসেসিং লিমিট, প্রায়োরিটি AI অ্যানালাইসিস কোটা (দৈনিক ৫০টি কুয়েরি, প্রতি PDF-এ ৫০ পেজ পর্যন্ত), ফুল ব্যাচ OCR (প্রতি ব্যাচে ১৫ পেজ পর্যন্ত), একাধিক সংরক্ষিত সিগনেচার স্ট্যাম্প, কমার্শিয়াল ব্যবহারের অধিকার, ১০০% বিজ্ঞাপনমুক্ত ওয়ার্কস্পেস এবং প্রায়োরিটি সাপোর্ট।'
+                : 'Pro plans include unlimited daily PDF tasks, up to 500MB per file, up to 1,000MB combined batch processing, priority AI/OCR quotas (50 AI queries/day up to 50 pages/PDF, and 15 OCR pages/batch), up to 5 saved signature stamps, commercial usage rights, a 100% ad-free workspace, and priority support.'}
             </p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
               {isBn
-                ? 'সাবস্ক্রিপশন ম্যানেজমেন্ট ও লাইফটাইম প্ল্যান কীভাবে কাজ করে?'
-                : 'How do subscription management and the Lifetime Deal work?'}
+                ? '৩. Monthly Pro এবং Lifetime Pro-এর মধ্যে পার্থক্য কী?'
+                : '3. What is the difference between Monthly Pro and Lifetime Pro?'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'পেমেন্ট সম্পন্ন হওয়ার সাথে সাথেই আপনার অ্যাকাউন্টে স্বয়ংক্রিয়ভাবে প্রো অ্যাক্সেস চালু হয়ে যাবে। মাসিক সাবস্ক্রিপশন যেকোনো সময় আপনার ড্যাশবোর্ড থেকে ১-ক্লিকে বাতিল করতে পারবেন, আর লাইফটাইম ডিলে মাত্র একবার পেমেন্ট করলেই আজীবন সব প্রো ফিচার ও ভবিষ্যৎ আপডেট উপভোগ করতে পারবেন।'
-                : 'Your Pro access activates automatically the moment checkout completes. Monthly subscriptions can be cancelled anytime in one click from your dashboard with zero hidden fees, while the Lifetime Deal unlocks permanent Pro access and all future tool updates with a single one-time payment.'}
+                ? 'উভয় প্ল্যানেই একই Pro ফিচার ও উচ্চ লিমিট পাওয়া যায়। পার্থক্য হলো বিলিং পদ্ধতিতে: Monthly Pro হলো $2.49/মাস রিকারিং সাবস্ক্রিপশন যা যেকোনো সময় বাতিল করা যায়, আর Lifetime Pro হলো $50 এককালীন পেমেন্ট যেখানে কোনো মাসিক বা বার্ষিক রিনিউয়াল ফি নেই।'
+                : 'Both plans unlock the exact same Pro features, 500MB file limits, and priority AI/OCR quotas. The difference is billing: Monthly Pro is billed at $2.49/month on a recurring monthly cycle that you can cancel anytime, whereas Lifetime Pro is a single $50 one-time payment with no recurring billing.'}
+            </p>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
+              {isBn
+                ? '৪. আমি কি যেকোনো সময় Monthly Pro বাতিল করতে পারব?'
+                : '4. Can users cancel Monthly Pro?'}
+            </h4>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {isBn
+                ? 'হ্যাঁ। আপনি যেকোনো সময় আপনার অ্যাকাউন্ট ড্যাশবোর্ড বা বিলিং পোর্টাল থেকে মাত্র ১-ক্লিকে Monthly Pro সাবস্ক্রিপশন বাতিল করতে পারবেন। বাতিল করার পরও আপনার বর্তমান বিলিং মেয়াদের শেষ দিন পর্যন্ত Pro সুবিধা চালু থাকবে এবং কোনো ক্যান্সেলেশন ফি নেওয়া হয় না।'
+                : 'Yes. You can cancel your Monthly Pro subscription anytime in one click from your Account Dashboard or customer billing portal with zero cancellation penalties. Your Pro benefits remain active through the end of your current paid billing period, after which your account returns to the Free Forever plan.'}
+            </p>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
+              {isBn
+                ? '৫. স্ট্যান্ডার্ড PDF ফাইলগুলো কি কোনো সার্ভারে আপলোড করা হয়?'
+                : '5. Are standard PDF files uploaded?'}
+            </h4>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {isBn
+                ? 'না। PdfMinty মোট ২৪টি PDF টুল অফার করে: এর মধ্যে ২২টি স্ট্যান্ডার্ড টুল (Merge, Split, Compress, Protect, Unlock, Sign, Rotate, Sanitize ইত্যাদি) ১০০% লোকালি আপনার ব্রাউজারের মেমোরিতে (WebAssembly ও HTML5 Canvas দিয়ে) কাজ করে। আপনার ফাইল কখনোই কোনো রিমোট সার্ভারে আপলোড হয় না।'
+                : 'No. PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. When you use any of the 22 standard tools (Merge, Split, Compress, Protect, Unlock, Sign, Sanitize, etc.), your PDF files stay 100% inside your device memory and are never uploaded to any server.'}
+            </p>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
+              {isBn
+                ? '৬. AI এবং OCR টুলে কোন ডেটা Google Gemini-তে পাঠানো হয়?'
+                : '6. Which AI/OCR data is sent to Google Gemini?'}
+            </h4>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {isBn
+                ? 'শুধুমাত্র আপনি যখন স্বেচ্ছায় আমাদের ২টি অপ্ট-ইন AI টুল (AI Analyze PDF এবং OCR PDF, অথবা PDF to Markdown-এর AI Vision মোড) ব্যবহারের আগে সম্মতি (consent) প্রদান করেন, তখনই প্রয়োজনীয় এক্সট্রাক্ট করা টেক্সট বা নির্বাচিত পেজের ছবি এনক্রিপ্টেড HTTPS প্রক্সির মাধ্যমে Google Gemini API-তে পাঠানো হয়। PdfMinty সার্ভারে কোনো ফাইল বা টেক্সট সংরক্ষণ করা হয় না।'
+                : 'Only when you explicitly opt in and grant consent in our 2 cloud AI tools — AI Analyze PDF (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/, plus optional AI Vision mode in /pdf-to-markdown/) — extracted document text or selected rendered page images are sent over an encrypted HTTPS proxy (/api/gemini-proxy) to the Google Gemini API solely to fulfill your request. PdfMinty never stores or logs your documents.'}
+            </p>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
+              {isBn
+                ? '৭. Lifetime Pro অ্যাক্সেস বলতে কী বোঝায়?'
+                : '7. What does Lifetime access mean?'}
+            </h4>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {isBn
+                ? 'Lifetime Pro বলতে বোঝায় মাত্র একবার $50 পেমেন্টের মাধ্যমে PdfMinty ওয়েব প্ল্যাটফর্ম ও সার্ভিসের সম্পূর্ণ কার্যকাল (operational lifetime) জুড়ে সব Pro ফিচার, ফাইল প্রতি 500MB লিমিট, প্রায়োরিটি AI/OCR কোটা এবং ভবিষ্যতের সমস্ত নতুন PDF টুল ও আপডেটের স্থায়ী অ্যাক্সেস—কোনো মাসিক বা বার্ষিক চার্জ ছাড়াই।'
+                : 'Lifetime access means that for a single $50 one-time payment with no recurring billing, your account receives permanent Pro status for the entire operational lifetime of the PdfMinty service, including all current Pro features, 500MB file limits, priority AI/OCR quotas, and all future PDF tool updates.'}
             </p>
           </div>
         </div>
