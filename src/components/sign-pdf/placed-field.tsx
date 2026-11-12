@@ -331,7 +331,7 @@ export function PlacedFieldView({
                 onPointerMove={onPointerMove}
                 onPointerUp={endGesture}
                 onPointerCancel={endGesture}
-                className="flex size-7 items-center justify-center rounded-full border-2 border-emerald-600 bg-white text-emerald-700 shadow-md transition-transform hover:scale-110 active:scale-95 touch-none cursor-grab active:cursor-grabbing"
+                className="flex size-8 sm:size-7 items-center justify-center rounded-full border-2 border-emerald-600 bg-white text-emerald-700 shadow-md transition-transform hover:scale-110 active:scale-95 touch-none cursor-grab active:cursor-grabbing"
               >
                 <RotateCw className="size-3.5" aria-hidden="true" />
               </button>
@@ -354,7 +354,7 @@ export function PlacedFieldView({
                 e.stopPropagation();
                 onRemove();
               }}
-              className="absolute -right-3 -top-3 flex size-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md transition-transform hover:scale-110 cursor-pointer"
+              className="absolute -right-3 -top-3 flex size-7 sm:size-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md transition-transform hover:scale-110 cursor-pointer"
             >
               <Trash2 className="size-3.5" aria-hidden="true" />
             </button>
@@ -367,7 +367,7 @@ export function PlacedFieldView({
               onPointerMove={onPointerMove}
               onPointerUp={endGesture}
               onPointerCancel={endGesture}
-              className="absolute -bottom-1.5 -right-1.5 size-4 cursor-se-resize rounded-sm border-2 border-emerald-600 bg-white touch-none"
+              className="absolute -bottom-2 -right-2 sm:-bottom-1.5 sm:-right-1.5 size-6 sm:size-4 cursor-se-resize rounded-sm border-2 border-emerald-600 bg-white touch-none"
             />
           </>
         ) : null}

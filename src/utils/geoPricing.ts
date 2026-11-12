@@ -169,8 +169,9 @@ export const COUNTRY_CURRENCY_MAP: Record<string, GeoLocationInfo> = {
 export const DEFAULT_GEO: GeoLocationInfo = COUNTRY_CURRENCY_MAP.US;
 
 /**
- * Detect user country synchronously — always defaults to United States (USD $)
- * unless the user explicitly selected another supported currency in sessionStorage.
+ * Detect user country synchronously — checks manual currency override first,
+ * then localized route prefix / IANA timezone for EU (€) and UK (£) visitors,
+ * defaulting to United States (USD $).
  */
 export function detectCountrySync(): GeoLocationInfo {
   try {
@@ -179,6 +180,21 @@ export function detectCountrySync(): GeoLocationInfo {
       if (cached && cached !== 'BD' && COUNTRY_CURRENCY_MAP[cached]) {
         return COUNTRY_CURRENCY_MAP[cached];
       }
+
+      const pathSeg = (window.location?.pathname || '').split('/').filter(Boolean)[0];
+      if (pathSeg === 'de') return COUNTRY_CURRENCY_MAP.DE;
+      if (pathSeg === 'fr') return COUNTRY_CURRENCY_MAP.FR;
+      if (pathSeg === 'es') return COUNTRY_CURRENCY_MAP.ES;
+      if (pathSeg === 'hi') return COUNTRY_CURRENCY_MAP.IN;
+
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      if (tz === 'Europe/London' || tz === 'Europe/Belfast') return COUNTRY_CURRENCY_MAP.GB;
+      if (tz === 'Europe/Berlin' || tz === 'Europe/Vienna' || tz === 'Europe/Zurich') {
+        return COUNTRY_CURRENCY_MAP.DE;
+      }
+      if (tz === 'Europe/Paris' || tz === 'Europe/Brussels') return COUNTRY_CURRENCY_MAP.FR;
+      if (tz === 'Europe/Madrid') return COUNTRY_CURRENCY_MAP.ES;
+      if (tz === 'Europe/Rome') return COUNTRY_CURRENCY_MAP.IT;
     }
   } catch {
     // Fallback on error

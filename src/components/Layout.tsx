@@ -172,12 +172,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) return undefined;
     const win = window as Window & {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (id: number) => void;
     };
     const warmCriticalInteractiveChunks = () => {
-      prefetchToolChunk('mobile-drawer');
+      if (window.innerWidth < 1024) {
+        prefetchToolChunk('mobile-drawer');
+      }
       prefetchToolChunk('pricing');
       prefetchToolChunk('sign-in');
     };

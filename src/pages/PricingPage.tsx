@@ -45,6 +45,7 @@ export const PricingPage: React.FC = () => {
   const homePath = getLocalizedPath(ROUTES.HOME, activeLocale);
 
   const { user, isPro, upgradeToPro } = useAuth();
+  const isLifetimeActive = Boolean(user?.plan === 'lifetime');
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -83,6 +84,16 @@ export const PricingPage: React.FC = () => {
     }
 
     const isLifetimeSelection = planName === 'Lifetime';
+
+    if (isLifetimeSelection && isLifetimeActive) {
+      showToast(
+        isBn
+          ? 'আপনার অ্যাকাউন্টে ইতিমধ্যেই লাইফটাইম প্রো সক্রিয় রয়েছে!'
+          : 'Your account already has active Lifetime Pro access!',
+        'info'
+      );
+      return;
+    }
 
     if (isPro && !isLifetimeSelection) {
       showToast(
@@ -167,6 +178,23 @@ export const PricingPage: React.FC = () => {
           content="Simple, transparent USD pricing for PDFMinty. Free forever core tier (5 guest / 10 free account tasks/day), $2.49/month Pro plan, and $50 one-time Lifetime Pro access with 500MB limits."
         />
         <link rel="canonical" href="https://pdfminty.com/pricing/" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'PDFMinty Pro',
+            applicationCategory: 'UtilitiesApplication',
+            operatingSystem: 'Any',
+            url: 'https://pdfminty.com/pricing/',
+            offers: {
+              '@type': 'AggregateOffer',
+              lowPrice: '0',
+              highPrice: '50',
+              priceCurrency: 'USD',
+              offerCount: 3,
+            },
+          })}
+        </script>
       </Helmet>
 
       {/* Hero Heading */}
@@ -578,22 +606,32 @@ export const PricingPage: React.FC = () => {
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={() => handleSelectPlan('Lifetime')}
-              disabled={isProcessingCheckout}
-              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-              id="pricing-upgrade-lifetime-btn"
-            >
-              <span>
-                {isProcessingCheckout
-                  ? 'Redirecting to Checkout...'
-                  : isBn
-                    ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
-                    : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
-              </span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {isLifetimeActive ? (
+              <div
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center justify-center gap-2"
+                id="pricing-lifetime-active-badge"
+              >
+                <Check className="w-4 h-4 text-emerald-500" />
+                <span>{isBn ? 'লাইফটাইম প্রো সক্রিয়' : 'Lifetime Pro Active'}</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSelectPlan('Lifetime')}
+                disabled={isProcessingCheckout}
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                id="pricing-upgrade-lifetime-btn"
+              >
+                <span>
+                  {isProcessingCheckout
+                    ? 'Redirecting to Checkout...'
+                    : isBn
+                      ? `লাইফটাইম ডিল নিন (${pricing.lifetime.formatted})`
+                      : `Get Lifetime Deal (${pricing.lifetime.formatted})`}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
