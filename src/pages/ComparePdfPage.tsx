@@ -22,6 +22,8 @@ import { recordLocalProcessing } from '../components/NetworkPrivacyInspector';
 import { SecurityAffiliateBanner } from '../components/SecurityAffiliateBanner';
 import { SEO } from '../components/SEO';
 import { ToolHeader } from '../components/ToolHeader';
+import { getToolLimit } from '../config/constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useUsageLimit } from '../contexts/UsageLimitContext';
 import { getFriendlyErrorMessage, getPdfJs } from '../core';
 import { PDFSanitizer } from '../core/PDFSanitizer';
@@ -272,7 +274,12 @@ export function computeLineDiff(linesA: string[], linesB: string[]): DiffLine[] 
 }
 
 export const ComparePdfPage: React.FC = () => {
+  const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
+  const isPro = Boolean(
+    authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime'
+  );
+  const effectiveLimitMB = getToolLimit('compare-pdf', isPro, Boolean(user)).maxSingleMB;
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);
 
@@ -366,14 +373,6 @@ export const ComparePdfPage: React.FC = () => {
       }
       if (myToken !== operationTokenRef.current) return;
 
-      recordLocalProcessing(
-        bytesA.byteLength + bytesB.byteLength,
-        `PDF Diff: ${fA.name} vs ${fB.name}`
-      );
-      if (!skipQuotaRecord) {
-        recordDailyTask(null, 'compare_pdf');
-      }
-
       const [loadedA, loadedB] = await Promise.all([
         pdfjs.getDocument({ data: bytesA }).promise,
         pdfjs.getDocument({ data: bytesB }).promise,
@@ -447,6 +446,13 @@ export const ComparePdfPage: React.FC = () => {
       }
 
       if (myToken === operationTokenRef.current) {
+        recordLocalProcessing(
+          bytesA.byteLength + bytesB.byteLength,
+          `PDF Diff: ${fA.name} vs ${fB.name}`
+        );
+        if (!skipQuotaRecord) {
+          recordDailyTask(null, 'compare_pdf');
+        }
         setPageDiffs(diffResults);
       }
     } catch (err: unknown) {
@@ -618,7 +624,7 @@ ${pageDiffs
   return (
     <div className="space-y-6 max-w-6xl mx-auto animate-fadein" id="compare_pdf_container">
       <SEO slug="compare-pdf" />
-      <ToolHeader slug="compare-pdf" limitMB={100} />
+      <ToolHeader slug="compare-pdf" limitMB={effectiveLimitMB} />
 
       {/* Upload Zone (If files not yet both selected) */}
       {(!fileA || !fileB || pageDiffs.length === 0) && (
@@ -672,7 +678,7 @@ ${pageDiffs
                     }
                   }}
                   accept=".pdf,application/pdf"
-                  maxSizeMB={100}
+                  maxSizeMB={effectiveLimitMB}
                   id="uploader_file_a"
                 />
               ) : (
@@ -724,7 +730,7 @@ ${pageDiffs
                     }
                   }}
                   accept=".pdf,application/pdf"
-                  maxSizeMB={100}
+                  maxSizeMB={effectiveLimitMB}
                   id="uploader_file_b"
                 />
               ) : (

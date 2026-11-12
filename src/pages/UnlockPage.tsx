@@ -17,7 +17,7 @@ import { logger } from '../utils/logger';
 export const UnlockPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
-  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime');
   const isLoggedIn = Boolean(user);
   const currentLimits = getToolLimit('unlock-pdf', isPro, isLoggedIn);
   const { canPerformTask, openLimitModal } = useUsageLimit();

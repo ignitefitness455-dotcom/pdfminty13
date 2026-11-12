@@ -94,7 +94,14 @@ export class WorkerManager {
       const timer = setTimeout(() => {
         if (this.promises.has(id)) {
           this.promises.delete(id);
-          if (this.promises.size === 0 && this.worker) {
+          // A timed-out worker thread is wedged in WASM/CPU execution; always terminate it
+          // and reject any other pending tasks queued on the same wedged worker instance.
+          for (const [otherId, pending] of this.promises.entries()) {
+            clearTimeout(pending.timer);
+            pending.reject(new Error('Processing timed out — try a smaller file.'));
+            this.promises.delete(otherId);
+          }
+          if (this.worker) {
             try {
               this.worker.terminate();
             } catch {

@@ -40,7 +40,7 @@ export const CompressPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
-  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime');
   const isLoggedIn = Boolean(user);
   const currentLimits = getToolLimit('compress-pdf', isPro, isLoggedIn);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

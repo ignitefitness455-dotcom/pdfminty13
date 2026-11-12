@@ -18,7 +18,7 @@ export const AddBlankPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
-  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime');
   const isLoggedIn = Boolean(user);
   const currentLimits = getToolLimit('add-blank-page', isPro, isLoggedIn);
 

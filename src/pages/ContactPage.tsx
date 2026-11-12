@@ -22,7 +22,7 @@ export const ContactPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user } = useAuth();
   const { tier } = resolveCurrentSession(user);
-  const isPro = tier === 'pro' || user?.plan === 'pro';
+  const isPro = tier === 'pro' || user?.plan === 'pro' || user?.plan === 'lifetime';
 
   const [formData, setFormData] = useState({
     name: user?.displayName || '',

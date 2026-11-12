@@ -26,7 +26,7 @@ export const ImgToPdfPage: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
-  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime');
   const currentLimits = getToolLimit('image-to-pdf', isPro, Boolean(user));
   const [images, setImages] = useState<{ file: File; id: string; url: string }[]>([]);
   const [pageSize, setPageSize] = useState<'fit' | 'A4' | 'Letter' | 'Legal'>('fit');

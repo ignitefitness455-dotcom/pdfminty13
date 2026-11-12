@@ -89,7 +89,9 @@ export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
       'SECURED_LOCKED: This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.'
     );
   }
-  PDFSanitizer.sanitize(inputUint8);
+  PDFSanitizer.sanitize(inputUint8, {
+    maxBytes: Math.max(inputUint8.byteLength, 500 * 1024 * 1024),
+  });
   const { PDFDocument, StandardFonts, degrees, rgb } = await import('@cantoo/pdf-lib');
   const pdf = await PDFDocument.load(inputUint8);
   if (pdf.getPageCount() === 0) {

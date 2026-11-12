@@ -101,7 +101,7 @@ export const OcrPdfPage: React.FC = () => {
   const { user, firebaseUser, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
   const { tier } = resolveCurrentSession(user);
-  const isPro = Boolean(authIsPro || tier === 'pro' || user?.plan === 'pro');
+  const isPro = Boolean(authIsPro || tier === 'pro' || user?.plan === 'pro' || user?.plan === 'lifetime');
   const isLoggedIn = Boolean(user);
   const effectiveLimitMB = isPro ? 500 : getToolLimit('ocr-pdf', isPro, isLoggedIn).maxSingleMB;
   const maxBatchPages = isPro ? 15 : 5;

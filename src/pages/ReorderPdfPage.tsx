@@ -101,7 +101,9 @@ export const ReorderPdfPage: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const { user, isPro: authIsPro } = useAuth();
   const { canPerformTask, openLimitModal } = useUsageLimit();
-  const isPro = Boolean(authIsPro || user?.isPro === true || user?.plan === 'pro');
+  const isPro = Boolean(
+    authIsPro || user?.isPro === true || user?.plan === 'pro' || user?.plan === 'lifetime'
+  );
   const isLoggedIn = Boolean(user);
   const currentLimits = getToolLimit('reorder-pdf', isPro, isLoggedIn);
   const isBn = i18n.language === 'bn' || i18n.language?.startsWith('bn');
@@ -109,6 +111,7 @@ export const ReorderPdfPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [renderingThumbnails, setRenderingThumbnails] = useState(false);
+  const [totalDocPages, setTotalDocPages] = useState<number>(0);
   const [items, setItems] = useState<PageItem[]>([]);
   const [deletedItems, setDeletedItems] = useState<PageItem[]>([]);
   const [originalBackup, setOriginalBackup] = useState<PageItem[]>([]);
@@ -212,6 +215,7 @@ export const ReorderPdfPage: React.FC = () => {
         );
         if (myToken !== operationTokenRef.current) return;
 
+        setTotalDocPages(totalCount);
         const cappedTotal = Math.min(totalCount, MAX_INTERACTIVE_GRID_PAGES);
         const mapped: PageItem[] = [];
 
@@ -494,11 +498,23 @@ export const ReorderPdfPage: React.FC = () => {
     try {
       const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
 
-      // Pass each page along with its custom rotation
+      // Pass each page along with its custom rotation, preserving any trailing pages (>500)
+      // that were beyond MAX_INTERACTIVE_GRID_PAGES so large documents are never silently truncated.
       const newSequenceWithRotations = items.map((item) => ({
         page: item.page,
         rotation: item.rotation,
       }));
+      if (totalDocPages > MAX_INTERACTIVE_GRID_PAGES) {
+        const trackedPages = new Set([
+          ...items.map((it) => it.page),
+          ...deletedItems.map((it) => it.page),
+        ]);
+        for (let p = MAX_INTERACTIVE_GRID_PAGES + 1; p <= totalDocPages; p++) {
+          if (!trackedPages.has(p)) {
+            newSequenceWithRotations.push({ page: p, rotation: 0 });
+          }
+        }
+      }
 
       const parsedBytes = await WorkerManager.getInstance().runOperation<Uint8Array>(
         'reorderPDF',

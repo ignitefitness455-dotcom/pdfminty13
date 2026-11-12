@@ -414,7 +414,9 @@ export const AiAnalyzePage: React.FC = () => {
       // Sanitize the PDF before handing it to pdfjs for safety
       let sanitizedBytes: Uint8Array;
       try {
-        const sanResult = PDFSanitizer.sanitize(rawBytes);
+        const sanResult = PDFSanitizer.sanitize(rawBytes, {
+          maxBytes: Math.max(rawBytes.byteLength, 500 * 1024 * 1024),
+        });
         sanitizedBytes = sanResult.bytes;
       } catch (sanErr: unknown) {
         if (myToken !== operationTokenRef.current) return;
