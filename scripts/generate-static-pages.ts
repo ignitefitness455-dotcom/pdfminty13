@@ -1122,6 +1122,12 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
               privacyText: string;
               extraFaqs: { q: string; a: string }[];
               keywords: string;
+              // Tool-neutral "why" section. Must NOT reuse merge-pdf copy (see SEO-01):
+              // non-merge localized pages previously rendered Merge-PDF features + FAQs.
+              whyHeading: string;
+              whyItems: { title: string; desc: string }[];
+              pricingFaq: { q: string; a: string };
+              stepSeparator: string;
             }
 
             const locTemplates: Record<string, LocalizedToolRichTemplate> = {
@@ -1151,6 +1157,15 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
                   { q: `Fügt ${locToolName} ein Wasserzeichen in mein Dokument ein?`, a: 'Nein. Alle mit PDFMinty erstellten oder bearbeiteten PDF-Dateien sind auch im kostenlosen Tarif vollständig frei von Wasserzeichen oder Werbestempeln.' },
                 ],
                 keywords: `${locToolName}, PDF online bearbeiten, PDF Werkzeug kostenlos, PDF im Browser, Datenschutz PDF, PDFMinty Deutsch`,
+                whyHeading: `Warum ${locToolName} mit PDFMinty?`,
+                whyItems: [
+                  { title: 'Keine Uploads:', desc: 'Ihre Dateien werden lokal im Browser verarbeitet und verlassen Ihr Gerät nicht.' },
+                  { title: 'Ohne Wasserzeichen:', desc: 'Auch im kostenlosen Tarif werden Ihre Ergebnisse ohne Wasserzeichen oder Werbestempel exportiert.' },
+                  { title: 'Ohne Installation:', desc: 'Funktioniert direkt in Chrome, Firefox, Safari und Edge auf Desktop und Smartphone.' },
+                  { title: 'Faire Kontingente:', desc: '5 Aufgaben/Tag als Gast, 10 mit kostenlosem Konto, unbegrenzt mit Pro oder Lifetime.' },
+                ],
+                pricingFaq: { q: `Ist ${locToolName} kostenlos?`, a: 'Ja. Gäste erhalten 5 kostenlose Aufgaben pro Tag (bis 100 MB pro Datei), ein kostenloses Konto 10 Aufgaben pro Tag (bis 150 MB). Pro ($2,49/Monat) und Lifetime ($50 einmalig) bieten unbegrenzte Aufgaben und Dateien bis 500 MB.' },
+                stepSeparator: ':',
               },
               fr: {
                 howToHeading: `Comment utiliser ${locToolName} étape par étape dans votre navigateur`,
@@ -1178,6 +1193,15 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
                   { q: `L’outil ${locToolName} ajoute-t-il un filigrane sur mes documents ?`, a: 'Jamais. Tous les fichiers générés sur PDFMinty sont propres, professionnels et garantis sans filigrane publicitaire, même sur l’offre gratuite.' },
                 ],
                 keywords: `${locToolName}, outil PDF gratuit, modifier PDF en ligne, PDF sans téléversement, confidentialité PDF, PDFMinty Français`,
+                whyHeading: `Pourquoi utiliser ${locToolName} avec PDFMinty ?`,
+                whyItems: [
+                  { title: 'Aucun téléversement :', desc: 'vos fichiers sont traités localement dans le navigateur et ne quittent jamais votre appareil.' },
+                  { title: 'Sans filigrane :', desc: 'même avec l’offre gratuite, vos documents sont exportés sans filigrane ni tampon publicitaire.' },
+                  { title: 'Sans installation :', desc: 'fonctionne directement dans Chrome, Firefox, Safari et Edge, sur ordinateur comme sur mobile.' },
+                  { title: 'Quotas transparents :', desc: '5 tâches/jour en invité, 10 avec un compte gratuit, illimité avec Pro ou Lifetime.' },
+                ],
+                pricingFaq: { q: `${locToolName} est-il gratuit ?`, a: 'Oui. Les invités disposent de 5 tâches gratuites par jour (jusqu’à 100 Mo par fichier) et les comptes gratuits de 10 tâches par jour (jusqu’à 150 Mo). Les formules Pro (2,49 $/mois) et Lifetime (50 $ en paiement unique) offrent des tâches illimitées et des fichiers jusqu’à 500 Mo.' },
+                stepSeparator: ' :',
               },
               es: {
                 howToHeading: `Cómo usar ${locToolName} paso a paso en tu navegador`,
@@ -1205,6 +1229,15 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
                   { q: `¿${locToolName} añade marcas de agua al PDF descargado?`, a: 'No. Todos los documentos procesados con PDFMinty se exportan limpios y sin marcas de agua tanto en el plan gratuito como en los planes Pro.' },
                 ],
                 keywords: `${locToolName}, herramientas PDF gratis, editar PDF en el navegador, PDF privado sin subir archivos, PDFMinty Español`,
+                whyHeading: `¿Por qué usar ${locToolName} con PDFMinty?`,
+                whyItems: [
+                  { title: 'Sin subir archivos:', desc: 'tus documentos se procesan localmente en el navegador y nunca salen de tu dispositivo.' },
+                  { title: 'Sin marcas de agua:', desc: 'incluso en el plan gratuito, los archivos se exportan limpios y sin sellos publicitarios.' },
+                  { title: 'Sin instalación:', desc: 'funciona directamente en Chrome, Firefox, Safari y Edge, tanto en ordenador como en móvil.' },
+                  { title: 'Límites claros:', desc: '5 tareas/día como invitado, 10 con cuenta gratuita e ilimitadas con Pro o Lifetime.' },
+                ],
+                pricingFaq: { q: `¿${locToolName} es gratis?`, a: 'Sí. Los invitados tienen 5 tareas gratuitas al día (hasta 100 MB por archivo) y las cuentas gratuitas 10 tareas al día (hasta 150 MB). Los planes Pro ($2.49/mes) y Lifetime ($50 pago único) ofrecen tareas ilimitadas y archivos de hasta 500 MB.' },
+                stepSeparator: ':',
               },
               bn: {
                 howToHeading: `ব্রাউজারে ধাপে ধাপে ${locToolName} ব্যবহারের নিয়ম`,
@@ -1232,6 +1265,15 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
                   { q: `ফ্রি প্ল্যানে ${locToolName} ব্যবহার করলে কি পিডিএফে ওয়াটারমার্ক থাকবে?`, a: 'একেবারেই না। PDFMinty-তে ফ্রি কিংবা প্রো—সকল টিয়ারেই সম্পূর্ণ ওয়াটারমার্কমুক্ত ও পরিচ্ছন্ন পিডিএফ ফাইল পাওয়া যায়।' },
                 ],
                 keywords: `${locToolName}, ফ্রি পিডিএফ টুল, ব্রাউজার পিডিএফ এডিটর, নিরাপদ পিডিএফ প্রসেসিং, PDFMinty বাংলা`,
+                whyHeading: `কেন PDFMinty-তে ${locToolName} ব্যবহার করবেন?`,
+                whyItems: [
+                  { title: 'কোনো আপলোড নেই:', desc: 'আপনার ফাইল ব্রাউজারেই লোকালভাবে প্রসেস হয় এবং কখনো আপনার ডিভাইস ছেড়ে যায় না।' },
+                  { title: 'ওয়াটারমার্ক নেই:', desc: 'ফ্রি প্ল্যানেও আউটপুট ফাইলে কোনো ওয়াটারমার্ক বা বিজ্ঞাপনের স্ট্যাম্প থাকে না।' },
+                  { title: 'ইনস্টল লাগবে না:', desc: 'ডেস্কটপ ও মোবাইলে Chrome, Firefox, Safari এবং Edge-এ সরাসরি কাজ করে।' },
+                  { title: 'স্বচ্ছ কোটা:', desc: 'গেস্ট হিসেবে দিনে ৫টি, ফ্রি অ্যাকাউন্টে ১০টি এবং Pro বা Lifetime-এ আনলিমিটেড কাজ।' },
+                ],
+                pricingFaq: { q: `${locToolName} কি ফ্রি?`, a: 'হ্যাঁ। গেস্টরা দিনে ৫টি ফ্রি কাজ (প্রতি ফাইল ১০০MB পর্যন্ত) এবং ফ্রি অ্যাকাউন্টধারীরা দিনে ১০টি কাজ (১৫০MB পর্যন্ত) করতে পারেন। Pro ($2.49/মাস) ও Lifetime ($50 এককালীন) প্ল্যানে আনলিমিটেড কাজ ও ৫০০MB পর্যন্ত ফাইল সাপোর্ট রয়েছে।' },
+                stepSeparator: ':',
               },
               hi: {
                 howToHeading: `ब्राउज़र में ${locToolName} का उपयोग कैसे करें (चरण-दर-चरण मार्गदर्शिका)`,
@@ -1259,6 +1301,15 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
                   { q: `क्या मुफ़्त प्लान में ${locToolName} से आउटपुट पीडीएफ पर वॉटरमार्क आता है?`, a: 'बिल्कुल नहीं। PDFMinty के मुफ़्त और Pro दोनों प्लान्स में बिना किसी वॉटरमार्क के साफ़ और प्रोफेशनल पीडीएफ फ़ाइल मिलती है।' },
                 ],
                 keywords: `${locToolName}, मुफ़्त पीडीएफ टूल्स, ऑनलाइन पीडीएफ एडिटर, प्राइवेसी पीडीएफ टूल, PDFMinty हिंदी`,
+                whyHeading: `PDFMinty पर ${locToolName} क्यों चुनें?`,
+                whyItems: [
+                  { title: 'कोई अपलोड नहीं:', desc: 'आपकी फ़ाइलें ब्राउज़र में स्थानीय रूप से प्रोसेस होती हैं और कभी आपके डिवाइस से बाहर नहीं जातीं।' },
+                  { title: 'कोई वॉटरमार्क नहीं:', desc: 'मुफ़्त प्लान में भी आउटपुट फ़ाइलों पर कोई वॉटरमार्क या विज्ञापन स्टैम्प नहीं लगता।' },
+                  { title: 'इंस्टॉलेशन की ज़रूरत नहीं:', desc: 'डेस्कटॉप और मोबाइल पर Chrome, Firefox, Safari और Edge में सीधे काम करता है।' },
+                  { title: 'पारदर्शी सीमाएँ:', desc: 'अतिथि के रूप में 5 कार्य/दिन, मुफ़्त खाते से 10, और Pro या Lifetime में असीमित।' },
+                ],
+                pricingFaq: { q: `क्या ${locToolName} मुफ़्त है?`, a: 'हाँ। अतिथियों को प्रतिदिन 5 मुफ़्त कार्य (प्रति फ़ाइल 100 MB तक) और मुफ़्त खाते को प्रतिदिन 10 कार्य (150 MB तक) मिलते हैं। Pro ($2.49/माह) और Lifetime ($50 एकबारगी) में असीमित कार्य और 500 MB तक की फ़ाइलें समर्थित हैं।' },
+                stepSeparator: ':',
               },
               zh: {
                 howToHeading: `如何在浏览器中分步使用 ${locToolName}`,
@@ -1286,6 +1337,15 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
                   { q: `免费使用 ${locToolName} 导出的 PDF 文件会带有水印吗？`, a: '没有任何水印。无论您是未登录访客、免费注册用户还是 Pro 会员，通过 PDFMinty 处理并导出的所有文档均保持原始清晰度且完全无水印。' },
                 ],
                 keywords: `${locToolName}, 免费PDF工具, 在线处理PDF, 浏览器本地PDF工具, 隐私安全PDF, PDFMinty 中文版`,
+                whyHeading: `为什么选择 PDFMinty 的 ${locToolName}？`,
+                whyItems: [
+                  { title: '零上传：', desc: '文件在浏览器本地处理，始终不会离开您的设备。' },
+                  { title: '无水印：', desc: '即使使用免费方案，导出的文件也不含任何水印或广告印章。' },
+                  { title: '免安装：', desc: '在电脑和手机上的 Chrome、Firefox、Safari 与 Edge 中直接使用。' },
+                  { title: '额度透明：', desc: '访客每日 5 次，免费账户每日 10 次，Pro 或终身版无限次。' },
+                ],
+                pricingFaq: { q: `${locToolName} 是免费的吗？`, a: '是的。访客每天可免费执行 5 次任务（单文件最高 100 MB），免费账户每天 10 次（最高 150 MB）。Pro（$2.49/月）与终身版（$50 一次性付费）提供无限次任务及最高 500 MB 的文件支持。' },
+                stepSeparator: '：',
               },
             };
 
@@ -1293,16 +1353,16 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
             locStepsForSchema = richTpl.steps;
             locHowToTitleForSchema = richTpl.howToHeading;
 
-            const combinedFaqs = [...(locMergeFallback?.faqs || []), ...richTpl.extraFaqs];
+            const combinedFaqs = [...richTpl.extraFaqs, richTpl.pricingFaq];
             locFaqsForSchema = combinedFaqs;
 
-            const featuresHtml = (locMergeFallback?.features || [])
+            const featuresHtml = richTpl.whyItems
               .map((f) => `              <li><strong>${f.title}</strong> ${f.desc}</li>`)
               .join('\n');
 
             const stepsHtml = richTpl.steps
               .map(
-                (st) => `            <li><strong>${st.title}：</strong> ${st.desc}</li>`
+                (st) => `            <li><strong>${st.title}${richTpl.stepSeparator}</strong> ${st.desc}</li>`
               )
               .join('\n');
 
@@ -1319,9 +1379,10 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
               )
               .join('\n');
 
+            // relatedTitle / faqTitle from the merge dataset are tool-neutral labels (e.g. "FAQ"), so they are safe to reuse.
             const relatedHeading =
               locCommon?.relatedTools?.title || locMergeFallback?.relatedTitle || 'Related PDF Tools';
-            const whyHeading = locMergeFallback?.whyTitle || `${locToolName} — PDFMinty`;
+            const whyHeading = richTpl.whyHeading;
             const faqHeading = locMergeFallback?.faqTitle || 'FAQ';
 
             const locArticleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
@@ -1874,7 +1935,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
             ${pricingFaqs.map((f) => `<div>\n              <h3>${f.q}</h3>\n              <p>${f.a}</p>\n            </div>`).join('\n            ')}
           </section>
 
-          <p><a href="/sign-up/">Create a Free Account or Upgrade to Pro</a> • <a href="/sign-in/">Sign In to Your Account</a> • <a href="/">Explore All 24 Free PDF Tools</a> • <a href="/contact/">Contact Customer Support</a> for team and enterprise licensing inquiries.</p>
+          <p><a href="/signup/">Create a Free Account or Upgrade to Pro</a> • <a href="/login/">Sign In to Your Account</a> • <a href="/">Explore All 24 Free PDF Tools</a> • <a href="/contact/">Contact Customer Support</a> for team and enterprise licensing inquiries.</p>
         </article>`;
 
   let pricingHtml = optimizedBase.replace("</head>", `${pricingHeadMeta}\n</head>`);
