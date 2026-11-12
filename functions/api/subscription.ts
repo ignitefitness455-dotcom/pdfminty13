@@ -5,6 +5,7 @@ import {
   mintServiceAccountAccessToken,
   patchFirestoreUserSubscription,
 } from '../utils/firebase-auth';
+import { checkRateLimit } from '../utils/rate-limiter';
 
 interface Env {
   FIREBASE_PROJECT_ID?: string;
@@ -13,6 +14,7 @@ interface Env {
   FIREBASE_PRIVATE_KEY?: string;
   LEMONSQUEEZY_API_KEY?: string;
   VITE_LEMON_SQUEEZY_BILLING_PORTAL_URL?: string;
+  RATELIMIT_KV?: KVNamespace;
 }
 
 interface SubscriptionActionRequest {
@@ -48,7 +50,8 @@ interface LemonSqueezySubscriptionResponse {
   };
 }
 
-const DEFAULT_PORTAL_URL = 'https://pdfminty.lemonsqueezy.com/billing';
+const DEFAULT_PORTAL_URL = 'https://checkout.pdfminty.com/billing';
+const MAX_BODY_BYTES = 4096;
 
 function jsonResponse(
   body: Record<string, unknown>,
@@ -76,6 +79,30 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   if (request.method !== 'POST') {
     return jsonResponse({ error: 'Method not allowed. Use POST.' }, 405, corsHeaders);
+  }
+
+  const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+  if (contentLength > MAX_BODY_BYTES) {
+    return jsonResponse({ error: 'Request payload too large.' }, 413, corsHeaders);
+  }
+
+  const rateLimitResult = await checkRateLimit({
+    request,
+    kv: env.RATELIMIT_KV,
+    secret: env.LEMONSQUEEZY_API_KEY || 'pdfminty_subscription_salt',
+    scope: 'subscription_action',
+    limit: 20,
+    windowSec: 900,
+    burstLimit: 5,
+    burstWindowSec: 10,
+  });
+
+  if (!rateLimitResult.allowed) {
+    return jsonResponse(
+      { error: rateLimitResult.error || 'Too many subscription requests. Please wait shortly.' },
+      429,
+      { ...corsHeaders, ...rateLimitResult.responseHeaders }
+    );
   }
 
   const projectId = (env.FIREBASE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || 'pdfminty-9836d').trim();

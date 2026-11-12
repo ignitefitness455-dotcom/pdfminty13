@@ -51,7 +51,16 @@ export function normalizeClientIp(ip: string): string {
 
   // Handle IPv6
   if (clean.includes(':')) {
-    const segments = clean.split(':').filter(Boolean);
+    const zoneStripped = clean.split('%')[0];
+    if (zoneStripped.includes('::')) {
+      const [leftRaw, rightRaw] = zoneStripped.split('::');
+      const left = leftRaw ? leftRaw.split(':').filter(Boolean) : [];
+      const right = rightRaw ? rightRaw.split(':').filter(Boolean) : [];
+      const missing = Math.max(0, 8 - (left.length + right.length));
+      const expanded = [...left, ...Array(missing).fill('0000'), ...right];
+      return expanded.slice(0, 4).join(':');
+    }
+    const segments = zoneStripped.split(':').filter(Boolean);
     // Use the first 4 segments (/64 routing prefix)
     return segments.slice(0, 4).join(':') || clean;
   }

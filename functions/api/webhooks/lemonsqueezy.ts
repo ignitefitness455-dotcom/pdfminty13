@@ -1,11 +1,14 @@
 import {
+  getFirestoreUserPlan,
   mintServiceAccountAccessToken,
   patchFirestoreUserSubscription,
 } from '../../utils/firebase-auth';
 
 interface Env {
   LEMONSQUEEZY_WEBHOOK_SECRET?: string;
+  LEMON_SQUEEZY_WEBHOOK_SECRET?: string;
   FIREBASE_PROJECT_ID?: string;
+  VITE_FIREBASE_PROJECT_ID?: string;
   FIREBASE_CLIENT_EMAIL?: string;
   FIREBASE_PRIVATE_KEY?: string;
   RATELIMIT_KV?: KVNamespace;
@@ -191,9 +194,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return jsonResponse({ error: 'Webhook payload exceeds maximum allowed size.' }, 413);
   }
 
-  const webhookSecret = (env.LEMONSQUEEZY_WEBHOOK_SECRET || '').trim();
+  const webhookSecret = (
+    env.LEMONSQUEEZY_WEBHOOK_SECRET ||
+    env.LEMON_SQUEEZY_WEBHOOK_SECRET ||
+    ''
+  ).trim();
   if (!webhookSecret) {
-    console.error('Lemon Squeezy webhook rejected: LEMONSQUEEZY_WEBHOOK_SECRET is not configured.');
+    console.error(
+      'Lemon Squeezy webhook rejected: LEMONSQUEEZY_WEBHOOK_SECRET / LEMON_SQUEEZY_WEBHOOK_SECRET is not configured.'
+    );
     return jsonResponse({ error: 'Webhook verification secret is not configured.' }, 503);
   }
 
@@ -243,7 +252,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return jsonResponse({ error: 'Missing or invalid meta.custom_data.uid.' }, 400);
   }
 
-  const projectId = (env.FIREBASE_PROJECT_ID || '').trim();
+  const projectId = (env.FIREBASE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || '').trim();
   const clientEmail = (env.FIREBASE_CLIENT_EMAIL || '').trim();
   const privateKey = (env.FIREBASE_PRIVATE_KEY || '').trim();
 
@@ -322,6 +331,23 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const effectiveUpdatedAtIso = Number.isFinite(parsedEventUpdatedAtMs)
       ? new Date(parsedEventUpdatedAtMs).toISOString()
       : new Date().toISOString();
+
+    // Guard against a cancelled or expired recurring subscription overwriting a paid Lifetime entitlement
+    if (
+      entitlement.plan !== 'lifetime' &&
+      (eventName === 'subscription_cancelled' ||
+        eventName === 'subscription_expired' ||
+        (eventName === 'subscription_updated' && !entitlement.isPro))
+    ) {
+      const existingPlan = await getFirestoreUserPlan(projectId, uid, accessToken).catch(
+        () => null
+      );
+      if (existingPlan === 'lifetime') {
+        entitlement.isPro = true;
+        entitlement.plan = 'lifetime';
+        entitlement.subscriptionStatus = 'lifetime';
+      }
+    }
 
     await patchFirestoreUserSubscription({
       projectId,

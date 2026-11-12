@@ -467,5 +467,30 @@ describe('gemini-proxy Firebase RS256 auth & Pro entitlement enforcement (TASK-P
       })
     );
     expect(allowedRes.status).toBe(200);
+
+    // Guest OCR with >5 pages must be rejected with 403 even when configured via VITE_FIREBASE_PROJECT_ID
+    const sixPagesGuestReq = new Request('https://pdfminty.com/api/gemini-proxy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://pdfminty.com',
+        'CF-Connecting-IP': '203.0.113.56',
+      },
+      body: JSON.stringify({
+        mode: 'ocr',
+        imagesBase64: Array.from(
+          { length: 6 },
+          () =>
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+        ),
+      }),
+    });
+    const sixPagesRes = await onRequest(
+      makeContext(sixPagesGuestReq, {
+        GEMINI_API_KEY: 'AIzaTestKeyForAuth123456',
+        VITE_FIREBASE_PROJECT_ID: projectId,
+      })
+    );
+    expect(sixPagesRes.status).toBe(403);
   });
 });

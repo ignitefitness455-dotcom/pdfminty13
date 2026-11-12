@@ -262,12 +262,86 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
     expect(json.isPro).toBe(false);
     expect(json.status).toBe('expired');
 
-    const [, patchInit] = fetchSpy.mock.calls[1] as [string, RequestInit];
-    const patchBody = JSON.parse(String(patchInit.body)) as {
+    const patchCall = fetchSpy.mock.calls.find(
+      ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'
+    ) as [string, RequestInit];
+    expect(patchCall).toBeDefined();
+    const patchBody = JSON.parse(String(patchCall[1].body)) as {
       fields: { isPro: { booleanValue: boolean }; plan: { stringValue: string } };
     };
     expect(patchBody.fields.isPro.booleanValue).toBe(false);
     expect(patchBody.fields.plan.stringValue).toBe('free');
+  });
+
+  it('preserves Lifetime Pro entitlement when a prior monthly subscription expires or cancels, and accepts LEMON_SQUEEZY_WEBHOOK_SECRET', async () => {
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === 'https://oauth2.googleapis.com/token') {
+        return new Response(
+          JSON.stringify({ access_token: 'ya29.test_sa_token', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!init?.method || init.method === 'GET') {
+        return new Response(
+          JSON.stringify({
+            name: 'users/lifetimeUserUid99',
+            fields: {
+              isPro: { booleanValue: true },
+              plan: { stringValue: 'lifetime' },
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response(JSON.stringify({ name: 'users/lifetimeUserUid99' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const body = JSON.stringify({
+      meta: {
+        event_name: 'subscription_expired',
+        custom_data: { uid: 'lifetimeUserUid99' },
+      },
+      data: {
+        id: 'sub_old_monthly_42',
+        attributes: { status: 'expired', updated_at: '2026-11-30T12:00:00Z' },
+      },
+    });
+    const sig = await signWebhookBody(webhookSecret, body);
+
+    const req = new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Signature': sig,
+      },
+      body,
+    });
+
+    const res = await onRequest(
+      makeWebhookContext(req, {
+        LEMONSQUEEZY_WEBHOOK_SECRET: undefined,
+        LEMON_SQUEEZY_WEBHOOK_SECRET: webhookSecret,
+      })
+    );
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { isPro: boolean; status: string };
+    expect(json.isPro).toBe(true);
+    expect(json.status).toBe('lifetime');
+
+    const patchCall = fetchSpy.mock.calls.find(
+      ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'
+    ) as [string, RequestInit];
+    expect(patchCall).toBeDefined();
+    const patchBody = JSON.parse(String(patchCall[1].body)) as {
+      fields: { isPro: { booleanValue: boolean }; plan: { stringValue: string } };
+    };
+    expect(patchBody.fields.isPro.booleanValue).toBe(true);
+    expect(patchBody.fields.plan.stringValue).toBe('lifetime');
   });
 
   it('handles simultaneous payments from multiple users concurrently with single OAuth token minting and isolated Firestore updates', async () => {
@@ -401,7 +475,7 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
 
   it('ignores stale out-of-order webhook events so older status cannot overwrite newer status', async () => {
     let firestorePatchCount = 0;
-    const fetchSpy = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url === 'https://oauth2.googleapis.com/token') {
         return new Response(
@@ -409,7 +483,9 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
       }
-      firestorePatchCount += 1;
+      if (init?.method === 'PATCH') {
+        firestorePatchCount += 1;
+      }
       return new Response(JSON.stringify({ name: 'users/orderTestUid' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },

@@ -163,6 +163,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   return new Response(null, {
     status: 204,
-    headers: corsHeaders as HeadersInit,
+    headers: {
+      ...corsHeaders,
+      ...rateLimitResult.responseHeaders,
+    } as HeadersInit,
   });
 };

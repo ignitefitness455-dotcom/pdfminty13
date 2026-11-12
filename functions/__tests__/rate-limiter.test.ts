@@ -14,6 +14,9 @@ describe('Rate Limiter Utility', () => {
       const ipv6B = '2001:0db8:85a3:0000:ffff:8a2e:0370:9999';
       expect(normalizeClientIp(ipv6A)).toBe('2001:0db8:85a3:0000');
       expect(normalizeClientIp(ipv6B)).toBe('2001:0db8:85a3:0000');
+      // Compressed :: addresses in the same /64 subnet must normalize to identical prefix
+      expect(normalizeClientIp('2001:db8::1')).toBe('2001:db8:0000:0000');
+      expect(normalizeClientIp('2001:db8::9999')).toBe('2001:db8:0000:0000');
     });
 
     it('handles empty or missing client IPs safely', () => {

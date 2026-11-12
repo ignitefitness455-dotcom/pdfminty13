@@ -290,6 +290,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         status: 200,
         headers: {
           ...corsHeaders,
+          ...rateLimitResult.responseHeaders,
           'Content-Type': 'application/json',
         } as HeadersInit,
       }

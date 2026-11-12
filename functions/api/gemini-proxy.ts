@@ -16,12 +16,14 @@ interface Env {
   GORK_MODEL?: string;
   GROK_MODEL?: string;
   FIREBASE_PROJECT_ID?: string;
+  VITE_FIREBASE_PROJECT_ID?: string;
   RATELIMIT_KV?: KVNamespace;
 }
 
 const MAX_TEXT_LENGTH = 60000;
 const MAX_QUERY_LENGTH = 2000;
 const MAX_OCR_IMAGES = 15;
+const MAX_FREE_OCR_IMAGES = 5;
 const MAX_SINGLE_IMAGE_BASE64_LENGTH = 4 * 1024 * 1024; // ~3 MB binary per page
 const MAX_CHAT_MESSAGES = 30;
 const MAX_MESSAGE_CONTENT_LENGTH = 4000;
@@ -304,8 +306,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Server-side authentication & Pro tier enforcement when FIREBASE_PROJECT_ID is configured
-    const firebaseProjectId = (env.FIREBASE_PROJECT_ID || '').trim();
+    // Server-side authentication & Pro tier enforcement when FIREBASE_PROJECT_ID / VITE_FIREBASE_PROJECT_ID is configured
+    const firebaseProjectId = (env.FIREBASE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || '').trim();
     if (firebaseProjectId) {
       let bearerToken: string | null = null;
       try {
@@ -392,8 +394,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       } else {
         // mode === 'ocr'
         if (bearerToken) {
+          let claims;
           try {
-            await verifyFirebaseIdToken(bearerToken, firebaseProjectId);
+            claims = await verifyFirebaseIdToken(bearerToken, firebaseProjectId);
           } catch {
             return new Response(
               JSON.stringify({
@@ -408,11 +411,65 @@ export const onRequest: PagesFunction<Env> = async (context) => {
               }
             );
           }
+
+          if (validatedImages.length > MAX_FREE_OCR_IMAGES) {
+            let isProUser = false;
+            try {
+              isProUser = await verifyFirestoreProStatus(
+                firebaseProjectId,
+                claims.sub,
+                bearerToken
+              );
+            } catch {
+              return new Response(
+                JSON.stringify({
+                  error: 'Unable to verify subscription status right now. Please retry shortly.',
+                }),
+                {
+                  status: 503,
+                  headers: {
+                    ...corsHeaders,
+                    'Content-Type': 'application/json',
+                  } as HeadersInit,
+                }
+              );
+            }
+
+            if (!isProUser) {
+              return new Response(
+                JSON.stringify({
+                  error: `Free tier allows up to ${MAX_FREE_OCR_IMAGES} OCR pages per batch. Upgrade to PDFMinty Pro for up to ${MAX_OCR_IMAGES} pages per batch.`,
+                }),
+                {
+                  status: 403,
+                  headers: {
+                    ...corsHeaders,
+                    'Content-Type': 'application/json',
+                  } as HeadersInit,
+                }
+              );
+            }
+          }
         } else {
           if (!isAllowedRequestOrigin(request)) {
             return new Response(
               JSON.stringify({
                 error: 'Forbidden request origin for unauthenticated OCR request.',
+              }),
+              {
+                status: 403,
+                headers: {
+                  ...corsHeaders,
+                  'Content-Type': 'application/json',
+                } as HeadersInit,
+              }
+            );
+          }
+
+          if (validatedImages.length > MAX_FREE_OCR_IMAGES) {
+            return new Response(
+              JSON.stringify({
+                error: `Guest OCR allows up to ${MAX_FREE_OCR_IMAGES} pages per batch. Upgrade to PDFMinty Pro for up to ${MAX_OCR_IMAGES} pages per batch.`,
               }),
               {
                 status: 403,

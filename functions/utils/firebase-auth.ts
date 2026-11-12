@@ -264,7 +264,42 @@ export async function verifyFirestoreProStatus(
   }
 
   const doc = (await res.json()) as FirestoreDocumentResponse;
-  return doc.fields?.isPro?.booleanValue === true;
+  const plan = doc.fields?.plan?.stringValue;
+  return (
+    doc.fields?.isPro?.booleanValue === true ||
+    plan === 'pro' ||
+    plan === 'lifetime'
+  );
+}
+
+/**
+ * Queries Firestore REST API using a service-account OAuth token to inspect the user's
+ * current `plan` field before applying subscription downgrade webhooks (preventing a
+ * cancelled/expired monthly subscription from overwriting a paid `'lifetime'` entitlement).
+ */
+export async function getFirestoreUserPlan(
+  projectId: string,
+  uid: string,
+  accessToken: string
+): Promise<string | null> {
+  const docUrl = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(
+    projectId
+  )}/databases/(default)/documents/users/${encodeURIComponent(uid)}`;
+
+  const res = await fetch(docUrl, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  });
+
+  if (res.status === 404 || !res.ok) {
+    return null;
+  }
+
+  const doc = (await res.json()) as FirestoreDocumentResponse;
+  return doc.fields?.plan?.stringValue || null;
 }
 
 function pemPrivateKeyToArrayBuffer(pem: string): ArrayBuffer {
