@@ -1,5 +1,5 @@
 import {
-  getFirestoreUserPlan,
+  getFirestoreUserRecord,
   mintServiceAccountAccessToken,
   patchFirestoreUserSubscription,
 } from '../../utils/firebase-auth';
@@ -96,6 +96,7 @@ interface ResolvedEntitlement {
   isPro: boolean;
   plan: 'free' | 'pro' | 'lifetime';
   subscriptionStatus: string;
+  isLifetimeRefund?: boolean;
 }
 
 function resolveSubscriptionEntitlement(
@@ -116,12 +117,18 @@ function resolveSubscriptionEntitlement(
   const isLifetimeOrder = variantOrProduct.includes('lifetime');
 
   if (eventName === 'order_created') {
-    const isPaid = (!rawStatus || rawStatus === 'paid') && attributes?.refunded !== true;
+    const isRefunded = rawStatus === 'refunded' || attributes?.refunded === true;
+    const isPaid = (!rawStatus || rawStatus === 'paid') && !isRefunded;
     return {
       actionable: true,
       isPro: isPaid,
       plan: isPaid ? (isLifetimeOrder ? 'lifetime' : 'pro') : 'free',
-      subscriptionStatus: isPaid ? (isLifetimeOrder ? 'lifetime' : 'paid') : rawStatus || 'pending',
+      subscriptionStatus: isPaid
+        ? isLifetimeOrder
+          ? 'lifetime'
+          : 'paid'
+        : rawStatus || (isRefunded ? 'refunded' : 'pending'),
+      isLifetimeRefund: isLifetimeOrder && isRefunded,
     };
   }
 
@@ -135,6 +142,7 @@ function resolveSubscriptionEntitlement(
       isPro: false,
       plan: 'free',
       subscriptionStatus: rawStatus || eventName,
+      isLifetimeRefund: eventName === 'order_refunded' && isLifetimeOrder,
     };
   }
 
@@ -332,20 +340,28 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       ? new Date(parsedEventUpdatedAtMs).toISOString()
       : new Date().toISOString();
 
-    // Guard against a cancelled or expired recurring subscription overwriting a paid Lifetime entitlement
-    if (
-      entitlement.plan !== 'lifetime' &&
-      (eventName === 'subscription_cancelled' ||
-        eventName === 'subscription_expired' ||
-        (eventName === 'subscription_updated' && !entitlement.isPro))
-    ) {
-      const existingPlan = await getFirestoreUserPlan(projectId, uid, accessToken).catch(
-        () => null
-      );
-      if (existingPlan === 'lifetime') {
-        entitlement.isPro = true;
-        entitlement.plan = 'lifetime';
-        entitlement.subscriptionStatus = 'lifetime';
+    // Protect paid Lifetime entitlement from being downgraded to 'pro' or 'free' by any
+    // recurring subscription event or unrelated order event, while allowing explicit
+    // lifetime-order refunds to revoke access. Never fail open if Firestore GET fails.
+    let preservedLifetime = false;
+    let effectiveSubscriptionId = subscriptionId;
+    if (entitlement.plan !== 'lifetime' && !entitlement.isLifetimeRefund) {
+      const existingUser = await getFirestoreUserRecord(projectId, uid, accessToken);
+      if (existingUser?.plan === 'lifetime') {
+        const isMatchingLifetimeOrderRefund =
+          eventName === 'order_refunded' &&
+          Boolean(existingUser.subscriptionId) &&
+          existingUser.subscriptionId === subscriptionId;
+
+        if (!isMatchingLifetimeOrderRefund) {
+          entitlement.isPro = true;
+          entitlement.plan = 'lifetime';
+          entitlement.subscriptionStatus = 'lifetime';
+          preservedLifetime = true;
+          if (existingUser.subscriptionId) {
+            effectiveSubscriptionId = existingUser.subscriptionId;
+          }
+        }
       }
     }
 
@@ -356,10 +372,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       isPro: entitlement.isPro,
       plan: entitlement.plan,
       subscriptionStatus: entitlement.subscriptionStatus,
-      subscriptionId,
+      subscriptionId: effectiveSubscriptionId,
       updatedAtIso: effectiveUpdatedAtIso,
-      renewsAt: attrs?.renews_at ?? undefined,
-      endsAt: attrs?.ends_at ?? undefined,
+      renewsAt: preservedLifetime ? undefined : (attrs?.renews_at ?? undefined),
+      endsAt: preservedLifetime ? undefined : (attrs?.ends_at ?? undefined),
       customerPortalUrl: attrs?.urls?.customer_portal || null,
       updatePaymentMethodUrl: attrs?.urls?.update_payment_method || null,
     });

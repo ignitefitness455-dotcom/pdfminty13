@@ -194,9 +194,13 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
     expect(firstJson.isPro).toBe(true);
     expect(firstJson.duplicate).toBeUndefined();
 
-    // Verify OAuth exchange + Firestore PATCH
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
-    const [patchUrl, patchInit] = fetchSpy.mock.calls[1] as [string, RequestInit];
+    // Verify OAuth exchange + Firestore GET lookup + Firestore PATCH
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+    const patchCall = fetchSpy.mock.calls.find(
+      ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'
+    ) as [string, RequestInit];
+    expect(patchCall).toBeDefined();
+    const [patchUrl, patchInit] = patchCall;
     expect(patchUrl).toContain('/documents/users/firebaseUidAbc123?');
     expect(patchUrl).toContain('updateMask.fieldPaths=isPro');
     expect(patchInit.method).toBe('PATCH');
@@ -216,7 +220,7 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
     expect(replayRes.status).toBe(200);
     const replayJson = (await replayRes.json()) as { duplicate?: boolean };
     expect(replayJson.duplicate).toBe(true);
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
   });
 
   it('revokes Pro (isPro: false, plan: free) on signed subscription_expired event', async () => {
@@ -428,7 +432,7 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
 
   it('deduplicates concurrent identical webhook deliveries arriving simultaneously in-flight', async () => {
     let firestorePatchCount = 0;
-    const fetchSpy = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url === 'https://oauth2.googleapis.com/token') {
         return new Response(
@@ -436,7 +440,9 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
       }
-      firestorePatchCount += 1;
+      if (init?.method === 'PATCH') {
+        firestorePatchCount += 1;
+      }
       await new Promise((r) => setTimeout(r, 20));
       return new Response(JSON.stringify({ name: 'users/concurrentUid99' }), {
         status: 200,
@@ -547,5 +553,315 @@ describe('Lemon Squeezy webhook verification & Firestore Pro sync (TASK-P0-02)',
     expect(olderJson.ignored).toBe(true);
     expect(olderJson.reason).toBe('stale_out_of_order_event');
     expect(firestorePatchCount).toBe(1);
+  });
+
+  it.each([
+    {
+      eventName: 'subscription_payment_success',
+      status: 'paid',
+      extraAttrs: { renews_at: '2026-12-30T12:00:00Z' },
+    },
+    {
+      eventName: 'subscription_resumed',
+      status: 'active',
+      extraAttrs: { renews_at: '2026-12-30T12:00:00Z' },
+    },
+    {
+      eventName: 'subscription_updated',
+      status: 'active',
+      extraAttrs: { renews_at: '2026-12-30T12:00:00Z' },
+    },
+    {
+      eventName: 'subscription_updated',
+      status: 'unpaid',
+      extraAttrs: {},
+    },
+    {
+      eventName: 'subscription_cancelled',
+      status: 'cancelled',
+      extraAttrs: { ends_at: '2099-12-31T23:59:59Z' },
+    },
+    {
+      eventName: 'subscription_expired',
+      status: 'expired',
+      extraAttrs: { ends_at: '2020-01-01T00:00:00Z' },
+    },
+    {
+      eventName: 'subscription_created',
+      status: 'active',
+      extraAttrs: {},
+    },
+    {
+      eventName: 'subscription_unpaused',
+      status: 'active',
+      extraAttrs: {},
+    },
+    {
+      eventName: 'subscription_payment_recovered',
+      status: 'paid',
+      extraAttrs: {},
+    },
+    {
+      eventName: 'subscription_payment_refunded',
+      status: 'refunded',
+      extraAttrs: {},
+    },
+  ])(
+    'never downgrades a Lifetime user to Pro or Free on $eventName (status: $status)',
+    async ({ eventName, status, extraAttrs }) => {
+      const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url === 'https://oauth2.googleapis.com/token') {
+          return new Response(
+            JSON.stringify({ access_token: 'ya29.test_sa_token', expires_in: 3600 }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        if (!init?.method || init.method === 'GET') {
+          return new Response(
+            JSON.stringify({
+              name: 'users/lifetimeProtectedUid',
+              fields: {
+                isPro: { booleanValue: true },
+                plan: { stringValue: 'lifetime' },
+                subscriptionStatus: { stringValue: 'lifetime' },
+                subscriptionId: { stringValue: 'order_lifetime_777' },
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(JSON.stringify({ name: 'users/lifetimeProtectedUid' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      });
+      globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+      const body = JSON.stringify({
+        meta: {
+          event_name: eventName,
+          custom_data: { uid: 'lifetimeProtectedUid', plan: 'monthly' },
+        },
+        data: {
+          id: 'sub_unrelated_monthly_88',
+          attributes: {
+            status,
+            updated_at: '2026-11-13T10:00:00Z',
+            ...extraAttrs,
+          },
+        },
+      });
+      const sig = await signWebhookBody(webhookSecret, body);
+
+      const req = new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Signature': sig,
+          'X-Event-Name': eventName,
+        },
+        body,
+      });
+
+      const res = await onRequest(makeWebhookContext(req));
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as { isPro: boolean; status: string };
+      expect(json.isPro).toBe(true);
+      expect(json.status).toBe('lifetime');
+
+      const patchCall = fetchSpy.mock.calls.find(
+        ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'
+      ) as [string, RequestInit];
+      expect(patchCall).toBeDefined();
+      const patchBody = JSON.parse(String(patchCall[1].body)) as {
+        fields: {
+          isPro: { booleanValue: boolean };
+          plan: { stringValue: string };
+          subscriptionStatus: { stringValue: string };
+          subscriptionId: { stringValue: string };
+          renewsAt?: unknown;
+          endsAt?: unknown;
+        };
+      };
+      expect(patchBody.fields.isPro.booleanValue).toBe(true);
+      expect(patchBody.fields.plan.stringValue).toBe('lifetime');
+      expect(patchBody.fields.subscriptionStatus.stringValue).toBe('lifetime');
+      expect(patchBody.fields.subscriptionId.stringValue).toBe('order_lifetime_777');
+      expect(patchBody.fields.renewsAt).toBeUndefined();
+      expect(patchBody.fields.endsAt).toBeUndefined();
+    }
+  );
+
+  it('revokes Lifetime access when an explicit lifetime order is refunded (order_refunded)', async () => {
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === 'https://oauth2.googleapis.com/token') {
+        return new Response(
+          JSON.stringify({ access_token: 'ya29.test_sa_token', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!init?.method || init.method === 'GET') {
+        return new Response(
+          JSON.stringify({
+            name: 'users/lifetimeRefundUid',
+            fields: {
+              isPro: { booleanValue: true },
+              plan: { stringValue: 'lifetime' },
+              subscriptionStatus: { stringValue: 'lifetime' },
+              subscriptionId: { stringValue: 'order_lifetime_500' },
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response(JSON.stringify({ name: 'users/lifetimeRefundUid' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const body = JSON.stringify({
+      meta: {
+        event_name: 'order_refunded',
+        custom_data: { uid: 'lifetimeRefundUid', plan: 'lifetime' },
+      },
+      data: {
+        id: 'order_lifetime_500',
+        attributes: {
+          status: 'refunded',
+          refunded: true,
+          product_name: 'PDFMinty Lifetime Pro',
+          updated_at: '2026-11-13T11:00:00Z',
+        },
+      },
+    });
+    const sig = await signWebhookBody(webhookSecret, body);
+
+    const req = new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Signature': sig,
+      },
+      body,
+    });
+
+    const res = await onRequest(makeWebhookContext(req));
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { isPro: boolean; status: string };
+    expect(json.isPro).toBe(false);
+    expect(json.status).toBe('refunded');
+
+    const patchCall = fetchSpy.mock.calls.find(
+      ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'
+    ) as [string, RequestInit];
+    expect(patchCall).toBeDefined();
+    const patchBody = JSON.parse(String(patchCall[1].body)) as {
+      fields: {
+        isPro: { booleanValue: boolean };
+        plan: { stringValue: string };
+        subscriptionStatus: { stringValue: string };
+      };
+    };
+    expect(patchBody.fields.isPro.booleanValue).toBe(false);
+    expect(patchBody.fields.plan.stringValue).toBe('free');
+    expect(patchBody.fields.subscriptionStatus.stringValue).toBe('refunded');
+  });
+
+  it('never fails open when Firestore GET fails temporarily (returns retryable 502 without overwriting plan, then succeeds and deduplicates on retry)', async () => {
+    let firestoreGetAttempts = 0;
+    let firestorePatchAttempts = 0;
+
+    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === 'https://oauth2.googleapis.com/token') {
+        return new Response(
+          JSON.stringify({ access_token: 'ya29.test_sa_token', expires_in: 3600 }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!init?.method || init.method === 'GET') {
+        firestoreGetAttempts += 1;
+        if (firestoreGetAttempts === 1) {
+          return new Response('Service Unavailable', { status: 503 });
+        }
+        return new Response(
+          JSON.stringify({
+            name: 'users/lifetimeRetryUid',
+            fields: {
+              isPro: { booleanValue: true },
+              plan: { stringValue: 'lifetime' },
+              subscriptionStatus: { stringValue: 'lifetime' },
+              subscriptionId: { stringValue: 'order_lt_999' },
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (init?.method === 'PATCH') {
+        firestorePatchAttempts += 1;
+      }
+      return new Response(JSON.stringify({ name: 'users/lifetimeRetryUid' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const kv = createInMemoryKv();
+    const body = JSON.stringify({
+      meta: {
+        event_name: 'subscription_expired',
+        custom_data: { uid: 'lifetimeRetryUid' },
+      },
+      data: {
+        id: 'sub_old_monthly_99',
+        attributes: { status: 'expired', updated_at: '2026-11-13T12:00:00Z' },
+      },
+    });
+    const sig = await signWebhookBody(webhookSecret, body);
+
+    const makeReq = () =>
+      new Request('https://pdfminty.com/api/webhooks/lemonsqueezy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Signature': sig,
+        },
+        body,
+      });
+
+    // Attempt 1: Firestore GET fails with 503 -> must return retryable 502 and perform 0 PATCH writes
+    const failedRes = await onRequest(makeWebhookContext(makeReq(), { RATELIMIT_KV: kv }));
+    expect(failedRes.status).toBe(502);
+    expect(firestoreGetAttempts).toBe(1);
+    expect(firestorePatchAttempts).toBe(0);
+
+    // Attempt 2 (Retry): Firestore GET recovers -> preserves Lifetime and returns 200
+    const retryRes = await onRequest(makeWebhookContext(makeReq(), { RATELIMIT_KV: kv }));
+    expect(retryRes.status).toBe(200);
+    const retryJson = (await retryRes.json()) as {
+      received: boolean;
+      isPro: boolean;
+      status: string;
+      duplicate?: boolean;
+    };
+    expect(retryJson.received).toBe(true);
+    expect(retryJson.isPro).toBe(true);
+    expect(retryJson.status).toBe('lifetime');
+    expect(retryJson.duplicate).toBeUndefined();
+    expect(firestoreGetAttempts).toBe(2);
+    expect(firestorePatchAttempts).toBe(1);
+
+    // Attempt 3 (Replay): Deduplicated via KV without additional Firestore calls
+    const replayRes = await onRequest(makeWebhookContext(makeReq(), { RATELIMIT_KV: kv }));
+    expect(replayRes.status).toBe(200);
+    const replayJson = (await replayRes.json()) as { duplicate?: boolean };
+    expect(replayJson.duplicate).toBe(true);
+    expect(firestoreGetAttempts).toBe(2);
+    expect(firestorePatchAttempts).toBe(1);
   });
 });

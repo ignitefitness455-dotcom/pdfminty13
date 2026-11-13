@@ -71,7 +71,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   const homePath = getLocalizedPath('', activeLocale);
   const mergePath = getLocalizedPath('merge-pdf', activeLocale);
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, isPro, logout } = useAuth();
   const { tier, tasksRemaining, openLimitModal } = useUsageLimit();
   const { modalRef, onKeyDown } = useModal(mobileMenuOpen, () => {
     setMobileMenuOpen(false);
@@ -205,7 +205,11 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 </div>
               </div>
               <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider shrink-0">
-                {user.plan === 'pro' ? 'Pro Member' : 'Free Plan'}
+                {user.plan === 'lifetime' || user.subscriptionStatus === 'lifetime'
+                  ? 'Lifetime Pro'
+                  : user.plan === 'pro' || user.isPro === true || isPro
+                    ? 'Pro Member'
+                    : 'Free Plan'}
               </span>
             </div>
 
@@ -296,7 +300,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         )}
 
         {/* 2. PRO UPGRADE CARD (For Guest / Free users) */}
-        {tier !== 'pro' && (
+        {tier !== 'pro' && user?.plan !== 'lifetime' && user?.plan !== 'pro' && !isPro && (
           <Link
             to={ROUTES.PRICING}
             onPointerDown={() => prefetchToolChunk('pricing')}

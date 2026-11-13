@@ -232,7 +232,14 @@ interface FirestoreDocumentResponse {
   fields?: {
     isPro?: { booleanValue?: boolean };
     plan?: { stringValue?: string };
+    subscriptionStatus?: { stringValue?: string };
+    subscriptionId?: { stringValue?: string };
   };
+}
+
+export interface FirestoreUserSubscriptionRecord {
+  plan: string | null;
+  subscriptionId: string | null;
 }
 
 /**
@@ -274,14 +281,18 @@ export async function verifyFirestoreProStatus(
 
 /**
  * Queries Firestore REST API using a service-account OAuth token to inspect the user's
- * current `plan` field before applying subscription downgrade webhooks (preventing a
- * cancelled/expired monthly subscription from overwriting a paid `'lifetime'` entitlement).
+ * current `plan` and `subscriptionId` before applying non-lifetime webhook events.
+ *
+ * Security & Reliability Contract:
+ * - Returns `null` ONLY when the document does not exist (`404`).
+ * - Throws on any other non-2xx HTTP status or network/parse failure so callers never fail open
+ *   and overwrite an existing `'lifetime'` entitlement during a transient Firestore outage.
  */
-export async function getFirestoreUserPlan(
+export async function getFirestoreUserRecord(
   projectId: string,
   uid: string,
   accessToken: string
-): Promise<string | null> {
+): Promise<FirestoreUserSubscriptionRecord | null> {
   const docUrl = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(
     projectId
   )}/databases/(default)/documents/users/${encodeURIComponent(uid)}`;
@@ -294,12 +305,37 @@ export async function getFirestoreUserPlan(
     },
   });
 
-  if (res.status === 404 || !res.ok) {
+  if (res.status === 404) {
     return null;
   }
 
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(
+      `Firestore user plan lookup failed (${res.status}): ${errText.slice(0, 200)}`
+    );
+  }
+
   const doc = (await res.json()) as FirestoreDocumentResponse;
-  return doc.fields?.plan?.stringValue || null;
+  const rawPlan = doc.fields?.plan?.stringValue || null;
+  const status = doc.fields?.subscriptionStatus?.stringValue || null;
+  const plan = rawPlan || (status === 'lifetime' ? 'lifetime' : null);
+  const subscriptionId = doc.fields?.subscriptionId?.stringValue || null;
+
+  return { plan, subscriptionId };
+}
+
+/**
+ * Queries Firestore REST API using a service-account OAuth token to inspect the user's
+ * current `plan` field before applying subscription webhooks. Never fails open on non-404 errors.
+ */
+export async function getFirestoreUserPlan(
+  projectId: string,
+  uid: string,
+  accessToken: string
+): Promise<string | null> {
+  const record = await getFirestoreUserRecord(projectId, uid, accessToken);
+  return record?.plan ?? null;
 }
 
 function pemPrivateKeyToArrayBuffer(pem: string): ArrayBuffer {

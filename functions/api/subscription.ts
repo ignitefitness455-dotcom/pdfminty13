@@ -156,6 +156,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   )}/databases/(default)/documents/users/${encodeURIComponent(uid)}`;
 
   let userDoc: FirestoreUserDoc | null = null;
+  let firestoreLookupFailed = false;
   try {
     const docRes = await fetch(docUrl, {
       method: 'GET',
@@ -166,9 +167,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
     if (docRes.ok) {
       userDoc = (await docRes.json()) as FirestoreUserDoc;
+    } else if (docRes.status !== 404) {
+      firestoreLookupFailed = true;
     }
   } catch (err) {
+    firestoreLookupFailed = true;
     console.warn('[Subscription API] Firestore read warning:', err);
+  }
+
+  if (firestoreLookupFailed && action !== 'portal') {
+    return jsonResponse(
+      { error: 'Unable to verify current subscription state right now. Please retry shortly.' },
+      503,
+      corsHeaders
+    );
   }
 
   const subscriptionId = (userDoc?.fields?.subscriptionId?.stringValue || '').trim();
@@ -176,7 +188,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     (userDoc?.fields?.customerPortalUrl?.stringValue || '').trim() ||
     (env.VITE_LEMON_SQUEEZY_BILLING_PORTAL_URL || '').trim() ||
     DEFAULT_PORTAL_URL;
-  const currentPlan = (userDoc?.fields?.plan?.stringValue || 'pro') as 'free' | 'pro' | 'lifetime';
+  const rawPlan = userDoc?.fields?.plan?.stringValue;
+  const currentPlan: 'free' | 'pro' | 'lifetime' =
+    rawPlan === 'lifetime' || userDoc?.fields?.subscriptionStatus?.stringValue === 'lifetime'
+      ? 'lifetime'
+      : rawPlan === 'pro' || userDoc?.fields?.isPro?.booleanValue === true
+        ? 'pro'
+        : 'free';
 
   if (action === 'portal' || currentPlan === 'lifetime') {
     return jsonResponse(
