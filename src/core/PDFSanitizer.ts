@@ -42,18 +42,33 @@ const isWordBoundary = (byte: number | undefined): boolean => {
  * byte-scanning, which misses encrypted dicts hidden in compressed object streams).
  */
 export class PDFSanitizer {
+  /**
+   * Absolute hard security upper bound (500 MiB = 524,288,000 bytes).
+   * Callers may pass a smaller tier-specific `maxBytes`, but can never exceed this ceiling.
+   */
+  public static readonly HARD_MAX_BYTES = UPLOAD_LIMITS.PRO_MAX_SINGLE_FILE;
+
   public static sanitize(bytes: Uint8Array, options?: SanitizeOptions): SanitizeResult {
-    if (!bytes || bytes.byteLength === 0) {
+    if (
+      !bytes ||
+      !(bytes instanceof Uint8Array || ArrayBuffer.isView(bytes)) ||
+      bytes.byteLength === 0
+    ) {
       throw new Error('PDF file is empty (0 bytes).');
     }
 
     const warnings: string[] = [];
-    const maxAllowedBytes = options?.maxBytes ?? UPLOAD_LIMITS.MAX_SINGLE_FILE;
+    const requestedMaxBytes =
+      typeof options?.maxBytes === 'number' &&
+      Number.isFinite(options.maxBytes) &&
+      options.maxBytes > 0
+        ? options.maxBytes
+        : UPLOAD_LIMITS.MAX_SINGLE_FILE;
+    const maxAllowedBytes = Math.min(requestedMaxBytes, PDFSanitizer.HARD_MAX_BYTES);
 
     if (bytes.byteLength > maxAllowedBytes) {
-      throw new Error(
-        `File exceeds the maximum allowed size of ${maxAllowedBytes / (1024 * 1024)}MB.`
-      );
+      const limitMB = Math.round(maxAllowedBytes / (1024 * 1024));
+      throw new Error(`File exceeds the maximum allowed size of ${limitMB}MB.`);
     }
 
     const headerBytes = bytes.subarray(0, Math.min(200, bytes.length));
@@ -131,9 +146,20 @@ export class PDFSanitizer {
     bytes: Uint8Array,
     options?: SanitizeOptions
   ): Promise<SanitizeResult> {
-    if (!bytes || bytes.byteLength === 0) {
+    if (
+      !bytes ||
+      !(bytes instanceof Uint8Array || ArrayBuffer.isView(bytes)) ||
+      bytes.byteLength === 0
+    ) {
       throw new Error('PDF file is empty (0 bytes).');
     }
+
+    // Enforce hard size & %PDF- header validation BEFORE loading into pdf-lib via isEncrypted()
+    // so oversized (>500 MiB) or invalid buffers are rejected in O(1) without parsing in memory.
+    const preflightPass = PDFSanitizer.sanitize(bytes, {
+      ...options,
+      skipEncryptionCheck: true,
+    });
 
     if (!options?.skipEncryptionCheck && (await PDFSanitizer.isEncrypted(bytes))) {
       throw new Error(
@@ -141,7 +167,9 @@ export class PDFSanitizer {
       );
     }
 
-    const initialPass = PDFSanitizer.sanitize(bytes, options);
+    const initialPass = options?.skipEncryptionCheck
+      ? preflightPass
+      : PDFSanitizer.sanitize(bytes, options);
     const warnings = [...initialPass.warnings];
 
     const { PDFDocument, PDFName } = await import('@cantoo/pdf-lib');

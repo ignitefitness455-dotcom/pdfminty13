@@ -20,6 +20,7 @@ interface Env {
   RATELIMIT_KV?: KVNamespace;
 }
 
+const DEFAULT_FIREBASE_PROJECT_ID = 'pdfminty-9836d';
 const MAX_TEXT_LENGTH = 60000;
 const MAX_QUERY_LENGTH = 2000;
 const MAX_OCR_IMAGES = 15;
@@ -306,9 +307,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Server-side authentication & Pro tier enforcement when FIREBASE_PROJECT_ID / VITE_FIREBASE_PROJECT_ID is configured
-    const firebaseProjectId = (env.FIREBASE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || '').trim();
-    if (firebaseProjectId) {
+    // Server-side authentication & Pro tier enforcement (falls back to 'pdfminty-9836d' so auth is never skipped)
+    const firebaseProjectId = (
+      env.FIREBASE_PROJECT_ID ||
+      env.VITE_FIREBASE_PROJECT_ID ||
+      DEFAULT_FIREBASE_PROJECT_ID
+    ).trim();
+    {
       let bearerToken: string | null = null;
       try {
         bearerToken = extractBearerToken(request);

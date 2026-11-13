@@ -1,11 +1,28 @@
 import { PDFDocument, PDFName } from '@cantoo/pdf-lib';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
+import { exportSignedPdf } from '../../components/sign-pdf/export';
 import { detectPiiInTextItem, normalizeDigitsToAscii } from '../../pages/SanitizePdfPage';
 import { PDFSanitizer } from '../PDFSanitizer';
 
+/**
+ * Creates a memory-light Uint8Array with valid %PDF-1.4 header and %%EOF footer
+ * whose reported byteLength is overridden to simulate multi-hundred-MB buffers
+ * without allocating 500MB+ of heap per test.
+ */
+function createSimulatedSizedPdfBuffer(simulatedByteLength: number): Uint8Array {
+  const realBytes = new TextEncoder().encode('%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF\n');
+  const view = new Uint8Array(realBytes.buffer.slice(0));
+  Object.defineProperty(view, 'byteLength', {
+    value: simulatedByteLength,
+    writable: false,
+    configurable: true,
+  });
+  return view;
+}
+
 describe('PDFSanitizer', () => {
-  describe('sanitize - validation', () => {
+  describe('sanitize - validation & 500MB hard limit (P1-TASK-3)', () => {
     it('rejects empty (0-byte) buffer', () => {
       expect(() => PDFSanitizer.sanitize(new Uint8Array(0))).toThrow(/empty/i);
     });
@@ -15,11 +32,120 @@ describe('PDFSanitizer', () => {
       expect(() => PDFSanitizer.sanitize(fakeBytes)).toThrow(/Missing PDF header/);
     });
 
-    it('rejects oversized file', () => {
-      const pdfBytes = new Uint8Array(200 * 1024 * 1024);
-      const header = new TextEncoder().encode('%PDF-1.4');
-      pdfBytes.set(header, 0);
-      expect(() => PDFSanitizer.sanitize(pdfBytes)).toThrow(/exceeds the maximum/i);
+    it('rejects oversized file exceeding default 100MB limit when maxBytes is not specified', () => {
+      const pdfBytes = createSimulatedSizedPdfBuffer(200 * 1024 * 1024);
+      expect(() => PDFSanitizer.sanitize(pdfBytes)).toThrow(/exceeds the maximum allowed size of 100MB/i);
+    });
+
+    it('accepts file below the 500MB limit when maxBytes is set to HARD_MAX_BYTES', () => {
+      const belowLimitBytes = createSimulatedSizedPdfBuffer(499 * 1024 * 1024);
+      const result = PDFSanitizer.sanitize(belowLimitBytes, {
+        maxBytes: PDFSanitizer.HARD_MAX_BYTES,
+      });
+      expect(result.bytes).toBeInstanceOf(Uint8Array);
+      expect(result.warnings).toHaveLength(0);
+    });
+
+    it('accepts file exactly at the 500MB hard limit (500 * 1024 * 1024 bytes)', () => {
+      expect(PDFSanitizer.HARD_MAX_BYTES).toBe(500 * 1024 * 1024);
+      const exactLimitBytes = createSimulatedSizedPdfBuffer(PDFSanitizer.HARD_MAX_BYTES);
+      const result = PDFSanitizer.sanitize(exactLimitBytes, {
+        maxBytes: PDFSanitizer.HARD_MAX_BYTES,
+      });
+      expect(result.bytes).toBeInstanceOf(Uint8Array);
+      expect(result.warnings).toHaveLength(0);
+    });
+
+    it('rejects file 1 byte above the 500MB hard limit (500 * 1024 * 1024 + 1 bytes)', () => {
+      const overLimitBytes = createSimulatedSizedPdfBuffer(PDFSanitizer.HARD_MAX_BYTES + 1);
+      expect(() =>
+        PDFSanitizer.sanitize(overLimitBytes, {
+          maxBytes: PDFSanitizer.HARD_MAX_BYTES,
+        })
+      ).toThrow(/File exceeds the maximum allowed size of 500MB\./);
+    });
+
+    it('enforces the 500MB hard ceiling even if a direct caller passes maxBytes > 500MB or Math.max(byteLength, 500MB)', () => {
+      const sixHundredMbBytes = createSimulatedSizedPdfBuffer(600 * 1024 * 1024);
+
+      // Even if a caller attempts to bypass the limit by passing maxBytes: 900MB or byteLength
+      expect(() =>
+        PDFSanitizer.sanitize(sixHundredMbBytes, {
+          maxBytes: Math.max(sixHundredMbBytes.byteLength, 500 * 1024 * 1024),
+        })
+      ).toThrow(/File exceeds the maximum allowed size of 500MB\./);
+
+      expect(() =>
+        PDFSanitizer.sanitize(sixHundredMbBytes, {
+          maxBytes: Number.MAX_SAFE_INTEGER,
+        })
+      ).toThrow(/File exceeds the maximum allowed size of 500MB\./);
+    });
+
+    it('rejects oversized, empty, and non-PDF buffers in sanitizeDocument and exportSignedPdf before invoking isEncrypted or PDFDocument.load', async () => {
+      const isEncryptedSpy = vi.spyOn(PDFSanitizer, 'isEncrypted');
+      const loadSpy = vi.spyOn(PDFDocument, 'load');
+
+      try {
+        const overLimitBytes = createSimulatedSizedPdfBuffer(PDFSanitizer.HARD_MAX_BYTES + 1024);
+        const nonPdfBytes = new TextEncoder().encode('NOT_A_PDF_HEADER_AT_ALL');
+
+        await expect(
+          PDFSanitizer.sanitizeDocument(overLimitBytes, { maxBytes: 900 * 1024 * 1024 })
+        ).rejects.toThrow(/File exceeds the maximum allowed size of 500MB\./);
+
+        await expect(PDFSanitizer.sanitizeDocument(new Uint8Array(0))).rejects.toThrow(/empty/i);
+        await expect(PDFSanitizer.sanitizeDocument(nonPdfBytes)).rejects.toThrow(/Missing PDF header/);
+
+        const sampleField = {
+          id: 'field-1',
+          kind: 'text' as const,
+          pageIndex: 0,
+          x: 0.1,
+          y: 0.1,
+          w: 0.2,
+          h: 0.05,
+          text: 'Approved',
+        };
+        const baseExportInput = {
+          pages: [{ index: 0, width: 612, height: 792, rotation: 0 }],
+          fields: [sampleField],
+          signatures: {
+            fullName: 'Jane Doe',
+            initialsText: 'JD',
+            signature: null,
+            initials: null,
+          },
+          dateText: '2026-11-13',
+        };
+
+        await expect(
+          exportSignedPdf({
+            ...baseExportInput,
+            bytes: overLimitBytes,
+          })
+        ).rejects.toThrow(/File exceeds the maximum allowed size of 500MB\./);
+
+        await expect(
+          exportSignedPdf({
+            ...baseExportInput,
+            bytes: new Uint8Array(0),
+          })
+        ).rejects.toThrow(/empty/i);
+
+        await expect(
+          exportSignedPdf({
+            ...baseExportInput,
+            bytes: nonPdfBytes,
+          })
+        ).rejects.toThrow(/Missing PDF header/);
+
+        expect(isEncryptedSpy).not.toHaveBeenCalled();
+        expect(loadSpy).not.toHaveBeenCalled();
+      } finally {
+        isEncryptedSpy.mockRestore();
+        loadSpy.mockRestore();
+      }
     });
 
     it('warns on missing %%EOF marker', () => {

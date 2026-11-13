@@ -396,8 +396,20 @@ export const AiAnalyzePage: React.FC = () => {
       return;
     }
     if (files.length === 0) return;
-    const myToken = ++operationTokenRef.current;
     const file = files[0];
+    const maxAllowedBytes = isPro
+      ? PDFSanitizer.HARD_MAX_BYTES
+      : TOOL_SIZE_LIMITS['ai-analyze'].maxSingleMB * 1024 * 1024;
+    if (!file || file.size === 0) {
+      setError('PDF file is empty (0 bytes).');
+      return;
+    }
+    if (file.size > maxAllowedBytes) {
+      const limitMB = Math.round(maxAllowedBytes / (1024 * 1024));
+      setError(`File exceeds the maximum allowed size of ${limitMB}MB.`);
+      return;
+    }
+    const myToken = ++operationTokenRef.current;
     setSelectedFile(file);
     setIsExtracting(true);
     setExtractionProgress(10);
@@ -415,7 +427,7 @@ export const AiAnalyzePage: React.FC = () => {
       let sanitizedBytes: Uint8Array;
       try {
         const sanResult = PDFSanitizer.sanitize(rawBytes, {
-          maxBytes: Math.max(rawBytes.byteLength, 500 * 1024 * 1024),
+          maxBytes: maxAllowedBytes,
         });
         sanitizedBytes = sanResult.bytes;
       } catch (sanErr: unknown) {

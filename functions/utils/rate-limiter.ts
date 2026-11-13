@@ -43,26 +43,66 @@ let lastGcTime = 0;
 
 /**
  * Normalizes IPv4 and IPv6 addresses.
- * IPv6 addresses are truncated to /64 subnet to prevent rotating address bypass.
+ * IPv6 addresses are canonicalized (expanding `::`, handling embedded IPv4 tails,
+ * and zero-padding each 16-bit hexadecimal group to 4 lowercase hex digits) and
+ * truncated to the `/64` routing prefix (`xxxx:xxxx:xxxx:xxxx`) so all equivalent
+ * representations in the same `/64` subnet map to the exact same rate-limit key.
  */
 export function normalizeClientIp(ip: string): string {
   if (!ip || ip === 'unknown-ip') return 'unknown-client';
   const clean = ip.trim().toLowerCase();
+  if (!clean) return 'unknown-client';
 
   // Handle IPv6
   if (clean.includes(':')) {
-    const zoneStripped = clean.split('%')[0];
-    if (zoneStripped.includes('::')) {
-      const [leftRaw, rightRaw] = zoneStripped.split('::');
-      const left = leftRaw ? leftRaw.split(':').filter(Boolean) : [];
-      const right = rightRaw ? rightRaw.split(':').filter(Boolean) : [];
-      const missing = Math.max(0, 8 - (left.length + right.length));
-      const expanded = [...left, ...Array(missing).fill('0000'), ...right];
-      return expanded.slice(0, 4).join(':');
+    let working = clean.replace(/^\[|\]$/g, '').split('%')[0].replace(/\]$/g, '');
+
+    // Convert IPv4-mapped / embedded IPv4 tail (e.g. ::ffff:192.0.2.128) into 2 hex groups
+    const lastColonIdx = working.lastIndexOf(':');
+    if (lastColonIdx !== -1 && working.slice(lastColonIdx + 1).includes('.')) {
+      const ipv4Part = working.slice(lastColonIdx + 1);
+      const octets = ipv4Part.split('.');
+      if (octets.length === 4) {
+        const nums = octets.map((o) => (/^\d{1,3}$/.test(o) ? Number(o) : NaN));
+        if (nums.every((n) => Number.isInteger(n) && n >= 0 && n <= 255)) {
+          const highHex = ((nums[0] << 8) | nums[1]).toString(16).padStart(4, '0');
+          const lowHex = ((nums[2] << 8) | nums[3]).toString(16).padStart(4, '0');
+          working = `${working.slice(0, lastColonIdx + 1)}${highHex}:${lowHex}`;
+        }
+      }
     }
-    const segments = zoneStripped.split(':').filter(Boolean);
-    // Use the first 4 segments (/64 routing prefix)
-    return segments.slice(0, 4).join(':') || clean;
+
+    let rawGroups: string[];
+    if (working.includes('::')) {
+      const doubleColonParts = working.split('::');
+      if (doubleColonParts.length !== 2) {
+        return 'unknown-client';
+      }
+      const left = doubleColonParts[0] === '' ? [] : doubleColonParts[0].split(':');
+      const right = doubleColonParts[1] === '' ? [] : doubleColonParts[1].split(':');
+      if (left.length + right.length > 7) {
+        return 'unknown-client';
+      }
+      const missing = 8 - (left.length + right.length);
+      rawGroups = [...left, ...Array(missing).fill('0000'), ...right];
+    } else {
+      rawGroups = working.split(':');
+      if (rawGroups.length !== 8) {
+        return 'unknown-client';
+      }
+    }
+
+    if (
+      rawGroups.length !== 8 ||
+      !rawGroups.every((group) => /^[0-9a-f]{1,4}$/.test(group))
+    ) {
+      return 'unknown-client';
+    }
+
+    const canonicalGroups = rawGroups.map((group) => group.padStart(4, '0'));
+
+    // Use the first 4 canonical 16-bit hextets (/64 routing prefix)
+    return canonicalGroups.slice(0, 4).join(':');
   }
 
   return clean;

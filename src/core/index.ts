@@ -131,6 +131,7 @@ export interface PreprocessResult {
 }
 export interface PreprocessOptions {
   skipEncryptionCheck?: boolean;
+  maxBytes?: number;
   onEncrypted?: () => void;
   showToast?: (message: string, type: 'success' | 'error' | 'info') => void;
   customLockMessage?: string;
@@ -140,12 +141,26 @@ export async function preprocessAndLoadPdf(
   file: File,
   options?: PreprocessOptions
 ): Promise<PreprocessResult> {
+  if (!file || file.size === 0) {
+    throw new Error('PDF file is empty (0 bytes).');
+  }
+  const { PDFSanitizer } = await import('./PDFSanitizer');
+  const maxBytes = Math.min(
+    typeof options?.maxBytes === 'number' && Number.isFinite(options.maxBytes) && options.maxBytes > 0
+      ? options.maxBytes
+      : PDFSanitizer.HARD_MAX_BYTES,
+    PDFSanitizer.HARD_MAX_BYTES
+  );
+  if (file.size > maxBytes) {
+    const limitMB = Math.round(maxBytes / (1024 * 1024));
+    throw new Error(`File exceeds the maximum allowed size of ${limitMB}MB.`);
+  }
   const arrayBuffer = await file.arrayBuffer();
   let sanitizedBytes: Uint8Array = new Uint8Array(arrayBuffer);
   try {
-    const { PDFSanitizer } = await import('./PDFSanitizer');
     const sanResult = PDFSanitizer.sanitize(sanitizedBytes, {
       skipEncryptionCheck: options?.skipEncryptionCheck,
+      maxBytes,
     });
     sanitizedBytes = sanResult.bytes as Uint8Array;
   } catch (err: unknown) {

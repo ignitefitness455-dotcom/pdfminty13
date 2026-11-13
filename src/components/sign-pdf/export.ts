@@ -5,7 +5,7 @@ import { PDFSanitizer } from '../../core/PDFSanitizer';
 import type { PageInfo, PlacedField, SignatureSet } from './types';
 
 export type ExportInput = {
-  bytes: ArrayBuffer;
+  bytes: ArrayBuffer | Uint8Array;
   pages: PageInfo[];
   fields: PlacedField[];
   signatures: SignatureSet;
@@ -80,20 +80,28 @@ function hexToRgbTuple(hex: string): { r: number; g: number; b: number } {
 }
 
 export async function exportSignedPdf(input: ExportInput): Promise<Uint8Array> {
+  const inputUint8 =
+    input.bytes instanceof Uint8Array || ArrayBuffer.isView(input.bytes)
+      ? (input.bytes as unknown as Uint8Array)
+      : new Uint8Array(input.bytes);
+  // Enforce non-empty, <= 500 MiB hard limit, and %PDF- header before loading into pdf-lib
+  PDFSanitizer.sanitize(inputUint8, {
+    maxBytes: PDFSanitizer.HARD_MAX_BYTES,
+    skipEncryptionCheck: true,
+  });
   if (!input.fields || input.fields.length === 0) {
     throw new Error('At least one signature, stamp, or form field must be placed on the PDF.');
   }
-  const inputUint8 = new Uint8Array(input.bytes);
   if (await PDFSanitizer.isEncrypted(inputUint8)) {
     throw new Error(
       'SECURED_LOCKED: This PDF is password-protected or encrypted. Please use the Unlock PDF tool first.'
     );
   }
-  PDFSanitizer.sanitize(inputUint8, {
-    maxBytes: Math.max(inputUint8.byteLength, 500 * 1024 * 1024),
+  const { bytes: sanitizedUint8 } = PDFSanitizer.sanitize(inputUint8, {
+    maxBytes: PDFSanitizer.HARD_MAX_BYTES,
   });
   const { PDFDocument, StandardFonts, degrees, rgb } = await import('@cantoo/pdf-lib');
-  const pdf = await PDFDocument.load(inputUint8);
+  const pdf = await PDFDocument.load(sanitizedUint8);
   if (pdf.getPageCount() === 0) {
     throw new Error('The PDF document has 0 pages and cannot be signed.');
   }

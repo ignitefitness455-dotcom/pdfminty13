@@ -9,19 +9,51 @@ describe('Rate Limiter Utility', () => {
       expect(normalizeClientIp(' 10.0.0.1 ')).toBe('10.0.0.1');
     });
 
-    it('truncates IPv6 addresses to /64 routing prefix to block rotating subnet abuse', () => {
+    it('truncates IPv6 addresses to canonical zero-padded /64 routing prefix to block rotating subnet abuse', () => {
       const ipv6A = '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
       const ipv6B = '2001:0db8:85a3:0000:ffff:8a2e:0370:9999';
       expect(normalizeClientIp(ipv6A)).toBe('2001:0db8:85a3:0000');
       expect(normalizeClientIp(ipv6B)).toBe('2001:0db8:85a3:0000');
-      // Compressed :: addresses in the same /64 subnet must normalize to identical prefix
-      expect(normalizeClientIp('2001:db8::1')).toBe('2001:db8:0000:0000');
-      expect(normalizeClientIp('2001:db8::9999')).toBe('2001:db8:0000:0000');
+      // Compressed :: addresses in the same /64 subnet must normalize to identical zero-padded prefix
+      expect(normalizeClientIp('2001:db8::1')).toBe('2001:0db8:0000:0000');
+      expect(normalizeClientIp('2001:db8::9999')).toBe('2001:0db8:0000:0000');
     });
 
-    it('handles empty or missing client IPs safely', () => {
+    it('canonicalizes compressed, expanded, uppercase, bracketed, and zone-indexed equivalent IPv6 addresses to identical /64 key', () => {
+      const canonicalPrefix = '2001:0db8:0001:0000';
+      const variants = [
+        '2001:db8:1::1',
+        '2001:0db8:0001::1',
+        '2001:db8:1:0::1',
+        '2001:0db8:0001:0000:0000:0000:0000:0001',
+        '2001:DB8:1:0:DEAD:BEEF:CAFE:9999',
+        '[2001:db8:1::abcd]',
+        '2001:db8:001:0000:1234:5678:9abc:def0%eth0',
+        '[2001:0DB8:0001:0::1]%en0',
+      ];
+      for (const variant of variants) {
+        expect(normalizeClientIp(variant)).toBe(canonicalPrefix);
+      }
+    });
+
+    it('canonicalizes leading ::, trailing ::, loopback ::1, and IPv4-mapped IPv6 addresses', () => {
+      expect(normalizeClientIp('::1')).toBe('0000:0000:0000:0000');
+      expect(normalizeClientIp('0:0:0:0:0:0:0:1')).toBe('0000:0000:0000:0000');
+      expect(normalizeClientIp('::')).toBe('0000:0000:0000:0000');
+      expect(normalizeClientIp('2001:db8:a:b::')).toBe('2001:0db8:000a:000b');
+      expect(normalizeClientIp('2001:0db8:000a:000b:0000:0000:0000:0000')).toBe('2001:0db8:000a:000b');
+      // IPv4-mapped IPv6 address (::ffff:192.0.2.128 -> 0000:0000:0000:0000:0000:ffff:c000:0280)
+      expect(normalizeClientIp('::ffff:192.0.2.128')).toBe('0000:0000:0000:0000');
+      expect(normalizeClientIp('2001:db8:1:2::192.0.2.33')).toBe('2001:0db8:0001:0002');
+    });
+
+    it('handles empty, missing, or malformed IPv6 client IPs safely', () => {
       expect(normalizeClientIp('')).toBe('unknown-client');
       expect(normalizeClientIp('unknown-ip')).toBe('unknown-client');
+      expect(normalizeClientIp('2001:db8::1::2')).toBe('unknown-client');
+      expect(normalizeClientIp('2001:db8:12345::1')).toBe('unknown-client');
+      expect(normalizeClientIp('2001:db8:zzzz::1')).toBe('unknown-client');
+      expect(normalizeClientIp('1:2:3:4:5:6:7:8:9')).toBe('unknown-client');
     });
   });
 
@@ -229,6 +261,68 @@ describe('Rate Limiter Utility', () => {
       expect(resBlocked.currentCount).toBe(3);
       expect(resBlocked.remaining).toBe(0);
       expect(resBlocked.error).toContain('Rate limit exceeded');
+    });
+
+    it('enforces a single shared rate-limit bucket across compressed and expanded IPv6 addresses in the same /64 subnet', async () => {
+      const kvStore = new Map<string, string>();
+      const mockKv: unknown = {
+        get: async (key: string) => kvStore.get(key) || null,
+        put: async (key: string, val: string) => {
+          kvStore.set(key, val);
+        },
+        delete: async (key: string) => {
+          kvStore.delete(key);
+        },
+      };
+
+      const subnetVariants = [
+        '2001:db8:1::1',
+        '2001:0db8:0001:0000:0000:0000:0000:0001',
+        '2001:DB8:1:0:dead:beef:cafe:9999',
+      ];
+
+      // First 2 requests with different notations of the same /64 subnet succeed (limit: 2)
+      const res1 = await checkRateLimit({
+        request: new Request('https://pdfminty.com/api/gemini-proxy', {
+          headers: { 'cf-connecting-ip': subnetVariants[0] },
+        }),
+        kv: mockKv as KVNamespace,
+        scope: 'ipv6-subnet-kv',
+        limit: 2,
+        windowSec: 3600,
+        burstLimit: 10,
+      });
+      expect(res1.allowed).toBe(true);
+      expect(res1.currentCount).toBe(1);
+
+      const res2 = await checkRateLimit({
+        request: new Request('https://pdfminty.com/api/gemini-proxy', {
+          headers: { 'cf-connecting-ip': subnetVariants[1] },
+        }),
+        kv: mockKv as KVNamespace,
+        scope: 'ipv6-subnet-kv',
+        limit: 2,
+        windowSec: 3600,
+        burstLimit: 10,
+      });
+      expect(res2.allowed).toBe(true);
+      expect(res2.currentCount).toBe(2);
+
+      // 3rd request from another address/notation in the same /64 subnet is blocked
+      const res3 = await checkRateLimit({
+        request: new Request('https://pdfminty.com/api/gemini-proxy', {
+          headers: { 'cf-connecting-ip': subnetVariants[2] },
+        }),
+        kv: mockKv as KVNamespace,
+        scope: 'ipv6-subnet-kv',
+        limit: 2,
+        windowSec: 3600,
+        burstLimit: 10,
+      });
+      expect(res3.allowed).toBe(false);
+      expect(res3.remaining).toBe(0);
+      expect(kvStore.size).toBe(1);
+      expect(Array.from(kvStore.keys())[0]).toContain('2001:0db8:0001:0000');
     });
   });
 });
