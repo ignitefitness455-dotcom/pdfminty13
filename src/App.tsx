@@ -5,8 +5,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import FaqSchema from './components/FaqSchema';
 import HowToSchema from './components/HowToSchema';
 import { Layout } from './components/Layout';
-import { OfflineIndicator } from './components/OfflineIndicator';
-import { PWAController } from './components/PWAController';
 import { SkipToContent } from './components/SkipToContent';
 import ToolSkeleton from './components/ToolSkeleton';
 import { ROUTES } from './config/routes';
@@ -19,7 +17,13 @@ import i18n, {
 import { HomePage } from './pages/HomePage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
-// Lazy-loaded static pages
+// Lazy-loaded global utility overlays & static pages
+const PWAController = lazyWithRetry(() =>
+  import('./components/PWAController').then((m) => ({ default: m.PWAController }))
+);
+const OfflineIndicator = lazyWithRetry(() =>
+  import('./components/OfflineIndicator').then((m) => ({ default: m.OfflineIndicator }))
+);
 const PrivacyPolicyPage = lazyWithRetry(() =>
   import('./pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
 );
@@ -264,8 +268,10 @@ export const App: React.FC = () => {
       <TrailingSlashRedirect />
       <SkipToContent />
       <Layout>
-        <PWAController />
-        <OfflineIndicator />
+        <Suspense fallback={null}>
+          <PWAController />
+          <OfflineIndicator />
+        </Suspense>
         <HowToSchema />
         <FaqSchema />
         <Suspense fallback={<ToolSkeleton />}>

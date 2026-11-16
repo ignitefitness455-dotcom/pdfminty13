@@ -5,23 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Preload Critical Local Fonts & Multilingual Typography -->
-    <link rel="preload" href="/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Preload Critical Local Fonts (Body 400 + LCP Hero H1 800) -->
+    <link rel="preload" href="/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/sora-800.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      />
-    </noscript>
+    <script>
+      (function() {
+        try {
+          var p = window.location.pathname || '';
+          var lang = localStorage.getItem('i18nextLng') || '';
+          if (p === '/bn' || p.indexOf('/bn/') === 0 || lang.indexOf('bn') === 0) {
+            var l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = 'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap';
+            document.head.appendChild(l);
+          }
+        } catch (e) {}
+      })();
+    </script>
     
     <!-- Core SEO Meta Tags -->
     <title>PDFMinty — Free Privacy-First PDF Toolkit</title>
@@ -98,6 +98,20 @@
         var CF_TOKEN = '484669cfa7c04bb18cec08f6d0cc6e63';
         var loaded = false;
 
+        function loadAdSenseScript() {
+          var isProUser = false;
+          try {
+            isProUser = localStorage.getItem('pdfminty_pro_synced') === 'true';
+          } catch (e) {}
+          if (!isProUser) {
+            var ads = document.createElement('script');
+            ads.async = true;
+            ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053';
+            ads.crossOrigin = 'anonymous';
+            document.head.appendChild(ads);
+          }
+        }
+
         function loadThirdPartyScripts() {
           if (loaded || window._thirdPartyLoaded) return;
           loaded = true;
@@ -127,17 +141,13 @@
           gtag('js', new Date());
           gtag('config', GA_ID);
 
-          // Google AdSense (loaded non-blocking on idle/interaction; skipped for Pro ad-free tier)
-          var isProUser = false;
-          try {
-            isProUser = localStorage.getItem('pdfminty_pro_synced') === 'true';
-          } catch (e) {}
-          if (!isProUser) {
-            var ads = document.createElement('script');
-            ads.async = true;
-            ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3862038139324053';
-            ads.crossOrigin = 'anonymous';
-            document.head.appendChild(ads);
+          // Stagger AdSense behind idle callback so GTM and AdSense never create a combined long task
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(function() {
+              setTimeout(loadAdSenseScript, 1500);
+            }, { timeout: 4000 });
+          } else {
+            setTimeout(loadAdSenseScript, 2000);
           }
         }
 
@@ -146,18 +156,16 @@
           window.addEventListener(e, loadThirdPartyScripts, { passive: true, once: true });
         });
 
-        // Reduced fallback timeout: 1000ms (was 2500ms) to capture fast bounces
-        if ('requestIdleCallback' in window) {
-          window.addEventListener('load', function() {
-            requestIdleCallback(function() {
-              setTimeout(loadThirdPartyScripts, 1000);
-            });
-          });
-        } else {
-          window.addEventListener('load', function() {
-            setTimeout(loadThirdPartyScripts, 1200);
-          });
-        }
+        // Defer non-interaction fallback past the mobile LCP/TBT window (6500ms after load)
+        window.addEventListener('load', function() {
+          setTimeout(function() {
+            if ('requestIdleCallback' in window) {
+              requestIdleCallback(loadThirdPartyScripts, { timeout: 4000 });
+            } else {
+              loadThirdPartyScripts();
+            }
+          }, 6500);
+        });
 
         // Fallback beacon: if user leaves before gtag loads, fire a minimal
         // page_view event via navigator.sendBeacon to GA4 collect endpoint

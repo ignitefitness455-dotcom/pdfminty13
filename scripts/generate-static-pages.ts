@@ -2050,10 +2050,10 @@ ${toolsListHtml}
       <p style="font-weight: 600; margin-bottom: 1rem;">Recognized &amp; Featured On</p>
       <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.5rem;">
         <a href="https://launchbuff.com/products/pdfminty-8g15b8" target="_blank" rel="noopener noreferrer" title="Featured on LaunchBuff">
-          <img src="https://launchbuff.com/badge-featured-dark.svg" alt="Featured on LaunchBuff" width="256" height="80" loading="lazy" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
+          <img src="https://launchbuff.com/badge-featured-dark.svg" alt="Featured on LaunchBuff" width="256" height="80" loading="lazy" decoding="async" fetchpriority="low" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
         </a>
         <a href="https://launchstag.com/p/pdfminty" target="_blank" rel="noopener" title="Featured on Launchstag">
-          <img src="https://launchstag.com/badge-light.svg" alt="Featured on Launchstag" width="198" height="62" loading="lazy" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
+          <img src="https://launchstag.com/badge-light.svg" alt="Featured on Launchstag" width="198" height="62" loading="lazy" decoding="async" fetchpriority="low" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
         </a>
       </div>
     </div>

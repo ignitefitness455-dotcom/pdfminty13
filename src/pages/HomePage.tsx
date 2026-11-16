@@ -1,21 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { EmailJoinForm } from '../components/EmailJoinForm';
 import { SilentErrorBoundary } from '../components/ErrorBoundary';
 import { useLayout } from '../components/Layout';
 import { SEO } from '../components/SEO';
-import { SeoResourcesSection } from '../components/SeoResourcesSection';
 import { TOOLS_CATALOG as TOOLS } from '../config/seo-catalog';
 import { useDebounce } from '../hooks/useDebounce';
 import { useHero3D } from '../hooks/useHero3D';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
-import { CtaSection } from './home/CtaSection';
-import { FaqSection } from './home/FaqSection';
 import { HeroSection } from './home/HeroSection';
-import { HowItWorksSection } from './home/HowItWorksSection';
-import { RecommendedToolsSection } from './home/RecommendedToolsSection';
 import {
   resolveAuto3DAnimation,
   type Active3DAnimation,
@@ -24,11 +18,33 @@ import {
 import { Scroll3DControlBar } from './home/Scroll3DControlBar';
 import { SearchBar } from './home/SearchBar';
 import { ToolGrid, CORE_ESSENTIAL_SLUGS } from './home/ToolGrid';
-import { TrustBadgeSection } from './home/TrustBadgeSection';
-import { WhyChooseSection } from './home/WhyChooseSection';
 
 const HomeThreeBackground = lazyWithRetry(() =>
   import('./home/HomeThreeBackground').then((m) => ({ default: m.HomeThreeBackground }))
+);
+const HowItWorksSection = lazyWithRetry(() =>
+  import('./home/HowItWorksSection').then((m) => ({ default: m.HowItWorksSection }))
+);
+const WhyChooseSection = lazyWithRetry(() =>
+  import('./home/WhyChooseSection').then((m) => ({ default: m.WhyChooseSection }))
+);
+const RecommendedToolsSection = lazyWithRetry(() =>
+  import('./home/RecommendedToolsSection').then((m) => ({ default: m.RecommendedToolsSection }))
+);
+const SeoResourcesSection = lazyWithRetry(() =>
+  import('../components/SeoResourcesSection').then((m) => ({ default: m.SeoResourcesSection }))
+);
+const FaqSection = lazyWithRetry(() =>
+  import('./home/FaqSection').then((m) => ({ default: m.FaqSection }))
+);
+const EmailJoinForm = lazyWithRetry(() =>
+  import('../components/EmailJoinForm').then((m) => ({ default: m.EmailJoinForm }))
+);
+const CtaSection = lazyWithRetry(() =>
+  import('./home/CtaSection').then((m) => ({ default: m.CtaSection }))
+);
+const TrustBadgeSection = lazyWithRetry(() =>
+  import('./home/TrustBadgeSection').then((m) => ({ default: m.TrustBadgeSection }))
 );
 
 const CATEGORIES = [
@@ -115,7 +131,7 @@ export const HomePage: React.FC = () => {
   const isBn = (i18n.language || '').startsWith('bn');
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !is3DEnabled || selected3DMode !== 'auto') {
+    if (typeof window === 'undefined' || !shouldRender3D || selected3DMode !== 'auto') {
       return undefined;
     }
 
@@ -129,7 +145,7 @@ export const HomePage: React.FC = () => {
     return () => {
       window.removeEventListener('scroll', handleScrollModeSync);
     };
-  }, [selected3DMode, is3DEnabled]);
+  }, [selected3DMode, shouldRender3D]);
 
   const effective3DAnimation: Active3DAnimation =
     selected3DMode === 'auto' ? autoActiveAnim : selected3DMode;
@@ -190,7 +206,7 @@ export const HomePage: React.FC = () => {
   const showTwoSections = selectedCategory === 'all' && !(debouncedValue || '').trim();
 
   return (
-    <div className="animate-fadein relative z-10 font-sans text-on-background bg-transparent pb-12">
+    <div className="relative z-10 font-sans text-on-background bg-transparent pb-12">
       <SEO />
 
       {/* Zero-CLS Static Ambient Placeholder reserving exact 3D background space */}
@@ -293,37 +309,41 @@ export const HomePage: React.FC = () => {
         />
       </section>
 
-      <div className="content-auto">
-        <HowItWorksSection />
-      </div>
+      <SilentErrorBoundary>
+        <React.Suspense fallback={null}>
+          <div className="content-auto">
+            <HowItWorksSection />
+          </div>
 
-      <div className="content-auto">
-        <WhyChooseSection />
-      </div>
+          <div className="content-auto">
+            <WhyChooseSection />
+          </div>
 
-      <div className="content-auto">
-        <RecommendedToolsSection />
-      </div>
+          <div className="content-auto">
+            <RecommendedToolsSection />
+          </div>
 
-      <div className="content-auto">
-        <SeoResourcesSection />
-      </div>
+          <div className="content-auto">
+            <SeoResourcesSection />
+          </div>
 
-      <div className="content-auto">
-        <FaqSection />
-      </div>
+          <div className="content-auto">
+            <FaqSection />
+          </div>
 
-      <div className="mt-16 max-w-4xl mx-auto px-4 content-auto">
-        <EmailJoinForm />
-      </div>
+          <div className="mt-16 max-w-4xl mx-auto px-4 content-auto">
+            <EmailJoinForm />
+          </div>
 
-      <div className="content-auto">
-        <CtaSection />
-      </div>
+          <div className="content-auto">
+            <CtaSection />
+          </div>
 
-      <div className="content-auto">
-        <TrustBadgeSection />
-      </div>
+          <div className="content-auto">
+            <TrustBadgeSection />
+          </div>
+        </React.Suspense>
+      </SilentErrorBoundary>
     </div>
   );
 };

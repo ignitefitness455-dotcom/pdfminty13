@@ -149,6 +149,7 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
   const langKey = (i18n.language || 'en').split('-')[0].toLowerCase();
   const copy = SECTION_COPY[langKey] || SECTION_COPY.en;
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  const was3DActiveRef = useRef<boolean>(false);
 
   const isPerfMode =
     performanceMode !== undefined
@@ -162,6 +163,10 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
     if (!wrapper) return undefined;
 
     if (!effective3DEnabled) {
+      if (!was3DActiveRef.current) {
+        return undefined;
+      }
+      was3DActiveRef.current = false;
       const cardElements = wrapper.querySelectorAll<HTMLElement>('.pdf-tool-card-3d');
       cardElements.forEach((cardEl) => {
         cardEl.style.removeProperty('--card-rx');
@@ -189,7 +194,10 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
       return undefined;
     }
 
+    was3DActiveRef.current = true;
+
     let rafId = 0;
+    let initRafId = 0;
     let lastScrollY = window.scrollY || 0;
     let lastTime = performance.now();
     let smoothedVelocity = 0;
@@ -278,12 +286,16 @@ export const ToolGrid: React.FC<ToolGridProps> = ({
       scheduleTransformUpdate();
     };
 
-    measureCardPositions();
-    applyCardTransforms();
+    initRafId = window.requestAnimationFrame(() => {
+      initRafId = 0;
+      measureCardPositions();
+      applyCardTransforms();
+    });
     window.addEventListener('scroll', scheduleTransformUpdate, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
+      if (initRafId) window.cancelAnimationFrame(initRafId);
       if (rafId) window.cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', scheduleTransformUpdate);
       window.removeEventListener('resize', handleResize);

@@ -356,6 +356,32 @@ export default defineConfig(({ command, mode }) => {
         }
       : undefined,
     plugins: [
+      {
+        name: 'pdfminty-strip-unused-en-articles-from-bundle',
+        enforce: 'pre',
+        load(id) {
+          if (process.env.VITEST) return null;
+          const normalizedId = id.replace(/\\/g, '/').split('?')[0];
+          if (!normalizedId.endsWith('/src/locales/en/common.json')) {
+            return null;
+          }
+          try {
+            const raw = readFileSync(normalizedId, 'utf-8');
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            if (parsed && typeof parsed === 'object' && 'articles' in parsed) {
+              // English blog/article pages read canonical titles, descriptions, and bodies
+              // from seo-catalog / seo-data when isDefaultLocale is true. Stripping the
+              // duplicate 470 KB `articles` map from the client bundle saves ~467 KB raw
+              // (~127 KB gzipped) of initial blocking JS while preserving disk parity for tests.
+              delete parsed.articles;
+              return JSON.stringify(parsed);
+            }
+          } catch {
+            // Fall through to default loader on error
+          }
+          return null;
+        },
+      },
       react(),
       injectSwVersion(),
       devApiPlugin(),

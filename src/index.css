@@ -109,12 +109,21 @@ body {
   padding: 0;
 }
 
+@font-face {
+  font-family: 'Sora Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Roboto'), local('Segoe UI');
+  size-adjust: 104%;
+  ascent-override: 96%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
 :root {
   --font-display:
-    'Sora', 'Plus Jakarta Sans', 'Hind Siliguri', ui-sans-serif, system-ui, -apple-system,
+    'Sora', 'Sora Fallback', 'Hind Siliguri', ui-sans-serif, system-ui, -apple-system,
     sans-serif;
   --font-sans:
-    'Plus Jakarta Sans', 'Sora', 'Hind Siliguri', ui-sans-serif, system-ui, -apple-system,
+    'Sora', 'Sora Fallback', 'Hind Siliguri', ui-sans-serif, system-ui, -apple-system,
     sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
@@ -450,8 +459,8 @@ html.dark select {
 
 @keyframes fadein {
   from {
-    opacity: 0;
-    transform: translateY(8px);
+    opacity: 1;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;

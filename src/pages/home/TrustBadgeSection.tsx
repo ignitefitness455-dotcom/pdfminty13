@@ -57,6 +57,7 @@ export const TrustBadgeSection: React.FC = () => {
                 height="80"
                 className="h-14 sm:h-16 w-auto object-contain rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300"
                 loading="lazy"
+                decoding="async"
               />
             </a>
 
@@ -78,6 +79,7 @@ export const TrustBadgeSection: React.FC = () => {
                 height="62"
                 className="h-14 sm:h-16 w-auto object-contain rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300 dark:hidden"
                 loading="lazy"
+                decoding="async"
               />
               <img
                 src="https://launchstag.com/badge-dark.svg"
@@ -86,6 +88,7 @@ export const TrustBadgeSection: React.FC = () => {
                 height="62"
                 className="h-14 sm:h-16 w-auto object-contain rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300 hidden dark:inline-block"
                 loading="lazy"
+                decoding="async"
               />
             </a>
           </div>

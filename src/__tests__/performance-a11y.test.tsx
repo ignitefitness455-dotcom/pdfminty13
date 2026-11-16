@@ -109,4 +109,26 @@ describe('Phase 2 Performance, Main-Thread Decoupling & Accessibility Regression
       }
     }
   });
+
+  it('enforces Mobile-First Core Web Vitals safeguards (LCP weight-800 font preload, zero opacity-0 fadein delay, guest Firebase deferral, and English locale bundle optimization)', () => {
+    const repoRoot = path.resolve(__dirname, '../..');
+    const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
+    expect(indexHtml).toContain('href="/fonts/sora-400.woff2"');
+    expect(indexHtml).toContain('href="/fonts/sora-800.woff2"');
+    expect(indexHtml).toContain('6500');
+
+    const indexCss = fs.readFileSync(path.join(repoRoot, 'src/index.css'), 'utf8');
+    expect(indexCss).toContain("font-family: 'Sora Fallback'");
+    const fadeInMatch = indexCss.match(/@keyframes\s+fadein\s*\{[\s\S]*?\}/);
+    expect(fadeInMatch?.[0] || '').not.toContain('opacity: 0;');
+
+    const authContextSrc = fs.readFileSync(
+      path.join(repoRoot, 'src/contexts/AuthContext.tsx'),
+      'utf8'
+    );
+    expect(authContextSrc).not.toContain('timeout: 3500');
+
+    const viteConfigSrc = fs.readFileSync(path.join(repoRoot, 'vite.config.ts'), 'utf8');
+    expect(viteConfigSrc).toContain('pdfminty-strip-unused-en-articles-from-bundle');
+  });
 });

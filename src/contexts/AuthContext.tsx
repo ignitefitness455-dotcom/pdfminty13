@@ -146,6 +146,7 @@ function hasLikelyActiveAuthSession(): boolean {
   if (typeof window === 'undefined') return false;
   try {
     if (localStorage.getItem(HAS_AUTH_SESSION_KEY) === '1') return true;
+    if (localStorage.getItem('pdfminty_auth_uid')) return true;
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k && k.startsWith('firebase:authUser:')) return true;
@@ -154,6 +155,8 @@ function hasLikelyActiveAuthSession(): boolean {
     if (
       path.includes('/login') ||
       path.includes('/signup') ||
+      path.includes('/sign-in') ||
+      path.includes('/sign-up') ||
       path.includes('/dashboard') ||
       path.includes('/pricing')
     ) {
@@ -311,23 +314,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (hasLikelyActiveAuthSession()) {
       void initFirebaseAuth();
-    } else if (typeof window !== 'undefined') {
-      // Guest user with no stored auth session: defer 685KB Firebase SDK load until browser is idle
-      const win = window as Window & {
-        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-        cancelIdleCallback?: (id: number) => void;
-      };
-      if (typeof win.requestIdleCallback === 'function') {
-        const idleId = win.requestIdleCallback(() => void initFirebaseAuth(), { timeout: 3500 });
-        return () => {
-          isMounted = false;
-          win.cancelIdleCallback?.(idleId);
-          unsubscribeAuth?.();
-          unsubscribeFirestore?.();
-        };
-      } else {
-        idleTimerId = window.setTimeout(() => void initFirebaseAuth(), 2500);
-      }
     }
 
     return () => {

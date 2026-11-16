@@ -89,7 +89,28 @@ export const prefetchToolChunk = (slug: string): void => {
     }
   }
 
-  if (!sharedLayoutChunksPrefetched && typeof window !== 'undefined') {
+  const nonToolRoutes = new Set([
+    'pricing',
+    'blog',
+    'about-us',
+    'contact',
+    'login',
+    'sign-in',
+    'signin',
+    'signup',
+    'sign-up',
+    'dashboard',
+    'adobe-acrobat-alternative',
+    'privacy-policy',
+    'terms-of-service',
+    'mobile-drawer',
+  ]);
+
+  if (
+    !sharedLayoutChunksPrefetched &&
+    !nonToolRoutes.has(key) &&
+    typeof window !== 'undefined'
+  ) {
     sharedLayoutChunksPrefetched = true;
     const win = window as Window & {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;

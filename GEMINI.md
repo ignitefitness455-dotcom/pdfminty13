@@ -176,3 +176,10 @@ All scripts are executed via `npm`:
    - Keep `.npmrc` configured with `legacy-peer-deps=true` and commit `package-lock.json` to prevent peer resolution conflicts in npm v10 / Cloudflare Pages.
 7. **Never Break Canonical URL Trailing Slashes**:
    - Canonical URLs must always maintain trailing slashes (e.g., `/privacy-policy/`, `/merge-pdf/`). Maintain both client-side route normalization in `App.tsx` and edge 301 normalization in `public/_redirects` and `functions/_middleware.ts`.
+8. **Always Follow Superpowers Engineering Skills (`obra/superpowers`) & Keep Sitemaps Updated**:
+   - Always follow the **Superpowers** skill workflow installed in `/.aistudio/skills/superpowers/skills/` (`using-superpowers`, `systematic-debugging`, `test-driven-development`, `verification-before-completion`, `brainstorming`, `writing-plans`, `executing-plans`):
+     - **Root Cause First (`systematic-debugging`)**: Never propose or apply a fix without completing root-cause investigation first.
+     - **Test-Driven Verification (`test-driven-development`)**: Write or update automated regression tests in `src/__tests__/` for every bugfix or behavior change and run the full test suite (`npx vitest run`).
+     - **Evidence Before Completion (`verification-before-completion`)**: Never claim a task, test, or build succeeded without running fresh verification commands (`npm run typecheck`, `npm run lint`, `npx vitest run`, `npm run build`, `npm run validate:seo`, `npm run validate:parity`) and inspecting their real output.
+   - **End-of-Task Sitemap & Pre-render Sync**: At the end of every code/content modification task, always regenerate and verify `sitemap*.xml` and static pre-rendered HTML pages (`npm run build` / `compile_applet`).
+
