@@ -446,9 +446,6 @@ export default defineConfig(({ command, mode }) => {
               if (id.includes('@cantoo/pdf-lib') || id.includes('pdf-lib')) {
                 return 'vendor-pdf-lib';
               }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
-              }
               if (id.includes('i18next') || id.includes('react-i18next')) {
                 return 'vendor-i18n';
               }

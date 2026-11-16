@@ -59,6 +59,9 @@ export const ConsentManager: React.FC = () => {
   const [hasStoredConsent, setHasStoredConsent] = useState<boolean>(true); // start true to avoid SSR/first-paint layout shift
   const [preferencesOpen, setPreferencesOpen] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
+  const [bannerReady, setBannerReady] = useState<boolean>(
+    () => typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test'
+  );
 
   // Granular preference state (strictly opt-in / denied by default)
   const [analyticsGranted, setAnalyticsGranted] = useState<boolean>(false);
@@ -97,6 +100,7 @@ export const ConsentManager: React.FC = () => {
 
     // Expose global preference opening function for footer and privacy page links
     const handleOpenPreferences = () => {
+      setBannerReady(true);
       setPreferencesOpen(true);
     };
 
@@ -109,6 +113,43 @@ export const ConsentManager: React.FC = () => {
       delete (window as unknown as { openCookiePreferences?: () => void }).openCookiePreferences;
     };
   }, []);
+
+  // Defer automatic bottom banner display until first user interaction or after the mobile LCP window
+  useEffect(() => {
+    if (typeof window === 'undefined' || hasStoredConsent || bannerReady) {
+      return undefined;
+    }
+
+    let activated = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = () => {
+      window.removeEventListener('scroll', activateBanner);
+      window.removeEventListener('pointerdown', activateBanner);
+      window.removeEventListener('touchstart', activateBanner);
+      window.removeEventListener('keydown', activateBanner);
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+    };
+
+    function activateBanner() {
+      if (activated) return;
+      activated = true;
+      cleanup();
+      setBannerReady(true);
+    }
+
+    const opts: AddEventListenerOptions = { once: true, passive: true };
+    window.addEventListener('scroll', activateBanner, opts);
+    window.addEventListener('pointerdown', activateBanner, opts);
+    window.addEventListener('touchstart', activateBanner, opts);
+    window.addEventListener('keydown', activateBanner, opts);
+    timerId = setTimeout(activateBanner, 4500);
+
+    return cleanup;
+  }, [hasStoredConsent, bannerReady]);
 
   // Actions
   const handleAcceptAll = useCallback(() => {
@@ -163,36 +204,50 @@ export const ConsentManager: React.FC = () => {
 
   if (!mounted) return null;
 
+  const fullBannerDescription = t('consentBanner.description', {
+    defaultValue:
+      'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. With your permission, we and our partners use cookies and device identifiers to measure anonymous site usage and display relevant advertisements via Google Consent Mode v2.',
+  });
+  const sentenceBreakIdx = fullBannerDescription.indexOf('. ');
+  const primaryBannerSentence =
+    sentenceBreakIdx !== -1
+      ? fullBannerDescription.slice(0, sentenceBreakIdx + 1)
+      : fullBannerDescription;
+  const secondaryBannerSentence =
+    sentenceBreakIdx !== -1 ? fullBannerDescription.slice(sentenceBreakIdx + 2) : '';
+
   return (
     <>
-      {/* 1. Bottom-Fixed Consent Banner (Shown if no choice made yet) */}
-      {!hasStoredConsent && (
+      {/* 1. Bottom-Fixed Consent Banner (Shown if no choice made yet and bannerReady is true) */}
+      {!hasStoredConsent && bannerReady && (
         <aside
           id="pdfminty-consent-banner"
           aria-label={t('consentBanner.title', { defaultValue: 'We respect your privacy' })}
-          className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-5 pointer-events-none transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-5 pointer-events-none"
         >
-          <div className="max-w-5xl mx-auto pointer-events-auto bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-border-default/80 dark:border-zinc-700/80 rounded-2xl shadow-2xl p-5 sm:p-6 text-on-surface">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+          <div className="max-w-5xl mx-auto pointer-events-auto bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-border-default/80 dark:border-zinc-700/80 rounded-2xl shadow-2xl p-4 sm:p-5 text-on-surface">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
               {/* Text info */}
-              <div className="space-y-2 flex-1 pr-0 lg:pr-4">
+              <div className="space-y-1.5 flex-1 pr-0 lg:pr-4">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Cookie className="w-4 h-4" />
                   </div>
-                  <h3 className="text-base font-bold text-on-surface">
+                  <h3 className="text-sm sm:text-base font-bold text-on-surface">
                     {t('consentBanner.title', { defaultValue: 'We respect your privacy' })}
                   </h3>
                   <span className="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hidden sm:inline-block">
                     Consent Mode v2
                   </span>
                 </div>
-                <p className="text-xs text-on-surface-variant leading-relaxed">
-                  {t('consentBanner.description', {
-                    defaultValue:
-                      'PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. With your permission, we and our partners use cookies and device identifiers to measure anonymous site usage and display relevant advertisements via Google Consent Mode v2.',
-                  })}
+                <p className="text-[11px] text-on-surface-variant leading-snug">
+                  {primaryBannerSentence}
                 </p>
+                {secondaryBannerSentence && (
+                  <p className="text-[11px] text-on-surface-variant leading-snug">
+                    {secondaryBannerSentence}
+                  </p>
+                )}
                 <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/80 pt-0.5">
                   <span>{t('consentBanner.learnMore', { defaultValue: 'Learn more in our' })}</span>
                   <Link

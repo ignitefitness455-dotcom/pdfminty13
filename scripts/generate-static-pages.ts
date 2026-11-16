@@ -2006,9 +2006,9 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
     .join('\n');
   
   const homepageContent = `
-  <main class="prose max-w-6xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
-    <h1>${HOMEPAGE_H1}</h1>
-    <p>PDFMinty is a free, privacy-first PDF toolkit with ${toolsCount} powerful tools. Our 22 standard PDF tools run 100% locally in your browser so your files never leave your device — no server uploads and no mandatory sign-up (plus 2 opt-in AI Analyze and OCR PDF tools powered by Google Gemini only with your explicit consent). Merge, split, protect, convert, and edit PDFs with complete confidentiality.</p>
+  <main class="prose max-w-6xl mx-auto py-8 px-4 sm:px-6 dark:prose-invert font-sans" id="static-pre-render-container">
+    <h1 id="homepage-main-h1" class="text-[2rem] sm:text-5xl lg:text-[3.5rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-5 font-display">${HOMEPAGE_H1}</h1>
+    <p class="text-sm sm:text-base leading-[1.55] sm:leading-[1.7]">PDFMinty is a free, privacy-first PDF toolkit with ${toolsCount} powerful tools. Our 22 standard PDF tools run 100% locally in your browser so your files never leave your device — no server uploads and no mandatory sign-up (plus 2 opt-in AI Analyze and OCR PDF tools powered by Google Gemini only with your explicit consent). Merge, split, protect, convert, and edit PDFs with complete confidentiality.</p>
  
     <h2 id="all-tools">All PDF Tools</h2>
     <ul>
@@ -2547,9 +2547,9 @@ ${homepageHreflangs}
       .join('\n');
 
     const euHomepageContent = `
-  <main class="prose max-w-6xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
-    <h1>${locData.h1}</h1>
-    <p>${locData.lead}</p>
+  <main class="prose max-w-6xl mx-auto py-8 px-4 sm:px-6 dark:prose-invert font-sans" id="static-pre-render-container">
+    <h1 id="homepage-main-h1" class="text-[2rem] sm:text-5xl lg:text-[3.5rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-5 font-display">${locData.h1}</h1>
+    <p class="text-sm sm:text-base leading-[1.55] sm:leading-[1.7]">${locData.lead}</p>
  
     <h2 id="all-tools">${locData.toolsTitle}</h2>
     <ul>

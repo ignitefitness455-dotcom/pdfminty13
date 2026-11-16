@@ -130,5 +130,35 @@ describe('Phase 2 Performance, Main-Thread Decoupling & Accessibility Regression
 
     const viteConfigSrc = fs.readFileSync(path.join(repoRoot, 'vite.config.ts'), 'utf8');
     expect(viteConfigSrc).toContain('pdfminty-strip-unused-en-articles-from-bundle');
+    expect(viteConfigSrc).not.toContain("return 'vendor-icons'");
+  });
+
+  it('prevents late-mounted ConsentManager banner or unstyled static shell from stealing or resetting Mobile LCP at 5.6s', () => {
+    const repoRoot = path.resolve(__dirname, '../..');
+
+    const consentSrc = fs.readFileSync(
+      path.join(repoRoot, 'src/components/ConsentManager.tsx'),
+      'utf8'
+    );
+    expect(consentSrc).toContain('bannerReady');
+    expect(consentSrc).not.toContain('slide-in-from-bottom-4');
+
+    const heroSrc = fs.readFileSync(
+      path.join(repoRoot, 'src/pages/home/HeroSection.tsx'),
+      'utf8'
+    );
+    expect(heroSrc).toContain('text-[2rem] sm:text-5xl lg:text-[3.5rem]');
+
+    const staticGenSrc = fs.readFileSync(
+      path.join(repoRoot, 'scripts/generate-static-pages.ts'),
+      'utf8'
+    );
+    expect(staticGenSrc).toContain(
+      '<h1 id="homepage-main-h1" class="text-[2rem] sm:text-5xl lg:text-[3.5rem] font-extrabold'
+    );
+
+    const homePageSrc = fs.readFileSync(path.join(repoRoot, 'src/pages/HomePage.tsx'), 'utf8');
+    expect(homePageSrc).toContain('belowFoldReady');
   });
 });
+

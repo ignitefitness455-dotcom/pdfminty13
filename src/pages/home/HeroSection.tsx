@@ -94,7 +94,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
 
       <h1
-        className="text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.12] mb-5 font-display [text-wrap:balance]"
+        className="text-[2rem] sm:text-5xl lg:text-[3.5rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-5 font-display sm:[text-wrap:balance]"
         id="homepage-main-h1"
       >
         {t('home.hero.h1Part1', { defaultValue: HOMEPAGE_H1_PART1 })}{' '}
@@ -103,7 +103,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </span>
       </h1>
 
-      <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base lg:text-[1.0625rem] font-normal max-w-2xl mx-auto leading-[1.7] font-sans [text-wrap:pretty]">
+      <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base lg:text-[1.0625rem] font-normal max-w-2xl mx-auto leading-[1.55] sm:leading-[1.7] font-sans [text-wrap:pretty]">
         {t('home.hero.subtitle', {
           defaultValue:
             'Merge, split, and edit your documents directly in your web browser. PDFMinty processes standard PDF tasks locally on your device without server uploads. No accounts required—fast, privacy-first PDF tools that run in your browser.',

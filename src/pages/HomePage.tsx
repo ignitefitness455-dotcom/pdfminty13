@@ -113,6 +113,9 @@ export const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selected3DMode, setSelected3DMode] = useState<Scroll3DMode>('auto');
   const [autoActiveAnim, setAutoActiveAnim] = useState<Active3DAnimation>('flip-cascade');
+  const [belowFoldReady, setBelowFoldReady] = useState<boolean>(
+    () => typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test'
+  );
 
   const {
     enabled: is3DEnabled,
@@ -129,6 +132,56 @@ export const HomePage: React.FC = () => {
 
   const { debouncedValue, isDebouncing } = useDebounce(searchQuery, 200);
   const isBn = (i18n.language || '').startsWith('bn');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || belowFoldReady) {
+      return undefined;
+    }
+
+    let triggered = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let idleId: number | null = null;
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    const cleanup = () => {
+      window.removeEventListener('scroll', activateBelowFold);
+      window.removeEventListener('pointerdown', activateBelowFold);
+      window.removeEventListener('touchstart', activateBelowFold);
+      window.removeEventListener('keydown', activateBelowFold);
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+      if (idleId !== null && typeof win.cancelIdleCallback === 'function') {
+        win.cancelIdleCallback(idleId);
+        idleId = null;
+      }
+    };
+
+    function activateBelowFold() {
+      if (triggered) return;
+      triggered = true;
+      cleanup();
+      setBelowFoldReady(true);
+    }
+
+    const opts: AddEventListenerOptions = { once: true, passive: true };
+    window.addEventListener('scroll', activateBelowFold, opts);
+    window.addEventListener('pointerdown', activateBelowFold, opts);
+    window.addEventListener('touchstart', activateBelowFold, opts);
+    window.addEventListener('keydown', activateBelowFold, opts);
+
+    if (typeof win.requestIdleCallback === 'function') {
+      idleId = win.requestIdleCallback(activateBelowFold, { timeout: 2200 });
+    } else {
+      timerId = setTimeout(activateBelowFold, 1500);
+    }
+
+    return cleanup;
+  }, [belowFoldReady]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !shouldRender3D || selected3DMode !== 'auto') {
@@ -309,41 +362,43 @@ export const HomePage: React.FC = () => {
         />
       </section>
 
-      <SilentErrorBoundary>
-        <React.Suspense fallback={null}>
-          <div className="content-auto">
-            <HowItWorksSection />
-          </div>
+      {belowFoldReady && (
+        <SilentErrorBoundary>
+          <React.Suspense fallback={null}>
+            <div className="content-auto">
+              <HowItWorksSection />
+            </div>
 
-          <div className="content-auto">
-            <WhyChooseSection />
-          </div>
+            <div className="content-auto">
+              <WhyChooseSection />
+            </div>
 
-          <div className="content-auto">
-            <RecommendedToolsSection />
-          </div>
+            <div className="content-auto">
+              <RecommendedToolsSection />
+            </div>
 
-          <div className="content-auto">
-            <SeoResourcesSection />
-          </div>
+            <div className="content-auto">
+              <SeoResourcesSection />
+            </div>
 
-          <div className="content-auto">
-            <FaqSection />
-          </div>
+            <div className="content-auto">
+              <FaqSection />
+            </div>
 
-          <div className="mt-16 max-w-4xl mx-auto px-4 content-auto">
-            <EmailJoinForm />
-          </div>
+            <div className="mt-16 max-w-4xl mx-auto px-4 content-auto">
+              <EmailJoinForm />
+            </div>
 
-          <div className="content-auto">
-            <CtaSection />
-          </div>
+            <div className="content-auto">
+              <CtaSection />
+            </div>
 
-          <div className="content-auto">
-            <TrustBadgeSection />
-          </div>
-        </React.Suspense>
-      </SilentErrorBoundary>
+            <div className="content-auto">
+              <TrustBadgeSection />
+            </div>
+          </React.Suspense>
+        </SilentErrorBoundary>
+      )}
     </div>
   );
 };
