@@ -72,8 +72,13 @@ async function main() {
   }
 
   // Verify live key file is accessible before submitting to IndexNow
-  const keyCheckRes = await fetch(INDEXNOW_KEY_LOCATION);
-  const liveKeyBody = (await keyCheckRes.text()).trim();
+  let keyCheckRes = await fetch(INDEXNOW_KEY_LOCATION);
+  let liveKeyBody = (await keyCheckRes.text()).trim();
+  if ((!keyCheckRes.ok || liveKeyBody !== INDEXNOW_KEY) && keyCheckRes.headers.get('cf-cache-status') === 'HIT') {
+    // Bypass stale local edge negative cache after a fresh Pages deployment
+    keyCheckRes = await fetch(`${INDEXNOW_KEY_LOCATION}?_verify=${Date.now()}`);
+    liveKeyBody = (await keyCheckRes.text()).trim();
+  }
   if (!keyCheckRes.ok || liveKeyBody !== INDEXNOW_KEY) {
     console.error(
       `❌ Live key file verification failed (${keyCheckRes.status}) at ${INDEXNOW_KEY_LOCATION}. Deploy public/${INDEXNOW_KEY}.txt to production before submitting.`
