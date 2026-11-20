@@ -58,3 +58,9 @@
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=86400, stale-while-revalidate=3600
   X-Content-Type-Options: nosniff
+
+/f7c2e94a8b1d4e6093a5c8f12d4b7e3a.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+  X-Content-Type-Options: nosniff

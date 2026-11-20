@@ -6,10 +6,16 @@
     "nav": {
       "home": "Accueil",
       "tools": "Outils",
+      "pricing": "Tarifs",
       "blog": "Blog",
       "about": "À propos",
-      "contact": "Contact"
+      "contact": "Contact",
+      "dashboard": "Tableau de bord"
     },
+    "upgradeToPro": "Passer à Pro",
+    "upgradeToProTitle": "Passer à Pro (2,49 $/mois)",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
     "themeToggle": {
       "ariaLabel": "Basculer le mode sombre",
       "switchToLight": "Passer au mode clair",
@@ -29,7 +35,8 @@
       "resources": "Ressources",
       "companyLegal": "Entreprise et Mentions légales",
       "converters": "Convertisseurs",
-      "legalTrust": "Mentions légales et Confiance"
+      "legalTrust": "Mentions légales et Confiance",
+      "privacyPartners": "Partenaires de confidentialité"
     },
     "links": {
       "mergePdf": "Fusionner des PDF",
@@ -53,10 +60,18 @@
       "compareIlovepdf": "PdfMinty vs iLovePDF",
       "adobeSecurity": "Sécurité Adobe vs Navigateur",
       "trustArticle": "Les outils PDF en ligne sont-ils sûrs ?",
+      "nordVpn": "NordVPN (Tunnel chiffré)",
+      "nordPass": "NordPass (Coffre-fort de mots de passe)",
+      "pricing": "Tarifs et offres Pro",
+      "signIn": "Connexion membre",
       "aboutUs": "À propos de nous",
       "contactUs": "Nous contacter",
+      "feedback": "Envoyer un avis",
       "privacyPolicy": "Politique de confidentialité",
       "termsOfService": "Conditions d'utilisation",
+      "xmlSitemap": "Plan du site XML",
+      "cookieSettings": "Préférences cookies et confidentialité",
+      "toggle3dMode": "Activer/désactiver le mode 3D",
       "howItWorks": "Comment ça marche"
     },
     "copyright": "© {{year}} PdfMinty. Tous droits réservés. Conçu pour une confidentialité à 100%.",
@@ -97,9 +112,10 @@
       "h1Part1": "Outils PDF gratuits dans le navigateur — 100% confidentiels, ",
       "h1Part2": "Zéro téléversement",
       "subtitle": "Fusionnez, divisez et modifiez vos documents directement dans votre navigateur web. PDFMinty traite vos PDF localement sur votre appareil sans téléversement. Aucun compte requis — des outils PDF rapides et respectueux de la vie privée.",
-      "enable3D": "Enable 3D",
-      "disable3D": "Disable 3D",
-      "autoDisabled3D": "3D turned off to keep things fast"
+      "enable3D": "Activer la 3D",
+      "disable3D": "Désactiver la 3D",
+      "autoDisabled3D": "Mode 3D désactivé pour préserver la rapidité",
+      "motion3D": "Mouvement 3D"
     },
     "search": {
       "placeholder": "Rechercher des outils PDF...",
@@ -107,6 +123,8 @@
     },
     "categories": {
       "all": "Tous",
+      "essential": "Outils essentiels",
+      "specialist": "Avancé et IA",
       "workflows": "Flux de travail",
       "organize": "Organiser PDF",
       "optimize": "Optimiser PDF",
@@ -142,6 +160,7 @@
       "desc": "PDFMinty traite les documents standard directement sur votre ordinateur ou téléphone. Parce que vos fichiers restent sur votre appareil, le traitement s'effectue instantanément sans délais de téléversement, files d'attente ni risques de stockage dans le cloud. Traitez vos documents confidentiels en toute sécurité.",
       "dragDrop": "Glissez & déposez le PDF ici",
       "orBrowse": "ou cliquez pour parcourir localement",
+      "offlineBadge": "100% Hors ligne",
       "stepsHeading": "Comment ça marche en 3 étapes simples",
       "step1Title": "Sélectionnez votre outil",
       "step1Desc": "Choisissez parmi 24 outils PDF dédiés pour fusionner, diviser, compresser, signer ou sécuriser vos fichiers.",
@@ -185,7 +204,20 @@
     },
     "toolCard": {
       "highDemand": "Populaire",
-      "useTool": "Ouvrir l'outil"
+      "useTool": "Ouvrir l'outil",
+      "localRam": "RAM locale",
+      "aiConsent": "IA · Consentement",
+      "badges": {
+        "popular": "Populaire",
+        "smart_reduction": "Réduction intelligente",
+        "ai_hybrid": "IA hybride",
+        "offline_aes": "AES hors ligne",
+        "fast_convert": "Conversion rapide",
+        "extractor": "Extracteur",
+        "visual_extract": "Extraction visuelle",
+        "interactive_order": "Tri interactif",
+        "secure": "Sécurisé"
+      }
     },
     "trustBadge": {
       "eyebrow": "Vérifié par la communauté",
@@ -214,24 +246,46 @@
       "subtitle": "Tutoriels complets, analyses de sécurité et comparatifs pour gérer vos documents PDF en toute confidentialité.",
       "exploreResource": "Explorer le guide",
       "viewAllHub": "Voir tous les articles dans le Centre de connaissances",
+      "badges": {
+        "popular": "POPULAIRE",
+        "topFeatured": "À LA UNE",
+        "guide": "GUIDE",
+        "privacyFirst": "CONFIDENTIALITÉ",
+        "noAds": "SANS PUB",
+        "mustRead": "À LIRE",
+        "tutorial": "TUTORIEL",
+        "safety": "SÉCURITÉ"
+      },
       "cards": {
-        "pdfToWordTitle": "Free PDF to Word Guide",
-        "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
-        "adobeAltTitle": "Adobe Acrobat Alternative",
-        "adobeAltDesc": "Replace expensive ~$240/year Adobe subscriptions with a 100% private, free client-side PDF utility suite.",
-        "compressGuideTitle": "PDF Compression Guide",
-        "compressGuideDesc": "Understand lossy vs. lossless PDF reduction, image stream optimization, and how to shrink PDFs safely.",
+        "pdfToWordTitle": "Guide PDF vers Word gratuit",
+        "pdfToWordDesc": "Apprenez à convertir des documents PDF en fichiers Word modifiables gratuitement sans casser la mise en page.",
+        "adobeAltTitle": "Alternative à Adobe Acrobat",
+        "adobeAltDesc": "Remplacez les abonnements Adobe coûteux (~240 $/an) par une suite PDF locale 100 % privée et gratuite.",
+        "compressGuideTitle": "Guide de compression PDF",
+        "compressGuideDesc": "Comprenez la compression avec ou sans perte, l’optimisation des images et comment réduire vos PDF en sécurité.",
         "smallpdfTitle": "PDFMinty vs SmallPDF",
-        "smallpdfDesc": "Compare zero-upload browser processing against SmallPDF’s cloud server storage model.",
+        "smallpdfDesc": "Comparez le traitement local sans téléversement au modèle cloud de SmallPDF sur serveurs distants.",
         "ilovepdfTitle": "PDFMinty vs iLovePDF",
-        "ilovepdfDesc": "In-depth speed, security, and feature breakdown vs iLovePDF. No file limits or ad trackers.",
-        "trustArticleTitle": "Is Online PDF Safe?",
-        "trustArticleDesc": "Crucial security analysis explaining the privacy hazards of sending sensitive PDFs to remote servers.",
-        "signGuideTitle": "Free PDF E-Signatures",
-        "signGuideDesc": "How to sign contracts and legal documents locally on your device without third-party server exposure.",
-        "metadataGuideTitle": "Remove PDF Metadata",
-        "metadataGuideDesc": "Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs."
+        "ilovepdfDesc": "Analyse approfondie de la vitesse, de la sécurité et des fonctions face à iLovePDF, sans traceurs publicitaires.",
+        "trustArticleTitle": "Les outils PDF en ligne sont-ils sûrs ?",
+        "trustArticleDesc": "Analyse de sécurité essentielle sur les risques de confidentialité liés à l’envoi de PDF sensibles vers des serveurs.",
+        "signGuideTitle": "Signature électronique PDF gratuite",
+        "signGuideDesc": "Comment signer des contrats et documents juridiques localement sur votre appareil sans exposition à des tiers.",
+        "metadataGuideTitle": "Supprimer les métadonnées PDF",
+        "metadataGuideDesc": "Guide étape par étape pour effacer les noms d’auteurs, coordonnées GPS et historiques cachés de vos PDF."
       }
+    },
+    "newsletter": {
+      "title": "Rejoignez notre newsletter",
+      "subtitle": "Recevez nos derniers conseils de sécurité PDF et mises à jour directement dans votre boîte mail.",
+      "emailLabel": "Adresse e-mail",
+      "placeholder": "Entrez votre adresse e-mail...",
+      "button": "S'inscrire",
+      "buttonLoading": "Inscription...",
+      "success": "Merci pour votre inscription ! Vérifiez votre boîte de réception.",
+      "emptyEmail": "Veuillez saisir votre adresse e-mail.",
+      "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
+      "error": "Échec de l'inscription. Veuillez réessayer."
     }
   },
   "tools": {
@@ -1613,7 +1667,8 @@
     }
   },
   "affiliate": {
-    "label": "Affiliate"
+    "label": "Affiliation",
+    "sponsored": "Partenaire affilié"
   },
   "preview": {
     "pagesCount": "{{count}} page",
@@ -1747,9 +1802,11 @@
       "guestBadge": "Guest: {{count}}/5",
       "freeBadge": "Tasks: {{count}}/10",
       "proBadge": "PRO • Unlimited",
-      "guestTitle": "Guest: 5 daily tasks ({{count}} left) & 100MB file uploads",
-      "freeTitle": "Free Account: 10 daily tasks ({{count}} left) & 150MB file uploads",
-      "proTitle": "Pro Tier: Unlimited daily tasks & 500MB file uploads"
+      "unlimited": "Illimité",
+      "tasksRatio": "{{count}}/{{max}} tâches",
+      "guestTitle": "Invité : 5 tâches par jour ({{count}} restantes) et fichiers jusqu’à 100 Mo",
+      "freeTitle": "Compte gratuit : 10 tâches par jour ({{count}} restantes) et fichiers jusqu’à 150 Mo",
+      "proTitle": "Offre Pro : tâches illimitées et fichiers jusqu’à 500 Mo"
     },
     "mobile": {
       "guestTitle": "Guest: {{count}}/5 Left",
@@ -1784,5 +1841,10 @@
       "btnUpgradeFree": "Upgrade to Pro (Unlimited Tasks • 500 MB)",
       "btnLater": "Maybe Later"
     }
+  },
+  "common": {
+    "on": "ACTIF",
+    "off": "INACTIF",
+    "gotIt": "Compris"
   }
 }

@@ -222,7 +222,9 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(
                 badge &&
                 !['popular', 'ai_hybrid'].includes(toolSEO.badge || '') && (
                   <span className="text-slate-500 dark:text-slate-400 font-medium lowercase first-letter:uppercase">
-                    {badge.text.toLowerCase()}
+                    {t(`home.toolCard.badges.${toolSEO.badge}`, {
+                      defaultValue: badge.text,
+                    }).toLowerCase()}
                   </span>
                 )
               )}
@@ -254,7 +256,9 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(
             />
           </span>
           <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 select-none">
-            {isAiHybrid ? 'AI · Consent' : 'Local RAM'}
+            {isAiHybrid
+              ? t('home.toolCard.aiConsent', { defaultValue: 'AI · Consent' })
+              : t('home.toolCard.localRam', { defaultValue: 'Local RAM' })}
           </span>
         </div>
       </Link>

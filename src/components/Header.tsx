@@ -161,11 +161,13 @@ export const Header: React.FC<HeaderProps> = React.memo(
                 disabled={isUpgrading}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all cursor-pointer active:scale-95 disabled:opacity-60 shrink-0 shadow-sm shadow-emerald-600/20"
                 id="header-upgrade-pro-btn"
-                title="Upgrade to Pro ($2.49/month)"
+                title={t('header.upgradeToProTitle', { defaultValue: 'Upgrade to Pro ($2.49/month)' })}
               >
                 <Zap className="w-3.5 h-3.5 fill-white shrink-0" />
                 <span className="sm:hidden">Pro</span>
-                <span className="hidden sm:inline">Upgrade to Pro</span>
+                <span className="hidden sm:inline">
+                  {t('header.upgradeToPro', { defaultValue: 'Upgrade to Pro' })}
+                </span>
               </button>
             )}
 
@@ -194,18 +196,30 @@ export const Header: React.FC<HeaderProps> = React.memo(
                 <>
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                   <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                    Unlimited
+                    {t('usageLimits.header.unlimited', { defaultValue: 'Unlimited' })}
                   </span>
                 </>
               ) : tier === 'free' ? (
                 <>
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>{tasksRemaining}/10 tasks</span>
+                  <span>
+                    {t('usageLimits.header.tasksRatio', {
+                      count: tasksRemaining,
+                      max: 10,
+                      defaultValue: `${tasksRemaining}/10 tasks`,
+                    })}
+                  </span>
                 </>
               ) : (
                 <>
                   <Zap className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />
-                  <span>{tasksRemaining}/5 tasks</span>
+                  <span>
+                    {t('usageLimits.header.tasksRatio', {
+                      count: tasksRemaining,
+                      max: 5,
+                      defaultValue: `${tasksRemaining}/5 tasks`,
+                    })}
+                  </span>
                 </>
               )}
             </button>
@@ -245,7 +259,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
                 id="header-signin-btn"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Sign In</span>
+                <span>{t('header.signIn', { defaultValue: 'Sign In' })}</span>
               </Link>
             )}
 

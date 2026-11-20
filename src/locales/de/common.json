@@ -6,10 +6,16 @@
     "nav": {
       "home": "Startseite",
       "tools": "Werkzeuge",
+      "pricing": "Pricing",
       "blog": "Blog",
       "about": "Über uns",
-      "contact": "Kontakt"
+      "contact": "Kontakt",
+      "dashboard": "Dashboard"
     },
+    "upgradeToPro": "Upgrade to Pro",
+    "upgradeToProTitle": "Upgrade to Pro ($2.49/month)",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
     "themeToggle": {
       "ariaLabel": "Dunkelmodus umschalten",
       "switchToLight": "Zu hellem Modus wechseln",
@@ -29,7 +35,8 @@
       "resources": "Ressourcen",
       "companyLegal": "Unternehmen & Rechtliches",
       "converters": "Konverter",
-      "legalTrust": "Recht & Vertrauen"
+      "legalTrust": "Recht & Vertrauen",
+      "privacyPartners": "Privacy Partners"
     },
     "links": {
       "mergePdf": "PDF zusammenfügen",
@@ -53,10 +60,18 @@
       "compareIlovepdf": "PdfMinty vs iLovePDF",
       "adobeSecurity": "Adobe vs Browser-Sicherheit",
       "trustArticle": "Ist Online-PDF sicher?",
+      "nordVpn": "NordVPN (Encrypted Tunnel)",
+      "nordPass": "NordPass (Password Vault)",
+      "pricing": "Pro Pricing & Plans",
+      "signIn": "Member Sign In",
       "aboutUs": "Über uns",
       "contactUs": "Kontaktieren Sie uns",
+      "feedback": "Send Feedback",
       "privacyPolicy": "Datenschutzerklärung",
       "termsOfService": "Nutzungsbedingungen",
+      "xmlSitemap": "XML Sitemap",
+      "cookieSettings": "Cookie & Privacy Preferences",
+      "toggle3dMode": "Toggle 3D Mode",
       "howItWorks": "So funktioniert es"
     },
     "copyright": "© {{year}} PdfMinty. Alle Rechte vorbehalten. Entwickelt für 100% Dateidatenschutz.",
@@ -99,7 +114,8 @@
       "subtitle": "Fügen Sie Ihre Dokumente direkt im Webbrowser zusammen, teilen und bearbeiten Sie sie. PDFMinty verarbeitet Standard-PDF-Aufgaben lokal auf Ihrem Gerät ohne Server-Uploads. Keine Konten erforderlich – schnelle, datenschutzorientierte PDF-Tools.",
       "enable3D": "Enable 3D",
       "disable3D": "Disable 3D",
-      "autoDisabled3D": "3D turned off to keep things fast"
+      "autoDisabled3D": "3D turned off to keep things fast",
+      "motion3D": "3D Motion"
     },
     "search": {
       "placeholder": "PDF-Werkzeuge durchsuchen...",
@@ -107,6 +123,8 @@
     },
     "categories": {
       "all": "Alle",
+      "essential": "Core Essentials",
+      "specialist": "Advanced & AI",
       "workflows": "Arbeitsabläufe",
       "organize": "PDF organisieren",
       "optimize": "PDF optimieren",
@@ -142,6 +160,7 @@
       "desc": "PDFMinty verarbeitet Standarddokumente direkt auf Ihrem Computer oder Smartphone. Da Ihre Dateien auf Ihrem Gerät verbleiben, erfolgt die Verarbeitung sofort ohne Upload-Verzögerungen, Warteschlangen oder Cloud-Speicherrisiken. Verarbeiten Sie vertrauliche Verträge und Steuerformulare mit lokalem Browser-Datenschutz.",
       "dragDrop": "PDF hierher ziehen & ablegen",
       "orBrowse": "oder klicken, um lokal auszuwählen",
+      "offlineBadge": "100% Offline",
       "stepsHeading": "So funktioniert es in 3 einfachen Schritten",
       "step1Title": "Wählen Sie Ihr Werkzeug",
       "step1Desc": "Wählen Sie aus 24 PDF-Werkzeugen zum Zusammenfügen, Teilen, Komprimieren, Signieren oder Schützen Ihrer Dateien.",
@@ -185,7 +204,20 @@
     },
     "toolCard": {
       "highDemand": "Beliebt",
-      "useTool": "Tool öffnen"
+      "useTool": "Tool öffnen",
+      "localRam": "Local RAM",
+      "aiConsent": "AI · Consent",
+      "badges": {
+        "popular": "Popular",
+        "smart_reduction": "Smart Reduction",
+        "ai_hybrid": "AI Hybrid",
+        "offline_aes": "Offline AES",
+        "fast_convert": "Fast Convert",
+        "extractor": "Extractor",
+        "visual_extract": "Visual Extract",
+        "interactive_order": "Interactive Order",
+        "secure": "Secure"
+      }
     },
     "trustBadge": {
       "eyebrow": "Community-geprüft",
@@ -214,6 +246,16 @@
       "subtitle": "Umfassende Tutorials, Sicherheitsanalysen und Tool-Vergleiche für sichere PDF-Workflows.",
       "exploreResource": "Ressource öffnen",
       "viewAllHub": "Alle Artikel im Knowledge Hub ansehen",
+      "badges": {
+        "popular": "POPULAR",
+        "topFeatured": "TOP FEATURED",
+        "guide": "GUIDE",
+        "privacyFirst": "PRIVACY FIRST",
+        "noAds": "NO ADS",
+        "mustRead": "MUST READ",
+        "tutorial": "TUTORIAL",
+        "safety": "SAFETY"
+      },
       "cards": {
         "pdfToWordTitle": "Free PDF to Word Guide",
         "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
@@ -232,6 +274,18 @@
         "metadataGuideTitle": "Remove PDF Metadata",
         "metadataGuideDesc": "Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs."
       }
+    },
+    "newsletter": {
+      "title": "Join Our Newsletter",
+      "subtitle": "Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.",
+      "emailLabel": "Email address",
+      "placeholder": "Enter your email address...",
+      "button": "Join",
+      "buttonLoading": "Joining...",
+      "success": "Thank you for joining! Check your inbox for updates.",
+      "emptyEmail": "Please enter your email address.",
+      "invalidEmail": "Please enter a valid email address.",
+      "error": "Failed to process subscription. Please try again."
     }
   },
   "tools": {
@@ -1613,7 +1667,8 @@
     }
   },
   "affiliate": {
-    "label": "Affiliate"
+    "label": "Affiliate",
+    "sponsored": "Affiliate Partner"
   },
   "errorBoundary": {
     "somethingWentWrong": "Etwas ist schiefgelaufen",
@@ -1747,6 +1802,8 @@
       "guestBadge": "Guest: {{count}}/5",
       "freeBadge": "Tasks: {{count}}/10",
       "proBadge": "PRO • Unlimited",
+      "unlimited": "Unlimited",
+      "tasksRatio": "{{count}}/{{max}} tasks",
       "guestTitle": "Guest: 5 daily tasks ({{count}} left) & 100MB file uploads",
       "freeTitle": "Free Account: 10 daily tasks ({{count}} left) & 150MB file uploads",
       "proTitle": "Pro Tier: Unlimited daily tasks & 500MB file uploads"
@@ -1784,5 +1841,10 @@
       "btnUpgradeFree": "Upgrade to Pro (Unlimited Tasks • 500 MB)",
       "btnLater": "Maybe Later"
     }
+  },
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "gotIt": "Got it"
   }
 }

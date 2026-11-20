@@ -6,10 +6,16 @@
     "nav": {
       "home": "Home",
       "tools": "Tools",
+      "pricing": "Pricing",
       "blog": "Blog",
       "about": "About",
-      "contact": "Contact"
+      "contact": "Contact",
+      "dashboard": "Dashboard"
     },
+    "upgradeToPro": "Upgrade to Pro",
+    "upgradeToProTitle": "Upgrade to Pro ($2.49/month)",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
     "themeToggle": {
       "ariaLabel": "Toggle dark mode",
       "switchToLight": "Switch to Light Mode",
@@ -42,7 +48,8 @@
       "resources": "Resources",
       "companyLegal": "Company & Legal",
       "converters": "Converters",
-      "legalTrust": "Legal & Trust"
+      "legalTrust": "Legal & Trust",
+      "privacyPartners": "Privacy Partners"
     },
     "links": {
       "mergePdf": "Merge PDF Files",
@@ -66,10 +73,18 @@
       "compareIlovepdf": "PdfMinty vs iLovePDF",
       "adobeSecurity": "Adobe vs Browser Security",
       "trustArticle": "Is Online PDF Safe?",
+      "nordVpn": "NordVPN (Encrypted Tunnel)",
+      "nordPass": "NordPass (Password Vault)",
+      "pricing": "Pro Pricing & Plans",
+      "signIn": "Member Sign In",
       "aboutUs": "About Us",
       "contactUs": "Contact Us",
+      "feedback": "Send Feedback",
       "privacyPolicy": "Privacy Policy",
       "termsOfService": "Terms of Service",
+      "xmlSitemap": "XML Sitemap",
+      "cookieSettings": "Cookie & Privacy Preferences",
+      "toggle3dMode": "Toggle 3D Mode",
       "howItWorks": "How It Works"
     },
     "copyright": "© {{year}} PdfMinty. All rights reserved. Built for 100% file privacy.",
@@ -112,7 +127,8 @@
       "subtitle": "Merge, split, and edit your documents directly in your web browser. PDFMinty processes standard PDF tasks locally on your device without server uploads. No accounts required—fast, privacy-first PDF tools that run in your browser.",
       "enable3D": "Enable 3D",
       "disable3D": "Disable 3D",
-      "autoDisabled3D": "3D turned off to keep things fast"
+      "autoDisabled3D": "3D turned off to keep things fast",
+      "motion3D": "3D Motion"
     },
     "search": {
       "placeholder": "Search PDF tools...",
@@ -120,6 +136,8 @@
     },
     "categories": {
       "all": "All",
+      "essential": "Core Essentials",
+      "specialist": "Advanced & AI",
       "workflows": "Workflows",
       "organize": "Organize PDF",
       "optimize": "Optimize PDF",
@@ -155,6 +173,7 @@
       "desc": "PDFMinty processes standard documents directly on your computer or phone. Because your files stay on your device, processing happens instantly with no upload delays, queue wait times, or cloud storage risks. Process confidential contracts, tax forms, and financial records with local browser privacy.",
       "dragDrop": "Drag & Drop PDF here",
       "orBrowse": "or click to browse locally",
+      "offlineBadge": "100% Offline",
       "stepsHeading": "How It Works in 3 Simple Steps",
       "step1Title": "Pick a Tool",
       "step1Desc": "Choose from 24 PDF tools above to merge, split, compress, sign, or protect your document.",
@@ -198,7 +217,20 @@
     },
     "toolCard": {
       "highDemand": "Popular",
-      "useTool": "Open Tool"
+      "useTool": "Open Tool",
+      "localRam": "Local RAM",
+      "aiConsent": "AI · Consent",
+      "badges": {
+        "popular": "Popular",
+        "smart_reduction": "Smart Reduction",
+        "ai_hybrid": "AI Hybrid",
+        "offline_aes": "Offline AES",
+        "fast_convert": "Fast Convert",
+        "extractor": "Extractor",
+        "visual_extract": "Visual Extract",
+        "interactive_order": "Interactive Order",
+        "secure": "Secure"
+      }
     },
     "trustBadge": {
       "eyebrow": "Community Verified",
@@ -227,6 +259,16 @@
       "subtitle": "Comprehensive tutorials, security breakdowns, and tool comparisons to help you manage PDF documents privately and efficiently.",
       "exploreResource": "Explore Resource",
       "viewAllHub": "View All Articles & Guides in Knowledge Hub",
+      "badges": {
+        "popular": "POPULAR",
+        "topFeatured": "TOP FEATURED",
+        "guide": "GUIDE",
+        "privacyFirst": "PRIVACY FIRST",
+        "noAds": "NO ADS",
+        "mustRead": "MUST READ",
+        "tutorial": "TUTORIAL",
+        "safety": "SAFETY"
+      },
       "cards": {
         "pdfToWordTitle": "Free PDF to Word Guide",
         "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
@@ -245,6 +287,18 @@
         "metadataGuideTitle": "Remove PDF Metadata",
         "metadataGuideDesc": "Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs."
       }
+    },
+    "newsletter": {
+      "title": "Join Our Newsletter",
+      "subtitle": "Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.",
+      "emailLabel": "Email address",
+      "placeholder": "Enter your email address...",
+      "button": "Join",
+      "buttonLoading": "Joining...",
+      "success": "Thank you for joining! Check your inbox for updates.",
+      "emptyEmail": "Please enter your email address.",
+      "invalidEmail": "Please enter a valid email address.",
+      "error": "Failed to process subscription. Please try again."
     }
   },
   "newsletter": {
@@ -1325,7 +1379,13 @@
     }
   },
   "affiliate": {
-    "label": "Affiliate"
+    "label": "Affiliate",
+    "sponsored": "Affiliate Partner"
+  },
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "gotIt": "Got it"
   },
   "preview": {
     "pagesCount": "{{count}} page",
@@ -1708,6 +1768,8 @@
       "guestBadge": "Guest: {{count}}/5",
       "freeBadge": "Tasks: {{count}}/10",
       "proBadge": "PRO • Unlimited",
+      "unlimited": "Unlimited",
+      "tasksRatio": "{{count}}/{{max}} tasks",
       "guestTitle": "Guest: 5 daily tasks ({{count}} left) & 100MB file uploads",
       "freeTitle": "Free Account: 10 daily tasks ({{count}} left) & 150MB file uploads",
       "proTitle": "Pro Tier: Unlimited daily tasks & 500MB file uploads"

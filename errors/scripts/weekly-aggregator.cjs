@@ -22,7 +22,8 @@ function parseArgs() {
 }
 
 const args = parseArgs();
-const daysToAggregate = parseInt(args.days || '7', 10);
+const parsedDays = parseInt(args.days || '7', 10);
+const daysToAggregate = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : 7;
 
 const errorsDir = path.join(__dirname, '..');
 const logsDir = path.join(errorsDir, 'logs');

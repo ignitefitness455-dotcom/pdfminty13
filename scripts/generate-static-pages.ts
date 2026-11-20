@@ -531,6 +531,24 @@ ${footerHtml}
     return `${clean.slice(0, maxLen - 3).replace(/\s+\S*$/, '')}...`;
   }
 
+  function escapeHtmlAttr(val: string): string {
+    return (val || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function toIsoDateTime(raw?: string, fallback = '2026-09-21'): string {
+    const val = (raw || fallback).trim();
+    return val.includes('T') ? val : `${val}T00:00:00Z`;
+  }
+
+  function countPlainWords(html?: string): number {
+    const text = (html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return text ? text.split(' ').length : 0;
+  }
+
   TOOLS.forEach((item: ToolSEOInfo) => {
     const itemMetaDesc = clampMetaDesc(item.metaDescription || item.shortDescription);
     const pageUrl: string = `${SITE_URL}/${item.slug}/`;
@@ -772,17 +790,44 @@ ${footerHtml}
         }
       );
     } else if (item.type === 'article') {
-      // 1. Article Schema
+      // 1. Article Schema (ISO-8601 UTC dates, @id graph links, wordCount, inLanguage, articleSection, keywords)
+      const articlePublishedIso = toIsoDateTime(item.datePublished, '2026-09-21');
+      const articleModifiedIso = toIsoDateTime(
+        item.dateModified || item.datePublished,
+        '2026-09-28'
+      );
+      const articleWordCount = Math.max(
+        countPlainWords(item.longFormBody || item.shortDescription),
+        100
+      );
+      const articleSection = item.slug.startsWith('compare/')
+        ? 'Tool Comparisons'
+        : item.category === 'security' || item.slug.includes('privacy')
+          ? 'PDF Security & Privacy'
+          : 'PDF Guides';
+      const articleKeywordsStr = item.keywords
+        ? Array.isArray(item.keywords)
+          ? item.keywords.join(', ')
+          : item.keywords
+        : `${item.name.toLowerCase()}, pdf tools, privacy-first pdf`;
+
       schemas.push({
         "@context": "https://schema.org",
         "@type": "Article",
+        "@id": `${pageUrl}#article`,
         "headline": item.h1 || item.name,
         "description": item.metaDescription,
         "url": pageUrl,
-        "datePublished": item.datePublished || "2026-07-16",
-        "dateModified": item.dateModified || item.datePublished || "2026-08-08",
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "articleSection": articleSection,
+        "keywords": articleKeywordsStr,
+        "wordCount": articleWordCount,
+        "datePublished": articlePublishedIso,
+        "dateModified": articleModifiedIso,
         "author": {
           "@type": "Person",
+          "@id": `${SITE_URL}/about-us/#creator`,
           "name": PRIMARY_AUTHOR.name,
           "jobTitle": PRIMARY_AUTHOR.jobTitle,
           "url": `${SITE_URL}/about-us/#creator`,
@@ -797,6 +842,7 @@ ${footerHtml}
         },
         "publisher": {
           "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
           "name": SITE_NAME,
           "url": `${SITE_URL}/`,
           "logo": {
@@ -866,22 +912,31 @@ ${footerHtml}
       : `${item.name.toLowerCase()}, ${item.slug.replace(/^(?:blog|compare)\//, '').replace(/-/g, ' ')}, pdf tools`;
 
     const pageOgImage = `${SITE_URL}${item.ogImage || '/og-image.png'}`;
+    const safeMetaTitle = escapeHtmlAttr(item.metaTitle);
+    const safeMetaDesc = escapeHtmlAttr(itemMetaDesc);
+    const safeKeywords = escapeHtmlAttr(pageKeywords);
+    const isRealArticle =
+      item.type === 'article' &&
+      !['blog', 'about-us', 'contact', 'privacy-policy', 'terms-of-service'].includes(item.slug);
+    const articleOgMeta = isRealArticle
+      ? `\n  <meta property="article:published_time" content="${toIsoDateTime(item.datePublished, '2026-09-21')}">\n  <meta property="article:modified_time" content="${toIsoDateTime(item.dateModified || item.datePublished, '2026-09-28')}">\n  <meta property="article:author" content="${SITE_URL}/about-us/#creator">`
+      : '';
 
     // Set custom page head meta tags
     const headMeta: string = `
   <title>${item.metaTitle}</title>
-  <meta name="description" content="${itemMetaDesc}">
-  <meta name="keywords" content="${pageKeywords}">
+  <meta name="description" content="${safeMetaDesc}">
+  <meta name="keywords" content="${safeKeywords}">
   <link rel="canonical" href="${pageUrl}">
-${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content="${item.type === 'article' ? 'article' : 'website'}">
-  <meta property="og:title" content="${item.metaTitle}">
-  <meta property="og:description" content="${itemMetaDesc}">
+${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content="${isRealArticle ? 'article' : 'website'}">
+  <meta property="og:title" content="${safeMetaTitle}">
+  <meta property="og:description" content="${safeMetaDesc}">
   <meta property="og:url" content="${pageUrl}">
-  <meta property="og:image" content="${pageOgImage}">
+  <meta property="og:image" content="${pageOgImage}">${articleOgMeta}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="${pageUrl}">
-  <meta name="twitter:title" content="${item.metaTitle}">
-  <meta name="twitter:description" content="${itemMetaDesc}">
+  <meta name="twitter:title" content="${safeMetaTitle}">
+  <meta name="twitter:description" content="${safeMetaDesc}">
   <meta name="twitter:image" content="${pageOgImage}">
   ${jsonLdMarkup}
   `;
@@ -1046,11 +1101,44 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
 `;
     }
 
-    // Pre-inject longFormBody directly inside the React root element (#root) with semantic header and footer
-    const articleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
+    // Pre-inject static HTML inside #root with semantic header and footer.
+    // For /compress-pdf/, mount the interactive-ready Compress PDF Tool Workspace directly
+    // at the top of <main> (instead of leading with a blog-style article container).
+    let preRenderedInner: string;
+    if (item.slug === 'compress-pdf') {
+      const bodyWithoutLeadingH1 = finalBody.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '');
+      preRenderedInner = `        <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 font-sans space-y-10" id="compress_pdf_container" data-tool-workspace="compress-pdf">
+          <section aria-labelledby="compress-pdf-workspace-heading" class="space-y-6">
+            <header class="space-y-2">
+              <h1 id="compress-pdf-workspace-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">${item.h1 || item.name}</h1>
+              <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400">${item.shortDescription}</p>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="md:col-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4" id="compress_pdf_uploader">
+                <div class="font-bold text-slate-900 dark:text-white">Document Workspace — 100% Local In-Browser Compression</div>
+                <p class="text-sm text-slate-600 dark:text-slate-400">Drag and drop your PDF file here or select a PDF from your device. Processed 100% locally in browser memory — zero server uploads (up to 100MB guest / 150MB free / 500MB Pro).</p>
+                <div class="inline-flex items-center px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm">${item.primaryCtaText || 'Select PDF File to Compress'}</div>
+              </div>
+              <div class="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                <div class="font-bold text-slate-900 dark:text-white">Compression Modes</div>
+                <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-2">
+                  <li><strong>Recommended (Balanced):</strong> Smart stream optimization with crisp text clarity.</li>
+                  <li><strong>Extreme Compression:</strong> Maximum size reduction for strict email/portal limits.</li>
+                  <li><strong>Lossless / Low:</strong> Preserves full image fidelity while stripping unused objects.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+          <section class="prose max-w-4xl mx-auto pt-8 border-t border-slate-200 dark:border-slate-800 dark:prose-invert font-sans" id="static-pre-render-container" aria-label="Compress PDF Guide and Technical Documentation">
+            ${bodyWithoutLeadingH1}
+          </section>
+        </div>`;
+    } else {
+      preRenderedInner = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
           ${finalBody}
         </article>`;
-    const preRenderedContent: string = wrapInPrerenderedShell(articleHtml, DEFAULT_LOCALE);
+    }
+    const preRenderedContent: string = wrapInPrerenderedShell(preRenderedInner, DEFAULT_LOCALE);
     
     // Replace empty #root mount tag with populated static HTML
     preRenderedHtml = preRenderedHtml.replace(/<div\s+id="root"\s*><\/div>/i, preRenderedContent);
@@ -1385,12 +1473,20 @@ ${tool.faqs.map((f) => `    <div>\n      <h3>${f.q}</h3>\n      <p>${f.a}</p>\n 
             const whyHeading = richTpl.whyHeading;
             const faqHeading = locMergeFallback?.faqTitle || 'FAQ';
 
+            const locWorkspaceShell =
+              item.slug === 'compress-pdf'
+                ? `          <section aria-label="${locToolName}" class="not-prose my-6 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3" id="compress_pdf_container" data-tool-workspace="compress-pdf">
+            <div class="font-bold text-slate-900 dark:text-white" id="compress_pdf_uploader">${locToolName} — ${locPrivacyBadge}</div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">${locToolDesc}</p>
+          </section>\n`
+                : '';
+
             const locArticleHtml = `        <article class="prose max-w-4xl mx-auto py-12 px-6 dark:prose-invert font-sans" id="static-pre-render-container">
           <h1>${locToolName}</h1>
           <p class="lead text-lg font-medium text-slate-700 dark:text-slate-300">
             ${locToolDesc}
           </p>
-          <section aria-label="${richTpl.overviewHeading}">
+${locWorkspaceShell}          <section aria-label="${richTpl.overviewHeading}">
             <h2>${richTpl.overviewHeading}</h2>
             <p>${richTpl.overviewP1}</p>
             <p>${richTpl.overviewP2}</p>
@@ -2576,11 +2672,11 @@ ${locData.faqs.map(faq => `    <h3>${faq.q}</h3>\n    <p>${faq.a}</p>`).join('\n
     <div style="margin-top: 2.5rem; text-align: center;">
       <p style="font-weight: 600; margin-bottom: 1rem;">${locData.featuredOn}</p>
       <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.5rem;">
-        <a href="https://launchbuff.com/products/pdfminty-8g15b8" target="_blank" rel="noopener noreferrer" title="Featured on LaunchBuff">
-          <img src="https://launchbuff.com/badge-featured-dark.svg" alt="Featured on LaunchBuff" width="256" height="80" loading="lazy" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
+        <a href="https://launchbuff.com/products/pdfminty-8g15b8" target="_blank" rel="noopener noreferrer" title="${locData.featuredOn} — LaunchBuff">
+          <img src="https://launchbuff.com/badge-featured-dark.svg" alt="${locData.featuredOn} — LaunchBuff" width="256" height="80" loading="lazy" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
         </a>
-        <a href="https://launchstag.com/p/pdfminty" target="_blank" rel="noopener" title="Featured on Launchstag">
-          <img src="https://launchstag.com/badge-light.svg" alt="Featured on Launchstag" width="198" height="62" loading="lazy" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
+        <a href="https://launchstag.com/p/pdfminty" target="_blank" rel="noopener" title="${locData.featuredOn} — Launchstag">
+          <img src="https://launchstag.com/badge-light.svg" alt="${locData.featuredOn} — Launchstag" width="198" height="62" loading="lazy" style="display: inline-block; max-width: 100%; height: 56px; width: auto;" />
         </a>
       </div>
     </div>

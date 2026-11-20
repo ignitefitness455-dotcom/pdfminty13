@@ -196,4 +196,44 @@ describe('Blog & Informational Content SEO & Governance Audit (Prompt 5)', () =>
     expect(privacyArticle.longFormBody).not.toContain('Cookiebot');
     expect(privacyArticle.longFormBody).not.toContain('CMP ID: 134');
   });
+
+  it('keeps Spanish (es) and French (fr) homepage bottom sections (SEO resources, newsletter, footer, affiliate) fully localized without English fallbacks', () => {
+    const enCommon = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../locales/en/common.json'), 'utf8')
+    );
+
+    for (const loc of ['es', 'fr'] as const) {
+      const locCommon = JSON.parse(
+        fs.readFileSync(path.resolve(__dirname, `../locales/${loc}/common.json`), 'utf8')
+      );
+
+      // All 8 SEO resource card descriptions & badges must be translated (not English)
+      const enCards = enCommon.home.seoResources.cards as Record<string, string>;
+      const locCards = locCommon.home.seoResources.cards as Record<string, string>;
+      for (const [cardKey, enVal] of Object.entries(enCards)) {
+        if (cardKey.endsWith('Desc')) {
+          expect(locCards[cardKey], `${loc} home.seoResources.cards.${cardKey}`).toBeTruthy();
+          expect(locCards[cardKey], `${loc} home.seoResources.cards.${cardKey} untranslated`).not.toBe(enVal);
+        }
+      }
+
+      // Newsletter section must exist under home.newsletter and be translated
+      expect(locCommon.home.newsletter.title).not.toBe(enCommon.home.newsletter.title);
+      expect(locCommon.home.newsletter.subtitle).not.toBe(enCommon.home.newsletter.subtitle);
+      expect(locCommon.home.newsletter.placeholder).not.toBe(enCommon.home.newsletter.placeholder);
+      expect(locCommon.home.newsletter.button).not.toBe(enCommon.home.newsletter.button);
+
+      // Footer & affiliate labels must be translated
+      expect(locCommon.affiliate.sponsored).not.toBe(enCommon.affiliate.sponsored);
+      expect(locCommon.footer.sections.privacyPartners).not.toBe(
+        enCommon.footer.sections.privacyPartners
+      );
+      expect(locCommon.footer.links.pricing).not.toBe(enCommon.footer.links.pricing);
+      expect(locCommon.footer.links.signIn).not.toBe(enCommon.footer.links.signIn);
+      expect(locCommon.footer.links.feedback).not.toBe(enCommon.footer.links.feedback);
+      expect(locCommon.footer.links.cookieSettings).not.toBe(enCommon.footer.links.cookieSettings);
+      expect(locCommon.footer.links.toggle3dMode).not.toBe(enCommon.footer.links.toggle3dMode);
+      expect(locCommon.footer.links.xmlSitemap).not.toBe(enCommon.footer.links.xmlSitemap);
+    }
+  });
 });

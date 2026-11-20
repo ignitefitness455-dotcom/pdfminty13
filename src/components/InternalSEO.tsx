@@ -553,23 +553,59 @@ export default function InternalSEO() {
           }
         );
       } else if (seoInfo.type === 'article') {
+        const toIsoUtc = (raw?: string, fallback = '2026-09-21'): string => {
+          const val = (raw || fallback).trim();
+          return val.includes('T') ? val : `${val}T00:00:00Z`;
+        };
+        const articleUrl = `${SITE_URL}/${seoInfo.slug}/`;
+        const plainBody = (seoInfo.longFormBody || seoInfo.shortDescription || '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const computedWordCount = plainBody
+          ? plainBody.split(' ').length
+          : (catalogInfo?.readingTimeMinutes || 5) * 200;
+        const articleKeywords = seoInfo.keywords
+          ? Array.isArray(seoInfo.keywords)
+            ? seoInfo.keywords.join(', ')
+            : seoInfo.keywords
+          : `${seoInfo.name.toLowerCase()}, pdf tools, privacy-first pdf`;
+        const articleSection = seoInfo.slug.startsWith('compare/')
+          ? 'Tool Comparisons'
+          : seoInfo.category === 'security' || seoInfo.slug.includes('privacy')
+            ? 'PDF Security & Privacy'
+            : 'PDF Guides';
+
         list.push({
           '@context': 'https://schema.org',
           '@type': 'Article',
+          '@id': `${articleUrl}#article`,
           headline: seoInfo.h1 || seoInfo.name,
           description: seoInfo.metaDescription,
-          url: `${SITE_URL}/${seoInfo.slug}/`,
-          datePublished: seoInfo.datePublished || '2026-07-16',
-          dateModified: seoInfo.dateModified || seoInfo.datePublished || '2026-08-08',
+          url: articleUrl,
+          inLanguage: 'en',
+          isAccessibleForFree: true,
+          articleSection,
+          keywords: articleKeywords,
+          wordCount: computedWordCount,
+          datePublished: toIsoUtc(seoInfo.datePublished, '2026-09-21'),
+          dateModified: toIsoUtc(seoInfo.dateModified || seoInfo.datePublished, '2026-09-28'),
           author: {
             '@type': 'Person',
+            '@id': `${SITE_URL}/about-us/#creator`,
             name: PRIMARY_AUTHOR.name,
             jobTitle: PRIMARY_AUTHOR.jobTitle,
             url: `${SITE_URL}/about-us/#creator`,
             sameAs: [PRIMARY_AUTHOR.github],
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: PRIMARY_AUTHOR.city,
+              addressCountry: PRIMARY_AUTHOR.country,
+            },
           },
           publisher: {
             '@type': 'Organization',
+            '@id': `${SITE_URL}/#organization`,
             name: SITE_NAME,
             url: `${SITE_URL}/`,
             logo: {
@@ -588,7 +624,7 @@ export default function InternalSEO() {
           },
           mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': `${SITE_URL}/${seoInfo.slug}/`,
+            '@id': articleUrl,
           },
         });
 

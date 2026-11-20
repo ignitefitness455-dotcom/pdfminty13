@@ -1,5 +1,6 @@
 import { Sparkles, ChevronDown, Check, Power } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
   SCROLL_3D_OPTIONS,
@@ -24,6 +25,7 @@ export const Scroll3DControlBar: React.FC<Scroll3DControlBarProps> = React.memo(
     isEnabled = true,
     onToggleEnabled,
   }) => {
+    const { t } = useTranslation('common');
     const [menuOpen, setMenuOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -115,7 +117,7 @@ export const Scroll3DControlBar: React.FC<Scroll3DControlBarProps> = React.memo(
 
             {/* Label */}
             <span className="whitespace-nowrap tracking-tight font-extrabold bg-gradient-to-r from-slate-900 via-emerald-950 to-teal-900 dark:from-white dark:via-emerald-100 dark:to-teal-200 bg-clip-text text-transparent">
-              3D Motion
+              {t('home.hero.motion3D', { defaultValue: '3D Motion' })}
             </span>
 
             {/* Live Status Pill with Pulsing Dot */}
@@ -132,7 +134,11 @@ export const Scroll3DControlBar: React.FC<Scroll3DControlBarProps> = React.memo(
                 }`}
                 aria-hidden="true"
               />
-              <span>{isEnabled ? 'ON' : 'OFF'}</span>
+              <span>
+                {isEnabled
+                  ? t('common.on', { defaultValue: 'ON' })
+                  : t('common.off', { defaultValue: 'OFF' })}
+              </span>
             </span>
 
             <ChevronDown

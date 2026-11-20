@@ -1258,6 +1258,9 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "priority": 0.9,
     "changefreq": "weekly",
     "type": "article",
+    "ogImage": "/og-image.png",
+    "datePublished": "2026-09-21",
+    "dateModified": "2026-09-28",
     "readingTimeMinutes": 20
   },
   {
@@ -1395,7 +1398,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "status": "published",
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-25",
-    "readingTimeMinutes": 7
+    "readingTimeMinutes": 8
   },
   {
     "id": "how-to-make-a-pdf-online-free",
@@ -1603,7 +1606,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-28",
-    "readingTimeMinutes": 4
+    "readingTimeMinutes": 5
   },
   {
     "id": "blog-electronic-vs-digital-signature",

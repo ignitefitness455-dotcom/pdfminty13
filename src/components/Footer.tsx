@@ -161,7 +161,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
               </li>
               <li className="pt-2 border-t border-border-muted/50">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Privacy Partners
+                  {t('footer.sections.privacyPartners', { defaultValue: 'Privacy Partners' })}
                 </span>
               </li>
               <li>
@@ -171,7 +171,9 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                   rel="nofollow sponsored noreferrer"
                   className="hover:text-emerald-500 transition-colors flex items-center justify-between group"
                 >
-                  <span>NordVPN (Encrypted Tunnel)</span>
+                  <span>
+                    {t('footer.links.nordVpn', { defaultValue: 'NordVPN (Encrypted Tunnel)' })}
+                  </span>
                   <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
                 </a>
               </li>
@@ -182,7 +184,9 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                   rel="nofollow sponsored noreferrer"
                   className="hover:text-emerald-500 transition-colors flex items-center justify-between group"
                 >
-                  <span>NordPass (Password Vault)</span>
+                  <span>
+                    {t('footer.links.nordPass', { defaultValue: 'NordPass (Password Vault)' })}
+                  </span>
                   <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
                 </a>
               </li>
@@ -247,7 +251,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
               </li>
               <li>
                 <a href="/sitemap.xml" className="hover:text-emerald-500 transition-colors">
-                  XML Sitemap
+                  {t('footer.links.xmlSitemap', { defaultValue: 'XML Sitemap' })}
                 </a>
               </li>
               <li>
@@ -306,7 +310,9 @@ export const Footer: React.FC<FooterProps> = React.memo(({ setShowFeedbackModal 
                           : 'bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300/70 dark:border-slate-700'
                       }`}
                     >
-                      {is3DEnabled ? 'ON' : 'OFF'}
+                      {is3DEnabled
+                        ? t('common.on', { defaultValue: 'ON' })
+                        : t('common.off', { defaultValue: 'OFF' })}
                     </span>
                   </button>
                 </li>

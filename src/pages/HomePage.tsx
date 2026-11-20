@@ -248,10 +248,14 @@ export const HomePage: React.FC = () => {
 
   const getCategoryLabel = (category: (typeof CATEGORIES)[number]) => {
     if (category.id === 'essential') {
-      return isBn ? 'মূল ও জনপ্রিয়' : 'Core Essentials';
+      return t('home.categories.essential', {
+        defaultValue: isBn ? 'মূল ও জনপ্রিয়' : 'Core Essentials',
+      });
     }
     if (category.id === 'specialist') {
-      return isBn ? 'অ্যাডভান্সড ও AI' : 'Advanced & AI';
+      return t('home.categories.specialist', {
+        defaultValue: isBn ? 'অ্যাডভান্সড ও AI' : 'Advanced & AI',
+      });
     }
     return t(category.nameKey, { defaultValue: category.defaultName });
   };

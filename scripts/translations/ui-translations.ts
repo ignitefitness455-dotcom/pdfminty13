@@ -201,15 +201,30 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
     }
   },
   fr: {
+    common: {
+      on: 'ACTIF',
+      off: 'INACTIF',
+      gotIt: 'Compris'
+    },
+    affiliate: {
+      label: 'Affiliation',
+      sponsored: 'Partenaire affilié'
+    },
     header: {
       tagline: 'Outils PDF axés sur la confidentialité',
       badgeOffline: '100% PRIVÉ & HORS LIGNE',
+      upgradeToPro: 'Passer à Pro',
+      upgradeToProTitle: 'Passer à Pro (2,49 $/mois)',
+      signIn: 'Se connecter',
+      signOut: 'Se déconnecter',
       nav: {
         home: 'Accueil',
         tools: 'Outils',
+        pricing: 'Tarifs',
         blog: 'Blog',
         about: 'À propos',
-        contact: 'Contact'
+        contact: 'Contact',
+        dashboard: 'Tableau de bord'
       },
       themeToggle: {
         ariaLabel: 'Basculer le mode sombre',
@@ -243,7 +258,8 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
         resources: 'Ressources',
         companyLegal: 'Entreprise et Mentions légales',
         converters: 'Convertisseurs',
-        legalTrust: 'Mentions légales et Confiance'
+        legalTrust: 'Mentions légales et Confiance',
+        privacyPartners: 'Partenaires de confidentialité'
       },
       links: {
         mergePdf: 'Fusionner des PDF',
@@ -267,10 +283,18 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
         compareIlovepdf: 'PdfMinty vs iLovePDF',
         adobeSecurity: 'Sécurité Adobe vs Navigateur',
         trustArticle: 'Les outils PDF en ligne sont-ils sûrs ?',
+        nordVpn: 'NordVPN (Tunnel chiffré)',
+        nordPass: 'NordPass (Coffre-fort de mots de passe)',
+        pricing: 'Tarifs et offres Pro',
+        signIn: 'Connexion membre',
         aboutUs: 'À propos de nous',
         contactUs: 'Nous contacter',
+        feedback: 'Envoyer un avis',
         privacyPolicy: 'Politique de confidentialité',
         termsOfService: 'Conditions d\'utilisation',
+        xmlSitemap: 'Plan du site XML',
+        cookieSettings: 'Préférences cookies et confidentialité',
+        toggle3dMode: 'Activer/désactiver le mode 3D',
         howItWorks: 'Comment ça marche'
       },
       copyright: '© {{year}} PdfMinty. Tous droits réservés. Conçu pour une confidentialité à 100%.',
@@ -301,12 +325,36 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
       individualUtilities: 'Outils individuels'
     },
     home: {
+      hero: {
+        enable3D: 'Activer la 3D',
+        disable3D: 'Désactiver la 3D',
+        autoDisabled3D: 'Mode 3D désactivé pour préserver la rapidité',
+        motion3D: 'Mouvement 3D'
+      },
+      categories: {
+        essential: 'Outils essentiels',
+        specialist: 'Avancé et IA'
+      },
       howItWorks: {
+        offlineBadge: '100% Hors ligne',
         stepsSubtitle: 'Trois étapes simples pour traiter vos fichiers directement dans votre navigateur.'
       },
       toolCard: {
         highDemand: 'Populaire',
-        useTool: 'Ouvrir l\'outil'
+        useTool: 'Ouvrir l\'outil',
+        localRam: 'RAM locale',
+        aiConsent: 'IA · Consentement',
+        badges: {
+          popular: 'Populaire',
+          smart_reduction: 'Réduction intelligente',
+          ai_hybrid: 'IA hybride',
+          offline_aes: 'AES hors ligne',
+          fast_convert: 'Conversion rapide',
+          extractor: 'Extracteur',
+          visual_extract: 'Extraction visuelle',
+          interactive_order: 'Tri interactif',
+          secure: 'Sécurisé'
+        }
       },
       trustBadge: {
         eyebrow: 'Vérifié par la communauté',
@@ -334,7 +382,56 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
         title: 'Guides PDF, comparatifs et ressources',
         subtitle: 'Tutoriels complets, analyses de sécurité et comparatifs pour gérer vos documents PDF en toute confidentialité.',
         exploreResource: 'Explorer le guide',
-        viewAllHub: 'Voir tous les articles dans le Centre de connaissances'
+        viewAllHub: 'Voir tous les articles dans le Centre de connaissances',
+        badges: {
+          popular: 'POPULAIRE',
+          topFeatured: 'À LA UNE',
+          guide: 'GUIDE',
+          privacyFirst: 'CONFIDENTIALITÉ',
+          noAds: 'SANS PUB',
+          mustRead: 'À LIRE',
+          tutorial: 'TUTORIEL',
+          safety: 'SÉCURITÉ'
+        },
+        cards: {
+          pdfToWordTitle: 'Guide PDF vers Word gratuit',
+          pdfToWordDesc: 'Apprenez à convertir des documents PDF en fichiers Word modifiables gratuitement sans casser la mise en page.',
+          adobeAltTitle: 'Alternative à Adobe Acrobat',
+          adobeAltDesc: 'Remplacez les abonnements Adobe coûteux (~240 $/an) par une suite PDF locale 100 % privée et gratuite.',
+          compressGuideTitle: 'Guide de compression PDF',
+          compressGuideDesc: 'Comprenez la compression avec ou sans perte, l’optimisation des images et comment réduire vos PDF en sécurité.',
+          smallpdfTitle: 'PDFMinty vs SmallPDF',
+          smallpdfDesc: 'Comparez le traitement local sans téléversement au modèle cloud de SmallPDF sur serveurs distants.',
+          ilovepdfTitle: 'PDFMinty vs iLovePDF',
+          ilovepdfDesc: 'Analyse approfondie de la vitesse, de la sécurité et des fonctions face à iLovePDF, sans traceurs publicitaires.',
+          trustArticleTitle: 'Les outils PDF en ligne sont-ils sûrs ?',
+          trustArticleDesc: 'Analyse de sécurité essentielle sur les risques de confidentialité liés à l’envoi de PDF sensibles vers des serveurs.',
+          signGuideTitle: 'Signature électronique PDF gratuite',
+          signGuideDesc: 'Comment signer des contrats et documents juridiques localement sur votre appareil sans exposition à des tiers.',
+          metadataGuideTitle: 'Supprimer les métadonnées PDF',
+          metadataGuideDesc: 'Guide étape par étape pour effacer les noms d’auteurs, coordonnées GPS et historiques cachés de vos PDF.'
+        }
+      },
+      newsletter: {
+        title: 'Rejoignez notre newsletter',
+        subtitle: 'Recevez nos derniers conseils de sécurité PDF et mises à jour directement dans votre boîte mail.',
+        emailLabel: 'Adresse e-mail',
+        placeholder: 'Entrez votre adresse e-mail...',
+        button: 'S\'inscrire',
+        buttonLoading: 'Inscription...',
+        success: 'Merci pour votre inscription ! Vérifiez votre boîte de réception.',
+        emptyEmail: 'Veuillez saisir votre adresse e-mail.',
+        invalidEmail: 'Veuillez saisir une adresse e-mail valide.',
+        error: 'Échec de l\'inscription. Veuillez réessayer.'
+      }
+    },
+    usageLimits: {
+      header: {
+        unlimited: 'Illimité',
+        tasksRatio: '{{count}}/{{max}} tâches',
+        guestTitle: 'Invité : 5 tâches par jour ({{count}} restantes) et fichiers jusqu’à 100 Mo',
+        freeTitle: 'Compte gratuit : 10 tâches par jour ({{count}} restantes) et fichiers jusqu’à 150 Mo',
+        proTitle: 'Offre Pro : tâches illimitées et fichiers jusqu’à 500 Mo'
       }
     },
     newsletter: {
@@ -464,6 +561,40 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
     }
   },
   es: {
+    common: {
+      on: 'ACTIVO',
+      off: 'INACTIVO',
+      gotIt: 'Entendido'
+    },
+    affiliate: {
+      label: 'Afiliado',
+      sponsored: 'Socio afiliado'
+    },
+    header: {
+      upgradeToPro: 'Pasar a Pro',
+      upgradeToProTitle: 'Pasar a Pro ($2.49/mes)',
+      signIn: 'Iniciar sesión',
+      signOut: 'Cerrar sesión',
+      nav: {
+        pricing: 'Precios',
+        dashboard: 'Panel'
+      }
+    },
+    footer: {
+      sections: {
+        privacyPartners: 'Socios de privacidad'
+      },
+      links: {
+        nordVpn: 'NordVPN (Túnel cifrado)',
+        nordPass: 'NordPass (Gestor de contraseñas)',
+        pricing: 'Precios y planes Pro',
+        signIn: 'Acceso para miembros',
+        feedback: 'Enviar comentarios',
+        xmlSitemap: 'Mapa del sitio XML',
+        cookieSettings: 'Preferencias de cookies y privacidad',
+        toggle3dMode: 'Activar/desactivar modo 3D'
+      }
+    },
     pwa: {
       installApp: 'Instalar aplicación',
       installed: '¡Instalada!',
@@ -486,12 +617,36 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
       individualUtilities: 'Herramientas individuales'
     },
     home: {
+      hero: {
+        enable3D: 'Activar 3D',
+        disable3D: 'Desactivar 3D',
+        autoDisabled3D: '3D desactivado para mantener la velocidad',
+        motion3D: 'Movimiento 3D'
+      },
+      categories: {
+        essential: 'Herramientas esenciales',
+        specialist: 'Avanzado e IA'
+      },
       howItWorks: {
+        offlineBadge: '100% Sin conexión',
         stepsSubtitle: 'Tres sencillos pasos para procesar tus archivos directamente en el navegador.'
       },
       toolCard: {
         highDemand: 'Popular',
-        useTool: 'Abrir herramienta'
+        useTool: 'Abrir herramienta',
+        localRam: 'RAM local',
+        aiConsent: 'IA · Consentimiento',
+        badges: {
+          popular: 'Popular',
+          smart_reduction: 'Reducción inteligente',
+          ai_hybrid: 'IA híbrida',
+          offline_aes: 'AES sin conexión',
+          fast_convert: 'Conversión rápida',
+          extractor: 'Extractor',
+          visual_extract: 'Extracción visual',
+          interactive_order: 'Orden interactivo',
+          secure: 'Seguro'
+        }
       },
       trustBadge: {
         eyebrow: 'Verificado por la comunidad',
@@ -519,7 +674,56 @@ export const UI_TRANSLATIONS: Record<string, Record<string, any>> = {
         title: 'Guías PDF, comparativas y recursos',
         subtitle: 'Tutoriales completos y comparativas de seguridad para gestionar archivos PDF con privacidad.',
         exploreResource: 'Explorar recurso',
-        viewAllHub: 'Ver todos los artículos en el Centro de Conocimiento'
+        viewAllHub: 'Ver todos los artículos en el Centro de Conocimiento',
+        badges: {
+          popular: 'POPULAR',
+          topFeatured: 'DESTACADO',
+          guide: 'GUÍA',
+          privacyFirst: 'PRIVACIDAD',
+          noAds: 'SIN ANUNCIOS',
+          mustRead: 'LECTURA CLAVE',
+          tutorial: 'TUTORIAL',
+          safety: 'SEGURIDAD'
+        },
+        cards: {
+          pdfToWordTitle: 'Guía gratuita de PDF a Word',
+          pdfToWordDesc: 'Aprende a convertir documentos PDF a archivos Word editables gratis sin perder el diseño ni el formato.',
+          adobeAltTitle: 'Alternativa a Adobe Acrobat',
+          adobeAltDesc: 'Reemplaza suscripciones costosas de Adobe (~$240/año) por una suite PDF local, gratuita y 100 % privada.',
+          compressGuideTitle: 'Guía de compresión PDF',
+          compressGuideDesc: 'Comprende la reducción con y sin pérdida, la optimización de imágenes y cómo comprimir PDF con seguridad.',
+          smallpdfTitle: 'PDFMinty vs SmallPDF',
+          smallpdfDesc: 'Compara el procesamiento en el navegador sin subidas frente al almacenamiento en servidores cloud de SmallPDF.',
+          ilovepdfTitle: 'PDFMinty vs iLovePDF',
+          ilovepdfDesc: 'Comparativa detallada de velocidad, seguridad y funciones frente a iLovePDF, sin rastreadores publicitarios.',
+          trustArticleTitle: '¿Son seguros los PDF en línea?',
+          trustArticleDesc: 'Análisis clave de seguridad sobre los riesgos de privacidad al enviar documentos PDF sensibles a servidores remotos.',
+          signGuideTitle: 'Firma electrónica PDF gratis',
+          signGuideDesc: 'Cómo firmar contratos y documentos legales localmente en tu dispositivo sin exponerlos a terceros.',
+          metadataGuideTitle: 'Eliminar metadatos de un PDF',
+          metadataGuideDesc: 'Guía paso a paso para borrar nombres de autor, ubicación GPS e historial de edición oculto de tus PDF.'
+        }
+      },
+      newsletter: {
+        title: 'Suscríbete a nuestro boletín',
+        subtitle: 'Recibe las últimas novedades, flujos de trabajo PDF y consejos de seguridad.',
+        emailLabel: 'Correo electrónico',
+        placeholder: 'Introduce tu correo electrónico...',
+        button: 'Suscribirse',
+        buttonLoading: 'Suscribiendo...',
+        success: '¡Gracias por suscribirte! Revisa tu bandeja de entrada.',
+        emptyEmail: 'Por favor, introduce tu correo electrónico.',
+        invalidEmail: 'Por favor, introduce un correo electrónico válido.',
+        error: 'No se pudo procesar la suscripción. Inténtalo de nuevo.'
+      }
+    },
+    usageLimits: {
+      header: {
+        unlimited: 'Ilimitado',
+        tasksRatio: '{{count}}/{{max}} tareas',
+        guestTitle: 'Invitado: 5 tareas diarias ({{count}} restantes) y archivos de hasta 100 MB',
+        freeTitle: 'Cuenta gratuita: 10 tareas diarias ({{count}} restantes) y archivos de hasta 150 MB',
+        proTitle: 'Plan Pro: tareas diarias ilimitadas y archivos de hasta 500 MB'
       }
     },
     newsletter: {

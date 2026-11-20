@@ -14,7 +14,7 @@ export const SeoResourcesSection: React.FC = () => {
         defaultValue: 'Free PDF to Word Guide',
       }),
       category: 'Guide',
-      badge: 'POPULAR',
+      badge: t('home.seoResources.badges.popular', { defaultValue: 'POPULAR' }),
       badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       description: t('home.seoResources.cards.pdfToWordDesc', {
         defaultValue:
@@ -28,7 +28,7 @@ export const SeoResourcesSection: React.FC = () => {
         defaultValue: 'Adobe Acrobat Alternative',
       }),
       category: 'Alternative',
-      badge: 'TOP FEATURED',
+      badge: t('home.seoResources.badges.topFeatured', { defaultValue: 'TOP FEATURED' }),
       badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       description: t('home.seoResources.cards.adobeAltDesc', {
         defaultValue:
@@ -42,7 +42,7 @@ export const SeoResourcesSection: React.FC = () => {
         defaultValue: 'PDF Compression Guide',
       }),
       category: 'Optimization',
-      badge: 'GUIDE',
+      badge: t('home.seoResources.badges.guide', { defaultValue: 'GUIDE' }),
       badgeColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
       description: t('home.seoResources.cards.compressGuideDesc', {
         defaultValue:
@@ -54,7 +54,7 @@ export const SeoResourcesSection: React.FC = () => {
     {
       title: t('home.seoResources.cards.smallpdfTitle', { defaultValue: 'PDFMinty vs SmallPDF' }),
       category: 'Comparison',
-      badge: 'PRIVACY FIRST',
+      badge: t('home.seoResources.badges.privacyFirst', { defaultValue: 'PRIVACY FIRST' }),
       badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       description: t('home.seoResources.cards.smallpdfDesc', {
         defaultValue:
@@ -66,7 +66,7 @@ export const SeoResourcesSection: React.FC = () => {
     {
       title: t('home.seoResources.cards.ilovepdfTitle', { defaultValue: 'PDFMinty vs iLovePDF' }),
       category: 'Comparison',
-      badge: 'NO ADS',
+      badge: t('home.seoResources.badges.noAds', { defaultValue: 'NO ADS' }),
       badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
       description: t('home.seoResources.cards.ilovepdfDesc', {
         defaultValue:
@@ -80,7 +80,7 @@ export const SeoResourcesSection: React.FC = () => {
         defaultValue: 'Is Online PDF Safe?',
       }),
       category: 'Security',
-      badge: 'MUST READ',
+      badge: t('home.seoResources.badges.mustRead', { defaultValue: 'MUST READ' }),
       badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
       description: t('home.seoResources.cards.trustArticleDesc', {
         defaultValue:
@@ -92,7 +92,7 @@ export const SeoResourcesSection: React.FC = () => {
     {
       title: t('home.seoResources.cards.signGuideTitle', { defaultValue: 'Free PDF E-Signatures' }),
       category: 'Security',
-      badge: 'TUTORIAL',
+      badge: t('home.seoResources.badges.tutorial', { defaultValue: 'TUTORIAL' }),
       badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       description: t('home.seoResources.cards.signGuideDesc', {
         defaultValue:
@@ -106,7 +106,7 @@ export const SeoResourcesSection: React.FC = () => {
         defaultValue: 'Remove PDF Metadata',
       }),
       category: 'Privacy',
-      badge: 'SAFETY',
+      badge: t('home.seoResources.badges.safety', { defaultValue: 'SAFETY' }),
       badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       description: t('home.seoResources.cards.metadataGuideDesc', {
         defaultValue:

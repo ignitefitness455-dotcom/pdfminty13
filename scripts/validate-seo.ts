@@ -548,6 +548,75 @@ try {
         }
       }
 
+      if (type === 'Article' || type === 'BlogPosting') {
+        const headline = node['headline'];
+        const description = node['description'];
+        const datePublished = String(node['datePublished'] || '');
+        const dateModified = String(node['dateModified'] || '');
+        const author = node['author'] as Record<string, unknown> | undefined;
+        const publisher = node['publisher'] as Record<string, unknown> | undefined;
+        const image = node['image'] as Record<string, unknown> | undefined;
+        const mainEntityOfPage = node['mainEntityOfPage'] as Record<string, unknown> | undefined;
+        const inLanguage = node['inLanguage'];
+        const wordCount = node['wordCount'];
+
+        if (!headline || !description || !node['@id']) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: missing @id, headline, or description`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(datePublished)) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: datePublished must be full ISO-8601 with timezone (got "${datePublished}")`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(dateModified)) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: dateModified must be full ISO-8601 with timezone (got "${dateModified}")`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (!author || author['@type'] !== 'Person' || !author['name'] || !author['url']) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: author must be Person with name and url`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        const publisherLogo = publisher?.['logo'] as Record<string, unknown> | undefined;
+        if (
+          !publisher ||
+          publisher['@type'] !== 'Organization' ||
+          !publisher['name'] ||
+          !publisherLogo?.['url']
+        ) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: publisher must be Organization with name and logo.url`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (!image || !image['url'] || !mainEntityOfPage?.['@id']) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: missing image.url or mainEntityOfPage.@id`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+        if (!inLanguage || typeof wordCount !== 'number' || wordCount <= 0) {
+          console.error(
+            `❌ Invalid ${String(type)} in ${fileRel}: missing inLanguage or positive wordCount`
+          );
+          hasError = true;
+          jsonLdErrors++;
+        }
+      }
+
       if (type === 'Organization') {
         if ('inLanguage' in node) {
           console.error(

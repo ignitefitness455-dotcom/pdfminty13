@@ -6,10 +6,16 @@
     "nav": {
       "home": "होम",
       "tools": "उपकरण",
+      "pricing": "Pricing",
       "blog": "ब्लॉग",
       "about": "हमारे बारे में",
-      "contact": "संपर्क"
+      "contact": "संपर्क",
+      "dashboard": "Dashboard"
     },
+    "upgradeToPro": "Upgrade to Pro",
+    "upgradeToProTitle": "Upgrade to Pro ($2.49/month)",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
     "themeToggle": {
       "ariaLabel": "डार्क मोड टॉगल करें",
       "switchToLight": "लाइट मोड में बदलें",
@@ -29,7 +35,8 @@
       "resources": "संसाधन और गाइड",
       "companyLegal": "कंपनी और कानूनी",
       "converters": "कनवर्टर",
-      "legalTrust": "कानूनी और सुरक्षा"
+      "legalTrust": "कानूनी और सुरक्षा",
+      "privacyPartners": "Privacy Partners"
     },
     "links": {
       "mergePdf": "पीडीएफ जोड़ें (Merge PDF)",
@@ -53,10 +60,18 @@
       "compareIlovepdf": "PdfMinty बनाम iLovePDF",
       "adobeSecurity": "Adobe बनाम ब्राउज़र सुरक्षा",
       "trustArticle": "क्या ऑनलाइन पीडीएफ सुरक्षित है?",
+      "nordVpn": "NordVPN (Encrypted Tunnel)",
+      "nordPass": "NordPass (Password Vault)",
+      "pricing": "Pro Pricing & Plans",
+      "signIn": "Member Sign In",
       "aboutUs": "हमारे बारे में",
       "contactUs": "संपर्क करें",
+      "feedback": "Send Feedback",
       "privacyPolicy": "गोपनीयता नीति",
       "termsOfService": "सेवा की शर्तें",
+      "xmlSitemap": "XML Sitemap",
+      "cookieSettings": "Cookie & Privacy Preferences",
+      "toggle3dMode": "Toggle 3D Mode",
       "howItWorks": "यह कैसे काम करता है"
     },
     "copyright": "© {{year}} PdfMinty. सर्वाधिकार सुरक्षित।",
@@ -99,7 +114,8 @@
       "subtitle": "सीधे अपने वेब ब्राउज़र में दस्तावेज़ों को मर्ज, स्प्लिट और एडिट करें। PDFMinty सर्वर अपलोड के बिना आपके डिवाइस पर स्थानीय रूप से सभी मानक पीडीएफ कार्यों को प्रोसेस करता है। बिना किसी खाते के—तेज़, सुरक्षित और निजी पीडीएफ उपकरण।",
       "enable3D": "Enable 3D",
       "disable3D": "Disable 3D",
-      "autoDisabled3D": "3D turned off to keep things fast"
+      "autoDisabled3D": "3D turned off to keep things fast",
+      "motion3D": "3D Motion"
     },
     "search": {
       "placeholder": "पीडीएफ उपकरण खोजें...",
@@ -107,6 +123,8 @@
     },
     "categories": {
       "all": "सभी",
+      "essential": "Core Essentials",
+      "specialist": "Advanced & AI",
       "workflows": "वर्कफ़्लो",
       "organize": "पीडीएफ व्यवस्थित करें",
       "optimize": "पीडीएफ ऑप्टिमाइज़ करें",
@@ -142,6 +160,7 @@
       "desc": "PDFMinty मानक दस्तावेज़ों को सीधे आपके कंप्यूटर या फ़ोन पर प्रोसेस करता है। चूँकि आपकी फ़ाइलें आपके डिवाइस पर ही रहती हैं, इसलिए बिना किसी अपलोड देरी, कतार प्रतीक्षा या क्लाउड स्टोरेज जोखिम के प्रसंस्करण तुरंत होता है। स्थानीय ब्राउज़र गोपनीयता के साथ गोपनीय अनुबंधों, टैक्स फॉर्म और वित्तीय रिकॉर्ड को प्रोसेस करें।",
       "dragDrop": "पीडीएफ यहाँ खींचें और छोड़ें",
       "orBrowse": "या स्थानीय फ़ाइलें ब्राउज़ करने के लिए क्लिक करें",
+      "offlineBadge": "100% Offline",
       "stepsHeading": "यह 3 सरल चरणों में कैसे काम करता है",
       "step1Title": "उपकरण चुनें",
       "step1Desc": "अपनी फ़ाइलों को मर्ज करने, विभाजित करने, कंप्रेस करने, साइन करने या सुरक्षित करने के लिए ऊपर दिए गए 24 पीडीएफ टूल्स में से चुनें।",
@@ -185,7 +204,20 @@
     },
     "toolCard": {
       "highDemand": "लोकप्रिय",
-      "useTool": "टूल खोलें"
+      "useTool": "टूल खोलें",
+      "localRam": "Local RAM",
+      "aiConsent": "AI · Consent",
+      "badges": {
+        "popular": "Popular",
+        "smart_reduction": "Smart Reduction",
+        "ai_hybrid": "AI Hybrid",
+        "offline_aes": "Offline AES",
+        "fast_convert": "Fast Convert",
+        "extractor": "Extractor",
+        "visual_extract": "Visual Extract",
+        "interactive_order": "Interactive Order",
+        "secure": "Secure"
+      }
     },
     "trustBadge": {
       "eyebrow": "कम्युनिटी द्वारा सत्यापित",
@@ -214,6 +246,16 @@
       "subtitle": "PDF दस्तावेज़ों को निजी और कुशलता से प्रबंधित करने के लिए विस्तृत ट्यूटोरियल।",
       "exploreResource": "गाइड देखें",
       "viewAllHub": "ज्ञान केंद्र में सभी लेख देखें",
+      "badges": {
+        "popular": "POPULAR",
+        "topFeatured": "TOP FEATURED",
+        "guide": "GUIDE",
+        "privacyFirst": "PRIVACY FIRST",
+        "noAds": "NO ADS",
+        "mustRead": "MUST READ",
+        "tutorial": "TUTORIAL",
+        "safety": "SAFETY"
+      },
       "cards": {
         "pdfToWordTitle": "Free PDF to Word Guide",
         "pdfToWordDesc": "Learn how to convert PDF documents to editable Word files for free without ruining layout or formatting.",
@@ -232,6 +274,18 @@
         "metadataGuideTitle": "Remove PDF Metadata",
         "metadataGuideDesc": "Step-by-step guide to sanitizing author names, GPS location tags, and hidden edit history from PDFs."
       }
+    },
+    "newsletter": {
+      "title": "Join Our Newsletter",
+      "subtitle": "Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.",
+      "emailLabel": "Email address",
+      "placeholder": "Enter your email address...",
+      "button": "Join",
+      "buttonLoading": "Joining...",
+      "success": "Thank you for joining! Check your inbox for updates.",
+      "emptyEmail": "Please enter your email address.",
+      "invalidEmail": "Please enter a valid email address.",
+      "error": "Failed to process subscription. Please try again."
     }
   },
   "tools": {
@@ -1613,7 +1667,8 @@
     }
   },
   "affiliate": {
-    "label": "Affiliate"
+    "label": "Affiliate",
+    "sponsored": "Affiliate Partner"
   },
   "preview": {
     "pagesCount": "{{count}} page",
@@ -1747,6 +1802,8 @@
       "guestBadge": "Guest: {{count}}/5",
       "freeBadge": "Tasks: {{count}}/10",
       "proBadge": "PRO • Unlimited",
+      "unlimited": "Unlimited",
+      "tasksRatio": "{{count}}/{{max}} tasks",
       "guestTitle": "Guest: 5 daily tasks ({{count}} left) & 100MB file uploads",
       "freeTitle": "Free Account: 10 daily tasks ({{count}} left) & 150MB file uploads",
       "proTitle": "Pro Tier: Unlimited daily tasks & 500MB file uploads"
@@ -1784,5 +1841,10 @@
       "btnUpgradeFree": "Upgrade to Pro (Unlimited Tasks • 500 MB)",
       "btnLater": "Maybe Later"
     }
+  },
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "gotIt": "Got it"
   }
 }

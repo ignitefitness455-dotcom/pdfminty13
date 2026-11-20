@@ -91,6 +91,18 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       : rawDescription;
 
   const ogType = item?.type === 'article' ? 'article' : 'website';
+  const toIsoDateTime = (raw?: string): string | undefined => {
+    if (!raw) return undefined;
+    const trimmed = raw.trim();
+    if (!trimmed) return undefined;
+    return trimmed.includes('T') ? trimmed : `${trimmed}T00:00:00Z`;
+  };
+  const articlePublishedTime =
+    ogType === 'article' ? toIsoDateTime(item?.datePublished || '2026-09-21') : undefined;
+  const articleModifiedTime =
+    ogType === 'article'
+      ? toIsoDateTime(item?.dateModified || item?.datePublished || '2026-09-28')
+      : undefined;
 
   // Per-tool og:image if declared in seo-data, else generic.
   const ogImage = item?.ogImage ? `${SITE_URL}${item.ogImage}` : `${SITE_URL}/og-image.png`;
@@ -137,6 +149,15 @@ export const SEO: React.FC<SEOProps> = ({ slug, titleOverride, descriptionOverri
       <meta property="og:image:alt" content={title} />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content={activeLocaleMeta.ogLocale} />
+      {articlePublishedTime && (
+        <meta property="article:published_time" content={articlePublishedTime} />
+      )}
+      {articleModifiedTime && (
+        <meta property="article:modified_time" content={articleModifiedTime} />
+      )}
+      {ogType === 'article' && (
+        <meta property="article:author" content={`${SITE_URL}/about-us/#creator`} />
+      )}
 
       {/* Twitter Cards */}
       <meta name="twitter:card" content="summary_large_image" />

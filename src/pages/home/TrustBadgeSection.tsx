@@ -52,7 +52,9 @@ export const TrustBadgeSection: React.FC = () => {
             >
               <img
                 src="https://launchbuff.com/badge-featured-dark.svg"
-                alt="Featured on LaunchBuff"
+                alt={t('home.trustBadge.launchbuffTitle', {
+                  defaultValue: 'Featured on LaunchBuff',
+                })}
                 width="256"
                 height="80"
                 className="h-14 sm:h-16 w-auto object-contain rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300"
@@ -74,7 +76,9 @@ export const TrustBadgeSection: React.FC = () => {
             >
               <img
                 src="https://launchstag.com/badge-light.svg"
-                alt="Featured on Launchstag"
+                alt={t('home.trustBadge.launchstagTitle', {
+                  defaultValue: 'Featured on Launchstag',
+                })}
                 width="198"
                 height="62"
                 className="h-14 sm:h-16 w-auto object-contain rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300 dark:hidden"
@@ -83,7 +87,9 @@ export const TrustBadgeSection: React.FC = () => {
               />
               <img
                 src="https://launchstag.com/badge-dark.svg"
-                alt="Featured on Launchstag"
+                alt={t('home.trustBadge.launchstagTitle', {
+                  defaultValue: 'Featured on Launchstag',
+                })}
                 width="198"
                 height="62"
                 className="h-14 sm:h-16 w-auto object-contain rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300 hidden dark:inline-block"

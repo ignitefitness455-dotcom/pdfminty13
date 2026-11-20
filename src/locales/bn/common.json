@@ -6,10 +6,16 @@
     "nav": {
       "home": "হোম",
       "tools": "টুলস",
+      "pricing": "Pricing",
       "blog": "ব্লগ",
       "about": "আমাদের সম্পর্কে",
-      "contact": "যোগাযোগ"
+      "contact": "যোগাযোগ",
+      "dashboard": "Dashboard"
     },
+    "upgradeToPro": "Upgrade to Pro",
+    "upgradeToProTitle": "Upgrade to Pro ($2.49/month)",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
     "themeToggle": {
       "ariaLabel": "ডার্ক মোড টগল করুন",
       "switchToLight": "লাইট মোডে যান",
@@ -42,7 +48,8 @@
       "resources": "রিসোর্স ও গাইড",
       "companyLegal": "কোম্পানি ও নীতি",
       "converters": "কনভার্টার",
-      "legalTrust": "আইনি ও নিরাপত্তা"
+      "legalTrust": "আইনি ও নিরাপত্তা",
+      "privacyPartners": "Privacy Partners"
     },
     "links": {
       "mergePdf": "পিডিএফ মার্জ করুন",
@@ -66,10 +73,18 @@
       "compareIlovepdf": "PdfMinty বনাম iLovePDF",
       "adobeSecurity": "Adobe বনাম ব্রাউজার নিরাপত্তা",
       "trustArticle": "অনলাইন পিডিএফ কি নিরাপদ?",
+      "nordVpn": "NordVPN (Encrypted Tunnel)",
+      "nordPass": "NordPass (Password Vault)",
+      "pricing": "Pro Pricing & Plans",
+      "signIn": "Member Sign In",
       "aboutUs": "আমাদের সম্পর্কে",
       "contactUs": "যোগাযোগ করুন",
+      "feedback": "Send Feedback",
       "privacyPolicy": "গোপনীয়তা নীতি",
       "termsOfService": "ব্যবহারের শর্তাবলী",
+      "xmlSitemap": "XML Sitemap",
+      "cookieSettings": "Cookie & Privacy Preferences",
+      "toggle3dMode": "Toggle 3D Mode",
       "howItWorks": "কীভাবে কাজ করে"
     },
     "copyright": "© {{year}} PdfMinty. সর্বস্বত্ব সংরক্ষিত। 100% ফাইল প্রাইভেসির জন্য নির্মিত।",
@@ -124,7 +139,8 @@
       "subtitle": "সরাসরি আপনার ওয়েব ব্রাউজারেই আপনার ডকুমেন্টগুলো মার্জ, স্প্লিট এবং এডিট করুন। পিডিএফমিন্টি সার্ভারে আপলোড না করেই আপনার ডিভাইসে স্থানীয়ভাবে সাধারণ পিডিএফ কাজগুলো প্রসেস করে। কোনো অ্যাকাউন্টের প্রয়োজন নেই—আপনার ব্রাউজারেই দ্রুত, প্রাইভেসি-ফোকাসড পিডিএফ টুলস।",
       "enable3D": "Enable 3D",
       "disable3D": "Disable 3D",
-      "autoDisabled3D": "3D turned off to keep things fast"
+      "autoDisabled3D": "3D turned off to keep things fast",
+      "motion3D": "3D Motion"
     },
     "search": {
       "placeholder": "পিডিএফ টুল খুঁজুন...",
@@ -132,6 +148,8 @@
     },
     "categories": {
       "all": "সবগুলো",
+      "essential": "Core Essentials",
+      "specialist": "Advanced & AI",
       "workflows": "ওয়ার্কফ্লো",
       "organize": "পিডিএফ সাজান",
       "optimize": "অপ্টিমাইজ করুন",
@@ -167,6 +185,7 @@
       "desc": "পিডিএফমিন্টি স্ট্যান্ডার্ড ডকুমেন্টগুলো সরাসরি আপনার কম্পিউটার বা ফোনে প্রসেস করে। যেহেতু আপনার ফাইলগুলো আপনার ডিভাইসেই থাকে, তাই কোনো আপলোড বিলম্ব, কিউতে অপেক্ষা বা ক্লাউড স্টোরেজের ঝুঁকি ছাড়াই তাৎক্ষণিকভাবে প্রসেসিং হয়। লোকাল ব্রাউজার প্রাইভেসির সাথে গোপনীয় চুক্তি, ট্যাক্স ফর্ম এবং ফিনান্সিয়াল রেকর্ডগুলো প্রসেস করুন।",
       "dragDrop": "এখানে পিডিএফ ড্র্যাগ এবং ড্রপ করুন",
       "orBrowse": "বা লোকাল ফাইল ব্রাউজ করতে ক্লিক করুন",
+      "offlineBadge": "100% অফলাইন",
       "stepsHeading": "এটি 3টি সহজ ধাপে কীভাবে কাজ করে",
       "step1Title": "টুল নির্বাচন করুন",
       "step1Desc": "আপনার ফাইল মার্জ, স্প্লিট, কম্প্রেস, সাইন বা সুরক্ষিত করার জন্য উপরের ২৪টি পিডিএফ টুল থেকে বেছে নিন।",
@@ -174,8 +193,7 @@
       "step2Desc": "আপনার পিডিএফ ফাইলগুলো সরাসরি ব্রাউজার উইন্ডোতে ড্র্যাগ এবং ড্রপ করুন। স্ট্যান্ডার্ড টুলগুলো ফাইল লোকাল মেমরিতে রাখে।",
       "step3Title": "ডাউনলোড করুন",
       "step3Desc": "আপনার পিডিএফ তাৎক্ষণিকভাবে আপনার হার্ডওয়্যারে প্রসেস করা হয়। ফলাফলটি সংরক্ষণ করতে ডাউনলোডে ক্লিক করুন।",
-      "stepsSubtitle": "আপনার ব্রাউজারে সরাসরি ফাইল প্রসেস করার ৩টি সহজ ধাপ।",
-      "offlineBadge": "100% অফলাইন"
+      "stepsSubtitle": "আপনার ব্রাউজারে সরাসরি ফাইল প্রসেস করার ৩টি সহজ ধাপ।"
     },
     "faq": {
       "badge": "সাধারণ প্রশ্নাবলী",
@@ -211,7 +229,20 @@
     },
     "toolCard": {
       "highDemand": "★ ব্যাপক চাহিদাসম্পন্ন",
-      "useTool": "টুল ব্যবহার করুন"
+      "useTool": "টুল ব্যবহার করুন",
+      "localRam": "Local RAM",
+      "aiConsent": "AI · Consent",
+      "badges": {
+        "popular": "Popular",
+        "smart_reduction": "Smart Reduction",
+        "ai_hybrid": "AI Hybrid",
+        "offline_aes": "Offline AES",
+        "fast_convert": "Fast Convert",
+        "extractor": "Extractor",
+        "visual_extract": "Visual Extract",
+        "interactive_order": "Interactive Order",
+        "secure": "Secure"
+      }
     },
     "trustBadge": {
       "eyebrow": "কমিউনিটি দ্বারা স্বীকৃত",
@@ -240,6 +271,16 @@
       "subtitle": "সহজে ও নিরাপদে পিডিএফ ফাইল পরিচালনা করতে বিস্তারিত টিউটোরিয়াল, নিরাপত্তা বিশ্লেষণ ও তুলনামূলক গাইড।",
       "exploreResource": "রিসোর্স দেখুন",
       "viewAllHub": "নলেজ হাবের সকল আর্টিকেল ও গাইড দেখুন",
+      "badges": {
+        "popular": "POPULAR",
+        "topFeatured": "TOP FEATURED",
+        "guide": "GUIDE",
+        "privacyFirst": "PRIVACY FIRST",
+        "noAds": "NO ADS",
+        "mustRead": "MUST READ",
+        "tutorial": "TUTORIAL",
+        "safety": "SAFETY"
+      },
       "cards": {
         "pdfToWordTitle": "ফ্রি পিডিএফ টু ওয়ার্ড গাইড",
         "pdfToWordDesc": "লেআউট ও ফরম্যাটিং ঠিক রেখে কীভাবে বিনামূল্যে পিডিএফ থেকে এডিটেবল ওয়ার্ড ফাইলে রূপান্তর করবেন।",
@@ -258,6 +299,18 @@
         "metadataGuideTitle": "পিডিএফ মেটাডেটা রিমুভ করুন",
         "metadataGuideDesc": "পিডিএফ থেকে লেখকের নাম, জিপিএস লোকেশন ও সম্পাদনার ইতিহাস কীভাবে মুছে ফেলবেন।"
       }
+    },
+    "newsletter": {
+      "title": "Join Our Newsletter",
+      "subtitle": "Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.",
+      "emailLabel": "Email address",
+      "placeholder": "Enter your email address...",
+      "button": "Join",
+      "buttonLoading": "Joining...",
+      "success": "Thank you for joining! Check your inbox for updates.",
+      "emptyEmail": "Please enter your email address.",
+      "invalidEmail": "Please enter a valid email address.",
+      "error": "Failed to process subscription. Please try again."
     }
   },
   "newsletter": {
@@ -1828,7 +1881,8 @@
     }
   },
   "affiliate": {
-    "label": "অ্যাফিলিয়েট"
+    "label": "অ্যাফিলিয়েট",
+    "sponsored": "Affiliate Partner"
   },
   "preview": {
     "pagesCount": "{{count}} পৃষ্ঠা",
@@ -1913,6 +1967,8 @@
       "guestBadge": "গেস্ট: {{count}}/5",
       "freeBadge": "টাস্ক: {{count}}/10",
       "proBadge": "PRO • আনলিমিটেড",
+      "unlimited": "Unlimited",
+      "tasksRatio": "{{count}}/{{max}} tasks",
       "guestTitle": "গেস্ট: দৈনিক 5টি টাস্ক ({{count}}টি বাকি) ও 100MB ফাইল লিমিট",
       "freeTitle": "ফ্রি অ্যাকাউন্ট: দৈনিক 10টি টাস্ক ({{count}}টি বাকি) ও 150MB ফাইল লিমিট",
       "proTitle": "Pro টিয়ার: আনলিমিটেড দৈনিক টাস্ক ও 500MB ফাইল লিমিট"
@@ -1986,5 +2042,10 @@
     "tip4Text": "ডকুমেন্টের অপ্রয়োজনীয় হিস্ট্রি এবং বাড়তি কোড নিরাপদে মুছে ফেলা হয়।",
     "tip5Badge": "উচ্চগতির ব্যাকগ্রাউন্ড প্রসেসিং",
     "tip5Text": "ওয়েব ওয়ার্কার ব্যবহারের ফলে কমপ্রেস চলাকালীন ব্রাউজার দ্রুত ও সচল থাকে।"
+  },
+  "common": {
+    "on": "ON",
+    "off": "OFF",
+    "gotIt": "Got it"
   }
 }

@@ -10,12 +10,17 @@ interface EmailJoinFormProps {
 export const EmailJoinForm: React.FC<EmailJoinFormProps> = ({ title, subtitle }) => {
   const { t } = useTranslation('common');
   const effectiveTitle =
-    title || t('home.newsletter.title', { defaultValue: 'Join Our Newsletter' });
+    title ||
+    t('home.newsletter.title', {
+      defaultValue: t('newsletter.title', { defaultValue: 'Join Our Newsletter' }),
+    });
   const effectiveSubtitle =
     subtitle ||
     t('home.newsletter.subtitle', {
-      defaultValue:
-        'Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.',
+      defaultValue: t('newsletter.subtitle', {
+        defaultValue:
+          'Subscribe to receive the latest updates, PDF workflows, and security tips directly to your inbox.',
+      }),
     });
 
   const [email, setEmail] = useState('');
@@ -132,7 +137,7 @@ export const EmailJoinForm: React.FC<EmailJoinFormProps> = ({ title, subtitle })
               {/* Email Input Field */}
               <div className="relative flex-1 w-full">
                 <label htmlFor="newsletter-email-input" className="sr-only">
-                  Email address
+                  {t('home.newsletter.emailLabel', { defaultValue: 'Email address' })}
                 </label>
                 <Mail
                   className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/60 pointer-events-none transition-colors"
@@ -145,7 +150,9 @@ export const EmailJoinForm: React.FC<EmailJoinFormProps> = ({ title, subtitle })
                   autoComplete="email"
                   required
                   placeholder={t('home.newsletter.placeholder', {
-                    defaultValue: 'Enter your email address...',
+                    defaultValue: t('newsletter.placeholder', {
+                      defaultValue: 'Enter your email address...',
+                    }),
                   })}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -163,12 +170,18 @@ export const EmailJoinForm: React.FC<EmailJoinFormProps> = ({ title, subtitle })
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>
-                      {t('home.newsletter.buttonLoading', { defaultValue: 'Joining...' })}
+                      {t('home.newsletter.buttonLoading', {
+                        defaultValue: t('newsletter.buttonLoading', { defaultValue: 'Joining...' }),
+                      })}
                     </span>
                   </>
                 ) : (
                   <>
-                    <span>{t('home.newsletter.button', { defaultValue: 'Join' })}</span>
+                    <span>
+                      {t('home.newsletter.button', {
+                        defaultValue: t('newsletter.button', { defaultValue: 'Join' }),
+                      })}
+                    </span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                   </>
                 )}
