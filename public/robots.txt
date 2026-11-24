@@ -23,6 +23,8 @@ Disallow: /graphql
 # Google AdSense Crawler & Verification Bots
 User-agent: Mediapartners-Google
 Allow: /
+Allow: /assets/
+Allow: /fonts/
 Allow: /ads.txt
 Disallow: /api/
 Disallow: /_internal/
@@ -30,6 +32,26 @@ Disallow: /graphql
 
 User-agent: Google-Display-Ads-Bot
 Allow: /
+Allow: /assets/
+Allow: /fonts/
+Allow: /ads.txt
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
+
+User-agent: AdsBot-Google
+Allow: /
+Allow: /assets/
+Allow: /fonts/
+Allow: /ads.txt
+Disallow: /api/
+Disallow: /_internal/
+Disallow: /graphql
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+Allow: /assets/
+Allow: /fonts/
 Allow: /ads.txt
 Disallow: /api/
 Disallow: /_internal/

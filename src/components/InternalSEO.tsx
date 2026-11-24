@@ -187,40 +187,11 @@ export default function InternalSEO() {
       return;
     }
     let active = true;
-    let timerId: number | undefined;
-    const win =
-      typeof window !== 'undefined'
-        ? (window as Window & {
-            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-            cancelIdleCallback?: (id: number) => void;
-          })
-        : undefined;
-
-    const triggerLoad = () => {
-      void loadFullToolsCatalog().then((loaded) => {
-        if (active) setFullTools(loaded);
-      });
-    };
-
-    if (win && typeof win.requestIdleCallback === 'function') {
-      const idleId = win.requestIdleCallback(triggerLoad, { timeout: 1200 });
-      return () => {
-        active = false;
-        win.cancelIdleCallback?.(idleId);
-      };
-    }
-
-    if (typeof window !== 'undefined') {
-      timerId = window.setTimeout(triggerLoad, 180);
-    } else {
-      triggerLoad();
-    }
-
+    void loadFullToolsCatalog().then((loaded) => {
+      if (active) setFullTools(loaded);
+    });
     return () => {
       active = false;
-      if (timerId !== undefined && typeof window !== 'undefined') {
-        window.clearTimeout(timerId);
-      }
     };
   }, [isToolSlug, fullTools]);
 

@@ -15,7 +15,7 @@ export const HOMEPAGE_META = {
 export const FAQS = [
   {
     "q": "How does PdfMinty process my PDF files privately?",
-    "a": "PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser, plus 2 opt-in AI tools for OCR and document analysis. Standard PDF tools (merging, splitting, compressing, protecting, editing, signing) execute 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
+    "a": "PdfMinty offers 24 PDF tools: 22 standard tools that process files locally in the browser (including PDF to Markdown), plus 2 opt-in AI tools for OCR and document analysis. Standard PDF tools (merging, splitting, compressing, protecting, editing, signing, PDF to Markdown) execute 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images via encrypted HTTPS proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok) only after you explicitly check a consent box."
   },
   {
     "q": "Is PdfMinty free to use?",
@@ -23,7 +23,7 @@ export const FAQS = [
   },
   {
     "q": "Do my files ever leave my computer or mobile device?",
-    "a": "For our 22 standard PDF tools, no — processing happens entirely in your local browser memory and works offline. The only exceptions are the 2 opt-in AI Analyze and OCR PDF tools, which send extracted text or page images to Google Gemini only after you explicitly check a consent box."
+    "a": "For our 22 standard PDF tools (including PDF to Markdown), no — processing happens entirely in your local browser memory and works offline. The only exceptions are the 2 opt-in AI Analyze and OCR PDF tools, which send extracted text or page images via encrypted HTTPS proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok) only after you explicitly check a consent box."
   },
   {
     "q": "What file formats and PDF versions are supported?",
@@ -784,7 +784,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "tool",
     "problemSolved": "Extracting structured text, headings, bullet points, and code blocks from PDFs into clean Markdown for documentation.",
     "primaryCtaText": "Select PDF File to Convert to Markdown",
-    "privacyNote": "100% Client-Side In-Browser Processing for standard text PDFs (optional AI Vision OCR fallback for scanned image-only PDFs requires explicit user consent).",
+    "privacyNote": "100% Client-Side In-Browser Processing. Document text and embedded images are parsed locally in your browser memory without uploading files to any server.",
     "lastReviewedDate": "August 2026 • Verified by Product Engineering Team",
     "keywords": [
       "pdf to markdown",
@@ -821,7 +821,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "tool",
     "problemSolved": "Asking questions, generating summaries, or extracting key insights from lengthy PDF documents without manual reading.",
     "primaryCtaText": "Select PDF File for AI Analysis",
-    "privacyNote": "Client-Side Text Extraction + Opt-In Gemini AI. Document text is extracted locally in your browser. Upon checking the consent box, extracted plain text (up to 12 pages) is transmitted via encrypted HTTPS to Google Gemini. Binary PDF files are never uploaded or stored.",
+    "privacyNote": "Client-Side Text Extraction + Opt-In Cloud AI. Document text is extracted locally in your browser. Upon checking the consent box, extracted plain text (up to 15 pages standard / 50 pages Pro) is transmitted via encrypted HTTPS proxy (/api/gemini-proxy) to our configured AI providers (Google Gemini, Groq, and/or xAI Grok). Binary PDF files are never uploaded or stored.",
     "lastReviewedDate": "August 2026 • Verified by AI Engineering & Security Team",
     "keywords": [
       "ai analyze pdf",
@@ -1006,7 +1006,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "tool",
     "problemSolved": "Extract copyable text and structured Markdown from scanned image-only PDFs using Multimodal AI Vision OCR with explicit opt-in privacy control.",
     "primaryCtaText": "Select PDF File to OCR",
-    "privacyNote": "Client-Side Page Rendering + Explicit Opt-In Cloud AI Vision. Initial PDF parsing and page thumbnail rendering run locally in your browser. Only after you check the explicit consent box are selected page images transmitted via encrypted HTTPS proxy to Google Gemini Multimodal Vision API solely for transcription, with zero permanent server storage.",
+    "privacyNote": "Client-Side Page Rendering + Explicit Opt-In Cloud AI Vision. Initial PDF parsing and page thumbnail rendering run locally in your browser. Only after you check the explicit consent box are selected page images transmitted via encrypted HTTPS proxy (/api/gemini-proxy) to our configured AI Vision providers (Google Gemini, Groq, and/or xAI Grok) solely for transcription, with zero permanent server storage.",
     "lastReviewedDate": "August 2026 • Verified by Engineering Team",
     "keywords": [
       "ocr pdf",
@@ -1079,7 +1079,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-22",
+    "dateModified": "2026-11-23",
     "readingTimeMinutes": 9
   },
   {
@@ -1258,9 +1258,6 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "priority": 0.9,
     "changefreq": "weekly",
     "type": "article",
-    "ogImage": "/og-image.png",
-    "datePublished": "2026-09-21",
-    "dateModified": "2026-09-28",
     "readingTimeMinutes": 20
   },
   {
@@ -1298,7 +1295,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-24",
+    "dateModified": "2026-11-23",
     "readingTimeMinutes": 6
   },
   {
@@ -1336,10 +1333,10 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-28",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-28",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
     "problemSolved": "Converting PDFs directly to .docx often results in horribly broken tables, invisible text boxes, and massive formatting headaches. This guide offers a cleaner, safer text-extraction workaround.",
     "readingTimeMinutes": 4
   },
@@ -1359,7 +1356,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-25",
+    "dateModified": "2026-11-23",
     "readingTimeMinutes": 4
   },
   {
@@ -1378,7 +1375,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-25",
+    "dateModified": "2026-11-23",
     "readingTimeMinutes": 3
   },
   {
@@ -1437,7 +1434,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-26",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "lastReviewedDate": "2026-09-26",
     "readingTimeMinutes": 8
   },
@@ -1457,10 +1454,10 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-26",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-26",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
     "readingTimeMinutes": 8
   },
   {
@@ -1479,11 +1476,11 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-28",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-28",
-    "problemSolved": "Users have an image-only PDF and need to extract the text out of it so they can paste it into Word, edit it, or search it—without relying on privacy-invasive cloud OCR services.",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
+    "problemSolved": "Users have an image-only PDF and need to extract the text out of it so they can paste it into Word, edit it, or search it—without relying on opaque cloud OCR services that retain files.",
     "readingTimeMinutes": 6
   },
   {
@@ -1504,7 +1501,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-26",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "lastReviewedDate": "2026-09-26",
     "readingTimeMinutes": 6
   },
@@ -1526,7 +1523,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-27",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "lastReviewedDate": "2026-09-27",
     "readingTimeMinutes": 7
   },
@@ -1548,7 +1545,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "datePublished": "2026-09-21",
     "dateModified": "2026-09-27",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "lastReviewedDate": "2026-09-27",
     "readingTimeMinutes": 7
   },
@@ -1577,9 +1574,9 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "slug": "privacy-policy",
     "name": "Privacy Policy",
     "ogImage": "/og-image.png",
-    "shortDescription": "Comprehensive Privacy Policy for PDFMinty: 100% client-side PDF processing, Google OAuth 2.0 Limited Use compliance, Google Gemini AI opt-in disclosures, AdSense, GDPR & CCPA rights.",
+    "shortDescription": "Comprehensive Privacy Policy for PDFMinty: 100% client-side PDF processing, Google OAuth 2.0 Limited Use compliance, opt-in cloud AI (Google Gemini, Groq, xAI Grok), AdSense (when enabled), GDPR & CCPA rights.",
     "metaTitle": "Privacy Policy — Zero-Upload PDF Tools & OAuth | PDFMinty",
-    "metaDescription": "Read PDFMinty's Privacy Policy: 22 standard PDF tools run 100% locally in your browser with zero uploads, plus Google OAuth, opt-in Gemini AI, and GDPR terms.",
+    "metaDescription": "Read PDFMinty's Privacy Policy: 22 local browser PDF tools with zero uploads, 2 opt-in AI tools (Gemini, Groq, xAI), Google OAuth, AdSense, and GDPR terms.",
     "h1": "Privacy Policy",
     "icon": "Shield",
     "category": "static",
@@ -1587,17 +1584,17 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "changefreq": "yearly",
     "type": "article",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-10-18",
-    "readingTimeMinutes": 13
+    "dateModified": "2026-11-23",
+    "readingTimeMinutes": 14
   },
   {
     "id": "terms-of-service",
     "slug": "terms-of-service",
     "name": "Terms of Service",
     "ogImage": "/og-image.png",
-    "shortDescription": "Service terms, acceptable use, and crawler guidelines for PdfMinty",
+    "shortDescription": "Complete Terms of Service for PdfMinty covering plans, payments, refunds, acceptable use, opt-in AI data disclosures, and limitation of liability.",
     "metaTitle": "Terms of Service — PdfMinty",
-    "metaDescription": "Read PdfMinty's Terms of Service. Understand our terms of use, privacy guarantee, acceptable use policy, and crawler guidelines.",
+    "metaDescription": "Read PdfMinty's full Terms of Service: Free Forever, Pro & Lifetime plans, refunds, acceptable use, browser-local privacy, opt-in AI, and liability limits.",
     "h1": "Terms of Service",
     "icon": "Scale",
     "category": "static",
@@ -1605,8 +1602,8 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "changefreq": "yearly",
     "type": "article",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-28",
-    "readingTimeMinutes": 5
+    "dateModified": "2026-11-23",
+    "readingTimeMinutes": 8
   },
   {
     "id": "blog-electronic-vs-digital-signature",
@@ -1742,11 +1739,11 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-27",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-27",
-    "problemSolved": "Evaluating the empirical privacy claims of online PDF editors by measuring their actual network behavior and payload transit.",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
+    "problemSolved": "Evaluating the privacy claims of online PDF editors by showing how to inspect their actual network behavior and payload transit in Chrome DevTools.",
     "readingTimeMinutes": 4
   },
   {
@@ -1765,12 +1762,12 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-21",
-    "dateModified": "2026-09-28",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-28",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
     "problemSolved": "Explaining the underlying browser stack (@cantoo/pdf-lib, PDF.js, OffscreenCanvas, Web Workers, ArrayBuffers, Blobs) that enables serverless PDF manipulation.",
-    "readingTimeMinutes": 5
+    "readingTimeMinutes": 6
   },
   {
     "id": "blog-hipaa-compliant-pdf-tools",
@@ -1788,10 +1785,10 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-22",
-    "dateModified": "2026-09-28",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-28",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
     "problemSolved": "Healthcare professionals (doctors, admins, billers) need to merge, compress, or edit patient records but cannot legally upload them to standard online PDF tools due to HIPAA restrictions.",
     "readingTimeMinutes": 4
   },
@@ -1813,7 +1810,7 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "datePublished": "2026-09-22",
     "dateModified": "2026-09-28",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "lastReviewedDate": "2026-09-28",
     "problemSolved": "US freelancers and small businesses need to fill out and sign W-9s or NDAs containing their Social Security Number (SSN) or EIN, but want to avoid the identity theft risks of cloud PDF editors.",
     "readingTimeMinutes": 4
@@ -1834,10 +1831,10 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-23",
-    "dateModified": "2026-09-28",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-28",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
     "problemSolved": "European businesses need to process PDFs (CVs, contracts, invoices) containing personal data (PII) without violating the strict data transfer and processing limitations of the General Data Protection Regulation (GDPR).",
     "readingTimeMinutes": 4
   },
@@ -1857,12 +1854,12 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-23",
-    "dateModified": "2026-09-28",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Security & Engineering Team",
-    "lastReviewedDate": "2026-09-28",
+    "reviewedBy": "Mohammed Tanveer Munshi",
+    "lastReviewedDate": "2026-11-23",
     "problemSolved": "Businesses in the UK and EU need to know if drawing a signature on a PDF using a free online tool is legally binding for B2B contracts, and how to do it securely.",
-    "readingTimeMinutes": 4
+    "readingTimeMinutes": 5
   },
   {
     "id": "pdf-wont-open",
@@ -1899,9 +1896,9 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-25",
-    "dateModified": "2026-09-26",
+    "dateModified": "2026-11-23",
     "author": "Mohammed Tanveer Munshi",
-    "reviewedBy": "PdfMinty Technical Team",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "readingTimeMinutes": 10
   },
   {
@@ -1921,8 +1918,9 @@ export const TOOLS_CATALOG: ToolCatalogItem[] = [
     "type": "article",
     "status": "published",
     "datePublished": "2026-09-26",
-    "dateModified": "2026-09-27",
-    "author": "PDFMinty Security & Document Research Team",
+    "dateModified": "2026-11-23",
+    "author": "Mohammed Tanveer Munshi",
+    "reviewedBy": "Mohammed Tanveer Munshi",
     "keywords": [
       "pdf form won't let me type",
       "how to fill out a pdf form that is not fillable",

@@ -180,8 +180,8 @@ export const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedMergePdfData> = {
         desc: 'ফাইলগুলো WebAssembly প্রযুক্তিতে সরাসরি আপনার ডিভাইসে প্রসেস হয়, কোনো সার্ভারে আপলোড ছাড়া।',
       },
       {
-        title: 'কোনো সীমা বা ওয়াটারমার্ক নেই:',
-        desc: 'সম্পূর্ণ ফ্রি এবং কোনো জলছাপ বা লুকানো সাবস্ক্রিপশন চার্জ যুক্ত করা হয় না।',
+        title: 'কোনো ওয়াটারমার্ক নেই ও ফ্রি টিয়ার:',
+        desc: 'গেস্টদের জন্য প্রতিদিন ৫টি ফ্রি টাস্ক (ফ্রি অ্যাকাউন্টে ১০টি) কোনো জলছাপ ছাড়াই, এবং আনলিমিটেড কাজের জন্য ঐচ্ছিক Pro প্ল্যান।',
       },
       {
         title: 'লিপিবদ্ধ কোয়ালিটি অক্ষত:',
@@ -351,8 +351,8 @@ export const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedMergePdfData> = {
         desc: 'Alle Operationen werden lokal mit WebAssembly ausgeführt. Null Server-Uploads, maximale Datensicherheit.',
       },
       {
-        title: 'Keine Beschränkungen oder Wasserzeichen:',
-        desc: 'Völlig kostenlos ohne störende Markierungen, versteckte Abonnements oder Registrierungszwang.',
+        title: 'Ohne Wasserzeichen & faires Freikontingent:',
+        desc: '5 kostenlose Aufgaben/Tag für Gäste (10/Tag mit kostenlosem Konto) ohne Wasserzeichen, plus optionale Pro-Tarife für unbegrenzte Nutzung.',
       },
       {
         title: 'Originalqualität bleibt erhalten:',
@@ -521,8 +521,8 @@ export const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedMergePdfData> = {
         desc: 'Procesamiento local seguro con WebAssembly. Cero subidas a la nube o servidores de terceros.',
       },
       {
-        title: 'Sin límites ocultos ni marcas de agua:',
-        desc: 'Herramienta 100% gratuita y sin logotipos añadidos a tus documentos.',
+        title: 'Sin marcas de agua y nivel gratuito claro:',
+        desc: '5 tareas diarias gratis para invitados (10 con cuenta gratuita) sin logotipos añadidos, más planes Pro opcionales para uso ilimitado.',
       },
       {
         title: 'Calidad intacta sin pérdidas:',
@@ -689,8 +689,8 @@ export const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedMergePdfData> = {
         desc: 'Traitement local via WebAssembly. Zéro transfert de données vers des serveurs distants ou des clouds tiers.',
       },
       {
-        title: 'Sans filigrane ni frais cachés :',
-        desc: 'Service entièrement gratuit, sans inscription obligatoire et sans ajout de logo promotionnel.',
+        title: 'Sans filigrane et offre gratuite transparente :',
+        desc: '5 tâches gratuites/jour pour les invités (10/jour avec compte gratuit) sans filigrane, plus des offres Pro optionnelles pour un usage illimité.',
       },
       {
         title: 'Préservation de la netteté originale :',
@@ -853,8 +853,8 @@ export const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedMergePdfData> = {
         desc: 'वेबअसेम्बली के साथ फाइलें बिना सर्वर पर भेजे सीधे आपके डिवाइस पर सुरक्षित रूप से प्रोसेस होती हैं।',
       },
       {
-        title: 'कोई सीमा या वॉटरमार्क नहीं:',
-        desc: 'पूरी तरह से मुफ्त और बिना किसी प्रचार वॉटरमार्क या छिपे हुए सदस्यता शुल्क के।',
+        title: 'कोई वॉटरमार्क नहीं व स्पष्ट मुफ़्त टियर:',
+        desc: 'अतिथियों के लिए प्रतिदिन 5 मुफ़्त कार्य (मुफ़्त खाते में 10/दिन) बिना किसी वॉटरमार्क के, और असीमित उपयोग के लिए वैकल्पिक Pro प्लान।',
       },
       {
         title: 'मूल गुणवत्ता बरकरार:',
@@ -1016,8 +1016,8 @@ export const MERGE_PDF_LOCALIZED_DATA: Record<string, LocalizedMergePdfData> = {
         desc: '所有 PDF 处理均在您本地设备的 CPU 与浏览器沙箱内存中完成，数据绝不经过任何外部服务器。',
       },
       {
-        title: '真正永久免费且无水印干扰：',
-        desc: '无需注册登录账号，无隐藏订阅收费，绝不在您的文档中强行嵌入任何宣传水印或页脚徽标。',
+        title: '零水印与透明免费额度：',
+        desc: '访客每日可享 5 次免费任务（免费账户每日 10 次）且绝无宣传水印，如需每日不限量可选择 Pro 方案。',
       },
       {
         title: '极速本地处理与无损高品质：',

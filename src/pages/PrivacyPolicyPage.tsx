@@ -28,7 +28,7 @@ export const PrivacyPolicyPage: React.FC = () => {
       <SEO
         slug="privacy-policy"
         titleOverride="Privacy Policy — In-Browser PDF Privacy, AI & Google OAuth Compliance | PDFMinty"
-        descriptionOverride="Read PDFMinty's comprehensive Privacy Policy. 22 standard PDF tools process files 100% locally in your browser with zero uploads, plus 2 opt-in Gemini AI tools, Google OAuth Limited Use, AdSense, GDPR, and CCPA disclosures."
+        descriptionOverride="Read PDFMinty's comprehensive Privacy Policy. 22 standard PDF tools process files 100% locally in your browser with zero uploads, plus 2 opt-in cloud AI tools (Google Gemini, Groq, xAI Grok), Google OAuth Limited Use, AdSense (when enabled), GDPR, and CCPA disclosures."
       />
 
       <div className="max-w-4xl mx-auto space-y-10" id="privacy-policy-container">
@@ -48,7 +48,7 @@ export const PrivacyPolicyPage: React.FC = () => {
           <p className="text-xs sm:text-sm font-semibold text-on-surface-variant max-w-2xl mx-auto">
             {t('privacyPolicy.updated', {
               defaultValue:
-                'Effective Date: January 1, 2026 • Last Updated & Reviewed: November 2026 • Controller: PDFMinty Security & Compliance Architecture Team',
+                'Effective Date: January 1, 2026 • Last Updated & Reviewed: November 2026 • Data Controller: Mohammed Tanveer Munshi (PdfMinty), Dhaka, Bangladesh • Contact: support@pdfminty.com',
             })}
           </p>
         </div>
@@ -66,14 +66,14 @@ export const PrivacyPolicyPage: React.FC = () => {
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
-            PdfMinty provides 24 tools in total: 22 standard browser-local PDF tools and 2 optional
-            cloud AI tools. PdfMinty offers 24 PDF tools: 22 standard tools that process files
-            locally in the browser, plus 2 opt-in AI tools for OCR and document analysis.
+            PdfMinty offers 24 PDF tools in total: 22 standard tools that process files 100% locally
+            in your browser (including PDF to Markdown), plus 2 optional opt-in cloud AI tools for
+            OCR and document analysis.
           </p>
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
             {t('privacyPolicy.summary', {
               defaultValue:
-                "PDFMinty's 22 standard PDF tools process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI features — the AI PDF Assistant (/ai-analyze-pdf/), the OCR PDF tool (/ocr-pdf/), or the optional AI Vision OCR mode in PDF to Markdown (/pdf-to-markdown/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
+                "PDFMinty's 22 standard PDF tools (including Merge, Split, Compress, Sign, Protect, Unlock, and PDF to Markdown) process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our 2 Cloud AI tools — AI Analyze PDF (/ai-analyze-pdf/) or OCR PDF (/ocr-pdf/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy (/api/gemini-proxy) to our configured AI inference providers (Google Gemini, Groq, and/or xAI Grok) solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
             })}
           </p>
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed font-medium">
@@ -124,17 +124,17 @@ export const PrivacyPolicyPage: React.FC = () => {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-semibold text-on-surface">
-                    2. Opt-In AI/OCR Data — 2 Optional Cloud AI Tools (/ai-analyze-pdf/, /ocr-pdf/,
-                    &amp; optional AI Vision mode in /pdf-to-markdown/)
+                    2. Opt-In AI/OCR Data — 2 Optional Cloud AI Tools (/ai-analyze-pdf/ and
+                    /ocr-pdf/)
                   </td>
                   <td className="py-3 px-4">
                     Extracted document text (up to 15 pages / 30,000 chars standard; 50 pages /
                     60,000 chars Pro) or rendered page images (up to 5 pages standard / 15 pages Pro
-                    in OCR PDF; up to 6 pages in PDF to Markdown AI mode) after explicit user
-                    consent
+                    in OCR PDF) after explicit user consent
                   </td>
                   <td className="py-3 px-4">
-                    Encrypted HTTPS Proxy (/api/gemini-proxy) to Google Gemini API
+                    Encrypted HTTPS Proxy (/api/gemini-proxy) to Google Gemini, Groq, and/or xAI
+                    Grok APIs
                   </td>
                   <td className="py-3 px-4">
                     Ephemeral in-memory processing only; never stored on PDFMinty servers
@@ -193,12 +193,13 @@ export const PrivacyPolicyPage: React.FC = () => {
                     6. Advertising, Cookie &amp; Local Storage Data
                   </td>
                   <td className="py-3 px-4">
-                    Advertising cookies (Google AdSense on public informational pages for non-Pro
-                    visitors) &amp; local browser storage (guest task counter, theme, language,
-                    cookie consent state)
+                    Advertising cookies (Google AdSense, when enabled on public informational pages
+                    for non-Pro visitors) &amp; local browser storage (guest task counter, theme,
+                    language, cookie consent state)
                   </td>
                   <td className="py-3 px-4">
-                    Google AdSense (with Consent Mode v2) &amp; Client-Side Browser localStorage
+                    Google AdSense (when enabled, with Consent Mode v2) &amp; Client-Side Browser
+                    localStorage
                   </td>
                   <td className="py-3 px-4">
                     Ad cookies gated by Consent Mode v2; localStorage controllable and clearable by
@@ -301,7 +302,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             <p>
               {t('privacyPolicy.sec3Desc', {
                 defaultValue:
-                  'PDFMinty provides two clearly labeled, optional AI-powered tools: the AI PDF Assistant (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/). Unlike our standard local tools, these two features require cloud inference via the Google Gemini API.',
+                  'PDFMinty provides 2 clearly labeled, optional AI-powered tools: AI Analyze PDF (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/). Unlike our 22 standard browser-local tools (including PDF to Markdown), these 2 features require cloud inference through our encrypted proxy (/api/gemini-proxy) routed to our configured AI providers (Google Gemini, Groq, and/or xAI Grok).',
               })}
             </p>
             <ul className="list-disc pl-5 space-y-2">
@@ -322,7 +323,8 @@ export const PrivacyPolicyPage: React.FC = () => {
                 characters on standard tier, or up to 50 pages / 60,000 characters on Pro tier) and
                 only the extracted plain text and your prompt are sent over a TLS 1.3 encrypted
                 HTTPS connection to our serverless edge proxy (<code>/api/gemini-proxy</code>) for
-                processing by the Google Gemini API. For{' '}
+                processing by our configured AI providers (Google Gemini, Groq, and/or xAI Grok).
+                For{' '}
                 <Link
                   to={ROUTES.OCR_PDF}
                   className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
@@ -330,22 +332,23 @@ export const PrivacyPolicyPage: React.FC = () => {
                   OCR PDF
                 </Link>
                 , only the rendered page images you select (up to 5 pages per batch on standard tier
-                or up to 15 pages per batch on Pro tier) are transmitted for optical character
-                recognition. Similarly, if you explicitly opt in to the AI Vision OCR mode inside{' '}
+                or up to 15 pages per batch on Pro tier) are transmitted via{' '}
+                <code>/api/gemini-proxy</code> to our configured vision-capable AI providers (Google
+                Gemini, Groq, and/or xAI Grok) for optical character recognition. Note that{' '}
                 <Link
                   to={ROUTES.PDF_TO_MARKDOWN}
                   className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
                 >
                   PDF to Markdown
                 </Link>{' '}
-                for scanned documents, up to 6 rendered page images are transmitted after you check
-                the consent box.
+                runs 100% locally in your browser and never transmits files or images to external
+                servers.
               </li>
               <li>
                 <strong>Zero Retention &amp; Ephemeral Processing:</strong> PDFMinty&apos;s edge
-                proxy acts purely as a stateless pass-through to protect API credentials. We never
-                log, store, cache, or retain your document text, page images, prompts, or AI
-                responses in any database or storage medium.
+                proxy acts purely as a stateless pass-through to protect API credentials and handle
+                provider failover. We never log, store, cache, or retain your document text, page
+                images, prompts, or AI responses in any database or storage medium.
               </li>
             </ul>
           </section>
@@ -523,7 +526,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                 >
                   Account Dashboard
                 </Link>{' '}
-                or by emailing our Data Protection Team at{' '}
+                or by emailing the operator (Mohammed Tanveer Munshi) at{' '}
                 <a
                   href="mailto:support@pdfminty.com"
                   className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
@@ -599,7 +602,7 @@ export const PrivacyPolicyPage: React.FC = () => {
               <p>
                 {t('privacyPolicy.sec4Intro', {
                   defaultValue:
-                    'PDFMinty uses Google AdSense to display advertisements on public informational pages to support free access to our browser PDF toolkit. To comply with Google Publisher and AdSense policies, please review the following disclosures:',
+                    'When enabled on public informational pages for non-Pro visitors, PDFMinty may display advertisements served by Google AdSense to support free access to our browser PDF toolkit. Advertising scripts and cookies remain subject to Google Consent Mode v2 (default-denied until you grant consent). To comply with Google Publisher and AdSense policies, please review the following disclosures:',
                 })}
               </p>
               <ul className="list-disc pl-5 space-y-2">
@@ -768,13 +771,28 @@ export const PrivacyPolicyPage: React.FC = () => {
                 storage.
               </li>
               <li>
-                <strong>Google LLC (Google Gemini API):</strong> Ephemeral cloud AI document
-                summarization and optical character recognition strictly when initiated by user
-                opt-in.
+                <strong>Google LLC (Google Gemini API):</strong> Primary ephemeral cloud AI
+                provider for opt-in AI Analyze PDF and OCR PDF requests via{' '}
+                <code>/api/gemini-proxy</code> strictly when initiated by user consent.
+              </li>
+              <li>
+                <strong>Groq, Inc. (Groq API):</strong> Configured cloud AI inference failover
+                provider for opt-in AI Analyze PDF and OCR PDF requests routed through{' '}
+                <code>/api/gemini-proxy</code> strictly upon user consent.
+              </li>
+              <li>
+                <strong>xAI Corp. (xAI Grok API):</strong> Configured cloud AI inference failover
+                provider for opt-in AI Analyze PDF and OCR PDF requests routed through{' '}
+                <code>/api/gemini-proxy</code> strictly upon user consent.
+              </li>
+              <li>
+                <strong>Lemon Squeezy LLC (Merchant of Record):</strong> Optional Pro and Lifetime
+                subscription checkout, payment processing, tax handling, and invoice issuance.
               </li>
               <li>
                 <strong>Google LLC (Google AdSense &amp; Google Analytics 4):</strong> Website
-                monetization and anonymized traffic measurement subject to user cookie consent.
+                monetization (when enabled on public informational pages for non-Pro visitors) and
+                anonymized traffic measurement, both strictly gated by Google Consent Mode v2.
               </li>
               <li>
                 <strong>Resend, Inc.:</strong> Transactional email delivery strictly when a user
@@ -899,7 +917,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             <p>
               {t('privacyPolicy.sec8Desc', {
                 defaultValue:
-                  'If you have any questions, data subject access requests (DSAR), account deletion requests, or inquiries regarding this Privacy Policy or our Google OAuth compliance, please contact our Data Protection & Support Team via our',
+                  'If you have any questions, data subject access requests (DSAR), account deletion requests, or inquiries regarding this Privacy Policy or our Google OAuth compliance, please contact the operator (Mohammed Tanveer Munshi) via our',
               })}{' '}
               <Link
                 to={ROUTES.CONTACT}
@@ -923,6 +941,32 @@ export const PrivacyPolicyPage: React.FC = () => {
               </a>
               .
             </p>
+            <div className="p-4 rounded-2xl bg-surface-container-high border border-border-muted space-y-1.5 font-medium">
+              <p>
+                <strong>Data Controller &amp; Operator:</strong> Mohammed Tanveer Munshi (PdfMinty)
+              </p>
+              <p>
+                <strong>Location:</strong> Dhaka, Bangladesh
+              </p>
+              <p>
+                <strong>Primary Email:</strong>{' '}
+                <a
+                  href="mailto:support@pdfminty.com"
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  support@pdfminty.com
+                </a>
+              </p>
+              <p>
+                <strong>Secondary Email:</strong>{' '}
+                <a
+                  href="mailto:pdfminty@gmail.com"
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  pdfminty@gmail.com
+                </a>
+              </p>
+            </div>
           </section>
         </div>
       </div>

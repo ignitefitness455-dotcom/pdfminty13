@@ -4,15 +4,15 @@
   <p><a href="https://pdfminty.com/">Try PdfMinty online</a> · Standard tools process locally in your browser</p>
 </div>
 
-> **Privacy scope:** PdfMinty’s standard PDF operations are designed to run locally in the browser. AI-powered workflows such as OCR, PDF analysis, and PDF-to-Markdown use a separate network path and should be used only after reviewing the product’s consent and provider disclosures. Do not treat this README as a promise that every feature has the same data path.
+> **Privacy scope:** PdfMinty’s 22 standard PDF operations (including Merge, Split, Compress, Sign, Protect, Unlock, and PDF to Markdown) run 100% locally in the browser with zero document uploads. Only our 2 opt-in cloud AI tools — **AI Analyze PDF** (`/ai-analyze-pdf/`) and **OCR PDF** (`/ocr-pdf/`) — use a separate encrypted serverless proxy (`/api/gemini-proxy`) routed to configured AI providers (**Google Gemini, Groq, and/or xAI Grok**) strictly after explicit user checkbox consent.
 
 ---
 
 ## 🌟 Overview
 
-**PDFMinty** is a browser-based PDF toolkit for common document tasks such as merging, splitting, rotating, protecting, signing, sanitizing, converting, and organizing PDF files. Core operations are designed to process documents **inside the browser** using WebAssembly and client-side JavaScript, avoiding an upload-first workflow for those operations.
+**PDFMinty** is a browser-based PDF toolkit with 24 tools (22 browser-local standard tools + 2 opt-in cloud AI tools) for merging, splitting, rotating, protecting, signing, sanitizing, converting, and organizing PDF files. All 22 standard operations process documents **100% inside the browser** using WebAssembly and client-side JavaScript without uploading files to any server.
 
-Intelligent features such as PDF Analysis, OCR, and PDF-to-Markdown use a separate serverless proxy/provider path. The live product explains the applicable consent and data-handling boundary; users should review that disclosure before sending extracted text or images to an AI provider. See the [live PdfMinty website](https://pdfminty.com/) for the current feature and privacy details.
+Our 2 opt-in intelligent features (**AI Analyze PDF** and **OCR PDF**) use a stateless serverless proxy (`/api/gemini-proxy`) backed by Google Gemini, Groq, and/or xAI Grok only after the user checks an explicit consent box. See the [live PdfMinty website](https://pdfminty.com/) and [Privacy Policy](https://pdfminty.com/privacy-policy/) for full disclosures.
 
 ---
 
@@ -42,11 +42,11 @@ Intelligent features such as PDF Analysis, OCR, and PDF-to-Markdown use a separa
 * **Flatten PDF** — Lock form fields and annotations into static page elements.
 * **Repair PDF** — Re-render corrupted or broken PDF structures.
 * **Edit Metadata** — Update title, author, subject, and keywords.
+* **PDF to Markdown** — Convert structured PDF layouts into clean Markdown text 100% locally in your browser (with optional embedded image extraction).
 
-### 🤖 AI-Powered Intelligence
-* **AI Analyze PDF** — Ask questions, generate summaries, and extract insights from documents.
-* **PDF to Markdown** — Convert structured PDF layouts into clean Markdown text.
-* **OCR PDF** — Extract text from scanned documents using vision model OCR.
+### 🤖 Opt-In Cloud AI Intelligence (Explicit Consent Required)
+* **AI Analyze PDF** — Ask questions, generate summaries, and extract insights from locally extracted PDF text via `/api/gemini-proxy` (Google Gemini, Groq, and/or xAI Grok).
+* **OCR PDF** — Extract text from scanned documents using cloud vision OCR via `/api/gemini-proxy` (Google Gemini, Groq, and/or xAI Grok).
 
 ---
 
@@ -129,8 +129,8 @@ npm run format:check
 
 ## 🛡️ Security & Privacy Notice
 
-* **Client-First Philosophy:** All core PDF editing operations (merge, split, encrypt, rotate, watermark, convert) run completely in-browser. Your files are **never uploaded** to any server.
-* **AI Proxy Security:** When using AI features (OCR, Analyze, Markdown conversion), only the relevant text/images are sent securely over HTTPS to your configured AI provider proxy (`/api/gemini-proxy`).
+* **Client-First Philosophy:** All 22 standard PDF operations (including Merge, Split, Encrypt, Rotate, Watermark, Sign, Compress, and PDF to Markdown) run 100% in-browser. Your files are **never uploaded** to any server.
+* **Opt-In AI Proxy Security:** Only **AI Analyze PDF** and **OCR PDF** transmit extracted text or selected rendered page images over HTTPS to `/api/gemini-proxy` (backed by configured Google Gemini, Groq, and/or xAI Grok keys) strictly after explicit user consent.
 * **Content Security Policy:** Built-in dynamic CSP headers protect users against XSS and injection attacks.
 
 ---

@@ -200,7 +200,7 @@ describe('Pro Billing Actions & Lemon Squeezy Checkout URLs', () => {
     expect(screen.getByText(/4\. Can users cancel Monthly Pro\?/i)).toBeInTheDocument();
     expect(screen.getByText(/5\. Are standard PDF files uploaded\?/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/6\. Which AI\/OCR data is sent to Google Gemini\?/i)
+      screen.getByText(/6\. Which AI\/OCR data is sent to cloud AI providers\?/i)
     ).toBeInTheDocument();
     expect(screen.getByText(/7\. What does Lifetime access mean\?/i)).toBeInTheDocument();
 

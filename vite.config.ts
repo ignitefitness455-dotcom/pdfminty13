@@ -386,12 +386,16 @@ export default defineConfig(({ command, mode }) => {
       injectSwVersion(),
       devApiPlugin(),
       generateSitemapPlugin(),
-      visualizer({
-        filename: 'dist/stats.html',
-        gzipSize: true,
-        brotliSize: true,
-        open: false,
-      }),
+      ...(process.env.ANALYZE === 'true'
+        ? [
+            visualizer({
+              filename: 'node_modules/.cache/bundle-stats.html',
+              gzipSize: true,
+              brotliSize: true,
+              open: false,
+            }),
+          ]
+        : []),
     ],
     build: {
       outDir: 'dist',

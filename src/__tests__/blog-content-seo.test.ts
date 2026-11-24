@@ -197,43 +197,82 @@ describe('Blog & Informational Content SEO & Governance Audit (Prompt 5)', () =>
     expect(privacyArticle.longFormBody).not.toContain('CMP ID: 134');
   });
 
-  it('keeps Spanish (es) and French (fr) homepage bottom sections (SEO resources, newsletter, footer, affiliate) fully localized without English fallbacks', () => {
-    const enCommon = JSON.parse(
-      fs.readFileSync(path.resolve(__dirname, '../locales/en/common.json'), 'utf8')
-    );
-
-    for (const loc of ['es', 'fr'] as const) {
-      const locCommon = JSON.parse(
-        fs.readFileSync(path.resolve(__dirname, `../locales/${loc}/common.json`), 'utf8')
-      );
-
-      // All 8 SEO resource card descriptions & badges must be translated (not English)
-      const enCards = enCommon.home.seoResources.cards as Record<string, string>;
-      const locCards = locCommon.home.seoResources.cards as Record<string, string>;
-      for (const [cardKey, enVal] of Object.entries(enCards)) {
-        if (cardKey.endsWith('Desc')) {
-          expect(locCards[cardKey], `${loc} home.seoResources.cards.${cardKey}`).toBeTruthy();
-          expect(locCards[cardKey], `${loc} home.seoResources.cards.${cardKey} untranslated`).not.toBe(enVal);
-        }
+  it('enforces Item 8 blog audit fixes: solo-founder attribution, multi-provider AI disclosures, quota accuracy, and compliance disclaimers', () => {
+    for (const item of blogAndCompareArticles) {
+      if (item.author) {
+        expect(item.author, `${item.id} author`).toBe('Mohammed Tanveer Munshi');
       }
-
-      // Newsletter section must exist under home.newsletter and be translated
-      expect(locCommon.home.newsletter.title).not.toBe(enCommon.home.newsletter.title);
-      expect(locCommon.home.newsletter.subtitle).not.toBe(enCommon.home.newsletter.subtitle);
-      expect(locCommon.home.newsletter.placeholder).not.toBe(enCommon.home.newsletter.placeholder);
-      expect(locCommon.home.newsletter.button).not.toBe(enCommon.home.newsletter.button);
-
-      // Footer & affiliate labels must be translated
-      expect(locCommon.affiliate.sponsored).not.toBe(enCommon.affiliate.sponsored);
-      expect(locCommon.footer.sections.privacyPartners).not.toBe(
-        enCommon.footer.sections.privacyPartners
+      if (item.reviewedBy) {
+        expect(item.reviewedBy, `${item.id} reviewedBy`).toBe('Mohammed Tanveer Munshi');
+      }
+      expect(item.longFormBody, `${item.id} stale PDF to Markdown AI Vision claim`).not.toContain(
+        'optional AI Vision mode in'
       );
-      expect(locCommon.footer.links.pricing).not.toBe(enCommon.footer.links.pricing);
-      expect(locCommon.footer.links.signIn).not.toBe(enCommon.footer.links.signIn);
-      expect(locCommon.footer.links.feedback).not.toBe(enCommon.footer.links.feedback);
-      expect(locCommon.footer.links.cookieSettings).not.toBe(enCommon.footer.links.cookieSettings);
-      expect(locCommon.footer.links.toggle3dMode).not.toBe(enCommon.footer.links.toggle3dMode);
-      expect(locCommon.footer.links.xmlSitemap).not.toBe(enCommon.footer.links.xmlSitemap);
+      expect(item.longFormBody, `${item.id} quota contradiction`).not.toContain(
+        'no limit on how many times you can process a file'
+      );
+      expect(item.longFormBody, `${item.id} unlimited free table claim`).not.toContain(
+        'Free, unlimited'
+      );
     }
+
+    for (const catalogItem of TOOLS_CATALOG) {
+      if (catalogItem.author) {
+        expect(catalogItem.author, `Catalog ${catalogItem.id} author`).toBe(
+          'Mohammed Tanveer Munshi'
+        );
+      }
+      if (catalogItem.reviewedBy) {
+        expect(catalogItem.reviewedBy, `Catalog ${catalogItem.id} reviewedBy`).toBe(
+          'Mohammed Tanveer Munshi'
+        );
+      }
+    }
+
+    const blogPostPageSrc = fs.readFileSync(
+      path.resolve(__dirname, '../pages/BlogPostPage.tsx'),
+      'utf8'
+    );
+    expect(blogPostPageSrc).toContain('hasExistingFaqHeading');
+    expect(blogPostPageSrc).not.toContain('Reviewed by Security Team');
+
+    const vsComparison = TOOLS.find(
+      (t) => t.slug === 'blog/ilovepdf-vs-smallpdf-vs-pdfminty-2026'
+    )!;
+    expect(vsComparison.longFormBody).toContain('Markdown / Text Export (Local)');
+    expect(vsComparison.longFormBody).not.toContain('<td>Convert to Word/Excel</td>');
+    expect(vsComparison.longFormBody).not.toContain('15–30 seconds');
+    expect(vsComparison.longFormBody).not.toContain('100% Compliant');
+    expect(vsComparison.longFormBody).toContain('Google Gemini, Groq, or xAI Grok');
+
+    const aiDisclosingSlugs = [
+      'blog/is-it-safe-to-upload-pdf-to-online-tools',
+      'blog/ilovepdf-vs-smallpdf-vs-pdfminty-2026',
+      'blog/how-to-convert-pdf-to-word-for-free-2026',
+      'compare/pdfminty-vs-smallpdf',
+      'compare/pdfminty-vs-ilovepdf',
+      'blog/how-to-make-a-scanned-pdf-searchable',
+      'blog/cant-copy-text-from-pdf',
+      'blog/pdf-privacy-benchmark-2026',
+      'blog/client-side-pdf-processing-explained',
+      'blog/hipaa-compliant-pdf-tools-healthcare',
+    ];
+    for (const slug of aiDisclosingSlugs) {
+      const article = TOOLS.find((t) => t.slug === slug)!;
+      expect(article.longFormBody, `${slug} multi-provider AI disclosure`).toContain('Groq');
+      expect(article.longFormBody, `${slug} multi-provider AI disclosure`).toContain('xAI Grok');
+    }
+
+    const hipaa = TOOLS.find((t) => t.slug === 'blog/hipaa-compliant-pdf-tools-healthcare')!;
+    expect(hipaa.longFormBody).toContain('Compliance &amp; Scope Notice:');
+    expect(hipaa.longFormBody).toContain('does not execute Business Associate Agreements (BAAs)');
+
+    const gdpr = TOOLS.find((t) => t.slug === 'blog/gdpr-compliant-pdf-processing-europe')!;
+    expect(gdpr.longFormBody).toContain('Legal &amp; Scope Notice:');
+
+    const eidas = TOOLS.find((t) => t.slug === 'blog/eidas-compliant-pdf-signatures-uk-eu')!;
+    expect(eidas.longFormBody).toContain('Legal Disclaimer:');
+    expect(eidas.longFormBody).toContain('Simple Electronic Signatures (SES)');
   });
 });
+

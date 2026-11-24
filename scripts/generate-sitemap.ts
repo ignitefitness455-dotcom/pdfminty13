@@ -93,100 +93,79 @@ export interface SitemapGenerationResult {
   sitemaps: Record<string, string>;
 }
 
-export function generateSitemapXml(): SitemapGenerationResult {
-  const baseUrl = SITE_URL.replace(/\/$/, '');
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD at build time
+const DEFAULT_TOOL_LASTMOD = '2026-10-18';
+const DEFAULT_STATIC_PAGE_LASTMOD = '2026-10-18';
 
-  // 1. Static Core Pages (sitemap-pages.xml)
-  const staticRoutes: Array<{
-    path: string;
-    priority: string;
-    changefreq: string;
-    lastmod?: string;
-    isI18n?: boolean;
-    title?: string;
-    caption?: string;
-  }> = [
-    { path: '/', priority: '1.0', changefreq: 'daily', isI18n: true, lastmod: today },
-    { path: '/blog/', priority: '0.9', changefreq: 'daily', lastmod: today },
-    { path: '/adobe-acrobat-alternative/', priority: '0.8', changefreq: 'weekly', lastmod: '2026-10-18' },
-    {
-      path: '/pricing/',
-      priority: '0.7',
-      changefreq: 'monthly',
-      lastmod: today,
-      title: 'Pricing Plans — $2.49/mo Pro & $50 Lifetime Deal | PDFMinty',
-      caption:
-        'Simple, transparent USD pricing for PDFMinty. Free forever core tier, $2.49/month Pro plan, and $50 one-time Lifetime Pro access.',
-    },
-    { path: '/about-us/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
-    { path: '/contact/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
-    { path: '/privacy-policy/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
-    { path: '/terms-of-service/', priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-18' },
-  ];
+// Explicit content-revision dates for tools and static routes whose canonical metadata
+// lives outside seo-data.ts dateModified (never stamped with build-time `new Date()`).
+const EXPLICIT_ROUTE_LASTMOD: Record<string, string> = {
+  '/': '2026-11-23',
+  '/pricing/': '2026-11-23',
+  '/privacy-policy/': '2026-11-23',
+  '/terms-of-service/': '2026-11-23',
+  '/adobe-acrobat-alternative/': '2026-10-18',
+  '/about-us/': '2026-10-18',
+  '/contact/': '2026-10-18',
+};
 
-  const homepageHreflangs = getHreflangs('', baseUrl);
+const EXPLICIT_TOOL_LASTMOD: Record<string, string> = {
+  'merge-pdf': '2026-11-23',
+  'split-pdf': '2026-11-23',
+  'compress-pdf': '2026-11-23',
+  'sign-pdf': '2026-11-23',
+  'protect-pdf': '2026-11-23',
+  'sanitize-pdf': '2026-11-23',
+  'pdf-to-markdown': '2026-11-23',
+  'ai-analyze-pdf': '2026-11-23',
+  'ocr-pdf': '2026-11-23',
+};
 
-  const pageEntries: SitemapUrlEntry[] = [];
-  
-  for (const route of staticRoutes) {
-    const slashedPath = route.path === '' ? '/' : (route.path.endsWith('/') ? route.path : `${route.path}/`);
-    const loc = `${baseUrl}${slashedPath.startsWith('/') ? slashedPath : `/${slashedPath}`}`;
-    const cleanRouteSlug = slashedPath.replace(/^\//, '').replace(/\/$/, '');
-    const matchedTool = (TOOLS as ToolSEOInfo[]).find(
-      (t) => t.slug.replace(/^\//, '').replace(/\/$/, '') === cleanRouteSlug
-    );
-    
-    pageEntries.push({
-      loc,
-      lastmod: matchedTool?.dateModified || route.lastmod,
-      changefreq: route.changefreq,
-      priority: route.priority,
-      imageLoc: `${baseUrl}/og-image.png`,
-      title: route.title || matchedTool?.metaTitle || 'PdfMinty — Free Privacy-First PDF Toolkit',
-      caption:
-        route.caption ||
-        matchedTool?.shortDescription ||
-        'Free in-browser PDF utilities with zero server uploads',
-      hreflangs: route.isI18n ? homepageHreflangs : undefined,
-    });
-
-    // Add localized versions of homepage to sitemap-pages.xml
-    if (route.isI18n) {
-      for (const locLang of SUPPORTED_LOCALES) {
-        if (locLang !== DEFAULT_LOCALE) {
-          pageEntries.push({
-            loc: `${baseUrl}/${locLang}/`,
-            lastmod: route.lastmod,
-            changefreq: route.changefreq,
-            priority: route.priority,
-            imageLoc: `${baseUrl}/og-image.png`,
-            title: `PdfMinty [${locLang.toUpperCase()}] — Free Privacy-First PDF Toolkit`,
-            caption: 'Free in-browser PDF utilities with zero server uploads',
-            hreflangs: homepageHreflangs,
-          });
-        }
-      }
+function getMaxLastmod(entries: SitemapUrlEntry[], fallback: string): string {
+  let maxDate = '';
+  for (const entry of entries) {
+    if (entry.lastmod && /^\d{4}-\d{2}-\d{2}$/.test(entry.lastmod) && entry.lastmod > maxDate) {
+      maxDate = entry.lastmod;
     }
   }
+  return maxDate || fallback;
+}
 
-  // 2. Tools and localized tools (sitemap-tools.xml)
-  // 3. Blog articles and comparison guides (sitemap-blog.xml)
+export function generateSitemapXml(): SitemapGenerationResult {
+  const baseUrl = SITE_URL.replace(/\/$/, '');
+
+  // 1. Tools and localized tools (sitemap-tools.xml)
+  // 2. Blog articles and comparison guides (sitemap-blog.xml)
+  // Built first so /blog/ and master sitemap.xml can derive truthful max lastmod dates.
   const toolEntries: SitemapUrlEntry[] = [];
   const blogEntries: SitemapUrlEntry[] = [];
 
-  const addedPaths = new Set<string>();
-  staticRoutes.forEach((r) => {
-    const clean = r.path.replace(/^\//, '').replace(/\/$/, '');
-    addedPaths.add(clean ? `/${clean}/` : '/');
-  });
+  const staticRoutePaths = new Set<string>([
+    '/',
+    '/blog/',
+    '/adobe-acrobat-alternative/',
+    '/pricing/',
+    '/about-us/',
+    '/contact/',
+    '/privacy-policy/',
+    '/terms-of-service/',
+  ]);
+
+  const addedPaths = new Set<string>(staticRoutePaths);
 
   for (const item of TOOLS as ToolSEOInfo[]) {
     const rawSlug = item.slug.startsWith('/') ? item.slug : `/${item.slug}`;
     const cleanSlug = item.slug.replace(/^\//, '').replace(/\/$/, '');
 
     // Skip static pages handled in sitemap-pages
-    const isStaticPage = ['about-us', 'contact', 'privacy-policy', 'terms-of-service', 'blog', 'adobe-acrobat-alternative', 'pricing'].includes(cleanSlug);
+    const isStaticPage = [
+      'about-us',
+      'contact',
+      'privacy-policy',
+      'terms-of-service',
+      'blog',
+      'adobe-acrobat-alternative',
+      'pricing',
+    ].includes(cleanSlug);
     if (isStaticPage) {
       continue;
     }
@@ -198,16 +177,22 @@ export function generateSitemapXml(): SitemapGenerationResult {
 
     const slashedSlug = rawSlug.endsWith('/') ? rawSlug : `${rawSlug}/`;
     const loc = `${baseUrl}${slashedSlug}`;
-    const isBlogOrCompare = cleanSlug.startsWith('blog/') || cleanSlug.startsWith('compare/') || item.category === 'blog' || item.category === 'compare';
+    const isBlogOrCompare =
+      cleanSlug.startsWith('blog/') ||
+      cleanSlug.startsWith('compare/') ||
+      item.category === 'blog' ||
+      item.category === 'compare';
 
     const priority = isBlogOrCompare ? '0.8' : '0.9';
     const changefreq = 'weekly';
-    // For blog and comparison articles, strictly use the article's actual content modification date (or published date), NEVER a build-time timestamp
+    // Strictly use actual content modification/publication dates — NEVER build-time `new Date()`
     const lastmod = isBlogOrCompare
-      ? (item.dateModified || item.datePublished)
-      : (item.dateModified || item.datePublished || today);
+      ? item.dateModified || item.datePublished
+      : item.dateModified || item.datePublished || EXPLICIT_TOOL_LASTMOD[cleanSlug] || DEFAULT_TOOL_LASTMOD;
     const ogImage = item.ogImage
-      ? (item.ogImage.startsWith('http') ? item.ogImage : `${baseUrl}${item.ogImage.startsWith('/') ? item.ogImage : `/${item.ogImage}`}`)
+      ? item.ogImage.startsWith('http')
+        ? item.ogImage
+        : `${baseUrl}${item.ogImage.startsWith('/') ? item.ogImage : `/${item.ogImage}`}`
       : `${baseUrl}/og-image.png`;
 
     const toolHreflangs = isI18nToolSlug(cleanSlug) ? getHreflangs(cleanSlug, baseUrl) : undefined;
@@ -302,15 +287,135 @@ export function generateSitemapXml(): SitemapGenerationResult {
     }
   }
 
+  const latestBlogLastmod = getMaxLastmod(blogEntries, DEFAULT_STATIC_PAGE_LASTMOD);
+
+  // 3. Static Core Pages (sitemap-pages.xml)
+  const staticRoutes: Array<{
+    path: string;
+    priority: string;
+    changefreq: string;
+    lastmod?: string;
+    isI18n?: boolean;
+    title?: string;
+    caption?: string;
+  }> = [
+    {
+      path: '/',
+      priority: '1.0',
+      changefreq: 'daily',
+      isI18n: true,
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/'],
+    },
+    { path: '/blog/', priority: '0.9', changefreq: 'daily', lastmod: latestBlogLastmod },
+    {
+      path: '/adobe-acrobat-alternative/',
+      priority: '0.8',
+      changefreq: 'weekly',
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/adobe-acrobat-alternative/'],
+    },
+    {
+      path: '/pricing/',
+      priority: '0.7',
+      changefreq: 'monthly',
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/pricing/'],
+      title: 'Pricing Plans — $2.49/mo Pro & $50 Lifetime Deal | PDFMinty',
+      caption:
+        'Simple, transparent USD pricing for PDFMinty. Free forever core tier, $2.49/month Pro plan, and $50 one-time Lifetime Pro access.',
+    },
+    {
+      path: '/about-us/',
+      priority: '0.5',
+      changefreq: 'monthly',
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/about-us/'],
+    },
+    {
+      path: '/contact/',
+      priority: '0.5',
+      changefreq: 'monthly',
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/contact/'],
+    },
+    {
+      path: '/privacy-policy/',
+      priority: '0.5',
+      changefreq: 'monthly',
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/privacy-policy/'],
+    },
+    {
+      path: '/terms-of-service/',
+      priority: '0.5',
+      changefreq: 'monthly',
+      lastmod: EXPLICIT_ROUTE_LASTMOD['/terms-of-service/'],
+    },
+  ];
+
+  const homepageHreflangs = getHreflangs('', baseUrl);
+  const pageEntries: SitemapUrlEntry[] = [];
+
+  for (const route of staticRoutes) {
+    const slashedPath =
+      route.path === '' ? '/' : route.path.endsWith('/') ? route.path : `${route.path}/`;
+    const loc = `${baseUrl}${slashedPath.startsWith('/') ? slashedPath : `/${slashedPath}`}`;
+    const cleanRouteSlug = slashedPath.replace(/^\//, '').replace(/\/$/, '');
+    const matchedTool = (TOOLS as ToolSEOInfo[]).find(
+      (t) => t.slug.replace(/^\//, '').replace(/\/$/, '') === cleanRouteSlug
+    );
+    const resolvedLastmod =
+      matchedTool?.dateModified ||
+      matchedTool?.datePublished ||
+      route.lastmod ||
+      DEFAULT_STATIC_PAGE_LASTMOD;
+
+    pageEntries.push({
+      loc,
+      lastmod: resolvedLastmod,
+      changefreq: route.changefreq,
+      priority: route.priority,
+      imageLoc: `${baseUrl}/og-image.png`,
+      title: route.title || matchedTool?.metaTitle || 'PdfMinty — Free Privacy-First PDF Toolkit',
+      caption:
+        route.caption ||
+        matchedTool?.shortDescription ||
+        'Free in-browser PDF utilities with zero server uploads',
+      hreflangs: route.isI18n ? homepageHreflangs : undefined,
+    });
+
+    // Add localized versions of homepage to sitemap-pages.xml
+    if (route.isI18n) {
+      for (const locLang of SUPPORTED_LOCALES) {
+        if (locLang !== DEFAULT_LOCALE) {
+          pageEntries.push({
+            loc: `${baseUrl}/${locLang}/`,
+            lastmod: resolvedLastmod,
+            changefreq: route.changefreq,
+            priority: route.priority,
+            imageLoc: `${baseUrl}/og-image.png`,
+            title: `PdfMinty [${locLang.toUpperCase()}] — Free Privacy-First PDF Toolkit`,
+            caption: 'Free in-browser PDF utilities with zero server uploads',
+            hreflangs: homepageHreflangs,
+          });
+        }
+      }
+    }
+  }
+
   const sitemapPagesXml = buildUrlsetXml(pageEntries);
   const sitemapToolsXml = buildUrlsetXml(toolEntries);
   const sitemapBlogXml = buildUrlsetXml(blogEntries);
 
-  // Master Sitemap Index
+  // Master Sitemap Index: derive each child sitemap's lastmod from the real max entry lastmod
   const sitemapIndexXml = buildSitemapIndexXml([
-    { loc: `${baseUrl}/sitemap-tools.xml`, lastmod: today },
-    { loc: `${baseUrl}/sitemap-blog.xml`, lastmod: today },
-    { loc: `${baseUrl}/sitemap-pages.xml`, lastmod: today },
+    {
+      loc: `${baseUrl}/sitemap-tools.xml`,
+      lastmod: getMaxLastmod(toolEntries, DEFAULT_TOOL_LASTMOD),
+    },
+    {
+      loc: `${baseUrl}/sitemap-blog.xml`,
+      lastmod: latestBlogLastmod,
+    },
+    {
+      loc: `${baseUrl}/sitemap-pages.xml`,
+      lastmod: getMaxLastmod(pageEntries, DEFAULT_STATIC_PAGE_LASTMOD),
+    },
   ]);
 
   const sitemaps: Record<string, string> = {

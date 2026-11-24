@@ -267,6 +267,19 @@ html.dark header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
+/* Avoid full-screen mobile compositor readbacks from sticky header blur on touch/small viewports */
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+  header {
+    backdrop-filter: none !important;
+    background-color: rgba(244, 250, 247, 0.96) !important;
+  }
+
+  html.dark header {
+    backdrop-filter: none !important;
+    background-color: rgba(11, 15, 25, 0.96) !important;
+  }
+}
+
 /* Navigation items and utilities in dark mode support */
 html.dark .text-on-surface-variant {
   color: #94a3b8 !important;
@@ -894,7 +907,14 @@ html.dark .pdf-card-depth-shadow {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .pdf-tool-card-3d-scene {
+    perspective: none !important;
+    transform-style: flat !important;
+  }
+
   .pdf-tool-card-3d,
+  .pdf-card-3d-body,
+  .pdf-card-3d-header,
   .pdf-layer-icon,
   .pdf-layer-badge,
   .pdf-layer-title,
@@ -902,10 +922,20 @@ html.dark .pdf-card-depth-shadow {
   .pdf-layer-cta,
   .pdf-card-depth-shadow {
     transform: none !important;
+    transform-style: flat !important;
+    will-change: auto;
   }
 }
 
+[data-3d-disabled='true'] .pdf-tool-card-3d-scene,
+[data-performance-mode='true'] .pdf-tool-card-3d-scene {
+  perspective: none !important;
+  transform-style: flat !important;
+}
+
 [data-3d-disabled='true'] .pdf-tool-card-3d,
+[data-3d-disabled='true'] .pdf-card-3d-body,
+[data-3d-disabled='true'] .pdf-card-3d-header,
 [data-3d-disabled='true'] .pdf-layer-icon,
 [data-3d-disabled='true'] .pdf-layer-badge,
 [data-3d-disabled='true'] .pdf-layer-title,
@@ -914,6 +944,8 @@ html.dark .pdf-card-depth-shadow {
 [data-3d-disabled='true'] .pdf-card-depth-shadow,
 [data-performance-mode='true'].pdf-tool-card-3d,
 [data-performance-mode='true'] .pdf-tool-card-3d,
+[data-performance-mode='true'] .pdf-card-3d-body,
+[data-performance-mode='true'] .pdf-card-3d-header,
 [data-performance-mode='true'] .pdf-layer-icon,
 [data-performance-mode='true'] .pdf-layer-badge,
 [data-performance-mode='true'] .pdf-layer-title,
@@ -921,6 +953,7 @@ html.dark .pdf-card-depth-shadow {
 [data-performance-mode='true'] .pdf-layer-cta,
 [data-performance-mode='true'] .pdf-card-depth-shadow {
   transform: none !important;
+  transform-style: flat !important;
   will-change: auto;
 }
 
@@ -930,5 +963,6 @@ html.dark .pdf-card-depth-shadow {
 [data-performance-mode='true'] .pdf-card-holographic-shimmer,
 [data-performance-mode='true'] .pdf-card-spotlight-glow,
 [data-performance-mode='true'] .pdf-card-depth-shadow {
+  display: none !important;
   opacity: 0 !important;
 }

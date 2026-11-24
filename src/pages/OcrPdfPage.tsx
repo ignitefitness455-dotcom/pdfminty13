@@ -657,10 +657,10 @@ export const OcrPdfPage: React.FC = () => {
                   </div>
                   <p className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
                     {isPro
-                      ? `Selected pages (up to ${maxBatchPages}) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.`
+                      ? `Selected pages (up to ${maxBatchPages}) are converted into images and transmitted securely via HTTPS proxy (/api/gemini-proxy) to our configured cloud AI Vision providers (Google Gemini, Groq, and/or xAI Grok) solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.`
                       : t('ocrPdf.consentDesc', {
                           defaultValue:
-                            'Selected pages (up to 5) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.',
+                            'Selected pages (up to 5 on Guest/Free tiers; up to 15 on Pro) are converted into images and transmitted securely via HTTPS proxy (/api/gemini-proxy) to our configured cloud AI Vision providers (Google Gemini, Groq, and/or xAI Grok) solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.',
                         })}
                   </p>
                   <label className="flex items-start gap-2 pt-1 cursor-pointer select-none">
@@ -673,7 +673,7 @@ export const OcrPdfPage: React.FC = () => {
                     <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
                       {t('ocrPdf.consentCheckbox', {
                         defaultValue:
-                          'I understand and consent to transmitting selected page images to Google Gemini AI Vision for OCR transcription.',
+                          'I understand and consent to transmitting selected page images to our configured cloud AI providers (Google Gemini, Groq, and/or xAI Grok) for OCR transcription.',
                       })}
                     </span>
                   </label>

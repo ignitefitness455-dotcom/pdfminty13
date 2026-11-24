@@ -599,7 +599,7 @@ ${footerHtml}
         "featureList": [
           "100% client-side processing for our 22 standard PDF tools",
           "Zero file uploads for standard browser PDF operations",
-          "Opt-in AI Analyze and OCR PDF tools only send extracted text or page images to Google Gemini after explicit user consent",
+          "Opt-in AI Analyze and OCR PDF tools only send extracted text or page images to configured AI providers (Google Gemini, Groq, or xAI Grok) after explicit user consent",
           "Free tier available (5 tasks/day for guests up to 100MB, 10 tasks/day for free accounts up to 150MB)",
           "No mandatory registration required"
         ]
@@ -976,7 +976,13 @@ ${relatedTools.map((t: ToolSEOInfo) => `  <li><a href="/${t.slug}/">${t.name}</a
 </section>`);
       }
 
-      if (tool.howTo && tool.howTo.steps.length > 0 && !existingBody.includes(tool.howTo.steps[0].slice(0, 32))) {
+      const hasExistingHowToHeading = /<h2[^>]*>[\s\S]*?(?:step-by-step|how to\b)/i.test(existingBody);
+      if (
+        tool.howTo &&
+        tool.howTo.steps.length > 0 &&
+        !hasExistingHowToHeading &&
+        !existingBody.includes(tool.howTo.steps[0].slice(0, 32))
+      ) {
         blocks.push(`
 <section aria-label="Step-by-Step Guide">
   <h2>${tool.howTo.name}</h2>
@@ -1011,9 +1017,13 @@ ${tool.howTo.steps.map((step, idx) => `    <li id="step${idx + 1}"><strong>Step 
       }
 
       if (tool.privacyNote && !existingBody.includes(tool.privacyNote.slice(0, 32))) {
+        const isOptInAiTool = tool.slug === 'ai-analyze-pdf' || tool.slug === 'ocr-pdf';
+        const privacyHeading = isOptInAiTool
+          ? 'Opt-In Cloud AI Privacy &amp; Data Handling'
+          : '100% Privacy-First Architecture';
         blocks.push(`
 <section aria-label="Privacy and Data Security">
-  <h2>100% Privacy-First Architecture</h2>
+  <h2>${privacyHeading}</h2>
   <p>${tool.privacyNote}</p>
 </section>`);
       }
@@ -1030,7 +1040,11 @@ ${tool.troubleshooting.map((ts) => `    <div>\n      <h3>${ts.issue}</h3>\n     
 
       if (tool.faqs && tool.faqs.length > 0) {
         const firstQuestionProbe = tool.faqs[0].q.slice(0, 28).toLowerCase();
-        if (!existingBody.toLowerCase().includes(firstQuestionProbe)) {
+        const hasExistingFaqHeading =
+          /<h2[^>]*>\s*(?:\d+\.\s*)?(?:Frequently Asked(?: Technical)? Questions|FAQ)\b/i.test(
+            existingBody
+          );
+        if (!hasExistingFaqHeading && !existingBody.toLowerCase().includes(firstQuestionProbe)) {
           blocks.push(`
 <section aria-label="Frequently Asked Questions">
   <h2>Frequently Asked Questions About ${tool.name}</h2>
@@ -1802,22 +1816,20 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 
   let blogHtml = optimizedBase.replace("</head>", `${blogHeadMeta}\n</head>`);
 
-  const blogPreRenderedContent = `
-    <div id="root">
-      <main class="max-w-5xl mx-auto py-12 px-6 font-sans">
-        <header class="text-center max-w-3xl mx-auto mb-12">
-          <h1 class="text-3xl font-black mb-4">PdfMinty Knowledge Hub</h1>
-          <p class="text-base text-slate-600 dark:text-slate-300">
-            Free, privacy-first guides, tutorials, and deep-dives on PDF security, formatting, and offline workflows.
-          </p>
-        </header>
+  const blogPreRenderedContent = wrapInPrerenderedShell(`
+        <div class="max-w-5xl mx-auto py-12 px-6 font-sans">
+          <div class="text-center max-w-3xl mx-auto mb-12">
+            <h1 class="text-3xl font-black mb-4">PdfMinty Knowledge Hub</h1>
+            <p class="text-base text-slate-600 dark:text-slate-300">
+              Free, privacy-first guides, tutorials, and deep-dives on PDF security, formatting, and offline workflows.
+            </p>
+          </div>
 
-        <section class="grid gap-6 md:grid-cols-2">
-          ${articlesListHtml}
-        </section>
-      </main>
-    </div>
-  `;
+          <section class="grid gap-6 md:grid-cols-2">
+            ${articlesListHtml}
+          </section>
+        </div>
+  `, DEFAULT_LOCALE);
 
   blogHtml = blogHtml.replace(/<div\s+id="root"\s*><\/div>/i, blogPreRenderedContent);
   blogHtml = blogHtml.replace(/<div\s+id="root"\s*>\s*<\/div>/i, blogPreRenderedContent);
@@ -1846,11 +1858,11 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
     },
     {
       q: "What is the difference between Monthly Pro ($2.49/mo) and the Lifetime Pro Deal ($50)?",
-      a: "Both Pro Monthly ($2.49 per month) and Lifetime Pro ($50 one-time payment) unlock identical premium capabilities: unlimited daily PDF tasks, up to 500 MB per file (1,000 MB batch limit), priority Google Gemini AI document analysis and batch OCR quotas, and commercial usage rights. Monthly Pro bills recurringly until canceled, whereas Lifetime Pro is a single one-time payment for permanent account access."
+      a: "Both Pro Monthly ($2.49 per month) and Lifetime Pro ($50 one-time payment) unlock identical premium capabilities: unlimited daily PDF tasks, up to 500 MB per file (1,000 MB batch limit), priority cloud AI document analysis and batch OCR quotas (powered via encrypted proxy by Google Gemini, Groq, and/or xAI Grok), and commercial usage rights. Monthly Pro bills recurringly until canceled, whereas Lifetime Pro is a single one-time payment for permanent account access."
     },
     {
       q: "Are my PDF files uploaded to servers on the Free or Pro plans?",
-      a: "For all 22 standard PDF tools (merge, split, compress, protect, unlock, sign, rotate, watermark, sanitize, grayscale, and page organization), your files are processed 100% locally in your browser using WebAssembly on every tier—they never touch our servers. The only exceptions are our 2 opt-in Cloud AI tools (AI Analyze PDF and OCR PDF), which require your explicit consent before transmitting extracted text or rendered page images to Google Gemini."
+      a: "For all 22 standard PDF tools (merge, split, compress, protect, unlock, sign, rotate, watermark, sanitize, grayscale, PDF to Markdown, and page organization), your files are processed 100% locally in your browser using WebAssembly on every tier—they never touch our servers. The only exceptions are our 2 opt-in Cloud AI tools (AI Analyze PDF and OCR PDF), which require your explicit consent before transmitting extracted text or rendered page images via encrypted proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok)."
     },
     {
       q: "Can I cancel my $2.49/month Pro subscription at any time?",
@@ -2023,7 +2035,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
 
           <section aria-label="Privacy Architecture Guarantee">
             <h2>How Your Privacy Is Protected Across Every Plan</h2>
-            <p>Unlike cloud-heavy PDF suites that upload every file to remote servers, PDFMinty executes all 22 standard PDF tools directly inside your device's browser memory using WebAssembly (<code>@cantoo/pdf-lib</code> and <code>pdfjs-dist</code>). Whether you use the Free tier or Lifetime Pro, your tax returns, contracts, medical records, and financial statements never leave your computer or phone during standard operations. Our 2 opt-in AI tools (<a href="/ai-analyze-pdf/">AI Analyze PDF</a> and <a href="/ocr-pdf/">OCR PDF</a>) are strictly separated and require you to check an explicit consent box before sending extracted text or page images to Google Gemini.</p>
+            <p>Unlike cloud-heavy PDF suites that upload every file to remote servers, PDFMinty executes all 22 standard PDF tools (including PDF to Markdown) directly inside your device's browser memory using WebAssembly (<code>@cantoo/pdf-lib</code> and <code>pdfjs-dist</code>). Whether you use the Free tier or Lifetime Pro, your tax returns, contracts, medical records, and financial statements never leave your computer or phone during standard operations. Our 2 opt-in AI tools (<a href="/ai-analyze-pdf/">AI Analyze PDF</a> and <a href="/ocr-pdf/">OCR PDF</a>) are strictly separated and require you to check an explicit consent box before sending extracted text or page images via encrypted proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok).</p>
           </section>
 
           <section aria-label="Pricing Frequently Asked Questions">
@@ -2085,7 +2097,9 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   <meta name="description" content="${spaRoute.desc}">
   <meta name="robots" content="noindex, nofollow">
   `;
-    const spaHtml = optimizedBase.replace("</head>", `${spaHead}\n</head>`);
+    const spaHtml = optimizedBase
+      .replace(/<meta\s+name="google-adsense-account"[^>]*>\s*/gi, "")
+      .replace("</head>", `${spaHead}\n</head>`);
     fs.writeFileSync(path.join(spaFolder, "index.html"), spaHtml, "utf8");
     logger.info(`Generated SPA entry HTML for /${spaRoute.slug}/ at dist/${spaRoute.slug}/index.html`);
   }
@@ -2104,7 +2118,7 @@ ${hreflangMarkup ? `${hreflangMarkup}\n` : ''}  <meta property="og:type" content
   const homepageContent = `
   <main class="prose max-w-6xl mx-auto py-8 px-4 sm:px-6 dark:prose-invert font-sans" id="static-pre-render-container">
     <h1 id="homepage-main-h1" class="text-[2rem] sm:text-5xl lg:text-[3.5rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-5 font-display">${HOMEPAGE_H1}</h1>
-    <p class="text-sm sm:text-base leading-[1.55] sm:leading-[1.7]">PDFMinty is a free, privacy-first PDF toolkit with ${toolsCount} powerful tools. Our 22 standard PDF tools run 100% locally in your browser so your files never leave your device — no server uploads and no mandatory sign-up (plus 2 opt-in AI Analyze and OCR PDF tools powered by Google Gemini only with your explicit consent). Merge, split, protect, convert, and edit PDFs with complete confidentiality.</p>
+    <p class="text-sm sm:text-base leading-[1.55] sm:leading-[1.7]">PDFMinty is a free, privacy-first PDF toolkit with ${toolsCount} powerful tools. Our 22 standard PDF tools (including PDF to Markdown) run 100% locally in your browser so your files never leave your device — no server uploads and no mandatory sign-up (plus 2 opt-in AI Analyze and OCR PDF tools routed via encrypted proxy to Google Gemini, Groq, and/or xAI Grok only with your explicit consent). Merge, split, protect, convert, and edit PDFs with complete confidentiality.</p>
  
     <h2 id="all-tools">All PDF Tools</h2>
     <ul>
@@ -2122,7 +2136,7 @@ ${toolsListHtml}
     </ul>
  
     <h2>How PDFMinty Protects Your Privacy</h2>
-    <p>All 22 standard PDF operations in PDFMinty happen client-side using JavaScript and WebAssembly. When you select a file, it is loaded into your browser's memory, processed locally, and the result is generated on your device without transmitting the file over the network. The only exceptions are our 2 opt-in Cloud AI tools (AI Analyze PDF and OCR PDF), which require your explicit consent before sending extracted text or rendered page images to Google Gemini.</p>
+    <p>All 22 standard PDF operations in PDFMinty (including PDF to Markdown) happen client-side using JavaScript and WebAssembly. When you select a file, it is loaded into your browser's memory, processed locally, and the result is generated on your device without transmitting the file over the network. The only exceptions are our 2 opt-in Cloud AI tools (AI Analyze PDF and OCR PDF), which require your explicit consent before sending extracted text or rendered page images via encrypted proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok).</p>
  
     <p>Our privacy-first architecture makes PDFMinty ideal for processing sensitive documents like tax returns, medical records, financial statements, legal contracts, and any file containing personal information.</p>
  
@@ -2131,7 +2145,7 @@ ${toolsListHtml}
     <p>Yes — PDFMinty offers a free tier across all ${toolsCount} tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Pro ($2.49/month) and Lifetime ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and higher AI/OCR quotas.</p>
  
     <h3>Are my files uploaded to your server?</h3>
-    <p>For our 22 standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box.</p>
+    <p>For our 22 standard PDF tools (including PDF to Markdown), no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images via encrypted proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok) after you explicitly check a consent box.</p>
  
     <h3>What is the maximum file size?</h3>
     <p>PDFMinty handles individual PDF files up to 100MB for guests (150MB for free accounts, 500MB on Pro) and combined batch operations up to 150MB on the free tier (1,000MB on Pro). Performance also depends on your device's available memory.</p>
@@ -2170,7 +2184,7 @@ ${toolsListHtml}
       {
         "@type": "Question",
         "name": "Are my files uploaded to your server?",
-        "acceptedAnswer": {"@type": "Answer", "text": "For our 22 standard PDF tools, no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images to Google Gemini after you explicitly check a consent box."}
+        "acceptedAnswer": {"@type": "Answer", "text": "For our 22 standard PDF tools (including PDF to Markdown), no. Files are processed entirely in your browser using client-side JavaScript and WebAssembly without leaving your device. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which only send extracted text or rendered page images via encrypted proxy to our configured AI providers (Google Gemini, Groq, and/or xAI Grok) after you explicitly check a consent box."}
       },
       {
         "@type": "Question",
@@ -2268,10 +2282,12 @@ ${homepageHreflangs}
   // 1. Inject Head meta and FAQ schema before </head>
   homepageHtml = homepageHtml.replace("</head>", `${homepageHead}\n</head>`);
 
-  // 2. Inject pre-rendered content into #root
+  // 2. Inject pre-rendered content with semantic header & footer into #root
   const homepageRootContent = `
     <div id="root">
+${buildStaticHeader(DEFAULT_LOCALE)}
       ${homepageContent}
+${buildStaticFooter(DEFAULT_LOCALE)}
     </div>
   `;
   homepageHtml = homepageHtml.replace(/<div\s+id="root"[\s\S]*?<\/div>/i, homepageRootContent.trim());
@@ -2818,7 +2834,9 @@ ${hreflangLinks}
 
     const euHomepageRootContent = `
     <div id="root">
+${buildStaticHeader(code)}
       ${euHomepageContent}
+${buildStaticFooter(code)}
     </div>
     `;
     euHomepageHtml = euHomepageHtml.replace(/<div\s+id="root"[\s\S]*?<\/div>/i, euHomepageRootContent.trim());
@@ -2846,6 +2864,7 @@ ${hreflangLinks}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="refresh" content="0;url=/${target}/">
   <meta name="robots" content="noindex, follow">
   <meta name="description" content="Redirecting to ${title}">

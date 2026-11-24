@@ -501,7 +501,7 @@ export const AiAnalyzePage: React.FC = () => {
       const initialAssistantMessage: ChatMessage = {
         id: 'msg-welcome',
         role: 'assistant',
-        content: `👋 **Welcome! I've loaded "${file.name}"** (${Math.min(pdf.numPages, maxAllowedPages)} of ${pdf.numPages} pages, ~${estWords.toLocaleString()} words indexed).\n\nI am powered by **Google Gemini Flash**${isPro ? ' (**Pro Priority Mode: Up to 50 pages/PDF & 50 daily AI queries**)' : ''}. You can ask me any specific question about your document, or click one of the quick innovation buttons below to get started!`,
+        content: `👋 **Welcome! I've loaded "${file.name}"** (${Math.min(pdf.numPages, maxAllowedPages)} of ${pdf.numPages} pages, ~${estWords.toLocaleString()} words indexed).\n\nI am powered by our **Cloud AI Engine (Google Gemini, Groq, and/or xAI Grok)**${isPro ? ' (**Pro Priority Mode: Up to 50 pages/PDF & 50 daily AI queries**)' : ''}. You can ask me any specific question about your document, or click one of the quick innovation buttons below to get started!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages([initialAssistantMessage]);
@@ -540,7 +540,7 @@ export const AiAnalyzePage: React.FC = () => {
   };
 
   /**
-   * Submits a query to the AI proxy (Gemini 3.8 Flash).
+   * Submits a query to the encrypted AI proxy (Google Gemini, Groq, and/or xAI Grok).
    * Supports multi-turn chat and preset innovation prompts.
    */
   const submitChat = async (userPrompt: string, presetTitle?: string) => {
@@ -552,7 +552,7 @@ export const AiAnalyzePage: React.FC = () => {
     }
     if (!hasConsented) {
       setError(
-        'Please acknowledge the Cloud AI consent checkbox before sending document text to Google Gemini.'
+        'Please acknowledge the Cloud AI consent checkbox before sending document text to our configured cloud AI providers (Google Gemini, Groq, and/or xAI Grok).'
       );
       return;
     }
@@ -813,7 +813,7 @@ export const AiAnalyzePage: React.FC = () => {
                 Chat with PDF & AI Smart Summarizer
               </h2>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                Gemini Flash
+                Gemini • Groq • xAI
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -871,8 +871,8 @@ export const AiAnalyzePage: React.FC = () => {
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
               Summarize complex contracts, extract financial tables into Markdown, and ask deep
-              questions across up to 50 pages per PDF with 500MB file-size limits using Google
-              Gemini 2.5 Flash.
+              questions across up to 50 pages per PDF with 500MB file-size limits using our cloud
+              AI inference proxy (Google Gemini, Groq, and xAI Grok).
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
@@ -1075,8 +1075,10 @@ export const AiAnalyzePage: React.FC = () => {
             </div>
             <p>
               Your PDF is processed 100% locally in your browser for text indexing. When you ask a
-              question, only extracted text is encrypted and transmitted directly to Google Gemini
-              to craft the answer. No documents are permanently stored on our servers.
+              question, only extracted text is encrypted and transmitted via our stateless HTTPS
+              proxy (<code>/api/gemini-proxy</code>) to our configured cloud AI providers (Google
+              Gemini, Groq, and/or xAI Grok) to craft the answer. No documents are stored on our
+              servers.
             </p>
             <label className="flex items-start space-x-2 pt-1 cursor-pointer">
               <input
@@ -1086,7 +1088,8 @@ export const AiAnalyzePage: React.FC = () => {
                 className="mt-0.5 accent-emerald-600 rounded"
               />
               <span className="text-slate-700 dark:text-slate-300 font-medium text-[11px]">
-                I understand and consent to sending selected text to Google Gemini for AI analysis.
+                I understand and consent to sending selected text to our configured cloud AI
+                providers (Google Gemini, Groq, and/or xAI Grok) for AI analysis.
               </span>
             </label>
           </div>
@@ -1219,7 +1222,7 @@ export const AiAnalyzePage: React.FC = () => {
                       {/* Message meta & preset badge */}
                       <div className="flex items-center justify-between text-[11px] opacity-75 pb-1 border-b border-black/10 dark:border-white/10">
                         <span className="font-semibold">
-                          {msg.role === 'user' ? 'You' : 'Gemini 3.8 Flash'}
+                          {msg.role === 'user' ? 'You' : 'PdfMinty Cloud AI'}
                           {msg.presetTitle && ` • ${msg.presetTitle}`}
                         </span>
                         <span>{msg.timestamp}</span>
@@ -1302,7 +1305,7 @@ export const AiAnalyzePage: React.FC = () => {
                   <div className="bg-white dark:bg-slate-850 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 rounded-tl-xs space-y-2 shadow-2xs">
                     <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Gemini 3.8 Flash is analyzing your document...</span>
+                      <span>Cloud AI Engine is analyzing your document...</span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       Reading clauses, evaluating tables, and formulating response.
@@ -1408,7 +1411,7 @@ export const AiAnalyzePage: React.FC = () => {
                   <CornerDownLeft className="w-3 h-3" />
                   <span>Press Enter to send</span>
                 </span>
-                <span>Powered by Gemini 3.8 Flash Engine</span>
+                <span>Powered by Cloud AI Proxy (Gemini • Groq • xAI)</span>
               </div>
             </div>
           </div>

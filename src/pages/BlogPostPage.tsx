@@ -150,6 +150,10 @@ export const BlogPostPage: React.FC = () => {
 
   const shouldRenderStructuredFaqs = React.useMemo(() => {
     if (!article || !article.faqs || article.faqs.length === 0) return false;
+    const hasExistingFaqHeading = /<h[23][^>]*>[^<]*(?:faq|frequently asked questions)/i.test(
+      cleanArticleBody
+    );
+    if (hasExistingFaqHeading) return false;
     const firstQuestionProbe = article.faqs[0].q.slice(0, 28).toLowerCase();
     return !cleanArticleBody.toLowerCase().includes(firstQuestionProbe);
   }, [article, cleanArticleBody]);
@@ -242,7 +246,9 @@ export const BlogPostPage: React.FC = () => {
 
   const isAiOrOcrArticle =
     article.id === 'how-to-make-a-scanned-pdf-searchable' ||
-    article.slug.includes('scanned-pdf-searchable');
+    article.slug.includes('scanned-pdf-searchable') ||
+    article.id === 'cant-copy-text-from-pdf' ||
+    article.slug.includes('cant-copy-text-from-pdf');
 
   return (
     <div className="min-h-screen bg-surface py-10 px-4 sm:px-6 lg:px-8 font-sans text-on-surface transition-colors duration-200">
@@ -366,7 +372,9 @@ export const BlogPostPage: React.FC = () => {
                   <span>{PRIMARY_AUTHOR.jobTitle}</span>
                   <span>·</span>
                   <span>
-                    {t('blog.teamSubtitle', { defaultValue: 'Reviewed by Security Team' })}
+                    {t('blog.teamSubtitle', {
+                      defaultValue: 'Document Privacy & Security Analysis',
+                    })}
                   </span>
                 </div>
               </div>
@@ -538,16 +546,29 @@ export const BlogPostPage: React.FC = () => {
           <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-black uppercase tracking-widest shadow-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-200" />
-              <span>{t('blog.ctaBadge', { defaultValue: 'Zero Uploads • 100% In-Browser' })}</span>
+              <span>
+                {isAiOrOcrArticle
+                  ? t('blog.optInAiCtaBadge', {
+                      defaultValue: '22 Local Tools • 2 Opt-In Cloud AI Tools',
+                    })
+                  : t('blog.ctaBadge', {
+                      defaultValue: 'Zero Uploads • 100% In-Browser (Standard Tools)',
+                    })}
+              </span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white drop-shadow-md m-0">
               {t('blog.ctaTitle', { defaultValue: 'Ready to process your PDFs securely?' })}
             </h2>
             <p className="text-sm sm:text-base font-semibold text-emerald-50 max-w-xl mx-auto leading-relaxed drop-shadow-sm m-0">
-              {t('blog.ctaSubtitle', {
-                defaultValue:
-                  "Use PdfMinty's free, 100% private in-browser tools today. No uploads, zero server traces.",
-              })}
+              {isAiOrOcrArticle
+                ? t('blog.optInAiCtaSubtitle', {
+                    defaultValue:
+                      'All 22 standard PDF tools run 100% locally in your browser with zero uploads. Opt-in AI OCR and AI Analyze transmit content only after your explicit consent.',
+                  })
+                : t('blog.ctaSubtitle', {
+                    defaultValue:
+                      "Use PdfMinty's 22 browser-local PDF tools today—zero uploads for standard tools, with 5 free daily guest tasks and 10 daily tasks with a free account.",
+                  })}
             </p>
             <div className="pt-2">
               <Link

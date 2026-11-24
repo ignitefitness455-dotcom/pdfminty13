@@ -28,16 +28,6 @@ import { downloadBlob, sanitizeDownloadFilename } from '../utils/download';
 import { logger } from '../utils/logger';
 import { recordDailyTask } from '../utils/usageLimit';
 
-function uint8ToBase64(bytes: Uint8Array): string {
-  const CHUNK_SIZE = 8192;
-  const chunks: string[] = [];
-  for (let i = 0; i < bytes.byteLength; i += CHUNK_SIZE) {
-    const slice = bytes.subarray(i, i + CHUNK_SIZE);
-    chunks.push(String.fromCharCode.apply(null, Array.from(slice)));
-  }
-  return btoa(chunks.join(''));
-}
-
 function renderInlineFormatting(text: string): React.ReactNode[] {
   // Simple parser for **bold**, *italic*, ***bold italic***
   const parts: React.ReactNode[] = [];
@@ -239,7 +229,7 @@ function renderMarkdownToJsx(
 
 export const PdfToMarkdownPage: React.FC = () => {
   const { t } = useTranslation('common');
-  const { user, isPro, firebaseUser } = useAuth();
+  const { user, isPro } = useAuth();
   const limitMB = getToolLimit('pdf-to-markdown', isPro, Boolean(user)).maxSingleMB;
   const { showToast } = useToast();
   const { canPerformTask, openLimitModal } = useUsageLimit();
@@ -254,7 +244,6 @@ export const PdfToMarkdownPage: React.FC = () => {
   const [images, setImages] = useState<ExtractedMarkdownImage[]>([]);
   const [pageCount, setPageCount] = useState<number>(0);
   const [isScannedResult, setIsScannedResult] = useState<boolean>(false);
-  const [hasOcrConsent, setHasOcrConsent] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   const operationTokenRef = useRef<number>(0);
@@ -287,116 +276,6 @@ export const PdfToMarkdownPage: React.FC = () => {
       setMarkdownText('');
       setImages([]);
       setProgress(null);
-    }
-  };
-
-  const handleRunAiOcr = async () => {
-    if (!selectedFile || loading || isSubmittingRef.current) return;
-    if (!canPerformTask()) {
-      openLimitModal({ reason: 'task_limit' });
-      return;
-    }
-    if (!hasOcrConsent) {
-      setError(
-        'Please acknowledge the Cloud AI Vision consent checkbox before transcribing scanned pages.'
-      );
-      return;
-    }
-
-    isSubmittingRef.current = true;
-    setLoading(true);
-    setError(null);
-    setIsEncryptedError(false);
-    setProgress({ current: 1, total: 3 });
-    const myToken = ++operationTokenRef.current;
-
-    try {
-      const fileBytes = new Uint8Array(await selectedFile.arrayBuffer());
-
-      const rendered = await WorkerManager.getInstance().runOperation<
-        { page: number; imageBytes: Uint8Array }[]
-      >('pdfToImage', {
-        bytes: fileBytes,
-        originalName: selectedFile.name,
-        scale: 1.5,
-        maxPages: 6,
-        format: 'image/jpeg',
-        startPage: 1,
-      });
-
-      if (myToken !== operationTokenRef.current) return;
-      if (!rendered || rendered.length === 0) {
-        throw new Error('Failed to render PDF page images for AI OCR recognition.');
-      }
-
-      setProgress({ current: 2, total: 3 });
-
-      const base64Images = rendered.map(
-        (r) => `data:image/jpeg;base64,${uint8ToBase64(r.imageBytes)}`
-      );
-
-      const requestHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (firebaseUser && typeof firebaseUser.getIdToken === 'function') {
-        try {
-          const idToken = await firebaseUser.getIdToken();
-          if (idToken) {
-            requestHeaders.Authorization = `Bearer ${idToken}`;
-          }
-        } catch {
-          // Proceed unauthenticated if token refresh fails on optional OCR auth
-        }
-      }
-
-      const res = await fetch('/api/gemini-proxy', {
-        method: 'POST',
-        headers: requestHeaders,
-        body: JSON.stringify({
-          mode: 'ocr',
-          imagesBase64: base64Images,
-        }),
-      });
-
-      if (myToken !== operationTokenRef.current) return;
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(
-          (errData as { error?: string }).error || `AI OCR request failed (${res.status})`
-        );
-      }
-
-      const data = (await res.json()) as { success: boolean; result: string };
-      const finalMd = data.result || '# AI OCR Transcribed Document\n\nNo text extracted.';
-      setMarkdownText(finalMd);
-      setPageCount(rendered.length);
-      setIsScannedResult(false);
-      setProgress({ current: 3, total: 3 });
-      recordDailyTask(null, 'pdf_to_markdown');
-      addActivityItem({
-        toolName: 'PDF to Markdown (AI OCR)',
-        toolId: 'pdf-to-markdown',
-        fileName: sanitizeDownloadFilename(
-          `${selectedFile.name.replace(/\.pdf$/i, '')}.md`,
-          'document.md'
-        ),
-        fileSizeFormatted: `${(new Blob([finalMd]).size / 1024).toFixed(1)} KB`,
-        pages: rendered.length,
-        status: 'completed',
-        tag: 'OCR',
-      });
-      showToast('Successfully extracted Markdown via Multimodal AI Vision OCR!', 'success');
-    } catch (err: unknown) {
-      if (myToken !== operationTokenRef.current) return;
-      logger.error('AI OCR error:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg || 'Failed to perform AI Vision OCR recognition.');
-      showToast('AI OCR extraction failed.', 'error');
-    } finally {
-      isSubmittingRef.current = false;
-      if (myToken === operationTokenRef.current) {
-        setLoading(false);
-        setProgress(null);
-      }
     }
   };
 
@@ -515,15 +394,6 @@ export const PdfToMarkdownPage: React.FC = () => {
     }
   };
 
-  const isQuotaError = !!(
-    error &&
-    (error.toLowerCase().includes('quota') ||
-      error.toLowerCase().includes('limit') ||
-      error.toLowerCase().includes('429') ||
-      error.toLowerCase().includes('exhausted') ||
-      error.toLowerCase().includes('busy'))
-  );
-
   return (
     <div className="space-y-6 max-w-5xl mx-auto" id="pdf_to_markdown_container">
       <SEO slug="pdf-to-markdown" />
@@ -639,49 +509,22 @@ export const PdfToMarkdownPage: React.FC = () => {
               </div>
             </label>
 
-            {error &&
-              (isQuotaError ? (
-                <div className="flex items-start gap-3 text-xs text-amber-800 dark:text-amber-200 bg-amber-50/50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-4 rounded-xl shadow-sm flex-col w-full">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <p className="font-extrabold text-amber-900 dark:text-amber-100">
-                      {t('pdfToMarkdown.busyMessage')}
-                    </p>
-                  </div>
-                  <div className="pl-6 space-y-1 text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                    <p>
-                      {t('pdfToMarkdown.orUseOffline')}{' '}
-                      <Link
-                        to={ROUTES.HOME}
-                        className="underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 font-bold"
-                      >
-                        {t('tools.mergePdf')} &amp; {t('tools.splitPdf')}
-                      </Link>
-                    </p>
-                    <p>
-                      {t('pdfToMarkdown.rateLimitReached', {
-                        defaultValue:
-                          'Rate limit reached. Please wait a few minutes before trying again.',
-                      })}
-                    </p>
-                  </div>
+            {error && (
+              <div className="flex items-start space-x-2 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-800/60 p-3.5 rounded-xl">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1.5">
+                  <p className="font-bold">{error}</p>
+                  {isEncryptedError && (
+                    <Link
+                      to={ROUTES.UNLOCK}
+                      className="inline-block font-bold underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-800"
+                    >
+                      Use Unlock PDF Tool →
+                    </Link>
+                  )}
                 </div>
-              ) : (
-                <div className="flex items-start space-x-2 text-xs text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-800/60 p-3.5 rounded-xl">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1.5">
-                    <p className="font-bold">{error}</p>
-                    {isEncryptedError && (
-                      <Link
-                        to={ROUTES.UNLOCK}
-                        className="inline-block font-bold underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-800"
-                      >
-                        Use Unlock PDF Tool →
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -704,46 +547,17 @@ export const PdfToMarkdownPage: React.FC = () => {
                 <>
                   <FileCode2 className="w-4 h-4" />
                   <span>
-                    {t('toolCommon.process', { defaultValue: 'Smart Layout Convert (Fast)' })}
+                    {t('toolCommon.process', { defaultValue: 'Convert to Markdown (100% Local)' })}
                   </span>
                 </>
               )}
             </button>
-
-            <button
-              type="button"
-              onClick={handleRunAiOcr}
-              disabled={!selectedFile || loading || !hasOcrConsent}
-              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all border ${
-                selectedFile && !loading && hasOcrConsent
-                  ? 'bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100/80 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 cursor-pointer'
-                  : 'bg-slate-50 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 cursor-not-allowed'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span>{t('pdfToMarkdown.aiVisionMode')}</span>
-            </button>
-
-            {selectedFile && !isScannedResult && (
-              <label className="flex items-start space-x-2 cursor-pointer select-none px-1 pt-0.5">
-                <input
-                  type="checkbox"
-                  checked={hasOcrConsent}
-                  onChange={(e) => setHasOcrConsent(e.target.checked)}
-                  className="mt-0.5 accent-amber-600 rounded cursor-pointer"
-                />
-                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-snug">
-                  I consent to sending rendered page images (up to 6 pages) to Google Gemini AI
-                  Vision for optional OCR extraction.
-                </span>
-              </label>
-            )}
           </div>
         </div>
       </div>
 
       {isScannedResult && (
-        <div className="p-5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl flex flex-col gap-4 shadow-sm">
+        <div className="p-5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-start space-x-3.5">
             <Sparkles className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="space-y-1 text-xs md:text-sm text-amber-900 dark:text-amber-200">
@@ -751,40 +565,20 @@ export const PdfToMarkdownPage: React.FC = () => {
                 {t('pdfToMarkdown.scannedDetected')}
               </p>
               <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-xs">
-                Standard text-layer extraction yielded minimal text because this PDF is composed of
-                scanned images. Use our Multimodal AI Vision OCR engine to transcribe pages directly
-                into clean Markdown via an encrypted Google Gemini API proxy.
+                PDF to Markdown runs 100% locally in your browser without sending files to external
+                servers, so it extracts selectable text layers only. For scanned or image-only PDFs,
+                use our dedicated opt-in OCR PDF tool with explicit cloud AI consent.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
-            <label className="flex items-start sm:items-center space-x-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={hasOcrConsent}
-                onChange={(e) => setHasOcrConsent(e.target.checked)}
-                className="mt-0.5 sm:mt-0 accent-amber-600 rounded cursor-pointer"
-              />
-              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
-                I consent to sending page images to Google Gemini AI Vision for OCR extraction.
-              </span>
-            </label>
-
-            <button
-              type="button"
-              onClick={handleRunAiOcr}
-              disabled={loading || !hasOcrConsent}
-              className="py-2.5 px-5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 disabled:opacity-40 text-white flex items-center justify-center space-x-2 transition-all shadow-sm flex-shrink-0 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>
-                {t('pdfToMarkdown.transcribeWithAI', {
-                  defaultValue: 'Transcribe with AI Vision OCR',
-                })}
-              </span>
-            </button>
-          </div>
+          <Link
+            to={ROUTES.OCR_PDF}
+            className="py-2.5 px-5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center space-x-2 transition-all shadow-sm flex-shrink-0"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Open Opt-In OCR PDF Tool →</span>
+          </Link>
         </div>
       )}
 

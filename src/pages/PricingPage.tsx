@@ -904,13 +904,13 @@ export const PricingPage: React.FC = () => {
           <div className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1.5">
               {isBn
-                ? '৬. AI এবং OCR টুলে কোন ডেটা Google Gemini-তে পাঠানো হয়?'
-                : '6. Which AI/OCR data is sent to Google Gemini?'}
+                ? '৬. AI এবং OCR টুলে কোন ডেটা ক্লাউড AI প্রোভাইডারে পাঠানো হয়?'
+                : '6. Which AI/OCR data is sent to cloud AI providers?'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {isBn
-                ? 'শুধুমাত্র আপনি যখন স্বেচ্ছায় আমাদের ২টি অপ্ট-ইন AI টুল (AI Analyze PDF এবং OCR PDF, অথবা PDF to Markdown-এর AI Vision মোড) ব্যবহারের আগে সম্মতি (consent) প্রদান করেন, তখনই প্রয়োজনীয় এক্সট্রাক্ট করা টেক্সট বা নির্বাচিত পেজের ছবি এনক্রিপ্টেড HTTPS প্রক্সির মাধ্যমে Google Gemini API-তে পাঠানো হয়। PdfMinty সার্ভারে কোনো ফাইল বা টেক্সট সংরক্ষণ করা হয় না।'
-                : 'Only when you explicitly opt in and grant consent in our 2 cloud AI tools — AI Analyze PDF (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/, plus optional AI Vision mode in /pdf-to-markdown/) — extracted document text or selected rendered page images are sent over an encrypted HTTPS proxy (/api/gemini-proxy) to the Google Gemini API solely to fulfill your request. PdfMinty never stores or logs your documents.'}
+                ? 'শুধুমাত্র আপনি যখন স্বেচ্ছায় আমাদের ২টি অপ্ট-ইন AI টুল (AI Analyze PDF এবং OCR PDF) ব্যবহারের আগে সম্মতি (consent) প্রদান করেন, তখনই প্রয়োজনীয় এক্সট্রাক্ট করা টেক্সট বা নির্বাচিত পেজের ছবি এনক্রিপ্টেড HTTPS প্রক্সি (/api/gemini-proxy)-এর মাধ্যমে আমাদের কনফিগার করা ক্লাউড AI প্রোভাইডার (Google Gemini, Groq এবং/অথবা xAI Grok)-এ পাঠানো হয়। PDF to Markdown সহ বাকি ২২টি স্ট্যান্ডার্ড টুল ১০০% লোকাল। PdfMinty সার্ভারে কোনো ফাইল বা টেক্সট সংরক্ষণ করা হয় না।'
+                : 'Only when you explicitly opt in and grant consent in our 2 cloud AI tools — AI Analyze PDF (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/) — extracted document text or selected rendered page images are sent over an encrypted HTTPS proxy (/api/gemini-proxy) to our configured cloud AI providers (Google Gemini, Groq, and/or xAI Grok) solely to fulfill your request. All 22 standard tools (including PDF to Markdown) run 100% locally in your browser. PdfMinty never stores or logs your documents.'}
             </p>
           </div>
 

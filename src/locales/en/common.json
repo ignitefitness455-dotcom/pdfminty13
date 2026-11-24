@@ -159,7 +159,7 @@
       "noAccountTitle": "No Account Required",
       "noAccountDesc": "Skip signups and passwords. Access fast, direct tools instantly without creating an account or leaving personal data.",
       "freeTitle": "Free Forever Core Plan",
-      "freeDesc": "PdfMinty offers a Free Forever plan for core PDF tools. Optional Monthly Pro and Lifetime Pro plans are available for users who need unlimited daily usage, larger file limits, priority AI/OCR quotas, commercial usage rights, and priority support.",
+      "freeDesc": "Merge, split, compress, sign, and edit PDFs with zero watermarks: 5 free daily tasks for guests (up to 100MB/file), 10 daily tasks with a free account (up to 150MB/file), and optional Pro ($2.49/mo) or Lifetime ($50) plans for unlimited daily tasks.",
       "fastTitle": "Instant Processing",
       "fastDesc": "No waiting for uploads or cloud queues. Your device's processor handles files immediately with zero transfer lag.",
       "offlineTitle": "Works Offline",
@@ -190,11 +190,11 @@
       "items": [
         {
           "q": "How does PdfMinty process my PDF files privately?",
-          "a": "PdfMinty executes our 22 standard PDF tools (merging, splitting, compressing, protecting, editing, signing) 100% locally inside your web browser using WebAssembly and client-side JavaScript without uploading files to any server. The only exceptions are our 2 opt-in AI Analyze and OCR PDF tools, which transmit extracted text or page images to Google Gemini only after you explicitly check a consent box."
+          "a": "PdfMinty executes our 22 standard PDF tools (including Merge, Split, Compress, Sign, Protect, Unlock, and PDF to Markdown) 100% locally inside your web browser using WebAssembly and JavaScript, without uploading files to any server. The only exceptions are our 2 opt-in AI tools (AI Analyze PDF and OCR PDF), which send extracted text or selected page images via an encrypted HTTPS proxy to our configured cloud AI providers (Google Gemini, Groq, and/or xAI Grok) strictly after you check the explicit consent box."
         },
         {
           "q": "Is PdfMinty free to use?",
-          "a": "Yes — PDFMinty offers a free tier across all 24 tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Pro ($2.49/month) and Lifetime ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and higher AI/OCR quotas."
+          "a": "Yes — PDFMinty offers a Free Forever tier across all 24 tools: guests receive 5 free daily tasks (up to 100MB per file) with no account or credit card required, and free registered users receive 10 daily tasks (up to 150MB per file) with zero watermarks. Optional Monthly Pro ($2.49/month) and Lifetime Pro ($50 one-time) plans are available for unlimited daily tasks, 500MB files, and priority AI/OCR quotas."
         },
         {
           "q": "Do my files ever leave my computer or mobile device?",
@@ -891,7 +891,7 @@
       "tutorials": "Tutorials"
     },
     "featuredArticle": "Featured Article",
-    "editorialTeam": "PDFMinty Editorial Team",
+    "editorialTeam": "Mohammed Tanveer Munshi",
     "teamSubtitle": "Document Privacy & Security Analysis",
     "privacyBadge": "100% In-Browser Privacy Guarantee",
     "readFullArticle": "Read Full Article",
@@ -900,9 +900,9 @@
     "linkCopied": "Link Copied!",
     "shareArticle": "Share Article",
     "returnToHub": "Return to Knowledge Hub",
-    "ctaBadge": "Zero Uploads • 100% In-Browser",
+    "ctaBadge": "Zero Uploads • 100% In-Browser (Standard Tools)",
     "ctaTitle": "Ready to process your PDFs securely?",
-    "ctaSubtitle": "Use PdfMinty's free, 100% private in-browser tools today. No uploads, zero server traces.",
+    "ctaSubtitle": "Use PdfMinty's 22 browser-local PDF tools today—zero uploads for standard tools, with 5 free daily guest tasks and 10 daily tasks with a free account.",
     "ctaButton": "Explore All Free PDF Tools →",
     "noArticlesMatch": "No articles match your search criteria",
     "tryAdjusting": "Try adjusting your search query or selecting a different category to explore our guides.",
@@ -916,7 +916,9 @@
     "compressToolPromptTitle": "Need to compress a PDF right now?",
     "compressToolPromptSubtitle": "Shrink file sizes up to 80% without blurry text. 100% free, private & in-browser.",
     "openCompressTool": "Open Compress PDF Tool →",
-    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide"
+    "relatedToolsTitle": "Related Free PDF Tools Mentioned in this Guide",
+    "optInAiCtaBadge": "22 Local Tools • 2 Opt-In Cloud AI Tools",
+    "optInAiCtaSubtitle": "All 22 standard PDF tools run 100% locally in your browser with zero uploads. Opt-in AI OCR and AI Analyze transmit content only after your explicit consent."
   },
   "extractPages": {
     "failedToExtract": "Failed to extract pages. Please try again.",
@@ -976,8 +978,8 @@
     "busyMessage": "⏳ AI is busy. Please try again in a few minutes.",
     "orUseOffline": "Or use our offline tools:",
     "consentTitle": "Cloud AI Vision Disclosure & Consent",
-    "consentDesc": "Selected pages (up to 5) are converted into images and transmitted securely via HTTPS proxy to Google Gemini Multimodal Vision API solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.",
-    "consentCheckbox": "I understand and consent to transmitting selected page images to Google Gemini AI Vision for OCR transcription."
+    "consentDesc": "Selected pages (up to 5 on Guest/Free tiers; up to 15 on Pro) are converted into images and transmitted securely via HTTPS proxy (/api/gemini-proxy) to our configured cloud AI Vision providers (Google Gemini, Groq, and/or xAI Grok) solely for optical character recognition. Standard PdfMinty tools process files 100% locally in your browser; this AI feature requires external cloud processing.",
+    "consentCheckbox": "I understand and consent to transmitting selected page images to our configured cloud AI providers (Google Gemini, Groq, and/or xAI Grok) for OCR transcription."
   },
   "sanitizePdf": {
     "workspace": "Document Workspace",
@@ -1097,7 +1099,7 @@
     "faqTitle": "Frequently Asked Questions",
     "faqDesc": "Everything you need to know about switching from Adobe Acrobat to PDFMinty",
     "stopPayingTitle": "Stop paying to move pages around.",
-    "everyToolDesc": "Core PDF tools free on our Free Forever plan. No account or upload required for standard tools.",
+    "everyToolDesc": "Core PDF tools free on our Free Forever plan (5 daily guest tasks, 10 with a free account). Optional Pro ($2.49/mo) & Lifetime ($50) for unlimited usage.",
     "backToTools": "Back to All PDF Tools",
     "alternativeSubtitle": "Free Adobe Acrobat Alternative",
     "startWithAnyTool": "Start with any tool",
@@ -1157,7 +1159,7 @@
     "faq6A": "Yes. Under the US ESIGN Act and EU eIDAS regulations for Simple Electronic Signatures (SES), signatures drawn and flattened directly into documents carry full legal enforceability for standard agreements and NDAs.",
     "faq7Q": "How does client-side compression achieve up to 80% file size reduction?",
     "faq7A": "By converting heavy color profiles to grayscale, resampling raster images to high-density screen resolutions, and applying lossless Flate stream compression entirely in local browser memory.",
-    "noSignups": "No Signups or Logins Required",
+    "noSignups": "No Mandatory Sign-Up to Start (5 Free Daily Guest Tasks)",
     "yesCloudSync": "Yes (Cloud sync & telemetry)",
     "noSandbox": "No — 100% in-browser memory sandbox",
     "setupInstall": "Setup / Installation",
@@ -1211,7 +1213,7 @@
     "standardToolsPrivacy": "Standard PDF tools process files directly in your browser memory on your local device.",
     "fastExecution": "Fast Local Execution",
     "noWaiting": "No waiting for uploads or downloads. Processing happens instantly on your device.",
-    "freeForever": "Core PDF tools are available through the Free Forever plan with no credit card required and zero watermarks.",
+    "freeForever": "Core PDF tools are available on our Free Forever plan (5 daily guest tasks up to 100MB, 10 daily free-account tasks up to 150MB, zero watermarks), with optional Pro ($2.49/mo) and Lifetime ($50) upgrades for unlimited daily usage.",
     "builtForEveryone": "Built for Everyone",
     "accessibleDesc": "PdfMinty is designed from the ground up to be accessible, fast, and easy to use for all visitors.",
     "skipLinks": "Skip Navigation Links for Efficiency",
@@ -1231,14 +1233,14 @@
     "title": "Privacy Policy",
     "shortVersion": "Executive Summary (The Short Version)",
     "badge": "Complete Data Sovereignty & Privacy Standards",
-    "updated": "Effective Date: January 1, 2026 • Last Updated & Reviewed: November 2026 • Controller: PDFMinty Security & Compliance Architecture Team",
-    "summary": "PDFMinty's 22 standard PDF tools process your files 100% locally inside your web browser using client-side JavaScript, HTML5 Canvas, and Web Workers without uploading your documents to any server. Your sensitive files never leave your device. If you explicitly opt in to use our Cloud AI tools — the AI PDF Assistant (/ai-analyze-pdf/) or the OCR PDF tool (/ocr-pdf/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy to the Google Gemini API solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
+    "updated": "Effective Date: January 1, 2026 • Last Updated & Reviewed: November 2026 • Data Controller: Mohammed Tanveer Munshi (PdfMinty), Dhaka, Bangladesh • Contact: support@pdfminty.com",
+    "summary": "PDFMinty's 22 standard PDF tools (including Merge, Split, Compress, Sign, Protect, Unlock, and PDF to Markdown) process your files 100% locally inside your web browser using WebAssembly and HTML5 Canvas without uploading your documents to any server. If you explicitly opt in to use our 2 Cloud AI tools — AI Analyze PDF (/ai-analyze-pdf/) or OCR PDF (/ocr-pdf/) — extracted text or selected page images are transmitted securely via TLS-encrypted HTTPS proxy (/api/gemini-proxy) to our configured AI inference providers (Google Gemini, Groq, and/or xAI Grok) solely to fulfill your immediate request after you grant explicit consent. If you optionally sign in with Google OAuth or Email/Password, we store only your basic account profile (email, name, avatar URL, UID, and subscription/quota status) in Google Cloud Firestore in strict compliance with the Google API Services User Data Policy (Limited Use requirements).",
     "sec1Title": "1. Local In-Browser Processing (Standard PDF Tools)",
     "sec1Desc": "When you select a PDF or image file in any of PDFMinty’s standard utilities (including Merge PDF, Split PDF, Compress PDF, Protect PDF, Unlock PDF, Rotate PDF, Sign PDF, Watermark PDF, Add Page Numbers, Delete Pages, Extract Pages, Reorder Pages, Flatten PDF, Grayscale PDF, Repair PDF, Edit PDF Metadata, Sanitize PDF, PDF to Image, Image to PDF, Compare PDF, and PDF to Markdown), the entire operation executes locally on your device using client-side WebAssembly (@cantoo/pdf-lib, pdfjs-dist), HTML5 Canvas (fabric, signature_pad), and dedicated Web Workers.",
     "sec2Title": "2. Zero Document Storage, No File Uploads & Memory Purging",
     "sec2Desc": "We do not operate backend file servers, cloud storage buckets (such as AWS S3 or Google Cloud Storage), or document databases that store, cache, or log your PDF files. All binary file transformations happen strictly within your device’s volatile Random Access Memory (RAM).",
     "sec3Title": "3. Opt-In Cloud AI Features Disclosure (AI Analyze PDF & OCR PDF)",
-    "sec3Desc": "PDFMinty provides two clearly labeled, optional AI-powered tools: the AI PDF Assistant (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/). Unlike our standard local tools, these two features require cloud inference via the Google Gemini API, strictly after you grant explicit user consent. PDFMinty never retains or stores your documents on our servers, and all processing is ephemeral for your immediate query.",
+    "sec3Desc": "PDFMinty provides 2 clearly labeled, optional AI-powered tools: AI Analyze PDF (/ai-analyze-pdf/) and OCR PDF (/ocr-pdf/). Unlike our 22 standard browser-local tools (including PDF to Markdown), these 2 features require cloud inference through our encrypted proxy (/api/gemini-proxy) routed to our configured AI providers (Google Gemini, Groq, and/or xAI Grok).",
     "secGoogleTitle": "4. Google User Data, OAuth 2.0 Authentication & Account Information",
     "secGoogleDesc": "All 24 PDF tools on PDFMinty are publicly accessible to guest users without requiring registration or login. However, if you optionally choose to create an account or sign in using Google Sign-In (OAuth 2.0) or Email/Password authentication (powered by Google Firebase Authentication), we request basic profile information from your Google Account: your email address (userinfo.email), display name and profile avatar URL (userinfo.profile), and unique Google user identifier (openid / UID). We use this information solely to authenticate your identity, establish your secure session, track your daily processing task quotas, and manage your membership tier (Free vs PRO) in Google Cloud Firestore. PDFMinty never requests or accesses your Google Drive files, Gmail messages, Google Contacts, or any external Google Workspace data.",
     "secLimitedUseTitle": "5. Google API Services User Data Policy (Mandatory Limited Use Disclosure)",
@@ -1246,7 +1248,7 @@
     "secRetentionTitle": "6. Data Retention, Account Deletion & Access Revocation",
     "secRetentionDesc": "We retain your user account profile (email, display name, UID, and subscription status) in Google Cloud Firestore only for as long as you maintain an active account with PDFMinty. You have the absolute right to revoke access via Google Security Settings (https://myaccount.google.com/permissions) and request permanent deletion of your personal data at any time via your Account Dashboard or by emailing support@pdfminty.com. Upon request, your account record is irreversibly purged within 7 business days.",
     "sec4Title": "8. Google AdSense & Third-Party Advertising Cookies",
-    "sec4Intro": "PDFMinty uses Google AdSense to display advertisements on public informational pages to support free access to our browser PDF toolkit. To comply with Google Publisher and AdSense policies, please review the following required advertising disclosures:",
+    "sec4Intro": "When enabled on public informational pages for non-Pro visitors, PDFMinty may display advertisements served by Google AdSense to support free access to our browser PDF toolkit. Advertising scripts and cookies remain subject to Google Consent Mode v2 (default-denied until you grant consent). To comply with Google Publisher and AdSense policies, please review the following disclosures:",
     "sec4Li1": "Third-party vendors, including Google, use cookies (such as the DoubleClick DART cookie) to serve ads based on a user's prior visits to this website or other websites on the Internet.",
     "sec4Li2": "Google's use of advertising cookies enables it and its partners to serve ads to our users based on their visits to PDFMinty and/or other sites on the Internet.",
     "sec4OptOut": "Users may opt out of personalized advertising at any time by visiting Google's",
@@ -1264,7 +1266,7 @@
     "sec7Title": "14. AI Bots, Crawlers & Search Engine Verification Access Policy",
     "sec7Desc": "PDFMinty supports open web standards. Search engine crawlers (Googlebot, Bingbot), Google OAuth and Brand Verification crawlers, Google AdSense crawlers (Mediapartners-Google and Google-Display-Ads-Bot), and benign AI indexers (GPTBot, ClaudeBot, PerplexityBot) are explicitly permitted to access, crawl, and verify our homepage, privacy policy, terms of service, and all 24 public PDF tools without authentication.",
     "sec8Title": "15. Contact Us & Data Protection Inquiries",
-    "sec8Desc": "If you have any questions, data subject access requests (DSAR), account deletion requests, or inquiries regarding this Privacy Policy or our Google OAuth compliance, please contact our Data Protection & Support Team via our",
+    "sec8Desc": "If you have any questions, data subject access requests (DSAR), account deletion requests, or inquiries regarding this Privacy Policy or our Google OAuth compliance, please contact the operator (Mohammed Tanveer Munshi) via our",
     "contactPage": "Contact Page",
     "orEmail": "or directly by email at",
     "sec6Li1Title": "Right of Access, Portability & Deletion (GDPR Arts. 15–20):",
@@ -1305,7 +1307,7 @@
   "termsOfService": {
     "title": "Terms of Service",
     "badge": "Service Terms & Usage Guidelines",
-    "updated": "Last Updated & Effective Date: November 2026 • Publisher: PdfMinty (Operated by Mohammed Tanveer Munshi, Dhaka, Bangladesh)",
+    "updated": "Last Updated & Effective Date: November 2026 • Operator: Mohammed Tanveer Munshi (PdfMinty), Dhaka, Bangladesh • Contact: support@pdfminty.com",
     "sec1Title": "1. Acceptance of Terms",
     "sec1Desc": "By accessing, browsing, or using PdfMinty (https://pdfminty.com) and any of its associated 24 PDF tools (22 standard local tools and 2 opt-in AI tools), you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service and our Privacy Policy. If you do not agree, please do not use our services.",
     "sec2Title": "2. Nature of Service & Client-Side In-Browser Execution",

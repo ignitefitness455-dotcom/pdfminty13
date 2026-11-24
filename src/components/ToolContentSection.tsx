@@ -51,40 +51,11 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = React.memo(
         return;
       }
       let active = true;
-      let timerId: number | undefined;
-      const win =
-        typeof window !== 'undefined'
-          ? (window as Window & {
-              requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-              cancelIdleCallback?: (id: number) => void;
-            })
-          : undefined;
-
-      const triggerLoad = () => {
-        void loadFullToolsCatalog().then((loaded) => {
-          if (active) setFullTools(loaded);
-        });
-      };
-
-      if (win && typeof win.requestIdleCallback === 'function') {
-        const idleId = win.requestIdleCallback(triggerLoad, { timeout: 1000 });
-        return () => {
-          active = false;
-          win.cancelIdleCallback?.(idleId);
-        };
-      }
-
-      if (typeof window !== 'undefined') {
-        timerId = window.setTimeout(triggerLoad, 150);
-      } else {
-        triggerLoad();
-      }
-
+      void loadFullToolsCatalog().then((loaded) => {
+        if (active) setFullTools(loaded);
+      });
       return () => {
         active = false;
-        if (timerId !== undefined && typeof window !== 'undefined') {
-          window.clearTimeout(timerId);
-        }
       };
     }, [propTool]);
 
@@ -110,7 +81,7 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = React.memo(
       privacyNote,
       troubleshooting,
       relatedLinks,
-      lastReviewedDate = 'August 2026 • Verified by Security & Product Architecture Team',
+      lastReviewedDate = 'November 2026 • Verified by Mohammed Tanveer Munshi',
       longFormBody,
       slug,
     } = tool;
@@ -144,11 +115,19 @@ export const ToolContentSection: React.FC<ToolContentSectionProps> = React.memo(
     const localizedLongFormBody = t(`tools.${slug}.longFormBody`, {
       defaultValue: isEn ? longFormBody : '',
     });
-    const sanitizedLongFormHtml = localizedLongFormBody
+    const baseLongFormHtml = localizedLongFormBody
       ? localizedLongFormBody
           .replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>/i, '')
           .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '<h2>$1</h2>')
       : '';
+    // Avoid rendering a second FAQ section in longFormBody when the interactive FAQ accordion (Section 7) is already rendered
+    const sanitizedLongFormHtml =
+      baseLongFormHtml && faqs && faqs.length > 0
+        ? baseLongFormHtml.replace(
+            /<h2[^>]*>\s*(?:\d+\.\s*)?(?:Frequently Asked(?: Technical)? Questions|FAQ)\b[\s\S]*?(?=<h2\b|$)/i,
+            ''
+          )
+        : baseLongFormHtml;
 
     const handleCtaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();

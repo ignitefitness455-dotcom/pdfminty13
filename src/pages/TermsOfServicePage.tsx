@@ -47,7 +47,7 @@ export const TermsOfServicePage: React.FC = () => {
           <p className="text-xs sm:text-sm font-semibold text-on-surface-variant max-w-2xl mx-auto">
             {t('termsOfService.updated', {
               defaultValue:
-                'Last Updated & Effective Date: November 2026 • Publisher: PdfMinty (Operated by Mohammed Tanveer Munshi, Dhaka, Bangladesh)',
+                'Last Updated & Effective Date: November 2026 • Operator: Mohammed Tanveer Munshi (PdfMinty), Dhaka, Bangladesh • Contact: support@pdfminty.com',
             })}
           </p>
         </header>
@@ -80,9 +80,10 @@ export const TermsOfServicePage: React.FC = () => {
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
               <span>
-                <strong>Opt-In Cloud AI Disclosures:</strong> Only AI Analyze, OCR PDF, and the
-                optional AI Vision mode in PDF to Markdown send text or rendered page images to
-                Google Gemini API, strictly upon your explicit checkbox consent.
+                <strong>Opt-In Cloud AI Disclosures:</strong> Only AI Analyze PDF and OCR PDF send
+                extracted text or rendered page images to our configured cloud AI providers (Google
+                Gemini, Groq, and/or xAI Grok) via encrypted proxy, strictly upon your explicit
+                checkbox consent.
               </span>
             </li>
             <li className="flex items-start gap-2">
@@ -150,10 +151,10 @@ export const TermsOfServicePage: React.FC = () => {
                 <strong>Client-Side Standard Tools:</strong> All 22 standard PDF tools (including
                 Merge PDF, Split PDF, Rotate PDF, Compress PDF, Protect PDF, Unlock PDF, Watermark
                 PDF, Add Page Numbers, Delete Pages, Extract Pages, Reorder Pages, Add Blank Page,
-                Image to PDF, PDF to Image, PDF to Markdown in Standard Mode, Grayscale PDF, Flatten
-                PDF, Repair PDF, Edit Metadata, Sanitize PDF, Sign PDF, and Compare PDF) execute
-                100% locally on your personal computer, smartphone, or tablet using WebAssembly,
-                client-side JavaScript, and Web Workers.
+                Image to PDF, PDF to Image, PDF to Markdown, Grayscale PDF, Flatten PDF, Repair
+                PDF, Edit Metadata, Sanitize PDF, Sign PDF, and Compare PDF) execute 100% locally on
+                your personal computer, smartphone, or tablet using WebAssembly, client-side
+                JavaScript, and Web Workers.
               </li>
               <li>
                 <strong>Zero Server File Uploads:</strong> Under our standard tool workflows, binary
@@ -174,11 +175,14 @@ export const TermsOfServicePage: React.FC = () => {
           <section className="space-y-3 pt-6 border-t border-border-muted">
             <h2 className="text-lg font-extrabold text-on-surface flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-500" />
-              3. Opt-In Cloud AI Vision & Document Intelligence Disclosure (Google Gemini)
+              3. Opt-In Cloud AI Vision &amp; Document Intelligence Disclosure (Google Gemini, Groq
+              &amp; xAI Grok)
             </h2>
             <p>
-              While standard utilities operate completely offline in your browser, certain advanced
-              analytical capabilities require cloud-scale artificial intelligence:
+              While our 22 standard utilities (including PDF to Markdown) operate 100% locally in
+              your browser, 2 clearly labeled advanced capabilities require cloud-scale artificial
+              intelligence routed via our encrypted proxy (<code>/api/gemini-proxy</code>) to our
+              configured providers (Google Gemini, Groq, and/or xAI Grok):
             </p>
             <ul className="list-disc pl-5 space-y-2">
               <li>
@@ -195,8 +199,9 @@ export const TermsOfServicePage: React.FC = () => {
                 The AI Document Assistant extracts selectable text locally in your browser first.
                 When you ask questions or request summaries, only extracted text fragments (up to 15
                 pages / 30,000 characters on Standard tiers, or up to 50 pages / 60,000 characters
-                on Pro) are transmitted via an encrypted HTTPS connection to Google Gemini API
-                solely to generate answers.
+                on Pro) are transmitted via an encrypted HTTPS proxy (<code>/api/gemini-proxy</code>
+                ) to our configured AI providers (Google Gemini, Groq, and/or xAI Grok) solely to
+                generate answers.
               </li>
               <li>
                 <strong>
@@ -206,31 +211,25 @@ export const TermsOfServicePage: React.FC = () => {
                     className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
                   >
                     /ocr-pdf/
-                  </Link>{' '}
-                  &amp; optional AI Vision mode in{' '}
-                  <Link
-                    to={ROUTES.PDF_TO_MARKDOWN}
-                    className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
-                  >
-                    /pdf-to-markdown/
                   </Link>
                   ):
                 </strong>{' '}
-                For scanned documents containing unindexed bitmaps, OCR is powered by Google Gemini
-                Multimodal Vision API. Up to 5 selected page images per run on Standard tiers (up to
-                15 pages on Pro in OCR PDF, or up to 6 pages in PDF to Markdown AI Vision mode) are
-                rendered locally and transmitted securely via HTTPS proxy solely to perform
-                character and table recognition.
+                For scanned documents containing unindexed bitmaps, OCR is powered via{' '}
+                <code>/api/gemini-proxy</code> by our configured vision-capable AI providers (Google
+                Gemini, Groq, and/or xAI Grok). Up to 5 selected page images per run on Standard
+                tiers (up to 15 pages on Pro) are rendered locally and transmitted securely via
+                HTTPS proxy solely to perform character and table recognition.
               </li>
               <li>
-                <strong>Strict Explicit User Consent:</strong> Neither of these AI tools will
+                <strong>Strict Explicit User Consent:</strong> Neither of these 2 AI tools will
                 transmit data without your deliberate action. You must affirmatively check an
                 explicit consent checkbox before any payload leaves your device.
               </li>
               <li>
                 <strong>No Document Retention:</strong> PdfMinty never retains, caches, or stores
-                your documents on our servers. Transmission to Google Gemini is governed by standard
-                enterprise API security and Google&apos;s data governance policies.
+                your documents on our servers. Ephemeral requests to Google Gemini, Groq, and xAI
+                Grok are governed by each respective API provider&apos;s enterprise data governance
+                policies.
               </li>
             </ul>
           </section>
@@ -432,9 +431,9 @@ export const TermsOfServicePage: React.FC = () => {
             </h2>
             <p>
               To support our Free Forever tier and keep core PDF tools accessible to users
-              worldwide without forced subscriptions, PdfMinty displays advertisements on public
-              pages for non-Pro visitors served by Google AdSense and reputable third-party
-              advertising partners:
+              worldwide without forced subscriptions, when enabled on public informational pages for
+              non-Pro visitors, PdfMinty may display advertisements served by Google AdSense and
+              reputable third-party advertising partners (always subject to Google Consent Mode v2):
             </p>
             <ul className="list-disc pl-5 space-y-2">
               <li>
@@ -676,8 +675,8 @@ export const TermsOfServicePage: React.FC = () => {
               </p>
             </div>
             <p className="text-xs text-on-surface-variant pt-2">
-              Our compliance and technical support team typically responds to verified inquiries
-              within 24 to 48 business hours.
+              Inquiries are handled directly by the operator (Mohammed Tanveer Munshi) and typically
+              receive a response within 24 to 48 business hours.
             </p>
           </section>
         </div>

@@ -175,9 +175,9 @@ export const HomePage: React.FC = () => {
     window.addEventListener('keydown', activateBelowFold, opts);
 
     if (typeof win.requestIdleCallback === 'function') {
-      idleId = win.requestIdleCallback(activateBelowFold, { timeout: 2200 });
+      idleId = win.requestIdleCallback(activateBelowFold, { timeout: 600 });
     } else {
-      timerId = setTimeout(activateBelowFold, 1500);
+      timerId = setTimeout(activateBelowFold, 400);
     }
 
     return cleanup;

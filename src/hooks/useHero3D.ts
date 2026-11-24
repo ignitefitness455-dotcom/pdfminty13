@@ -64,6 +64,10 @@ export function detectPerformanceMode(): boolean {
       }
     }
 
+    if (typeof window.innerWidth === 'number' && window.innerWidth > 0 && window.innerWidth < 768) {
+      return true;
+    }
+
     if (typeof navigator !== 'undefined') {
       const nav = navigator as NavigatorWithConnection;
       const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
@@ -171,10 +175,10 @@ export function useHero3D(): UseHero3DReturn {
   });
 
   // Tracks whether the lazy 3D chunk is allowed to be fetched/mounted.
-  // Desktop (enabled): waits for first user interaction (scroll, pointermove, keydown) or 3000ms.
-  // Mobile/Tablet: never downloads until the user explicitly taps the toggle button.
+  // Never eagerly mounts during initial paint on mobile/narrow viewports even if previously enabled,
+  // preserving fast mobile LCP/TBT until interaction or explicit toggle.
   const [chunkReady, setChunkReady] = useState<boolean>(() => {
-    return readStored3DPreference() === true;
+    return readStored3DPreference() === true && detectIsDesktop();
   });
   const [sceneMounted, setSceneMounted] = useState<boolean>(false);
   const [autoDisabledNotice, setAutoDisabledNotice] = useState<boolean>(false);
